@@ -1,0 +1,260 @@
+{
+  "skillId": "illusion",
+  "skillName": "Illusion",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "illusion-novice-illusion",
+      "name": "Novice Illusion",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've taught yourself a few Novice level spells and learned how to cast them with decreased effort while your newfound knowledge also allows you to augment the strength and duration of all Illusion spells.",
+      "effects": []
+    },
+    {
+      "id": "illusion-apprentice-illusion",
+      "name": "Apprentice Illusion",
+      "skillReq": 25,
+      "position": {
+        "x": 12,
+        "y": 17
+      },
+      "prerequisites": [
+        "illusion-novice-illusion"
+      ],
+      "description": "By pursuing your apprenticeship in Illusion, you've gained knowledge of Apprentice level spells which you now augment while casting them with less effort.",
+      "effects": []
+    },
+    {
+      "id": "illusion-adept-illusion",
+      "name": "Adept Illusion",
+      "skillReq": 50,
+      "position": {
+        "x": 12,
+        "y": 12
+      },
+      "prerequisites": [
+        "illusion-apprentice-illusion"
+      ],
+      "description": "By advancing further into the school of Illusion, you've gained some Adept level spells and learned how to augment and cast spells of this rank more easily.",
+      "effects": []
+    },
+    {
+      "id": "illusion-expert-illusion",
+      "name": "Expert Illusion",
+      "skillReq": 75,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
+      "prerequisites": [
+        "illusion-adept-illusion"
+      ],
+      "description": "You've unlocked almost every secret in the school of Illusion and you've acquired some Expert level spells. You can now cast spells of this level easier and augment them to an almost otherworldly extent.",
+      "effects": []
+    },
+    {
+      "id": "illusion-master-illusion",
+      "name": "Master Illusion",
+      "skillReq": 100,
+      "position": {
+        "x": 12,
+        "y": 3
+      },
+      "prerequisites": [
+        "illusion-expert-illusion"
+      ],
+      "description": "Your knowledge of Illusion has become all-encompassing. You taught yourself a Master level spell and you can cast the most complex spells from this school with less effort while augmenting them beyond mortal limits.",
+      "effects": []
+    },
+    {
+      "id": "illusion-perceptual-illusions",
+      "name": "Perceptual Illusions",
+      "skillReq": 25,
+      "position": {
+        "x": 3,
+        "y": 17
+      },
+      "prerequisites": [
+        "illusion-novice-illusion"
+      ],
+      "description": "Perceptual illusion effects such as chameleon, dampen, hallucination, invisibility, muffle, night-eye, and sound are more effective and easier to cast. (1.1x magnitude, 1.1x duration, 0.9x cost for perceptual spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-deceptive-image",
+      "name": "Deceptive Image",
+      "skillReq": 50,
+      "position": {
+        "x": 6,
+        "y": 14
+      },
+      "prerequisites": [
+        "illusion-perceptual-illusions"
+      ],
+      "description": "You can stack illusory image on yourself to deceive your enemies, making their attacks miss and expose their weak spots. (10% chance to take no physical damage and 20% chance to ignore 50% of enemy's armor rating while perceptual illusion spells are active)",
+      "effects": []
+    },
+    {
+      "id": "illusion-environmental-manipulation",
+      "name": "Environmental Manipulation",
+      "skillReq": 50,
+      "position": {
+        "x": 5,
+        "y": 11
+      },
+      "prerequisites": [
+        "illusion-perceptual-illusions"
+      ],
+      "description": "Perceptual illusion spells are improved with additional effects. (improved effect for perceptual spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-emotional-illusions",
+      "name": "Emotional Illusions",
+      "skillReq": 25,
+      "position": {
+        "x": 21,
+        "y": 17
+      },
+      "prerequisites": [
+        "illusion-novice-illusion"
+      ],
+      "description": "Emotional illusion effects such as calm, charm, command, fear, frenzy, and rally are more effective and easier to cast. (increased success chance, 1.1x magnitude, 1.1x duration, 0.9x cost for emotional spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-mesmerize",
+      "name": "Mesmerize",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 14
+      },
+      "prerequisites": [
+        "illusion-emotional-illusions"
+      ],
+      "description": "Your emotional illusion spells seep deep into the targets' mind, further reducing their chance to break free. (increased success chance and 1.2x duration for emotional illusion spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-domination",
+      "name": "Domination",
+      "skillReq": 50,
+      "position": {
+        "x": 20,
+        "y": 11
+      },
+      "prerequisites": [
+        "illusion-emotional-illusions"
+      ],
+      "description": "Emotional illusion spells are improved with additional effects. (improved effect for emotional spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-shadow-shaping",
+      "name": "Shadow Shaping",
+      "skillReq": 50,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
+      "prerequisites": [
+        "illusion-adept-illusion"
+      ],
+      "description": "Shadow magic effects such as sanctuary, shadow drain, shadow step, shadow stride, and shadow summon are more effective and easier to cast. (1.1x magnitude, 1.1x duration, 0.9x cost for shadow spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-shadows-of-conflict",
+      "name": "Shadows of Conflict",
+      "skillReq": 75,
+      "position": {
+        "x": 9,
+        "y": 6
+      },
+      "prerequisites": [
+        "illusion-shadow-shaping"
+      ],
+      "description": "Draw power from forces in conflict, absorbing energy from nearby enemies and creating another reflection of shadow. (absorb 30% magicka regeneration from nearby enemies while shadow spells are active, +1 shadow summon limit)",
+      "effects": []
+    },
+    {
+      "id": "illusion-master-of-shadows",
+      "name": "Master of Shadows",
+      "skillReq": 75,
+      "position": {
+        "x": 8,
+        "y": 3
+      },
+      "prerequisites": [
+        "illusion-shadow-shaping"
+      ],
+      "description": "Shadow illusion spells are improved with additional effects. Shadow summons last longer. (improved effect for shadow spells, 1.5x duration for shadow summon spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-delusive-illusions",
+      "name": "Delusive Illusions",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 8
+      },
+      "prerequisites": [
+        "illusion-adept-illusion"
+      ],
+      "description": "Delusive illusion effects such as blind, death, nightmare, noise, pain, silence, and sleep are more effective and easier to cast. (increased success chance, 1.1x magnitude, 1.1x duration, 0.9x cost for delusive spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-curse",
+      "name": "Curse",
+      "skillReq": 75,
+      "position": {
+        "x": 15,
+        "y": 6
+      },
+      "prerequisites": [
+        "illusion-delusive-illusions"
+      ],
+      "description": "Curse your enemies with dark magic, weakening their body and soul. (1.1x physical damage, spell magnitude, and spell duration on targets under delusive illusion effects)",
+      "effects": []
+    },
+    {
+      "id": "illusion-obliterate-the-mind",
+      "name": "Obliterate the Mind",
+      "skillReq": 75,
+      "position": {
+        "x": 17,
+        "y": 3
+      },
+      "prerequisites": [
+        "illusion-delusive-illusions"
+      ],
+      "description": "Delusive illusion spells are improved with additional effects. (improved effect for delusive spells)",
+      "effects": []
+    },
+    {
+      "id": "illusion-empowered-illusion",
+      "name": "Empowered Illusion",
+      "skillReq": 25,
+      "position": {
+        "x": 5,
+        "y": 21
+      },
+      "prerequisites": [
+        "illusion-novice-illusion"
+      ],
+      "description": "Dual casting an Illusion spell overcharges the effects into an even more powerful version.",
+      "effects": []
+    }
+  ]
+}

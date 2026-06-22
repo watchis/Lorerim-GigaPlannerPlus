@@ -1,0 +1,261 @@
+{
+  "skillId": "enchanting",
+  "skillName": "Enchanting",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "enchanting-enchanter-s-insight",
+      "name": "Enchanter's Insight",
+      "skillReq": 0,
+      "position": {
+        "x": 11,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've acquired fundamental insights into how matter and magic intertwine. (new enchantments are 25% stronger, craft novice level staves and scrolls, can recharge weapons)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-enchanter-s-insight-2",
+      "name": "Enchanter's Insight",
+      "skillReq": 20,
+      "position": {
+        "x": 11,
+        "y": 21
+      },
+      "prerequisites": [
+        "enchanting-enchanter-s-insight"
+      ],
+      "description": "Your advanced knowledge of arcane energy allows you to improve all your enchantments even more. (new enchantments are 50% stronger, craft novice level staves and scrolls)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-arcane-artificery",
+      "name": "Arcane Artificery",
+      "skillReq": 20,
+      "position": {
+        "x": 18,
+        "y": 17
+      },
+      "prerequisites": [
+        "enchanting-enchanter-s-insight"
+      ],
+      "description": "Your understanding of enchantments allow you to use them more effectively and efficiently. (Staves and Scrolls are 10% more powerful, enchantments cost 10% less charges)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-arcane-artificery-2",
+      "name": "Arcane Artificery",
+      "skillReq": 45,
+      "position": {
+        "x": 18,
+        "y": 17
+      },
+      "prerequisites": [
+        "enchanting-arcane-artificery"
+      ],
+      "description": "Your understanding of enchantments allow you to use them more effectively and efficiently. (Staves and Scrolls are 20% more powerful, enchantments cost 20% less charges)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-arcane-artificery-3",
+      "name": "Arcane Artificery",
+      "skillReq": 70,
+      "position": {
+        "x": 18,
+        "y": 17
+      },
+      "prerequisites": [
+        "enchanting-arcane-artificery-2"
+      ],
+      "description": "Your understanding of enchantments allow you to use them more effectively and efficiently. (Staves and Scrolls are 30% more powerful, enchantments cost 30% less charges)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-soul-gem-mastery",
+      "name": "Soul Gem Mastery",
+      "skillReq": 25,
+      "position": {
+        "x": 15,
+        "y": 13
+      },
+      "prerequisites": [
+        "enchanting-enchanter-s-insight"
+      ],
+      "description": "You've learned how to draw more energy from soul gems and are now able to craft them at a smelter by transmuting and melting certain minerals. (+50% charge from soul gems, craft soul gems and apprentice level staves and scrolls)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-arcane-experimentation",
+      "name": "Arcane Experimentation",
+      "skillReq": 50,
+      "position": {
+        "x": 16,
+        "y": 11
+      },
+      "prerequisites": [
+        "enchanting-soul-gem-mastery"
+      ],
+      "description": "Your studies have enabled you to research unique enchantments of your own and to craft better staves at the forge. (new enchantments are 20% stronger, learn five new enchantments with Arcane Experimentation power, craft adept level staves and scrolls)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-artificer-s-insight",
+      "name": "Artificer's Insight",
+      "skillReq": 75,
+      "position": {
+        "x": 16,
+        "y": 8
+      },
+      "prerequisites": [
+        "enchanting-arcane-experimentation"
+      ],
+      "description": "You could fill grimoires with your newfound knowledge that allows you to create even better enchantments and staves. (new enchantments are 25% stronger, learn five new enchantments with Artificer's Insight power, craft expert level staves and scrolls)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-elemental-lore",
+      "name": "Elemental Lore",
+      "skillReq": 25,
+      "position": {
+        "x": 8,
+        "y": 13
+      },
+      "prerequisites": [
+        "enchanting-enchanter-s-insight"
+      ],
+      "description": "You've learned how to tame the elements most efficiently. Thus, all elemental enchantments are stronger. (new elemental enchantments are 50% stronger, you can craft runestones and create runestone enchantments)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-corpus-lore",
+      "name": "Corpus Lore",
+      "skillReq": 50,
+      "position": {
+        "x": 9,
+        "y": 9
+      },
+      "prerequisites": [
+        "enchanting-elemental-lore"
+      ],
+      "description": "You've become skilled in using enchantments to strengthen mind and body. Thus, all such enchantments are stronger. (new attribute enchantments are 50% stronger and you can make more advanced runestone enchantments)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-skill-lore",
+      "name": "Skill Lore",
+      "skillReq": 75,
+      "position": {
+        "x": 11,
+        "y": 6
+      },
+      "prerequisites": [
+        "enchanting-corpus-lore"
+      ],
+      "description": "You've become a master of infusing enchantments that transfer knowledge and skill to the user, making all such ones stronger. (new skill enchantments are 50% stronger, Ebony Smiths can permanently imbue unique enchantments onto their weapons)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-enchantment-mastery",
+      "name": "Enchantment Mastery",
+      "skillReq": 90,
+      "position": {
+        "x": 15,
+        "y": 4
+      },
+      "prerequisites": [
+        "enchanting-skill-lore",
+        "enchanting-artificer-s-insight"
+      ],
+      "description": "You've found a way to bind even more energy into inanimate matter. (new enchantments are 10% stronger, can place two enchantments with 60% strength each, craft master level staves and scrolls, 0.8x staff charge cost)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-artifact-enchanter",
+      "name": "Artifact Enchanter",
+      "skillReq": 100,
+      "position": {
+        "x": 14,
+        "y": 2
+      },
+      "prerequisites": [
+        "enchanting-enchantment-mastery"
+      ],
+      "description": "With great skill and dedication, you get a chance to enchant an item with extraordinary strength. (enchant one item with twice the strength, can place three enchantments with 50% strength each)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-staff-channeling",
+      "name": "Staff Channeling",
+      "skillReq": 30,
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "prerequisites": [
+        "enchanting-arcane-artificery"
+      ],
+      "description": "You can use your staff to empower your own spells and cast them more efficiently. (While holding a staff, spells are 5% more powerful and cost 10% less magicka to cast)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-staff-channeling-2",
+      "name": "Staff Channeling",
+      "skillReq": 60,
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "prerequisites": [
+        "enchanting-staff-channeling"
+      ],
+      "description": "You can use your staff to empower your own spells and cast them more efficiently. (While holding a staff, spells are 10% more powerful and cost 20% less magicka to cast)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-wand-mastery",
+      "name": "Wand Mastery",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 9
+      },
+      "prerequisites": [
+        "enchanting-staff-channeling"
+      ],
+      "description": "You have learned to use your wand's innate mystical properties to focus your thoughts. (+100% magicka regeneration when holding a wand)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-charge-tap",
+      "name": "Charge Tap",
+      "skillReq": 60,
+      "position": {
+        "x": 21,
+        "y": 9
+      },
+      "prerequisites": [
+        "enchanting-staff-channeling"
+      ],
+      "description": "Grants the 'Charge Tap' power. At will, drains a quarter of your current weapon charge to restore Health by 15% of the amount drained and Magicka and Stamina by 25% of the amount drained. (If you have two enchanted weapons equipped, the drain is split.)",
+      "effects": []
+    },
+    {
+      "id": "enchanting-you-shall-not-pass",
+      "name": "You Shall Not Pass",
+      "skillReq": 80,
+      "position": {
+        "x": 20,
+        "y": 6
+      },
+      "prerequisites": [
+        "enchanting-wand-mastery"
+      ],
+      "description": "Simultaneously (within 1 second) using an enchanted staff or wand in your left hand and striking with an enchanted weapon in your right hand releases a flash of light that staggers enemies and deals damage equal to half your Enchanting skill level.",
+      "effects": []
+    }
+  ]
+}

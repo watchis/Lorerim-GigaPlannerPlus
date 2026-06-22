@@ -1,6 +1,7 @@
 import type { GameData } from "@/data/schemas";
 
 export interface BuildCodecRegistry {
+  game: GameData;
   modpackVersion: string;
   races: readonly string[];
   standingStones: readonly string[];
@@ -41,6 +42,7 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
   const perks = collectPerkIds(game);
 
   return {
+    game,
     modpackVersion: game.manifest.version,
     races,
     standingStones,

@@ -1,0 +1,233 @@
+{
+  "skillId": "block",
+  "skillName": "Block",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "block-improved-blocking",
+      "name": "Improved Blocking",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 19
+      },
+      "prerequisites": [],
+      "description": "You strengthened your shield arm and trained to parry blows a little. (Block 25% more damage with weapons and shields, take 25% less elemental damage when blocking with a shield and 10% less with a weapon)",
+      "effects": []
+    },
+    {
+      "id": "block-experienced-blocking",
+      "name": "Experienced Blocking",
+      "skillReq": 20,
+      "position": {
+        "x": 12,
+        "y": 10
+      },
+      "prerequisites": [
+        "block-improved-blocking"
+      ],
+      "description": "With weapon or shield you can block almost any blow with rock-solid confidence. (Block 50% more damage, recover some stamina when blocking a hit)",
+      "effects": []
+    },
+    {
+      "id": "block-torch-combat",
+      "name": "Torch Combat",
+      "skillReq": 25,
+      "position": {
+        "x": 16,
+        "y": 13
+      },
+      "prerequisites": [
+        "block-improved-blocking"
+      ],
+      "description": "You can use your torch more effectively in combat, causing painful burns. (Power bash with a torch does 10 extra fire damage and staggers the target, targets set on fire take 5 extra fire damage from weapon attacks)",
+      "effects": []
+    },
+    {
+      "id": "block-strong-grip",
+      "name": "Strong Grip",
+      "skillReq": 15,
+      "position": {
+        "x": 2,
+        "y": 14
+      },
+      "prerequisites": [
+        "block-improved-blocking"
+      ],
+      "description": "You hold on to your shield like you would hold on to your life. (50% less shield weight, 25% more armor rating, block 40% more damage, arrows that hit the shield do no damage)",
+      "effects": []
+    },
+    {
+      "id": "block-elemental-protection",
+      "name": "Elemental Protection",
+      "skillReq": 50,
+      "position": {
+        "x": 4,
+        "y": 7
+      },
+      "prerequisites": [
+        "block-strong-grip"
+      ],
+      "description": "You've learned how to block damaging spells more efficiently. (Take 50% less fire, frost, and shock damage when blocking with a shield)",
+      "effects": []
+    },
+    {
+      "id": "block-defensive-stance",
+      "name": "Defensive Stance",
+      "skillReq": 75,
+      "position": {
+        "x": 8,
+        "y": 4
+      },
+      "prerequisites": [
+        "block-elemental-protection"
+      ],
+      "description": "You have honed your defensive movements to perfection. (Blocking with a shield does not slow you down, 75% less shield weight, 50% more armor rating)",
+      "effects": []
+    },
+    {
+      "id": "block-powerful-bashes",
+      "name": "Powerful Bashes",
+      "skillReq": 25,
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "prerequisites": [
+        "block-improved-blocking"
+      ],
+      "description": "By gathering your strength for a short while, you can perform a much more powerful bash. (Able to do a power bash)",
+      "effects": []
+    },
+    {
+      "id": "block-shield-strike",
+      "name": "Shield Strike",
+      "skillReq": 25,
+      "position": {
+        "x": 15,
+        "y": 10
+      },
+      "prerequisites": [
+        "block-powerful-bashes"
+      ],
+      "description": "You can use your shield more offensively, using it as a deadly weapon. (50% more shield bash damage, double damage when not wearing heavy armor, 25% less shield bash stamina cost)",
+      "effects": []
+    },
+    {
+      "id": "block-shield-strike-2",
+      "name": "Shield Strike",
+      "skillReq": 50,
+      "position": {
+        "x": 15,
+        "y": 10
+      },
+      "prerequisites": [
+        "block-shield-strike"
+      ],
+      "description": "You can use your shield more offensively, using it as a deadly weapon. (100% more shield bash damage, double damage when not wearing heavy armor, 50% less shield bash stamina cost)",
+      "effects": []
+    },
+    {
+      "id": "block-overpowering-bashes",
+      "name": "Overpowering Bashes",
+      "skillReq": 50,
+      "position": {
+        "x": 20,
+        "y": 11
+      },
+      "prerequisites": [
+        "block-powerful-bashes"
+      ],
+      "description": "When you put all of your power into your shield bashes, you will often overpower your foes. (Power bashing with a shield can knock down)",
+      "effects": []
+    },
+    {
+      "id": "block-disarming-bash",
+      "name": "Disarming Bash",
+      "skillReq": 75,
+      "position": {
+        "x": 18,
+        "y": 5
+      },
+      "prerequisites": [
+        "block-overpowering-bashes"
+      ],
+      "description": "You've trained in the art of disarming foes mid-combat. (20% chance to disarm when power bashing using a shield or weapon)",
+      "effects": []
+    },
+    {
+      "id": "block-unstoppable-charge",
+      "name": "Unstoppable Charge",
+      "skillReq": 100,
+      "position": {
+        "x": 12,
+        "y": 2
+      },
+      "prerequisites": [
+        "block-disarming-bash",
+        "block-defensive-stance"
+      ],
+      "description": "When bull rushing with your shield raised, you are a tremendous force to deal with. (Sprinting with a shield raised knocks down most targets and reduces incoming damage by 50%)",
+      "effects": []
+    },
+    {
+      "id": "block-weapons-master",
+      "name": "Weapons Master",
+      "skillReq": 20,
+      "position": {
+        "x": 8,
+        "y": 13
+      },
+      "prerequisites": [
+        "block-improved-blocking"
+      ],
+      "description": "You have rejected mastering one specific weapon type. Instead, you use have begun to master versatility. (15% more damage)",
+      "effects": []
+    },
+    {
+      "id": "block-weapons-master-2",
+      "name": "Weapons Master",
+      "skillReq": 40,
+      "position": {
+        "x": 8,
+        "y": 13
+      },
+      "prerequisites": [
+        "block-weapons-master"
+      ],
+      "description": "You have rejected mastering one specific weapon type. Instead, you use have begun to master versatility. (30% more damage)",
+      "effects": []
+    },
+    {
+      "id": "block-masterly-strike",
+      "name": "Masterly Strike",
+      "skillReq": 60,
+      "position": {
+        "x": 8,
+        "y": 10
+      },
+      "prerequisites": [
+        "block-weapons-master-2"
+      ],
+      "description": "Your power attacks are now devastating enough to penetrate enemy armor and less exhausting. (-30% power attack stamina cost, +30% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "block-shield-s-best-friend",
+      "name": "Shield's Best Friend",
+      "skillReq": 30,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "block-improved-blocking"
+      ],
+      "description": "Like the Imperial Legions of old, you understand the advantage of shortswords in combat. (20% more bash damage, 20% more block and 20% less poise damage when wielding a shortsword)",
+      "effects": []
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { gzipSync, gunzipSync } from "fflate";
 import type { GameData } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
+import { getSkillFloor, reconcileBuild } from "@/engine/buildEngine";
 import {
   createBuildCodecRegistry,
   lookupId,
@@ -29,6 +30,7 @@ interface EncodedBuildV1 {
 interface CompactBuildV2 {
   v: typeof BUILD_CODEC_V2;
   mv: string;
+  lv?: number;
   r?: number;
   s?: number;
   b?: number;
@@ -37,6 +39,7 @@ interface CompactBuildV2 {
   m?: number[];
   a?: [number, number, number];
   p?: number[];
+  l?: [number, number][];
   d?: string;
 }
 
@@ -101,6 +104,10 @@ function encodeBuildV2(state: BuildState, registry: BuildCodecRegistry): string 
     mv: registry.modpackVersion,
   };
 
+  if (state.playerLevel > registry.game.mechanics.leveling.baseLevel) {
+    payload.lv = state.playerLevel;
+  }
+
   const raceIndex = lookupIndex(registry.raceIndex, raceId, "race");
   if (raceIndex !== undefined && raceId !== "none") {
     payload.r = raceIndex;
@@ -138,6 +145,21 @@ function encodeBuildV2(state: BuildState, registry: BuildCodecRegistry): string 
     );
   }
 
+  const skillLevelEntries: [number, number][] = [];
+  for (const skillId of registry.skills) {
+    const floor = getSkillFloor(registry.game, state, skillId);
+    const level = state.skillLevels[skillId];
+    if (level !== undefined && level !== floor) {
+      const skillIndex = lookupIndex(registry.skillIndex, skillId, "skill");
+      if (skillIndex !== undefined) {
+        skillLevelEntries.push([skillIndex, level]);
+      }
+    }
+  }
+  if (skillLevelEntries.length > 0) {
+    payload.l = skillLevelEntries;
+  }
+
   if (state.description.trim()) {
     payload.d = state.description;
   }
@@ -168,6 +190,8 @@ function decodeBuildV1(code: string): BuildState {
       stamina: payload.attrs?.[2] ?? 0,
     },
     selectedPerkIds: payload.perks ?? [],
+    skillLevels: {},
+    playerLevel: 1,
     description: payload.desc ?? "",
   });
 }
@@ -188,6 +212,11 @@ function decodeBuildV2(code: string, registry: BuildCodecRegistry): BuildState {
   }
 
   const attrs = payload.a ?? [0, 0, 0];
+  const skillLevels = Object.fromEntries(
+    (payload.l ?? [])
+      .map(([index, level]) => [lookupId(registry.skills, index, "skill")!, level] as const)
+      .filter(([skillId]) => skillId !== null),
+  );
 
   return payloadToBuildState({
     raceId: lookupId(registry.races, payload.r, "race") ?? "none",
@@ -202,8 +231,10 @@ function decodeBuildV2(code: string, registry: BuildCodecRegistry): BuildState {
       stamina: attrs[2] ?? 0,
     },
     selectedPerkIds: (payload.p ?? []).map((index) => lookupId(registry.perks, index, "perk")!),
+    skillLevels,
+    playerLevel: payload.lv ?? registry.game.mechanics.leveling.baseLevel,
     description: payload.d ?? "",
-  });
+  }, registry.game);
 }
 
 function payloadToBuildState(partial: {
@@ -215,9 +246,11 @@ function payloadToBuildState(partial: {
   minorSkillIds: string[];
   attributeBonus: BuildState["attributeBonus"];
   selectedPerkIds: string[];
+  skillLevels: BuildState["skillLevels"];
+  playerLevel?: number;
   description: string;
-}): BuildState {
-  return {
+}, game?: GameData): BuildState {
+  const build: BuildState = {
     raceId: partial.raceId,
     standingStoneId: partial.standingStoneId,
     blessingId: partial.blessingId,
@@ -226,9 +259,12 @@ function payloadToBuildState(partial: {
     minorSkillIds: partial.minorSkillIds,
     attributeBonus: partial.attributeBonus,
     selectedPerkIds: partial.selectedPerkIds,
-    skillLevels: {},
+    skillLevels: partial.skillLevels,
+    playerLevel: partial.playerLevel ?? game?.mechanics.leveling.baseLevel ?? 1,
     description: partial.description,
   };
+
+  return game ? reconcileBuild(game, build) : build;
 }
 
 export function encodeBuild(state: BuildState, game: GameData): string {

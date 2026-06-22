@@ -6,8 +6,7 @@ import blessingsJson from "../../data/game/blessings.json";
 import traitsJson from "../../data/game/traits.json";
 import skillsJson from "../../data/game/skills.json";
 import perkIndexJson from "../../data/game/perks/index.json";
-import smithingPerksJson from "../../data/game/perks/smithing.json";
-import heavyArmorPerksJson from "../../data/game/perks/heavy-armor.json";
+import perkPlayerLevelReqsJson from "../../data/game/perk-player-level-reqs.json";
 import themeJson from "../../data/ui/theme.json";
 import layoutJson from "../../data/ui/layout.json";
 import labelsJson from "../../data/ui/labels.json";
@@ -21,6 +20,7 @@ import {
   traitsSchema,
   skillsSchema,
   perkIndexSchema,
+  perkPlayerLevelReqsSchema,
   perkTreeSchema,
   themeSchema,
   layoutSchema,
@@ -37,10 +37,17 @@ function parse<T>(schema: { parse: (data: unknown) => T }, data: unknown, name: 
   }
 }
 
-const perkTreeFiles: Record<string, unknown> = {
-  "smithing.json": smithingPerksJson,
-  "heavy-armor.json": heavyArmorPerksJson,
-};
+const perkJsonModules = import.meta.glob("../../data/game/perks/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, unknown>;
+
+const perkTreeFiles: Record<string, unknown> = {};
+for (const path of Object.keys(perkJsonModules)) {
+  const filename = path.split("/").pop()!;
+  if (filename === "index.json") continue;
+  perkTreeFiles[filename] = perkJsonModules[path];
+}
 
 export function loadAppData(): AppData {
   const manifest = parse(manifestSchema, manifestJson, "manifest.json");
@@ -51,6 +58,11 @@ export function loadAppData(): AppData {
   const { traits } = parse(traitsSchema, traitsJson, "traits.json");
   const { skills } = parse(skillsSchema, skillsJson, "skills.json");
   const perkIndex = parse(perkIndexSchema, perkIndexJson, "perks/index.json");
+  const playerLevelReqs = parse(
+    perkPlayerLevelReqsSchema,
+    perkPlayerLevelReqsJson,
+    "perk-player-level-reqs.json",
+  );
 
   const perkTrees: Record<string, PerkTree> = {};
   for (const [skillId, filename] of Object.entries(perkIndex)) {
@@ -58,7 +70,14 @@ export function loadAppData(): AppData {
     if (!raw) {
       throw new Error(`Missing perk tree file: ${filename}`);
     }
-    perkTrees[skillId] = parse(perkTreeSchema, raw, filename);
+    const tree = parse(perkTreeSchema, raw, filename);
+    perkTrees[skillId] = {
+      ...tree,
+      perks: tree.perks.map((perk) => {
+        const playerLevelReq = playerLevelReqs[perk.id];
+        return playerLevelReq !== undefined ? { ...perk, playerLevelReq } : perk;
+      }),
+    };
   }
 
   const theme = parse(themeSchema, themeJson, "theme.json");

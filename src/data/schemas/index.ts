@@ -14,6 +14,21 @@ export const effectSchema = z.discriminatedUnion("type", [
     value: z.number(),
     isPercent: z.boolean().optional(),
   }),
+  z.object({
+    type: z.literal("skillPointsPerLevel"),
+    value: z.number(),
+  }),
+]);
+
+const skillLevelBaselineSchema = z.enum(["raceStarting"]);
+
+const skillFloorSourceSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("raceStarting") }),
+  z.object({
+    type: z.literal("selectedSkillBonus"),
+    selection: z.enum(["major", "minor"]),
+    bonusField: z.enum(["majorSkillBonus", "minorSkillBonus"]),
+  }),
 ]);
 
 export const manifestSchema = z.object({
@@ -23,38 +38,67 @@ export const manifestSchema = z.object({
     majorSkills: z.number(),
     minorSkills: z.number(),
     traits: z.number(),
-    initialPerkPoints: z.number(),
     initialAttributePoints: z.number(),
   }),
+  nonAllocatableSkills: z.array(z.string()).default([]),
   skills: z.array(z.string()),
 });
 
-export const mechanicsSchema = z.object({
-  leveling: z.object({
-    baseLevel: z.number(),
-    attributePointsPerLevel: z.tuple([z.number(), z.number(), z.number()]),
-  }),
-  oghmaInfinium: z.object({
-    perkPoints: z.number(),
-    attributeBonus: z.tuple([z.number(), z.number(), z.number()]),
-  }),
-  majorSkillBonus: z.number(),
-  minorSkillBonus: z.number(),
-  derivedStats: z.array(
-    z.object({
-      id: z.string(),
-      label: z.string(),
-      isPercent: z.boolean(),
-      prefactor: z.number(),
-      threshold: z.number(),
-      weights: z.object({
-        health: z.number(),
-        magicka: z.number(),
-        stamina: z.number(),
-      }),
-    }),
-  ),
+const skillLevelCostTierSchema = z.object({
+  minLevel: z.number().int().positive(),
+  maxLevel: z.number().int().positive(),
+  cost: z.number().int().positive(),
 });
+
+export const mechanicsSchema = z
+  .object({
+    leveling: z.object({
+      baseLevel: z.number(),
+      maxPlayerLevel: z.number().int().positive(),
+      maxSkillLevel: z.number().int().positive(),
+      skillPointsPerLevel: z.number().int().positive(),
+      perkPointsPerLevel: z.number().int().positive(),
+      initialPerkPoints: z.number().int().nonnegative(),
+      maxSkillAbovePlayerLevel: z.number().int().positive(),
+      skillPointBaseline: skillLevelBaselineSchema,
+      playerLevelSkillBaseline: skillLevelBaselineSchema,
+      skillPointFreeThroughFloor: z.boolean(),
+      skillFloorSources: z.array(skillFloorSourceSchema).min(1),
+      skillLevelCosts: z.array(skillLevelCostTierSchema).min(1),
+      attributePointsPerLevel: z.tuple([z.number(), z.number(), z.number()]),
+    }),
+    oghmaInfinium: z.object({
+      perkPoints: z.number(),
+      attributeBonus: z.tuple([z.number(), z.number(), z.number()]),
+    }),
+    majorSkillBonus: z.number(),
+    minorSkillBonus: z.number(),
+    derivedStats: z.array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+        isPercent: z.boolean(),
+        prefactor: z.number(),
+        threshold: z.number(),
+        weights: z.object({
+          health: z.number(),
+          magicka: z.number(),
+          stamina: z.number(),
+        }),
+      }),
+    ),
+  })
+  .superRefine((mechanics, ctx) => {
+    const { maxSkillLevel, skillLevelCosts } = mechanics.leveling;
+    const tierMax = Math.max(...skillLevelCosts.map((tier) => tier.maxLevel));
+    if (maxSkillLevel < tierMax) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `leveling.maxSkillLevel (${maxSkillLevel}) must be >= highest skillLevelCosts tier (${tierMax})`,
+        path: ["leveling", "maxSkillLevel"],
+      });
+    }
+  });
 
 export const raceSchema = z.object({
   id: z.string(),
@@ -141,21 +185,49 @@ export const skillsSchema = z.object({
   skills: z.array(skillSchema),
 });
 
+export const perkPlayerLevelReqsSchema = z.record(z.string(), z.number().int().positive());
+
 export const perkSchema = z.object({
   id: z.string(),
   name: z.string(),
   skillReq: z.number(),
-  position: z.object({ x: z.number(), y: z.number() }),
+  playerLevelReq: z.number().int().positive().optional(),
+  costsPerkPoint: z.boolean().default(true),
+  position: z.object({ x: z.number().int(), y: z.number().int() }),
   prerequisites: z.array(z.string()),
+  prerequisitesAny: z.array(z.string()).optional(),
   description: z.string(),
   effects: z.array(effectSchema),
 });
 
-export const perkTreeSchema = z.object({
-  skillId: z.string(),
-  skillName: z.string(),
-  perks: z.array(perkSchema),
-});
+export const perkTreeSchema = z
+  .object({
+    skillId: z.string(),
+    skillName: z.string(),
+    grid: z.object({
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    }),
+    perks: z.array(perkSchema),
+  })
+  .superRefine((tree, ctx) => {
+    for (const [index, perk] of tree.perks.entries()) {
+      if (perk.position.x < 0 || perk.position.x >= tree.grid.width) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Perk "${perk.id}" x (${perk.position.x}) is outside grid width ${tree.grid.width}`,
+          path: ["perks", index, "position", "x"],
+        });
+      }
+      if (perk.position.y < 0 || perk.position.y >= tree.grid.height) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Perk "${perk.id}" y (${perk.position.y}) is outside grid height ${tree.grid.height}`,
+          path: ["perks", index, "position", "y"],
+        });
+      }
+    }
+  });
 
 export const perkIndexSchema = z.record(z.string(), z.string());
 
@@ -209,10 +281,22 @@ export const labelsSchema = z.object({
   planner: z.object({
     intro: z.string(),
   }),
+  "level-bar": z.object({
+    playerLevel: z.string(),
+    perkPointsRemaining: z.string(),
+    perkPointsSpent: z.string(),
+    perkPointsPerLevel: z.string(),
+    skillPointsRemaining: z.string(),
+    skillPointsSpent: z.string(),
+    skillPointsPerLevel: z.string(),
+    overBudget: z.string(),
+  }),
   panels: z.record(z.string(), z.record(z.string(), z.string())),
   errors: z.record(z.string(), z.string()),
 });
 
+export type SkillLevelBaseline = z.infer<typeof skillLevelBaselineSchema>;
+export type SkillFloorSource = z.infer<typeof skillFloorSourceSchema>;
 export type Effect = z.infer<typeof effectSchema>;
 export type Manifest = z.infer<typeof manifestSchema>;
 export type Mechanics = z.infer<typeof mechanicsSchema>;

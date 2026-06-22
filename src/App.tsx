@@ -66,7 +66,11 @@ export default function App() {
   }, [init]);
 
   if (error) {
-    return <ErrorScreen message={`Failed to load planner data: ${error}`} />;
+    return (
+      <BrowserRouter basename={routerBasename}>
+        <ErrorScreen message={`Failed to load planner data: ${error}`} />
+      </BrowserRouter>
+    );
   }
 
   if (!ready) {

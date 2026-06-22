@@ -23,6 +23,10 @@ export function formatEffectBonus(effect: Effect, mechanics: Mechanics): string 
     return `${label}: ${formatSignedValue(effect.value)}`;
   }
 
+  if (effect.type === "skillPointsPerLevel") {
+    return `Skill points per level: ${formatSignedValue(effect.value)}`;
+  }
+
   const derived = mechanics.derivedStats.find((entry) => entry.id === effect.stat);
   const label = getStatLabel(effect.stat, mechanics);
   const isPercent = effect.isPercent ?? derived?.isPercent ?? false;

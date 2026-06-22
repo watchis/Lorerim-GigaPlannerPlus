@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { LevelBar } from "@/components/LevelBar";
 import { LayoutRenderer } from "@/layout/LayoutRenderer";
 import { decodeBuild, getBuildFromUrl } from "@/engine/buildCodec";
 import { useBuildStore } from "@/store/buildStore";
@@ -22,6 +23,7 @@ export function PlannerPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <LevelBar />
       <LayoutRenderer layout={layout} />
     </div>
   );

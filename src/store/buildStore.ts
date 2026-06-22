@@ -2,16 +2,27 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AppData } from "@/data/schemas";
 import {
+  allocatePerk as allocatePerkInBuild,
   canSelectMajorSkill,
   canSelectMinorSkill,
-  canSelectPerk,
   canSelectTrait,
   computeBuild,
   createInitialBuildState,
+  createSkillReqConflict,
+  clampPlayerLevel,
+  getPerksDroppedBelowSkillRequirement,
+  getSkillFloor,
+  isAllocatableSkill,
+  reconcileBuild,
+  removePerk as removePerkFromBuild,
+  tryTakePerk as tryTakePerkInBuild,
+  togglePerkSelection,
   type Attributes,
   type BuildState,
   type ComputedBuild,
+  type SkillReqConflict,
 } from "@/engine/buildEngine";
+import { useUiStore } from "@/store/uiStore";
 import {
   createInitialLibrary,
   createSavedBuild,
@@ -29,6 +40,7 @@ interface BuildStore {
   savedBuilds: SavedBuild[];
   activeBuildId: string;
   computed: ComputedBuild | null;
+  skillReqConflict: SkillReqConflict | null;
   init: (data: AppData) => void;
   setRace: (raceId: string) => void;
   setStandingStone: (stoneId: string) => void;
@@ -37,7 +49,12 @@ interface BuildStore {
   toggleMajorSkill: (skillId: string) => void;
   toggleMinorSkill: (skillId: string) => void;
   adjustAttribute: (stat: keyof Attributes, delta: number) => void;
+  setPlayerLevel: (level: number) => void;
+  setSkillLevel: (skillId: string, level: number) => void;
   togglePerk: (perkId: string) => void;
+  tryTakePerk: (perkId: string) => boolean;
+  allocatePerk: (perkId: string) => boolean;
+  removePerk: (perkId: string) => void;
   resetSkillPerks: (skillId: string) => void;
   resetAllPerks: () => void;
   setDescription: (description: string) => void;
@@ -50,6 +67,7 @@ interface BuildStore {
   importBuildAsSlot: (build: BuildState, name?: string) => void;
   importBuildLibrary: (entries: Array<{ name: string; build: BuildState; updatedAt?: number }>) => void;
   reorderSavedBuildSlot: (fromIndex: number, toIndex: number) => void;
+  clearSkillReqConflict: () => void;
 }
 
 function recompute(data: AppData, build: BuildState): ComputedBuild {
@@ -60,6 +78,7 @@ function commitBuild(
   set: (partial: Partial<BuildStore>) => void,
   get: () => BuildStore,
   nextBuild: BuildState,
+  skillReqConflict?: SkillReqConflict | null,
 ): void {
   const { gameData, savedBuilds, activeBuildId } = get();
   if (!gameData) return;
@@ -68,7 +87,27 @@ function commitBuild(
     build: nextBuild,
     savedBuilds: updateSavedBuildInList(savedBuilds, activeBuildId, nextBuild),
     computed: recompute(gameData, nextBuild),
+    ...(skillReqConflict !== undefined ? { skillReqConflict } : {}),
   });
+}
+
+function focusSkillReqConflict(conflict: SkillReqConflict): void {
+  const { setMiddleView, setActiveSkillTreeId } = useUiStore.getState();
+  setMiddleView("skill-trees");
+  setActiveSkillTreeId(conflict.skillId);
+}
+
+function resolveSkillReqConflict(
+  game: AppData["game"],
+  previousBuild: BuildState,
+  nextBuild: BuildState,
+): SkillReqConflict | null {
+  const dropped = getPerksDroppedBelowSkillRequirement(game, previousBuild, nextBuild);
+  const conflict = createSkillReqConflict(game, nextBuild, dropped);
+  if (conflict) {
+    focusSkillReqConflict(conflict);
+  }
+  return conflict;
 }
 
 function activateBuild(
@@ -103,15 +142,22 @@ export const useBuildStore = create<BuildStore>()(
         savedBuilds: initialLibrary.savedBuilds,
         activeBuildId: activeEntry?.id ?? initialLibrary.activeBuildId,
         computed: null,
+        skillReqConflict: null,
 
         init: (data) => {
           const { build } = get();
-          set({ gameData: data, computed: recompute(data, build) });
+          const baseLevel = data.game.mechanics.leveling.baseLevel;
+          const migratedBuild = reconcileBuild(data.game, {
+            ...build,
+            playerLevel: build.playerLevel ?? baseLevel,
+          });
+          set({ gameData: data, build: migratedBuild, computed: recompute(data, migratedBuild) });
         },
 
         setRace: (raceId) => {
-          const { build } = get();
-          commitBuild(set, get, { ...build, raceId });
+          const { gameData, build } = get();
+          if (!gameData) return;
+          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, raceId }));
         },
 
         setStandingStone: (stoneId) => {
@@ -135,7 +181,11 @@ export const useBuildStore = create<BuildStore>()(
             traitIds.push(traitId);
           }
 
-          commitBuild(set, get, { ...build, traitIds });
+          commitBuild(
+            set,
+            get,
+            reconcileBuild(gameData.game, { ...build, traitIds }),
+          );
         },
 
         toggleMajorSkill: (skillId) => {
@@ -149,7 +199,7 @@ export const useBuildStore = create<BuildStore>()(
             majorSkillIds.push(skillId);
           }
 
-          commitBuild(set, get, { ...build, majorSkillIds });
+          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, majorSkillIds }));
         },
 
         toggleMinorSkill: (skillId) => {
@@ -163,7 +213,7 @@ export const useBuildStore = create<BuildStore>()(
             minorSkillIds.push(skillId);
           }
 
-          commitBuild(set, get, { ...build, minorSkillIds });
+          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, minorSkillIds }));
         },
 
         adjustAttribute: (stat, delta) => {
@@ -188,18 +238,69 @@ export const useBuildStore = create<BuildStore>()(
           });
         },
 
+        setPlayerLevel: (level) => {
+          const { gameData, build } = get();
+          if (!gameData) return;
+
+          const playerLevel = clampPlayerLevel(gameData.game, level);
+          const nextBuild = reconcileBuild(gameData.game, { ...build, playerLevel });
+          const conflict = resolveSkillReqConflict(gameData.game, build, nextBuild);
+
+          commitBuild(set, get, nextBuild, conflict);
+        },
+
+        setSkillLevel: (skillId, level) => {
+          const { gameData, build } = get();
+          if (!gameData) return;
+
+          const skillLevels = {
+            ...build.skillLevels,
+            [skillId]: level,
+          };
+
+          const nextBuild = reconcileBuild(gameData.game, { ...build, skillLevels });
+          const conflict = resolveSkillReqConflict(gameData.game, build, nextBuild);
+
+          commitBuild(set, get, nextBuild, conflict);
+        },
+
         togglePerk: (perkId) => {
           const { gameData, build } = get();
           if (!gameData) return;
 
-          let selectedPerkIds = [...build.selectedPerkIds];
-          if (selectedPerkIds.includes(perkId)) {
-            selectedPerkIds = selectedPerkIds.filter((id) => id !== perkId);
-          } else if (canSelectPerk(gameData.game, build, perkId)) {
-            selectedPerkIds.push(perkId);
+          const next = togglePerkSelection(gameData.game, build, perkId);
+          if (next) {
+            commitBuild(set, get, next);
           }
+        },
 
-          commitBuild(set, get, { ...build, selectedPerkIds });
+        tryTakePerk: (perkId) => {
+          const { gameData, build } = get();
+          if (!gameData) return false;
+
+          const next = tryTakePerkInBuild(gameData.game, build, perkId);
+          if (!next) return false;
+
+          commitBuild(set, get, next);
+          return true;
+        },
+
+        allocatePerk: (perkId) => {
+          const { gameData, build } = get();
+          if (!gameData) return false;
+
+          const next = allocatePerkInBuild(gameData.game, build, perkId);
+          if (!next) return false;
+
+          commitBuild(set, get, next);
+          return true;
+        },
+
+        removePerk: (perkId) => {
+          const { gameData, build } = get();
+          if (!gameData) return;
+
+          commitBuild(set, get, removePerkFromBuild(gameData.game, build, perkId));
         },
 
         resetSkillPerks: (skillId) => {
@@ -209,14 +310,35 @@ export const useBuildStore = create<BuildStore>()(
           const tree = gameData.game.perkTrees[skillId];
           if (!tree) return;
 
+          const floor = getSkillFloor(gameData.game, build, skillId);
           const skillPerkIds = new Set(tree.perks.map((p) => p.id));
           const selectedPerkIds = build.selectedPerkIds.filter((id) => !skillPerkIds.has(id));
-          commitBuild(set, get, { ...build, selectedPerkIds });
+          commitBuild(
+            set,
+            get,
+            reconcileBuild(gameData.game, {
+              ...build,
+              selectedPerkIds,
+              skillLevels: { ...build.skillLevels, [skillId]: floor },
+            }),
+          );
         },
 
         resetAllPerks: () => {
-          const { build } = get();
-          commitBuild(set, get, { ...build, selectedPerkIds: [] });
+          const { gameData, build } = get();
+          if (!gameData) return;
+
+          const skillLevels = { ...build.skillLevels };
+          for (const skillId of gameData.game.manifest.skills) {
+            if (!isAllocatableSkill(gameData.game, skillId)) continue;
+            skillLevels[skillId] = getSkillFloor(gameData.game, build, skillId);
+          }
+
+          commitBuild(
+            set,
+            get,
+            reconcileBuild(gameData.game, { ...build, selectedPerkIds: [], skillLevels }),
+          );
         },
 
         setDescription: (description) => {
@@ -332,6 +454,8 @@ export const useBuildStore = create<BuildStore>()(
           const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
           set({ savedBuilds: reorderBuildsInList(syncedBuilds, fromIndex, toIndex) });
         },
+
+        clearSkillReqConflict: () => set({ skillReqConflict: null }),
       };
     },
     {
@@ -346,6 +470,11 @@ export const useBuildStore = create<BuildStore>()(
         if (state.build.raceId === null) {
           state.build = { ...state.build, raceId: "none" };
         }
+        const baseLevel = state.gameData.game.mechanics.leveling.baseLevel;
+        if (state.build.playerLevel == null || Number.isNaN(state.build.playerLevel)) {
+          state.build = { ...state.build, playerLevel: baseLevel };
+        }
+        state.build = reconcileBuild(state.gameData.game, state.build);
         state.computed = recompute(state.gameData, state.build);
       },
     },

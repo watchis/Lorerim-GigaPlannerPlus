@@ -1,6 +1,26 @@
 {
   "leveling": {
     "baseLevel": 1,
+    "maxPlayerLevel": 100,
+    "maxSkillLevel": 100,
+    "skillPointsPerLevel": 20,
+    "perkPointsPerLevel": 1,
+    "initialPerkPoints": 3,
+    "maxSkillAbovePlayerLevel": 50,
+    "skillPointBaseline": "raceStarting",
+    "playerLevelSkillBaseline": "raceStarting",
+    "skillPointFreeThroughFloor": true,
+    "skillFloorSources": [
+      { "type": "raceStarting" },
+      { "type": "selectedSkillBonus", "selection": "major", "bonusField": "majorSkillBonus" },
+      { "type": "selectedSkillBonus", "selection": "minor", "bonusField": "minorSkillBonus" }
+    ],
+    "skillLevelCosts": [
+      { "minLevel": 1, "maxLevel": 25, "cost": 1 },
+      { "minLevel": 26, "maxLevel": 50, "cost": 2 },
+      { "minLevel": 51, "maxLevel": 75, "cost": 3 },
+      { "minLevel": 76, "maxLevel": 100, "cost": 4 }
+    ],
     "attributePointsPerLevel": [5, 5, 5]
   },
   "oghmaInfinium": {

@@ -1,0 +1,246 @@
+{
+  "skillId": "sneak",
+  "skillName": "Sneak",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "sneak-stealth",
+      "name": "Stealth",
+      "skillReq": 0,
+      "position": {
+        "x": 11,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You know the basics of moving silently and are 30% harder to detect when sneaking while not wearing any heavy armor.",
+      "effects": []
+    },
+    {
+      "id": "sneak-stealth-2",
+      "name": "Stealth",
+      "skillReq": 20,
+      "position": {
+        "x": 11,
+        "y": 21
+      },
+      "prerequisites": [
+        "sneak-stealth"
+      ],
+      "description": "You are 60% harder to detect when sneaking while not wearing any heavy armor.",
+      "effects": []
+    },
+    {
+      "id": "sneak-deft-strike",
+      "name": "Deft Strike",
+      "skillReq": 25,
+      "position": {
+        "x": 18,
+        "y": 15
+      },
+      "prerequisites": [
+        "sneak-stealth"
+      ],
+      "description": "You've learned to exploit weaknesses in your foes' armor when sneak attacking with daggers, bows or swords.",
+      "effects": []
+    },
+    {
+      "id": "sneak-anatomical-lore",
+      "name": "Anatomical Lore",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 10
+      },
+      "prerequisites": [
+        "sneak-deft-strike"
+      ],
+      "description": "Newfound knowledge of humanoid anatomy allows you to slay almost any human-like creature outright with sneak attacks. (5x/2x sneak attack damage with melee/ranged weapons on humanoids, 2x/1.5x on targets immune to sneak attacks)",
+      "effects": []
+    },
+    {
+      "id": "sneak-advanced-anatomical-lore",
+      "name": "Advanced Anatomical Lore",
+      "skillReq": 75,
+      "position": {
+        "x": 16,
+        "y": 8
+      },
+      "prerequisites": [
+        "sneak-anatomical-lore"
+      ],
+      "description": "Your vast knowledge of anatomy allows you to perform devastating sneak attacks on almost any target. (5x/2x sneak attack damage with melee/ranged weapons on all targets, 3x/2x on targets immune to sneak attacks)",
+      "effects": []
+    },
+    {
+      "id": "sneak-muffled-movement",
+      "name": "Muffled Movement",
+      "skillReq": 25,
+      "position": {
+        "x": 6,
+        "y": 15
+      },
+      "prerequisites": [
+        "sneak-stealth"
+      ],
+      "description": "Your newfound finesse allows you to move more quietly while not wearing any heavy armor.",
+      "effects": []
+    },
+    {
+      "id": "sneak-light-steps",
+      "name": "Light Steps",
+      "skillReq": 50,
+      "position": {
+        "x": 8,
+        "y": 9
+      },
+      "prerequisites": [
+        "sneak-muffled-movement"
+      ],
+      "description": "By distributing your weight more consciously, you're able to move more freely while sneaking and avoid triggering pressure plates or similar mechanisms.",
+      "effects": []
+    },
+    {
+      "id": "sneak-acrobatics",
+      "name": "Acrobatics",
+      "skillReq": 75,
+      "position": {
+        "x": 14,
+        "y": 5
+      },
+      "prerequisites": [
+        "sneak-light-steps"
+      ],
+      "description": "Your improved balance allows you to silently roll forward, avoid getting knocked down except through magic and move even more quietly.",
+      "effects": []
+    },
+    {
+      "id": "sneak-shadowrunner",
+      "name": "Shadowrunner",
+      "skillReq": 100,
+      "position": {
+        "x": 19,
+        "y": 3
+      },
+      "prerequisites": [
+        "sneak-acrobatics"
+      ],
+      "description": "There's almost nothing you cannot evade. You are even harder to detect, more silent and all falling damage is decreased.",
+      "effects": []
+    },
+    {
+      "id": "sneak-arcane-assassin",
+      "name": "Arcane Assassin",
+      "skillReq": 25,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "sneak-stealth"
+      ],
+      "description": "You can suppress the noise cast by your spell and deliver stronger effect to unwary targets. (Spells and enchantments are silent when cast out of combat, spells are 10% more powerful on targets while undetected)",
+      "effects": []
+    },
+    {
+      "id": "sneak-arcane-assassin-2",
+      "name": "Arcane Assassin",
+      "skillReq": 50,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "sneak-arcane-assassin"
+      ],
+      "description": "You can suppress the noise cast by your spell and deliver stronger effect to unwary targets. (Spells and enchantments are silent when cast out of combat, spells are 30% more powerful on targets while undetected)",
+      "effects": []
+    },
+    {
+      "id": "sneak-arcane-assassin-3",
+      "name": "Arcane Assassin",
+      "skillReq": 75,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "sneak-arcane-assassin-2"
+      ],
+      "description": "You can suppress the noise cast by your spell and deliver stronger effect to unwary targets. (Spells and enchantments are silent when cast out of combat, spells are 50% more powerful on targets while undetected)",
+      "effects": []
+    },
+    {
+      "id": "sneak-problem-solver",
+      "name": "Problem Solver",
+      "skillReq": 80,
+      "position": {
+        "x": 21,
+        "y": 8
+      },
+      "prerequisites": [
+        "sneak-anatomical-lore"
+      ],
+      "description": "Sneak attacks deal 10% more damage for each 200 points of Health the target has, up to 50% more damage.",
+      "effects": []
+    },
+    {
+      "id": "sneak-fog-of-war",
+      "name": "Fog of War",
+      "skillReq": 40,
+      "position": {
+        "x": 21,
+        "y": 18
+      },
+      "prerequisites": [
+        "sneak-stealth"
+      ],
+      "description": "Sneaking is 15% more effective against targets that are in combat with you, or 30% if they are in combat with someone else.",
+      "effects": []
+    },
+    {
+      "id": "sneak-tripwire",
+      "name": "Tripwire",
+      "skillReq": 20,
+      "position": {
+        "x": 9,
+        "y": 15
+      },
+      "prerequisites": [
+        "sneak-stealth"
+      ],
+      "description": "Grants the 'Tripwire' power. At will, places a tripwire in front of you for 120 seconds. It snaps when tripped, knocking all targets hit by it to the floor.",
+      "effects": []
+    },
+    {
+      "id": "sneak-whiplash",
+      "name": "Whiplash",
+      "skillReq": 50,
+      "position": {
+        "x": 11,
+        "y": 11
+      },
+      "prerequisites": [
+        "sneak-tripwire"
+      ],
+      "description": "Tripwire also reduces armor rating by 250 points for 10 seconds.",
+      "effects": []
+    },
+    {
+      "id": "sneak-cloak-and-dagger",
+      "name": "Cloak and Dagger",
+      "skillReq": 70,
+      "position": {
+        "x": 21,
+        "y": 12
+      },
+      "prerequisites": [
+        "sneak-fog-of-war"
+      ],
+      "description": "Breaking invisibility with a power attack is a guaranteed critical strike that deals 50% more critical damage.",
+      "effects": []
+    }
+  ]
+}

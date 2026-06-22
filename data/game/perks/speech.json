@@ -1,0 +1,369 @@
+{
+  "skillId": "speech",
+  "skillName": "Speech",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "speech-haggling",
+      "name": "Haggling",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've learned how to deal with Skyrim's greedy merchants Prices are better and scale 1% per speech level.",
+      "effects": []
+    },
+    {
+      "id": "speech-merchant",
+      "name": "Merchant",
+      "skillReq": 50,
+      "position": {
+        "x": 11,
+        "y": 15
+      },
+      "prerequisites": [
+        "speech-haggling"
+      ],
+      "description": "You can invest gold to permanently increase the amount of gold that merchants have, merchants will buy any non-stolen item, sell price is increased by 15%.",
+      "effects": []
+    },
+    {
+      "id": "speech-fencing",
+      "name": "Fencing",
+      "skillReq": 100,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "speech-merchant"
+      ],
+      "description": "You've become so persuasive that you could make almost anyone believe that your goods are of a legal origin.",
+      "effects": []
+    },
+    {
+      "id": "speech-silver-tongue",
+      "name": "Silver Tongue",
+      "skillReq": 25,
+      "position": {
+        "x": 9,
+        "y": 21
+      },
+      "prerequisites": [
+        "speech-haggling"
+      ],
+      "description": "You've spent quite some time improving your rhetorical skills, intimidation is much more likely to succeed and you gain 10% better prices from the opposite gender.",
+      "effects": []
+    },
+    {
+      "id": "speech-leadership",
+      "name": "Leadership",
+      "skillReq": 75,
+      "position": {
+        "x": 11,
+        "y": 11
+      },
+      "prerequisites": [
+        "speech-silver-tongue"
+      ],
+      "description": "Your rhetorical skill makes you the perfect leader. By inspiring all those who fight by your side, followers gain 20% damage, -15% spell cost, +75% block, +100 magicka and stamina, 50 carry weight.",
+      "effects": []
+    },
+    {
+      "id": "speech-masquerade",
+      "name": "Masquerade",
+      "skillReq": 50,
+      "position": {
+        "x": 9,
+        "y": 5
+      },
+      "prerequisites": [
+        "speech-silver-tongue"
+      ],
+      "description": "You've become proficient at acting, and with the right equipment you can now disguise yourself as a Forsworn, Imperial, Stormcloak, Necromancer, Thalmor or Warlock to (usually) avoid detection.",
+      "effects": []
+    },
+    {
+      "id": "speech-masquerade-2",
+      "name": "Masquerade",
+      "skillReq": 100,
+      "position": {
+        "x": 9,
+        "y": 5
+      },
+      "prerequisites": [
+        "speech-masquerade"
+      ],
+      "description": "There is no role you cannot play, and your acting is so believable that there is almost no way for others to see through your disguises.",
+      "effects": []
+    },
+    {
+      "id": "speech-war-cry",
+      "name": "War Cry",
+      "skillReq": 50,
+      "position": {
+        "x": 8,
+        "y": 12
+      },
+      "prerequisites": [
+        "speech-silver-tongue"
+      ],
+      "description": "Overwhelm your enemies with a roaring shout, striking fear into their hearts and sending weakner enemies fleeing. (living enemies up to level 30 do 20% less damage, enemies up to level 20 flee from combat for one minute)",
+      "effects": []
+    },
+    {
+      "id": "speech-commander",
+      "name": "Commander",
+      "skillReq": 25,
+      "position": {
+        "x": 14,
+        "y": 17
+      },
+      "prerequisites": [
+        "speech-haggling"
+      ],
+      "description": "Your knowledge in combat tactics allow you to effectively lead your allies in combat. (Improve nearby allies' skills by 10%, increase magicka, stamina, and their regeneration by 50(%), increase unarmed damage by 5)",
+      "effects": []
+    },
+    {
+      "id": "speech-commander-2",
+      "name": "Commander",
+      "skillReq": 50,
+      "position": {
+        "x": 14,
+        "y": 17
+      },
+      "prerequisites": [
+        "speech-commander"
+      ],
+      "description": "Your knowledge in combat tactics allow you to effectively lead your allies in combat. (Improve nearby allies' skills by 20%, increase magicka, stamina, and their regeneration by 100(%), increase unarmed damage by 10)",
+      "effects": []
+    },
+    {
+      "id": "speech-commander-3",
+      "name": "Commander",
+      "skillReq": 75,
+      "position": {
+        "x": 14,
+        "y": 17
+      },
+      "prerequisites": [
+        "speech-commander-2"
+      ],
+      "description": "Your knowledge in combat tactics allow you to effectively lead your allies in combat. (Improve nearby allies' skills by 30%, increase magicka, stamina, and their regeneration by 150(%), increase unarmed damage by 15)",
+      "effects": []
+    },
+    {
+      "id": "speech-lore-of-the-thu-um",
+      "name": "Lore of the Thu'um",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've been studying the lore and ancient script of dragons and the Thu'um. Thus, you can shout cooldown is reduced by 10%.",
+      "effects": []
+    },
+    {
+      "id": "speech-destructive-urge",
+      "name": "Destructive Urge",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 21
+      },
+      "prerequisites": [
+        "speech-lore-of-the-thu-um"
+      ],
+      "description": "The horrors that the Thu'um can inflict are etched into your mind just as you have seen them etched into stone. Your shouts have 15% greater magnitude.",
+      "effects": []
+    },
+    {
+      "id": "speech-indomitable-force",
+      "name": "Indomitable Force",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 18
+      },
+      "prerequisites": [
+        "speech-lore-of-the-thu-um"
+      ],
+      "description": "You know what it means to be called Ysmir, Dragon of the North. Enemy shout effects are reduced by 50%.",
+      "effects": []
+    },
+    {
+      "id": "speech-spiritual-equilibrium",
+      "name": "Spiritual Equilibrium",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 14
+      },
+      "prerequisites": [
+        "speech-lore-of-the-thu-um"
+      ],
+      "description": "You have been guided in meditating on the Thu'um. Now your shouts linger, lasting 15% longer than they did before.",
+      "effects": []
+    },
+    {
+      "id": "speech-the-way-of-the-voice",
+      "name": "The Way of the Voice",
+      "skillReq": 0,
+      "position": {
+        "x": 20,
+        "y": 9
+      },
+      "prerequisites": [
+        "speech-lore-of-the-thu-um"
+      ],
+      "description": "You've meditated thoroughly, and acquired vast insights into the Way of the Voice. Gain a daily power that lets you use your shouts more rapidly.",
+      "effects": []
+    },
+    {
+      "id": "speech-tongue-s-insight",
+      "name": "Tongue's Insight",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 6
+      },
+      "prerequisites": [
+        "speech-lore-of-the-thu-um"
+      ],
+      "description": "You've spent time meditating on the Way of the Voice, unearthing more knowledge. Grants a dragon soul at the cost of a perk point.",
+      "effects": []
+    },
+    {
+      "id": "speech-shout-focus",
+      "name": "Shout Focus",
+      "skillReq": 0,
+      "playerLevelReq": 10,
+      "position": {
+        "x": 15,
+        "y": 20
+      },
+      "prerequisites": [],
+      "description": "Your meditate on the Thu'um for deeper understanding of the Words of Power, making them more powerful. (Shouts are 5% more powerful, shout cooldown is reduced by 10%)",
+      "effects": []
+    },
+    {
+      "id": "speech-shout-focus-2",
+      "name": "Shout Focus",
+      "skillReq": 0,
+      "playerLevelReq": 20,
+      "position": {
+        "x": 15,
+        "y": 20
+      },
+      "prerequisites": [
+        "speech-shout-focus"
+      ],
+      "description": "Your meditate on the Thu'um for deeper understanding of the Words of Power, making them more powerful. (Shouts are 10% more powerful, shout cooldown is reduced by 20%)",
+      "effects": []
+    },
+    {
+      "id": "speech-shout-focus-3",
+      "name": "Shout Focus",
+      "skillReq": 0,
+      "playerLevelReq": 30,
+      "position": {
+        "x": 15,
+        "y": 20
+      },
+      "prerequisites": [
+        "speech-shout-focus-2"
+      ],
+      "description": "Your meditate on the Thu'um for deeper understanding of the Words of Power, making them more powerful. (Shouts are 15% more powerful, shout cooldown is reduced by 30%)",
+      "effects": []
+    },
+    {
+      "id": "speech-battle-muse",
+      "name": "Battle Muse",
+      "skillReq": 0,
+      "position": {
+        "x": 5,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "Your mastery of musical instruments turns the tide of battle. Drums inspire your allies, the flute soothes your foes and the lute stirs chaos amoung your enemies.",
+      "effects": []
+    },
+    {
+      "id": "speech-standing-ovation",
+      "name": "Standing Ovation",
+      "skillReq": 25,
+      "position": {
+        "x": 1,
+        "y": 15
+      },
+      "prerequisites": [
+        "speech-battle-muse"
+      ],
+      "description": "Your captivating performances leave the crowd in awe. The bonuses recieved from playing for a crowd at the inns are now doubled and last twice as long.",
+      "effects": []
+    },
+    {
+      "id": "speech-boozy-bard",
+      "name": "Boozy Bard",
+      "skillReq": 25,
+      "position": {
+        "x": 3,
+        "y": 15
+      },
+      "prerequisites": [
+        "speech-battle-muse"
+      ],
+      "description": "Alcohol makes the music flow sweeter! Alcoholic drinks no longer blur your vision and perfoming under the influence enhances your musical powers, increasing their effectiveness.",
+      "effects": []
+    },
+    {
+      "id": "speech-windborne-melody",
+      "name": "Windborne Melody",
+      "skillReq": 25,
+      "position": {
+        "x": 5,
+        "y": 15
+      },
+      "prerequisites": [
+        "speech-battle-muse"
+      ],
+      "description": "Your music flows as freely as the wind. Playing an instrument no longer slows your movement.",
+      "effects": []
+    },
+    {
+      "id": "speech-skald",
+      "name": "Skald",
+      "skillReq": 50,
+      "position": {
+        "x": 6,
+        "y": 11
+      },
+      "prerequisites": [
+        "speech-windborne-melody"
+      ],
+      "description": "Continuously playing instruments during combat now grrants additional benefits. Drums bolster your allies, while the Lute and Flute weaken your enmies' defences.",
+      "effects": []
+    },
+    {
+      "id": "speech-symphony-of-storms",
+      "name": "Symphony of Storms",
+      "skillReq": 75,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
+      "prerequisites": [
+        "speech-skald"
+      ],
+      "description": "The bard's mastery over their instrument echoes through the heavens. The deep and powerful resonance of your music calls forth elemental storms, which each instrument summoning its own fury.",
+      "effects": []
+    }
+  ]
+}

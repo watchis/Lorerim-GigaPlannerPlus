@@ -1,0 +1,386 @@
+{
+  "skillId": "conjuration",
+  "skillName": "Conjuration",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "conjuration-novice-conjuration",
+      "name": "Novice Conjuration",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've taught yourself a few Novice level spells and learned how to cast them with decreased effort while your newfound knowledge also allows you to augment all Conjuration spells.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-apprentice-conjuration",
+      "name": "Apprentice Conjuration",
+      "skillReq": 25,
+      "position": {
+        "x": 20,
+        "y": 17
+      },
+      "prerequisites": [
+        "conjuration-novice-conjuration"
+      ],
+      "description": "By pursuing your apprenticeship in Conjuration, you've gained knowledge of Apprentice level spells which you now augment while casting them with less effort.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-adept-conjuration",
+      "name": "Adept Conjuration",
+      "skillReq": 50,
+      "position": {
+        "x": 22,
+        "y": 12
+      },
+      "prerequisites": [
+        "conjuration-apprentice-conjuration"
+      ],
+      "description": "By advancing further into the school of Conjuration, you've gained some Adept level spells and learned how to augment and cast spells of this rank more easily.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-expert-conjuration",
+      "name": "Expert Conjuration",
+      "skillReq": 75,
+      "position": {
+        "x": 22,
+        "y": 8
+      },
+      "prerequisites": [
+        "conjuration-adept-conjuration"
+      ],
+      "description": "You've unlocked almost every secret in the school of Conjuration and you've acquired some Expert level spells. You can now cast spells of this level easier and augment them to an almost otherworldly extent.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-master-conjuration",
+      "name": "Master Conjuration",
+      "skillReq": 100,
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "prerequisites": [
+        "conjuration-expert-conjuration"
+      ],
+      "description": "Your knowledge of Conjuration has become all-encompassing. You taught yourself a Master level spell and you can cast the most complex spells from this school with less effort while augmenting them beyond mortal limits.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-mystic-binding",
+      "name": "Mystic Binding",
+      "skillReq": 25,
+      "position": {
+        "x": 17,
+        "y": 15
+      },
+      "prerequisites": [
+        "conjuration-novice-conjuration"
+      ],
+      "description": "You've become skilled in binding daedra in shape of weapons and armors. Bound weapons and armors are stronger longer-lasting, and easier to cast. (stronger bound items, 1.25x bound spell duration, 0.5x bound weapon spell cost)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-mystic-infusion",
+      "name": "Mystic Infusion",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 12
+      },
+      "prerequisites": [
+        "conjuration-mystic-binding"
+      ],
+      "description": "You can infuse bound weapons and armors with additional effects of your choice. Bound weapons and armors are easier to cast. (fire/frost/shock/mystic effect for weapons (damage), shield (cloak), and armor (resist), 0.9x bound item spell cost)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-mystic-empowerment",
+      "name": "Mystic Empowerment",
+      "skillReq": 75,
+      "position": {
+        "x": 17,
+        "y": 9
+      },
+      "prerequisites": [
+        "conjuration-mystic-infusion"
+      ],
+      "description": "You can bind stronger or additional effects to your bound weapons and armors. Bound weapons and armors are more easier to cast and last longer. (improved bound effects, 1.5x bound spell duration (overwrite), 0.8x bound item spell cost (overwrite))",
+      "effects": []
+    },
+    {
+      "id": "conjuration-mystic-disruption",
+      "name": "Mystic Disruption",
+      "skillReq": 100,
+      "position": {
+        "x": 16,
+        "y": 5
+      },
+      "prerequisites": [
+        "conjuration-mystic-empowerment"
+      ],
+      "description": "You've perfected your invocations of summoning bound weapons and armors. Your bound weapons and armors are much stronger. (stronger bound items, weapon/shield/armor get increased armor penetration (20%) / damage blocked (20%) / physical damage reduction (10%))",
+      "effects": []
+    },
+    {
+      "id": "conjuration-necromancy",
+      "name": "Necromancy",
+      "skillReq": 25,
+      "position": {
+        "x": 11,
+        "y": 14
+      },
+      "prerequisites": [
+        "conjuration-novice-conjuration"
+      ],
+      "description": "You've developed your skill for summoning undead and rasing the dead, improving their potency and duration. (2x undead summon spell duration, stronger reanimated dead, 1.25x reanimate level limit, 5x reanimate spell duration)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-ritualism",
+      "name": "Ritualism",
+      "skillReq": 50,
+      "position": {
+        "x": 11,
+        "y": 11
+      },
+      "prerequisites": [
+        "conjuration-necromancy"
+      ],
+      "description": "Your knowledge of the realms of the dead surpasses that of many. You can raise stronger entities and they last much longer. (3x undead summon spell duration (overwrite), 1.5x reanimate level limit (overwrite), 10x reanimate spell duration (overwrite))",
+      "effects": []
+    },
+    {
+      "id": "conjuration-siphon-corpse",
+      "name": "Siphon Corpse",
+      "skillReq": 50,
+      "position": {
+        "x": 11,
+        "y": 7
+      },
+      "prerequisites": [
+        "conjuration-ritualism"
+      ],
+      "description": "You can violently drain remaining energy from corpses, destoying them in the process to damage nearby enemies. (Siphon Corpse lesser power: absorb 50 magicka from each corpse and deal 50 magical damage to nearby enemies, half damage to non-living)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-dark-infusion",
+      "name": "Dark Infusion",
+      "skillReq": 75,
+      "position": {
+        "x": 9,
+        "y": 5
+      },
+      "prerequisites": [
+        "conjuration-ritualism"
+      ],
+      "description": "By infusing your undead creations with dark energies, you can make them stronger and prevent them from decaying to dust. (stronger reanimated dead, reanimated dead can cast spells, reanimated dead do not turn into ash, 1.5x undead summon spell duration)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-empowered-conjuration",
+      "name": "Empowered Conjuration",
+      "skillReq": 25,
+      "position": {
+        "x": 7,
+        "y": 14
+      },
+      "prerequisites": [
+        "conjuration-novice-conjuration"
+      ],
+      "description": "Dual casting a Conjuration spell overcharges the spell, allowing it to last longer.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-cognitive-flexibility",
+      "name": "Cognitive Flexibility",
+      "skillReq": 50,
+      "position": {
+        "x": 8,
+        "y": 8
+      },
+      "prerequisites": [
+        "conjuration-empowered-conjuration"
+      ],
+      "description": "You have practiced the mental ability of maintaining two summons at the same time. This power extends to controlling any type of conjured or conceived entity, even outside the school of Conjuration.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-cognitive-flexibility-2",
+      "name": "Cognitive Flexibility",
+      "skillReq": 100,
+      "position": {
+        "x": 8,
+        "y": 8
+      },
+      "prerequisites": [
+        "conjuration-cognitive-flexibility"
+      ],
+      "description": "You have mastered the art of Cognitive Flexibility, a trait of only the most accomplished Summoners throughout history. You can now control three summons, of any type, simultaneously.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-daedric-binding",
+      "name": "Daedric Binding",
+      "skillReq": 25,
+      "position": {
+        "x": 5,
+        "y": 17
+      },
+      "prerequisites": [
+        "conjuration-novice-conjuration"
+      ],
+      "description": "Having studied the barriers that divide the planes of existence, you can make your summoned daedra last longer in this realm. (2x daedra summon spell duration)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-spiritual-binding",
+      "name": "Spiritual Binding",
+      "skillReq": 35,
+      "position": {
+        "x": 3,
+        "y": 12
+      },
+      "prerequisites": [
+        "conjuration-daedric-binding"
+      ],
+      "description": "Your knowledge of Oblivion's spiritual aspects increases the strength of all your summoned spirits.",
+      "effects": []
+    },
+    {
+      "id": "conjuration-gates-of-oblivion",
+      "name": "Gates of Oblivion",
+      "skillReq": 50,
+      "position": {
+        "x": 3,
+        "y": 9
+      },
+      "prerequisites": [
+        "conjuration-spiritual-binding"
+      ],
+      "description": "You've perfected your spells' formulae to summon the daedra, maintaining them longer and can cast them further away. (3x daedra summon spell duration (overwrite), 3x daedra summon spell range)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-dark-channeling",
+      "name": "Dark Channeling",
+      "skillReq": 50,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
+      "prerequisites": [
+        "conjuration-gates-of-oblivion"
+      ],
+      "description": "You draw dark energy from the Oblivion realm while maintaining a connection to it, boosting your magicka regeneration. (+150% magicka regeneration while daedra summons are active)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-waters-of-oblivion",
+      "name": "Waters of Oblivion",
+      "skillReq": 75,
+      "position": {
+        "x": 3,
+        "y": 3
+      },
+      "prerequisites": [
+        "conjuration-gates-of-oblivion"
+      ],
+      "description": "Your knowledge of Oblivion's elemental aspects increases the strength of all your summoned Atronachs. Other daedra summons last longer. (stronger atronach summons, 1.5x non-atronach daedra summon spell duration)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-spirit-calling",
+      "name": "Spirit Calling",
+      "skillReq": 25,
+      "position": {
+        "x": 14,
+        "y": 17
+      },
+      "prerequisites": [
+        "conjuration-novice-conjuration"
+      ],
+      "description": "You've learned to commune with the spirits, summoning them for extended duration. (2x spirit summon spell duration)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-spiritual-bond",
+      "name": "Spiritual Bond",
+      "skillReq": 50,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "conjuration-spirit-calling"
+      ],
+      "description": "You've strengthened your bond with the spirits. They can be summoned with much more ease and will last longer. (3x spirit summon spell duration (overwrite), 0.9x spirit summon spell cost)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-spirit-guardian",
+      "name": "Spirit Guardian",
+      "skillReq": 50,
+      "position": {
+        "x": 14,
+        "y": 8
+      },
+      "prerequisites": [
+        "conjuration-spiritual-bond"
+      ],
+      "description": "You can call upon the spirits to protect you, increasing your resistance to physical and magical attacks. (+10% magic resistance and +150 armor rating while spirit summons are active)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-ancient-spirits",
+      "name": "Ancient Spirits",
+      "skillReq": 75,
+      "position": {
+        "x": 13,
+        "y": 5
+      },
+      "prerequisites": [
+        "conjuration-spiritual-bond"
+      ],
+      "description": "You can call upon the ancient spirits for your aid. Summoned spirits are faster and stronger. (stronger spirit summons)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-soul-magic",
+      "name": "Soul Magic",
+      "skillReq": 50,
+      "position": {
+        "x": 20,
+        "y": 9
+      },
+      "prerequisites": [
+        "conjuration-adept-conjuration"
+      ],
+      "description": "Your training on Soul Magic allows you to channel more strength with higher efficiency. (1.1x magnitude, 1.1x duration, 0.9x cost for necrotic and soul spells)",
+      "effects": []
+    },
+    {
+      "id": "conjuration-necropotence",
+      "name": "Necropotence",
+      "skillReq": 75,
+      "position": {
+        "x": 18,
+        "y": 6
+      },
+      "prerequisites": [
+        "conjuration-soul-magic"
+      ],
+      "description": "Your necrotic spell consumes all, burning the soul of the living and damaging even the non-living. (25% stagger chance when dual-casted, extra damage over time to the living, half damage to non-living)",
+      "effects": []
+    }
+  ]
+}

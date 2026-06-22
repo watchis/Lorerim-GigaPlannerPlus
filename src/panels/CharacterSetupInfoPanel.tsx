@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { StandingStone } from "@/data/schemas";
+import { getOrderedPerkTrees } from "@/engine/buildEngine";
 import { DerivedStatsPanel } from "@/panels/DerivedStatsPanel";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
@@ -110,7 +111,7 @@ export function CharacterSetupInfoPanel() {
           size="sm"
           className="shrink-0"
           onClick={() => {
-            const firstTreeId = Object.values(gameData.game.perkTrees)[0]?.skillId;
+            const firstTreeId = getOrderedPerkTrees(gameData.game)[0]?.skillId;
             if (firstTreeId) setActiveSkillTreeId(firstTreeId);
             setMiddleView("skill-trees");
           }}

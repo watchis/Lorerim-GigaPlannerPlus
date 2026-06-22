@@ -3,7 +3,6 @@ import { Copy, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { encodeBuild, decodeBuild, setBuildInUrl } from "@/engine/buildCodec";
-import { getRemainingPerkPoints } from "@/engine/buildEngine";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 
@@ -26,7 +25,6 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
   if (!gameData) return null;
 
   const buildCode = encodeBuild(build, gameData.game);
-  const perkPoints = getRemainingPerkPoints(gameData.game, build);
 
   const handleCopy = async () => {
     try {
@@ -56,10 +54,6 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
         <CardTitle className={embedded ? "text-base" : undefined}>{labels.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-1">
-          <p className="text-sm text-[var(--color-muted)]">Perk points remaining: {perkPoints}</p>
-        </div>
-
         <div className="space-y-2">
           <p className="text-sm font-medium text-[var(--color-muted)]">{labels.buildCode}</p>
           <button

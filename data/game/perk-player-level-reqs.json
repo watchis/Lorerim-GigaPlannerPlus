@@ -1,0 +1,19 @@
+{
+  "heavy-armor-mounted-combat": 10,
+  "marksman-hunter": 10,
+  "marksman-hunter-2": 20,
+  "speech-shout-focus": 10,
+  "speech-shout-focus-2": 20,
+  "speech-shout-focus-3": 30,
+  "alchemy-drunken-combat": 10,
+  "alchemy-drunken-combat-2": 20,
+  "alchemy-gourmet": 10,
+  "alchemy-herbalist": 10,
+  "alchemy-herbalist-2": 20,
+  "alteration-unskilled-spellcasting-2": 10,
+  "alteration-unskilled-spellcasting-3": 20,
+  "alteration-metamagic": 10,
+  "alteration-willpower": 10,
+  "alteration-willpower-2": 10,
+  "alteration-willpower-3": 10
+}

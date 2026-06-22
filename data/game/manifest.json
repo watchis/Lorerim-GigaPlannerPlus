@@ -5,9 +5,9 @@
     "majorSkills": 3,
     "minorSkills": 6,
     "traits": 2,
-    "initialPerkPoints": 3,
     "initialAttributePoints": 0
   },
+  "nonAllocatableSkills": ["destiny", "traits"],
   "skills": [
     "smithing",
     "heavy-armor",

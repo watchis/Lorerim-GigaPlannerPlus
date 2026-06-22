@@ -28,6 +28,16 @@
   "planner": {
     "intro": "Configure your build below. Changes save automatically to the active build slot."
   },
+  "level-bar": {
+    "playerLevel": "Level",
+    "perkPointsRemaining": "Perk points remaining",
+    "perkPointsSpent": "spent",
+    "perkPointsPerLevel": "{count} perk pt/level",
+    "skillPointsRemaining": "Skill points remaining",
+    "skillPointsSpent": "spent",
+    "skillPointsPerLevel": "{count} skill pt/level",
+    "overBudget": "over budget by {count}"
+  },
   "panels": {
     "character-setup": {
       "title": "Character Setup",
@@ -78,9 +88,20 @@
       "resetSkill": "Reset this skill",
       "resetAll": "Reset ALL skills",
       "skillReq": "Skill requirement",
+      "playerLevelReq": "Level requirement",
+      "skillLevel": "Skill level",
+      "skillLevelMin": "Min",
+      "perksSelected": "perks selected",
       "locked": "Locked",
       "available": "Available",
-      "selected": "Selected"
+      "selected": "Selected",
+      "perkRank": "Rank",
+      "nextRank": "Next rank",
+      "upgradeAvailable": "Click to upgrade",
+      "skillReqConflictDismiss": "Dismiss",
+      "skillReqConflictSingle": "{perk} requires skill level {required}. Your skill level is now {current}, so it was removed.",
+      "skillReqConflictMultiple": "{count} perks were removed because your skill level is now too low.",
+      "skillReqConflictLegend": "Removed (skill too low)"
     },
     "derived-stats": {
       "title": "Derived Attributes"

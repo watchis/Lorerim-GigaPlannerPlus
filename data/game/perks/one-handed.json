@@ -1,0 +1,511 @@
+{
+  "skillId": "one-handed",
+  "skillName": "One-Handed",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "one-handed-weapon-mastery",
+      "name": "Weapon Mastery",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "Your improved fighting techniques allow you to swing one-handed weapons or fists with less effort and deal more damage. (20% more damage)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-weapon-mastery-2",
+      "name": "Weapon Mastery",
+      "skillReq": 20,
+      "position": {
+        "x": 12,
+        "y": 21
+      },
+      "prerequisites": [
+        "one-handed-weapon-mastery"
+      ],
+      "description": "Your improved fighting techniques increase your damage dealt with one-handed weapons or fists greatly. (40% more damage)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-penetrating-strikes",
+      "name": "Penetrating Strikes",
+      "skillReq": 20,
+      "position": {
+        "x": 12,
+        "y": 16
+      },
+      "prerequisites": [
+        "one-handed-weapon-mastery"
+      ],
+      "description": "Your power attacks with one-handed weapons or fists are now devastating enough to penetrate enemy armor and less exhausting. (-30% power attack stamina cost, +30% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-short-blade-focus",
+      "name": "Short Blade Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 5,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
+      "description": "You learned some dirty tricks for your dagger or tanto. (2x irresistible sneak attack damage, +20% damage from behind, +5% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-short-blade-focus-2",
+      "name": "Short Blade Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 5,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-short-blade-focus"
+      ],
+      "description": "A dagger or tanto in your hand turns into a deadly weapon. (3x irresistible sneak attack damage, +30% damage from behind, +10% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-short-blade-focus-3",
+      "name": "Short Blade Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 5,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-short-blade-focus-2"
+      ],
+      "description": "You have mastered the deadly art of daggers and tantos. (4x irresistible sneak attack damage, +40% damage from behind, +15% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-puncture",
+      "name": "Puncture",
+      "skillReq": 50,
+      "position": {
+        "x": 5,
+        "y": 12
+      },
+      "prerequisites": [
+        "one-handed-short-blade-focus"
+      ],
+      "description": "You can aim for critical weak points, dealing even more damage. (2x critical damage and +25% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-war-axe-focus",
+      "name": "War Axe Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 8,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
+      "description": "You've become familiar with war axes. (Attacks deal 20 extra damage over 20 seconds, +10% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-war-axe-focus-2",
+      "name": "War Axe Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 8,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-war-axe-focus"
+      ],
+      "description": "You've become an advanced war axe fighter. (Attacks deal 30 extra damage over 20 seconds, +20% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-war-axe-focus-3",
+      "name": "War Axe Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 8,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-war-axe-focus-2"
+      ],
+      "description": "You've become a master of war axe combat. (Attacks deal 40 extra damage over 20 seconds, +30% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-armsbreaker",
+      "name": "Armsbreaker",
+      "skillReq": 50,
+      "position": {
+        "x": 8,
+        "y": 12
+      },
+      "prerequisites": [
+        "one-handed-war-axe-focus"
+      ],
+      "description": "The blade of your war axe can carve into target's weapons and shields, weakening their damage and protection. (power attacks with war axes reduce target's blockable damage by 80% and stamina regeneration by 25% for 10 seconds)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-mace-focus",
+      "name": "Mace Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 16,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
+      "description": "You've learned some techniques to crush armor with maces. (10% more power attack damage, +15% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-mace-focus-2",
+      "name": "Mace Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 16,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-mace-focus"
+      ],
+      "description": "You've become an advanced mace fighter and know how to find weak spots in enemy armor. (20% more power attack damage, +30% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-mace-focus-3",
+      "name": "Mace Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 16,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-mace-focus-2"
+      ],
+      "description": "You've become a masterly mace fighter, rendering armor almost useless. (30% more power attack damage, +45% armor penetration)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-stunning-blow",
+      "name": "Stunning Blow",
+      "skillReq": 50,
+      "position": {
+        "x": 16,
+        "y": 12
+      },
+      "prerequisites": [
+        "one-handed-mace-focus"
+      ],
+      "description": "You can cause stunning impact to targets that fail to block, knocking them down to the ground. (unblocked power attacks with maces knock down targets by 10% chance, 25% more damage against staggered targets)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-sword-spear-focus",
+      "name": "Sword & Spear Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 19,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
+      "description": "You've learned the basics of using 1 handed swords, spears, javelins, rapiers and katanas. (Attacks reduce target's melee damage by 10% for 10 seconds, +10% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-sword-spear-focus-2",
+      "name": "Sword & Spear Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 19,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-sword-spear-focus"
+      ],
+      "description": "You've acquired the advanced techniques of using 1 handed swords and spears. (Attacks reduce target's melee damage by 15% for 10 seconds, +20% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-sword-spear-focus-3",
+      "name": "Sword & Spear Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 19,
+        "y": 14
+      },
+      "prerequisites": [
+        "one-handed-sword-spear-focus-2"
+      ],
+      "description": "You've become a master of using 1 handed swords and spears. (Attacks reduce target's melee damage by 20% for 10 seconds, +30% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-disarming-strike",
+      "name": "Disarming Strike",
+      "skillReq": 50,
+      "position": {
+        "x": 19,
+        "y": 12
+      },
+      "prerequisites": [
+        "one-handed-sword-spear-focus"
+      ],
+      "description": "Your masterful strikes allow you to disarm enemies while attacking. (power attacks with swords, spears, javelins, rapiers and katanas disarm attacking targets by 15% chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-powerful-charge",
+      "name": "Powerful Charge",
+      "skillReq": 25,
+      "position": {
+        "x": 14,
+        "y": 9
+      },
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
+      "description": "You have learned to perform a leaping power attack while sprinting. (Able to do sprinting power attack which has a 50% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-powerful-strike",
+      "name": "Powerful Strike",
+      "skillReq": 50,
+      "position": {
+        "x": 11,
+        "y": 9
+      },
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
+      "description": "You know how to put the maximum force into your power attacks. (20% more power attack damage, +10% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-relentless-onslaught",
+      "name": "Relentless Onslaught",
+      "skillReq": 100,
+      "position": {
+        "x": 12,
+        "y": 2
+      },
+      "prerequisites": [
+        "one-handed-powerful-charge",
+        "one-handed-powerful-strike"
+      ],
+      "description": "While attacking a target, build up momentum for a decisive strike. (Each normal attack with one-handed weapons increases power attack damage on target by 10% for 5s. Stacks up to six times - three while dual-wielding)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-flurry",
+      "name": "Flurry",
+      "skillReq": 25,
+      "position": {
+        "x": 21,
+        "y": 18
+      },
+      "prerequisites": [
+        "one-handed-weapon-mastery"
+      ],
+      "description": "When fighting with dual or single one-handed weapons or fists, you are able to hit enemy weak points better. (+15% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-flurry-2",
+      "name": "Flurry",
+      "skillReq": 50,
+      "position": {
+        "x": 21,
+        "y": 18
+      },
+      "prerequisites": [
+        "one-handed-flurry"
+      ],
+      "description": "When fighting with dual or single one-handed weapons or fists, you're able to hit enemy weak points even better. (+30% critical hit chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-storm-of-steel",
+      "name": "Storm of Steel",
+      "skillReq": 75,
+      "position": {
+        "x": 20,
+        "y": 6
+      },
+      "prerequisites": [
+        "one-handed-flurry"
+      ],
+      "description": "You've mastered the art of using multiple weapons in combat. (50% more dual-wield power attack poise damage with any weapon, unlocks secondary dagger abilities when using a bow)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-hand-to-hand",
+      "name": "Hand to Hand",
+      "skillReq": 0,
+      "position": {
+        "x": 8,
+        "y": 23
+      },
+      "prerequisites": [],
+      "description": "You are trained in hand to hand combat, and can effectively disable opponents with bare hands. (+25 unarmed damage, unarmed attacks damage target stamina by half the unarmed damage)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-grappling",
+      "name": "Grappling",
+      "skillReq": 25,
+      "position": {
+        "x": 3,
+        "y": 22
+      },
+      "prerequisites": [
+        "one-handed-hand-to-hand"
+      ],
+      "description": "You can grapple opponents to disarm or immobilize them. (unarmed power attacks stagger targets by 50% chance and disarm by 10% chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-takedown",
+      "name": "Takedown",
+      "skillReq": 50,
+      "position": {
+        "x": 2,
+        "y": 20
+      },
+      "prerequisites": [
+        "one-handed-grappling"
+      ],
+      "description": "You can knock down enemies by grappling. (unarmed power attacks knock down targets by 10% chance)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-unarmed-defense",
+      "name": "Unarmed Defense",
+      "skillReq": 25,
+      "position": {
+        "x": 6,
+        "y": 20
+      },
+      "prerequisites": [
+        "one-handed-hand-to-hand"
+      ],
+      "description": "You can defend yourself better even without weapons or shields. (15% less physical damage taken for each hand empty)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-unarmed-stance",
+      "name": "Unarmed Stance",
+      "skillReq": 50,
+      "position": {
+        "x": 3,
+        "y": 17
+      },
+      "prerequisites": [
+        "one-handed-unarmed-defense"
+      ],
+      "description": "While unarmed, you can maneuver more freely and resist physical force. (+5% movement speed for each hand empty, +50 mass when both hands are empty)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-armed-spelllcasting",
+      "name": "Armed Spelllcasting",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 21
+      },
+      "prerequisites": [
+        "one-handed-weapon-mastery"
+      ],
+      "description": "You can balance your weapon well with a single hand, and can use it to cast magic. (+25% poise damage and 10% less spell cost when left hand is empty or wielding magic)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-balanced-wielding",
+      "name": "Balanced Wielding",
+      "skillReq": 50,
+      "position": {
+        "x": 15,
+        "y": 18
+      },
+      "prerequisites": [
+        "one-handed-weapon-mastery"
+      ],
+      "description": "You can balance your weapon better when wielding it in a single hand, delivering quick and precise attacks. (+25% damage against enemies who are attacking and +15% armor penetration when left hand is empty)",
+      "effects": []
+    },
+    {
+      "id": "one-handed-final-stand",
+      "name": "Final Stand",
+      "skillReq": 80,
+      "position": {
+        "x": 19,
+        "y": 9
+      },
+      "prerequisites": [
+        "one-handed-disarming-strike"
+      ],
+      "description": "Power attacks deal up to 100% more damage below half Health. The damage bonus increases as your Health decreases.",
+      "effects": []
+    },
+    {
+      "id": "one-handed-heavy-slam",
+      "name": "Heavy Slam",
+      "skillReq": 80,
+      "position": {
+        "x": 16,
+        "y": 9
+      },
+      "prerequisites": [
+        "one-handed-stunning-blow"
+      ],
+      "description": "Whenever a standing power attack with a mace inflicts a critical strike, it deals 3% more critical damage per point of Stamina.",
+      "effects": []
+    },
+    {
+      "id": "one-handed-guillotine",
+      "name": "Guillotine",
+      "skillReq": 80,
+      "position": {
+        "x": 8,
+        "y": 9
+      },
+      "prerequisites": [
+        "one-handed-armsbreaker"
+      ],
+      "description": "Standing power attacks with war axes execute targets below 25% Health, delivering a critical strike that deals twenty times critical damage.",
+      "effects": []
+    },
+    {
+      "id": "one-handed-death-adder",
+      "name": "Death Adder",
+      "skillReq": 80,
+      "position": {
+        "x": 5,
+        "y": 9
+      },
+      "prerequisites": [
+        "one-handed-puncture"
+      ],
+      "description": "Forward power attacks with a dagger ignore 25% of armor.",
+      "effects": []
+    }
+  ]
+}

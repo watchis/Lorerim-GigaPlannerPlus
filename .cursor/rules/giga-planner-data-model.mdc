@@ -1,0 +1,38 @@
+---
+description: LoreRim GigaPlanner economy, perk data, and data-driven conventions
+alwaysApply: true
+---
+
+# GigaPlanner data model
+
+This planner models **three separate systems**. Do not conflate them.
+
+| System | What it is | Where it lives |
+|--------|------------|----------------|
+| **Skill level** | Per-skill tree level (e.g. Smithing 60, Block 60 at player level 10) | `build.skillLevels`; capped by `getMaxAllowedSkillLevel()` |
+| **Perk points** | Spent to select tree nodes (1 per costing perk) | `mechanics.leveling.initialPerkPoints`, `perkPointsPerLevel`; engine in `buildEngine.ts` |
+| **Skill points** | Spent to raise skill levels (tiered 1/2/3/4 cost) | `mechanics.leveling.skillPointsPerLevel`, `skillLevelCosts` |
+
+## Data sources (do not hardcode in TS)
+
+- **Economy**: `data/game/mechanics.json` — skill/perk point rates, tier costs, `maxSkillAbovePlayerLevel`, `maxSkillLevel`.
+- **Perk trees**: `data/game/perks/*.json` — `skillReq`, `costsPerkPoint`, ranks, grid, effects.
+- **Player level gates**: `data/game/perk-player-level-reqs.json` — map of perk id → player level. Merged in `src/data/loader.ts` and read by `scripts/generate-perks.mjs`. **Do not parse `[Requires Level N]` from descriptions** in app code.
+- **Free perk source indices** (generator only): `data/game/perk-free-indices.json` → sets `costsPerkPoint: false` on generated perks.
+
+Runtime checks use perk fields only: `src/lib/perkRequirements.ts` reads `perk.skillReq` and `perk.playerLevelReq`.
+
+## Rules when changing perks or economy
+
+1. **Skill cap** = `min(maxSkillLevel, playerLevel + maxSkillAbovePlayerLevel)` — not a flat 100.
+2. **Perk point budget** = `initialPerkPoints + (playerLevel - baseLevel) * perkPointsPerLevel`. A perk costs 1 point unless `costsPerkPoint: false`.
+3. **Player level requirements** belong on nodes (`playerLevelReq`) and in `perk-player-level-reqs.json`, not in description text.
+4. **Regenerate** after perk data changes: `node scripts/generate-perks.mjs` (source: `scripts/giga-perkListData.js`).
+5. **Engine logic** belongs in `src/engine/buildEngine.ts`; UI reads computed values from the store, not duplicated formulas.
+
+## Common mistakes to avoid
+
+- Treating skill level as perk points, or skill points as perk points.
+- Re-adding `manifest.freePerkIds` or description regex for level reqs — use JSON data + perk fields.
+- Stripping `playerLevelReq` on regen without updating `perk-player-level-reqs.json`.
+- Hardcoding `20`, `50`, `100`, or free-perk id lists in TypeScript instead of `mechanics.json` / perk JSON.

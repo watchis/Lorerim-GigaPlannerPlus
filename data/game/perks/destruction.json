@@ -1,0 +1,442 @@
+{
+  "skillId": "destruction",
+  "skillName": "Destruction",
+  "grid": {
+    "width": 25,
+    "height": 25
+  },
+  "perks": [
+    {
+      "id": "destruction-novice-destruction",
+      "name": "Novice Destruction",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've taught yourself a few Novice level spells and learned how to cast them with decreased effort while your newfound knowledge also allows you to augment all Destruction spells.",
+      "effects": []
+    },
+    {
+      "id": "destruction-apprentice-destruction",
+      "name": "Apprentice Destruction",
+      "skillReq": 25,
+      "position": {
+        "x": 15,
+        "y": 17
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "By pursuing your apprenticeship in Destruction, you've gained knowledge of Apprentice level spells which you now augment while casting them with less effort.",
+      "effects": []
+    },
+    {
+      "id": "destruction-adept-destruction",
+      "name": "Adept Destruction",
+      "skillReq": 50,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "destruction-apprentice-destruction"
+      ],
+      "description": "By advancing further into the school of Destruction, you've gained some Adept level spells and learned how to augment and cast spells of this rank more easily.",
+      "effects": []
+    },
+    {
+      "id": "destruction-expert-destruction",
+      "name": "Expert Destruction",
+      "skillReq": 75,
+      "position": {
+        "x": 15,
+        "y": 8
+      },
+      "prerequisites": [
+        "destruction-adept-destruction"
+      ],
+      "description": "You've unlocked almost every secret in the school of Destruction and you've acquired some Expert level spells. You can now cast spells of this level easier and augment them to an almost otherworldly extent.",
+      "effects": []
+    },
+    {
+      "id": "destruction-master-destruction",
+      "name": "Master Destruction",
+      "skillReq": 100,
+      "position": {
+        "x": 17,
+        "y": 3
+      },
+      "prerequisites": [
+        "destruction-expert-destruction"
+      ],
+      "description": "Your knowledge of Destruction has become all-encompassing. You taught yourself a Master level spell and you can cast the most complex spells from this school with less effort while augmenting them beyond mortal limits.",
+      "effects": []
+    },
+    {
+      "id": "destruction-improved-cloaks",
+      "name": "Improved Cloaks",
+      "skillReq": 75,
+      "position": {
+        "x": 21,
+        "y": 14
+      },
+      "prerequisites": [
+        "destruction-apprentice-destruction"
+      ],
+      "description": "You can radiate more energy with cloak spells, increasing their damage greatly. (1.5x cloak spell damage)",
+      "effects": []
+    },
+    {
+      "id": "destruction-elemental-mastery",
+      "name": "Elemental Mastery",
+      "skillReq": 50,
+      "position": {
+        "x": 20,
+        "y": 11
+      },
+      "prerequisites": [
+        "destruction-apprentice-destruction"
+      ],
+      "description": "Unlock the power of elemental seals. Cast Fire, Frost, and Lightning Seals at your feet, each creating a deadly trap that triggers when enemies approach. All three seals can be active simultaneously.",
+      "effects": []
+    },
+    {
+      "id": "destruction-destructive-blow",
+      "name": "Destructive Blow",
+      "skillReq": 50,
+      "position": {
+        "x": 16,
+        "y": 11
+      },
+      "prerequisites": [
+        "destruction-apprentice-destruction"
+      ],
+      "description": "You can deliver powerful force with touch and nova spells, causing more damage and staggering targets. (1.25x magnitude for touch and nova spells, 25% chance to stagger for damaging touch and nova spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-empowered-destruction",
+      "name": "Empowered Destruction",
+      "skillReq": 25,
+      "position": {
+        "x": 18,
+        "y": 20
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "Dual casting a Destruction spell overcharges the effects into an even more powerful version.",
+      "effects": []
+    },
+    {
+      "id": "destruction-impact",
+      "name": "Impact",
+      "skillReq": 50,
+      "position": {
+        "x": 21,
+        "y": 17
+      },
+      "prerequisites": [
+        "destruction-empowered-destruction"
+      ],
+      "description": "By intensifying the force of most of your overcharged Destruction spells, you're now capable of staggering your foes. (25% chance to stagger when dual-casted)",
+      "effects": []
+    },
+    {
+      "id": "destruction-blood-magic",
+      "name": "Blood Magic",
+      "skillReq": 25,
+      "position": {
+        "x": 2,
+        "y": 18
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "You can more efficiently absorb energy from targets. Absorb spells are more powerful and costs less magicka. (1.1x magnitude, 0.9x cost for absorb spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-blood-magic-2",
+      "name": "Blood Magic",
+      "skillReq": 50,
+      "position": {
+        "x": 2,
+        "y": 18
+      },
+      "prerequisites": [
+        "destruction-blood-magic"
+      ],
+      "description": "You can absorb even more energy from targets with greater efficiency. (1.2x magnitude, 0.8x cost for absorb spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-consume-life",
+      "name": "Consume Life",
+      "skillReq": 75,
+      "position": {
+        "x": 2,
+        "y": 12
+      },
+      "prerequisites": [
+        "destruction-blood-magic"
+      ],
+      "description": "You can absorb much more health from living targets. (1.25x magnitude for absorb health spells on living targets)",
+      "effects": []
+    },
+    {
+      "id": "destruction-entropic-focus",
+      "name": "Entropic Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 5,
+        "y": 17
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "You now are able to improve your Entropic spells and thereby increase their effectiveness. (1.1x magnitude, 0.9x cost for entropic spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-entropic-focus-2",
+      "name": "Entropic Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 5,
+        "y": 17
+      },
+      "prerequisites": [
+        "destruction-entropic-focus"
+      ],
+      "description": "Your Entropic spells are more powerful and you can cast them more efficiently. (1.2x magnitude, 0.8x cost for entropic spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-entropic-disarray",
+      "name": "Entropic Disarray",
+      "skillReq": 75,
+      "position": {
+        "x": 4,
+        "y": 10
+      },
+      "prerequisites": [
+        "destruction-entropic-focus"
+      ],
+      "description": "Your Entropic spells drain all energy from targets, damaging Magicka and Stamina by same amount. (magicka and stamina damage for entropic spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-arcane-focus",
+      "name": "Arcane Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 8,
+        "y": 15
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "You now are able to improve your Arcane spells and thereby increase their effectiveness. (1.1x magnitude, 0.9x cost for arcane spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-arcane-focus-2",
+      "name": "Arcane Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 8,
+        "y": 15
+      },
+      "prerequisites": [
+        "destruction-arcane-focus"
+      ],
+      "description": "Your Arcane spells are more powerful and you can cast them more efficiently. (1.2x magnitude, 0.8x cost for arcane spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-arcane-disruption",
+      "name": "Arcane Disruption",
+      "skillReq": 75,
+      "position": {
+        "x": 5,
+        "y": 8
+      },
+      "prerequisites": [
+        "destruction-arcane-focus"
+      ],
+      "description": "You can imbue more magical energy to arcane spells, dealing more damage to enemies that are not resistant to magic. (arcane spells do more damage to enemies with low magic resistance)",
+      "effects": []
+    },
+    {
+      "id": "destruction-pyromancy",
+      "name": "Pyromancy",
+      "skillReq": 25,
+      "position": {
+        "x": 9,
+        "y": 11
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "You now are able to intensify the heat of your fire spells. Thus, they now deal increased damage. (1.1x magnitude, 0.9x cost for fire spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-pyromancy-2",
+      "name": "Pyromancy",
+      "skillReq": 50,
+      "position": {
+        "x": 9,
+        "y": 11
+      },
+      "prerequisites": [
+        "destruction-pyromancy"
+      ],
+      "description": "Your fire spells burn with almost otherworldly heat and consume earth and flesh with terrifying ease. (1.2x magnitude, 0.8x cost for fire spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-cremation",
+      "name": "Cremation",
+      "skillReq": 75,
+      "position": {
+        "x": 8,
+        "y": 8
+      },
+      "prerequisites": [
+        "destruction-pyromancy"
+      ],
+      "description": "Enemies are set on fire for extended duration, taking extra damage over time. (extra damage over time for fire spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-fire-mastery",
+      "name": "Fire Mastery",
+      "skillReq": 100,
+      "position": {
+        "x": 8,
+        "y": 3
+      },
+      "prerequisites": [
+        "destruction-cremation"
+      ],
+      "description": "Your mastery of fire element grants you resistance to fire and increased efficiency of fire spells. (+25% fire resistance, 1.05x magnitude, 0.9x cost for fire spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-cyromancy",
+      "name": "Cyromancy",
+      "skillReq": 25,
+      "position": {
+        "x": 11,
+        "y": 14
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "You now are able to improve your ice spells and thereby increase their effectiveness. (1.1x magnitude, 0.9x cost for frost spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-cyromancy-2",
+      "name": "Cyromancy",
+      "skillReq": 50,
+      "position": {
+        "x": 11,
+        "y": 14
+      },
+      "prerequisites": [
+        "destruction-cyromancy"
+      ],
+      "description": "Your ice spells freeze even air in a trice and make the harsh winters of Skyrim look like a refreshing breeze. (1.2x magnitude, 0.8x cost for frost spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-deep-freeze",
+      "name": "Deep Freeze",
+      "skillReq": 75,
+      "position": {
+        "x": 11,
+        "y": 7
+      },
+      "prerequisites": [
+        "destruction-cyromancy"
+      ],
+      "description": "Your frost spells render targets more susceptible to frost, and freezes enemies with low resistance to frost or magic. (freeze effect for frost spells, frost spells temporarily reduce target's frost resistance by 10% if not immune)",
+      "effects": []
+    },
+    {
+      "id": "destruction-frost-mastery",
+      "name": "Frost Mastery",
+      "skillReq": 100,
+      "position": {
+        "x": 11,
+        "y": 3
+      },
+      "prerequisites": [
+        "destruction-deep-freeze"
+      ],
+      "description": "Your mastery of frost element grants you resistance to frost and increased efficiency of frost spells. (+25% frost resistance, 1.05x magnitude, 0.9x cost for frost spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-electromancy",
+      "name": "Electromancy",
+      "skillReq": 25,
+      "position": {
+        "x": 12,
+        "y": 17
+      },
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
+      "description": "You can now energize your lightning spells more effectively, causing them to deal more damage. (1.1x magnitude, 0.9x cost for shock spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-electromancy-2",
+      "name": "Electromancy",
+      "skillReq": 50,
+      "position": {
+        "x": 12,
+        "y": 17
+      },
+      "prerequisites": [
+        "destruction-electromancy"
+      ],
+      "description": "Compared to your lightning spells, the worst tempests would look like a mild summer breeze. (1.2x magnitude, 0.8x cost for shock spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-electrostatic-discharge",
+      "name": "Electrostatic Discharge",
+      "skillReq": 75,
+      "position": {
+        "x": 12,
+        "y": 9
+      },
+      "prerequisites": [
+        "destruction-electromancy"
+      ],
+      "description": "Lightning spells deplete targets' magicka and staggers enemies with low resistance to shock or magic. (Magicka damage and stagger for shock spells)",
+      "effects": []
+    },
+    {
+      "id": "destruction-lightning-mastery",
+      "name": "Lightning Mastery",
+      "skillReq": 100,
+      "position": {
+        "x": 14,
+        "y": 3
+      },
+      "prerequisites": [
+        "destruction-electrostatic-discharge"
+      ],
+      "description": "Your mastery of lightning element grants you resistance to shock and increased efficiency of lightning spells. (+25% shock resistance, 1.05x magnitude, 0.9x cost for shock spells)",
+      "effects": []
+    }
+  ]
+}

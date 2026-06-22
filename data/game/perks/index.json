@@ -1,4 +1,20 @@
 {
   "smithing": "smithing.json",
-  "heavy-armor": "heavy-armor.json"
+  "heavy-armor": "heavy-armor.json",
+  "block": "block.json",
+  "two-handed": "two-handed.json",
+  "one-handed": "one-handed.json",
+  "marksman": "marksman.json",
+  "evasion": "evasion.json",
+  "sneak": "sneak.json",
+  "wayfarer": "wayfarer.json",
+  "finesse": "finesse.json",
+  "speech": "speech.json",
+  "alchemy": "alchemy.json",
+  "illusion": "illusion.json",
+  "conjuration": "conjuration.json",
+  "destruction": "destruction.json",
+  "restoration": "restoration.json",
+  "alteration": "alteration.json",
+  "enchanting": "enchanting.json"
 }
