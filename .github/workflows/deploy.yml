@@ -28,6 +28,14 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      - name: Verify Pages artifact excludes dev tools
+        run: |
+          if [ -d dist/tools ] || find dist -name '*.mjs' -print -quit | grep -q .; then
+            echo "dist must not contain tools/ or Node import scripts"
+            find dist -name '*.mjs' -o -path 'dist/tools/*'
+            exit 1
+          fi
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

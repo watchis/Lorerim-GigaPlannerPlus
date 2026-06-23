@@ -1,8 +1,10 @@
 import manifestJson from "../../data/game/manifest.json";
 import mechanicsJson from "../../data/game/mechanics.json";
+import statsJson from "../../data/game/stats.json";
 import racesJson from "../../data/game/races.json";
-import standingStonesJson from "../../data/game/standing-stones.json";
-import blessingsJson from "../../data/game/blessings.json";
+import birthsignsJson from "../../data/game/birthsigns.json";
+import deitiesJson from "../../data/game/deities.json";
+import characterOptionsJson from "../../data/game/character-options.json";
 import traitsJson from "../../data/game/traits.json";
 import skillsJson from "../../data/game/skills.json";
 import perkIndexJson from "../../data/game/perks/index.json";
@@ -14,9 +16,11 @@ import labelsJson from "../../data/ui/labels.json";
 import {
   manifestSchema,
   mechanicsSchema,
+  statsSchema,
   racesSchema,
-  standingStonesSchema,
-  blessingsSchema,
+  birthsignsSchema,
+  deitiesSchema,
+  characterOptionsSchema,
   traitsSchema,
   skillsSchema,
   perkIndexSchema,
@@ -28,6 +32,13 @@ import {
   type AppData,
   type PerkTree,
 } from "./schemas";
+import {
+  enrichBirthsign,
+  enrichDeity,
+  enrichPerk,
+  enrichRaceEffects,
+  enrichTrait,
+} from "@/lib/enrichGameData";
 
 function parse<T>(schema: { parse: (data: unknown) => T }, data: unknown, name: string): T {
   try {
@@ -52,10 +63,23 @@ for (const path of Object.keys(perkJsonModules)) {
 export function loadAppData(): AppData {
   const manifest = parse(manifestSchema, manifestJson, "manifest.json");
   const mechanics = parse(mechanicsSchema, mechanicsJson, "mechanics.json");
-  const { races } = parse(racesSchema, racesJson, "races.json");
-  const { standingStones } = parse(standingStonesSchema, standingStonesJson, "standing-stones.json");
-  const { blessings } = parse(blessingsSchema, blessingsJson, "blessings.json");
-  const { traits } = parse(traitsSchema, traitsJson, "traits.json");
+  const stats = parse(statsSchema, statsJson, "stats.json");
+  const { races: rawRaces } = parse(racesSchema, racesJson, "races.json");
+  const races = rawRaces.map((race) => ({
+    ...race,
+    effects: enrichRaceEffects(race),
+  }));
+  const { birthsigns: rawBirthsigns } = parse(birthsignsSchema, birthsignsJson, "birthsigns.json");
+  const birthsigns = rawBirthsigns.map(enrichBirthsign);
+  const { deities: rawDeities } = parse(deitiesSchema, deitiesJson, "deities.json");
+  const deities = rawDeities.map(enrichDeity);
+  const { options: characterOptions } = parse(
+    characterOptionsSchema,
+    characterOptionsJson,
+    "character-options.json",
+  );
+  const { traits: rawTraits } = parse(traitsSchema, traitsJson, "traits.json");
+  const traits = rawTraits.map(enrichTrait);
   const { skills } = parse(skillsSchema, skillsJson, "skills.json");
   const perkIndex = parse(perkIndexSchema, perkIndexJson, "perks/index.json");
   const playerLevelReqs = parse(
@@ -75,7 +99,9 @@ export function loadAppData(): AppData {
       ...tree,
       perks: tree.perks.map((perk) => {
         const playerLevelReq = playerLevelReqs[perk.id];
-        return playerLevelReq !== undefined ? { ...perk, playerLevelReq } : perk;
+        const withLevel =
+          playerLevelReq !== undefined ? { ...perk, playerLevelReq } : perk;
+        return enrichPerk(withLevel);
       }),
     };
   }
@@ -88,9 +114,11 @@ export function loadAppData(): AppData {
     game: {
       manifest,
       mechanics,
+      stats,
+      characterOptions,
       races,
-      standingStones,
-      blessings,
+      birthsigns,
+      deities,
       traits,
       skills,
       perkTrees,

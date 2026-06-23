@@ -6,6 +6,7 @@ interface NumericLevelInputProps {
   min: number;
   max: number;
   onCommit: (value: number) => void;
+  size?: "default" | "compact";
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export function NumericLevelInput({
   min,
   max,
   onCommit,
+  size = "default",
   className,
 }: NumericLevelInputProps) {
   const [draft, setDraft] = useState<string | null>(null);
@@ -29,9 +31,7 @@ export function NumericLevelInput({
   const displayValue = draft ?? String(value);
 
   const commit = () => {
-    if (draft === null) return;
-
-    const trimmed = draft.trim();
+    const trimmed = (draft ?? String(value)).trim();
     if (trimmed === "") {
       setDraft(null);
       return;
@@ -61,11 +61,21 @@ export function NumericLevelInput({
       onBlur={commit}
       onKeyDown={(event) => {
         if (event.key === "Enter") {
+          event.preventDefault();
+          commit();
           event.currentTarget.blur();
         }
       }}
+      style={
+        size === "compact"
+          ? { fontSize: 12, lineHeight: 1, fontFamily: "ui-monospace, monospace" }
+          : undefined
+      }
       className={cn(
-        "w-14 border-0 bg-transparent px-1 py-1 text-center font-mono text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-0",
+        "border-0 bg-transparent text-center tabular-nums text-[var(--color-foreground)] focus:outline-none focus:ring-0",
+        size === "compact"
+          ? "h-5 w-7 min-w-0 px-0 py-0"
+          : "w-14 px-1 py-1 font-mono text-sm",
         className,
       )}
     />

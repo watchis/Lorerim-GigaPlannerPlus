@@ -2,8 +2,8 @@
   "skillId": "evasion",
   "skillName": "Evasion",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 16,
+    "height": 34
   },
   "perks": [
     {
@@ -11,223 +11,301 @@
       "name": "Agility",
       "skillReq": 0,
       "position": {
-        "x": 13,
-        "y": 21
+        "x": 8,
+        "y": 33
       },
       "prerequisites": [],
-      "description": "After some training you are now much more confident in your evasive movements. (25% less falling damage when wearing no heavy armor, unique bonus when wearing high-quality materials, -50% armor weight penalty)",
-      "effects": []
-    },
-    {
-      "id": "evasion-dodge",
-      "name": "Dodge",
-      "skillReq": 25,
-      "position": {
-        "x": 17,
-        "y": 15
-      },
-      "prerequisites": [
-        "evasion-agility"
+      "description": "After some training you are now much more confident in your evasive movements. [25% less falling damage when wearing no heavy armor, unique bonus when wearing high-quality materials, -50% armor weight penalty]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 50,
+          "isPercent": true
+        }
       ],
-      "description": "Your trained reflexes allow you to dodge incoming blows. (Unlocks ability to dodge. Left alt by default.)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-light-armor-training",
       "name": "Light Armor Training",
       "skillReq": 25,
       "position": {
-        "x": 12,
-        "y": 14
+        "x": 7,
+        "y": 22
       },
       "prerequisites": [
         "evasion-agility"
       ],
       "description": "Up to 12% more power attack and ranged weapon damage when wearing no heavy armor. 25% more armor rating when wearing a low-tier light chestpiece (fur, hide, leather, etc) and no heavy armor.",
-      "effects": []
-    },
-    {
-      "id": "evasion-dexterity",
-      "name": "Dexterity",
-      "skillReq": 50,
-      "position": {
-        "x": 8,
-        "y": 9
-      },
-      "prerequisites": [
-        "evasion-light-armor-training"
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 25,
+          "isPercent": true
+        }
       ],
-      "description": "You can balance your weapon and have unlocked dynamic bow dodging. (Up to 24% less power attack cost when wearing no heavy armor, press RMB when drawing a light bow to dodge, release left click to fire)",
-      "effects": []
-    },
-    {
-      "id": "evasion-agile-spellcasting",
-      "name": "Agile Spellcasting",
-      "skillReq": 25,
-      "position": {
-        "x": 7,
-        "y": 13
-      },
-      "prerequisites": [
-        "evasion-agility"
-      ],
-      "description": "You learned how to avoid the limitations light armors bestow upon somatic spell components. (No spell cost penalty for casting spells in light armor)",
-      "effects": []
-    },
-    {
-      "id": "evasion-wind-walker",
-      "name": "Wind Walker",
-      "skillReq": 75,
-      "position": {
-        "x": 9,
-        "y": 6
-      },
-      "prerequisites": [
-        "evasion-dexterity"
-      ],
-      "description": "Your light armor and clothes have become your second skin. (Up to +10% movement speed when wearing no heavy armor: head, chest, hands, feet, -25% armor weight penalty)",
-      "effects": []
-    },
-    {
-      "id": "evasion-vexing-flanker",
-      "name": "Vexing Flanker",
-      "skillReq": 50,
-      "position": {
-        "x": 16,
-        "y": 10
-      },
-      "prerequisites": [
-        "evasion-light-armor-training"
-      ],
-      "description": "You have learned to flank your enemies with ease. (25% bonus damage when attacking from behind)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-combat-reflexes",
       "name": "Combat Reflexes",
       "skillReq": 75,
       "position": {
-        "x": 14,
-        "y": 5
+        "x": 12,
+        "y": 4
       },
       "prerequisites": [
+        "evasion-light-armor-training",
         "evasion-vexing-flanker"
       ],
-      "description": "You've gained the ability to act faster in combat, though doing so will quickly exhaust you. (Lesser power: Slow time by 50% for 10 seconds, drains 15 stamina per second)",
-      "effects": []
+      "description": "You've gained the ability to act faster in combat, though doing so will quickly exhaust you. [Lesser power: Slow time by 50% for 10 seconds, drains 15 stamina per second]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-meteoric-reflexes",
       "name": "Meteoric Reflexes",
       "skillReq": 100,
       "position": {
-        "x": 12,
-        "y": 2
+        "x": 8,
+        "y": 0
       },
       "prerequisites": [
         "evasion-wind-walker",
         "evasion-combat-reflexes"
       ],
-      "description": "Your reflexes are lightning fast. (50% chance avoid physical damage when wearing no heavy armor: head, chest, hands, feet)",
-      "effects": []
+      "description": "Your reflexes are so fast that enemies struggle to even graze you. [50% chance take half damage when wearing no heavy armor: head, chest, hands, feet]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "evasion-dexterity",
+      "name": "Dexterity",
+      "skillReq": 50,
+      "position": {
+        "x": 1,
+        "y": 12
+      },
+      "prerequisites": [
+        "evasion-light-armor-training"
+      ],
+      "description": "You can balance your weapon and have unlocked dynamic bow dodging. [Up to 24% less power attack cost when wearing no heavy armor. Press RMB when drawing a bow to dodge, release left click to fire]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "evasion-wind-walker",
+      "name": "Wind Walker",
+      "skillReq": 75,
+      "position": {
+        "x": 3,
+        "y": 6
+      },
+      "prerequisites": [
+        "evasion-dexterity"
+      ],
+      "description": "Your light armor and clothes have become your second skin. [Up to +10% movement speed when wearing no heavy armor: head, chest, hands, feet, -25% armor weight penalty]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "moveSpeed",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "evasion-vexing-flanker",
+      "name": "Vexing Flanker",
+      "skillReq": 50,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "evasion-light-armor-training"
+      ],
+      "description": "You have learned to flank your enemies with ease. [25% bonus damage when attacking from behind]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "evasion-dodge",
+      "name": "Dodge",
+      "skillReq": 25,
+      "position": {
+        "x": 14,
+        "y": 24
+      },
+      "prerequisites": [
+        "evasion-agility"
+      ],
+      "description": "Your trained reflexes allow you to dodge incoming blows. [Unlocks ability to dodge. Left alt by default.]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "evasion-agile-spellcasting",
+      "name": "Agile Spellcasting",
+      "skillReq": 25,
+      "position": {
+        "x": 0,
+        "y": 19
+      },
+      "prerequisites": [
+        "evasion-agility"
+      ],
+      "description": "You learned how to avoid the limitations light armors bestow upon somatic spell components. [No spell cost penalty for casting spells in light armor]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "evasion-agile-spellcasting-r2",
+      "name": "Agile Spellcasting",
+      "skillReq": 50,
+      "position": {
+        "x": 0,
+        "y": 19
+      },
+      "prerequisites": [],
+      "description": "Your light armor has become second nature while casting spells and now makes them more potent. [10% stronger and longer lasting spells when cast while wearing light armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-unarmored",
       "name": "Unarmored",
       "skillReq": 25,
       "position": {
-        "x": 6,
-        "y": 18
+        "x": 0,
+        "y": 28
       },
       "prerequisites": [
         "evasion-agility"
       ],
-      "description": "Having no weight on your body grants you extreme precision and reflexes. (20% chance to avoid physical damage, +5% movement speed and +10% armor penetration when not wearing armor)",
-      "effects": []
+      "description": "Having no weight on your body grants you extreme precision and reflexes. [20% chance to avoid physical damage, +5% movement speed and +10% armor penetration when not wearing armor]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "dodgeChance",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "moveSpeed",
+          "value": 5,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-athletics",
       "name": "Athletics",
       "skillReq": 25,
       "position": {
-        "x": 12,
-        "y": 9
+        "x": 6,
+        "y": 13
       },
       "prerequisites": [
         "evasion-light-armor-training"
       ],
-      "description": "You are more agile and can recover from exhaustion faster. (+5% movement speed and +25% stamina regeneration when not wearing heavy armor)",
-      "effects": []
+      "description": "You are more agile and can recover from exhaustion faster. [+5% movement speed and +25% stamina regeneration when not wearing heavy armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "evasion-athletics-2",
+      "id": "evasion-athletics-r2",
       "name": "Athletics",
       "skillReq": 50,
       "position": {
-        "x": 12,
-        "y": 9
+        "x": 6,
+        "y": 13
       },
-      "prerequisites": [
-        "evasion-athletics"
-      ],
-      "description": "You are more agile and can recover from exhaustion faster. (+10% movement speed and +50% stamina regeneration when not wearing heavy armor)",
-      "effects": []
+      "prerequisites": [],
+      "description": "You are more agile and can recover from exhaustion faster. [+10% movement speed and +50% stamina regeneration when not wearing heavy armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-annoying-mosquitoes",
       "name": "Annoying Mosquitoes",
       "skillReq": 40,
       "position": {
-        "x": 12,
-        "y": 6
+        "x": 7,
+        "y": 7
       },
       "prerequisites": [
         "evasion-athletics"
       ],
       "description": "You take 10% less attack damage from enemies with full Health if not wearing heavy armor",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "evasion-annoying-mosquitoes-2",
+      "id": "evasion-annoying-mosquitoes-r2",
       "name": "Annoying Mosquitoes",
       "skillReq": 60,
       "position": {
-        "x": 12,
-        "y": 6
+        "x": 7,
+        "y": 7
       },
-      "prerequisites": [
-        "evasion-annoying-mosquitoes"
-      ],
+      "prerequisites": [],
       "description": "You take 20% less attack damage from enemies with full Health if not wearing heavy armor",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-evasive-leap",
       "name": "Evasive Leap",
       "skillReq": 60,
       "position": {
-        "x": 18,
-        "y": 12
+        "x": 15,
+        "y": 18
       },
       "prerequisites": [
         "evasion-dodge"
       ],
       "description": "If not wearing heavy armor, jump in combat to cause all incoming attacks and spells to miss for 1 second. This effect has a 10 second cooldown.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "evasion-as-a-leaf",
       "name": "As a Leaf",
       "skillReq": 40,
       "position": {
-        "x": 15,
-        "y": 13
+        "x": 12,
+        "y": 19
       },
       "prerequisites": [
         "evasion-dodge"
       ],
       "description": "While sprinting in Light Armor or while Unarmored, you cannot be staggered and take 50% less damage from power attacks.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

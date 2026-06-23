@@ -18,9 +18,13 @@ export const effectSchema = z.discriminatedUnion("type", [
     type: z.literal("skillPointsPerLevel"),
     value: z.number(),
   }),
+  z.object({
+    type: z.literal("flag"),
+    stat: z.string(),
+  }),
 ]);
 
-const skillLevelBaselineSchema = z.enum(["raceStarting"]);
+const skillLevelBaselineSchema = z.enum(["raceStarting", "skillFloor"]);
 
 const skillFloorSourceSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("raceStarting") }),
@@ -60,6 +64,8 @@ export const mechanicsSchema = z
       perkPointsPerLevel: z.number().int().positive(),
       initialPerkPoints: z.number().int().nonnegative(),
       maxSkillAbovePlayerLevel: z.number().int().positive(),
+      maxTrainingSkillLevel: z.number().int().positive(),
+      skillLevelIncreasesPerPlayerLevel: z.number().int().positive(),
       skillPointBaseline: skillLevelBaselineSchema,
       playerLevelSkillBaseline: skillLevelBaselineSchema,
       skillPointFreeThroughFloor: z.boolean(),
@@ -89,7 +95,7 @@ export const mechanicsSchema = z
     ),
   })
   .superRefine((mechanics, ctx) => {
-    const { maxSkillLevel, skillLevelCosts } = mechanics.leveling;
+    const { maxSkillLevel, maxTrainingSkillLevel, skillLevelCosts } = mechanics.leveling;
     const tierMax = Math.max(...skillLevelCosts.map((tier) => tier.maxLevel));
     if (maxSkillLevel < tierMax) {
       ctx.addIssue({
@@ -98,7 +104,112 @@ export const mechanicsSchema = z
         path: ["leveling", "maxSkillLevel"],
       });
     }
+    if (maxTrainingSkillLevel > maxSkillLevel) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `leveling.maxTrainingSkillLevel (${maxTrainingSkillLevel}) must be <= maxSkillLevel (${maxSkillLevel})`,
+        path: ["leveling", "maxTrainingSkillLevel"],
+      });
+    }
   });
+
+const characterOptionMechanicsBindingSchema = z.enum(["oghmaInfinium"]);
+
+const characterOptionChoiceSchema = z
+  .object({
+    id: z.string(),
+    label: z.string(),
+    attributeStat: attributeStatSchema.optional(),
+    attributeBonusIndex: z.number().int().nonnegative().optional(),
+    effects: z.array(effectSchema).optional(),
+  })
+  .superRefine((choice, ctx) => {
+    const hasStat = choice.attributeStat !== undefined;
+    const hasIndex = choice.attributeBonusIndex !== undefined;
+    if (hasStat !== hasIndex) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "attributeStat and attributeBonusIndex must be set together",
+        path: hasStat ? ["attributeBonusIndex"] : ["attributeStat"],
+      });
+    }
+  });
+
+export const characterOptionSchema = z
+  .object({
+    id: z.string(),
+    titleLabel: z.string(),
+    descriptionLabel: z.string().optional(),
+    defaultChoice: z.string(),
+    mechanicsBinding: characterOptionMechanicsBindingSchema.optional(),
+    perkPointsSummaryLabel: z.string().optional(),
+    attributeBonusSummaryLabel: z.string().optional(),
+    grantsTraitSlot: z.boolean().optional(),
+    choices: z.array(characterOptionChoiceSchema).min(1),
+  })
+  .superRefine((option, ctx) => {
+    const choiceIds = new Set<string>();
+    for (const choice of option.choices) {
+      if (choiceIds.has(choice.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Duplicate choice id: ${choice.id}`,
+          path: ["choices"],
+        });
+      }
+      choiceIds.add(choice.id);
+    }
+
+    if (!choiceIds.has(option.defaultChoice)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `defaultChoice "${option.defaultChoice}" is not a valid choice id`,
+        path: ["defaultChoice"],
+      });
+    }
+
+    if (option.mechanicsBinding) {
+      for (const choice of option.choices) {
+        if (choice.attributeBonusIndex !== undefined && choice.attributeBonusIndex > 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "attributeBonusIndex must be 0, 1, or 2 for mechanics-bound options",
+            path: ["choices"],
+          });
+        }
+      }
+    }
+  });
+
+export const characterOptionsSchema = z.object({
+  options: z.array(characterOptionSchema),
+});
+
+const statValueKindSchema = z.enum(["flat", "percent", "flag"]);
+
+const statDefinitionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  category: z.string(),
+  valueKind: statValueKindSchema,
+});
+
+const raceBindingSchema = z.object({
+  field: z.enum(["unarmedDamage", "speedBonus"]),
+});
+
+export const statsSchema = z.object({
+  categories: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+    }),
+  ),
+  stats: z.array(statDefinitionSchema),
+  raceBindings: z.record(z.string(), raceBindingSchema),
+});
+
+export const raceEffectsSchema = z.record(z.string(), z.array(effectSchema));
 
 export const raceSchema = z.object({
   id: z.string(),
@@ -131,7 +242,7 @@ export const racesSchema = z.object({
   races: z.array(raceSchema),
 });
 
-export const standingStoneSchema = z.object({
+export const birthsignSchema = z.object({
   id: z.string(),
   name: z.string(),
   group: z.string(),
@@ -141,11 +252,11 @@ export const standingStoneSchema = z.object({
   effects: z.array(effectSchema),
 });
 
-export const standingStonesSchema = z.object({
-  standingStones: z.array(standingStoneSchema),
+export const birthsignsSchema = z.object({
+  birthsigns: z.array(birthsignSchema),
 });
 
-export const blessingSchema = z.object({
+export const deitySchema = z.object({
   id: z.string(),
   name: z.string(),
   shrine: z.string(),
@@ -158,14 +269,16 @@ export const blessingSchema = z.object({
   effects: z.array(effectSchema),
 });
 
-export const blessingsSchema = z.object({
-  blessings: z.array(blessingSchema),
+export const deitiesSchema = z.object({
+  deities: z.array(deitySchema),
 });
 
 export const traitSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
+  bonus: z.string(),
+  bonusDetails: z.array(z.string()).optional(),
   effects: z.array(effectSchema),
 });
 
@@ -256,7 +369,6 @@ export const labelsSchema = z.object({
     title: z.string(),
     subtitle: z.string(),
     versionLabel: z.string(),
-    footer: z.string(),
   }),
   nav: z.object({
     home: z.string(),
@@ -264,45 +376,91 @@ export const labelsSchema = z.object({
     builds: z.string(),
   }),
   landing: z.object({
-    eyebrow: z.string(),
-    headline: z.string(),
-    description: z.string(),
-    cta: z.string(),
-    ctaHint: z.string(),
-    feature1Title: z.string(),
-    feature1Description: z.string(),
-    feature2Title: z.string(),
-    feature2Description: z.string(),
-    feature3Title: z.string(),
-    feature3Description: z.string(),
-    feature4Title: z.string(),
-    feature4Description: z.string(),
+    howItWorksTitle: z.string(),
+    steps: z.array(
+      z.object({
+        title: z.string(),
+        description: z.string(),
+      }),
+    ),
+    featuresTitle: z.string(),
+    features: z.array(
+      z.object({
+        title: z.string(),
+        description: z.string(),
+      }),
+    ),
+    recentBuildsTitle: z.string(),
+    recentBuildsEmpty: z.string(),
+    recentBuildsViewAll: z.string(),
+    importTitle: z.string(),
+    importDescription: z.string(),
+    importPlaceholder: z.string(),
+    importButton: z.string(),
   }),
-  planner: z.object({
-    intro: z.string(),
+  milestones: z.object({
+    title: z.string(),
+    fullBuild: z.string(),
+    goalShort: z.string(),
+    addStep: z.string(),
+    addMilestone: z.string(),
+    emptyHint: z.string(),
+    viewingStep: z.string(),
+    levelShort: z.string(),
+    stepMeta: z.string(),
+    manageStep: z.string(),
+    manageVariants: z.string(),
+    renameMilestone: z.string(),
+    deleteMilestone: z.string(),
+    saveRename: z.string(),
+    cancelRename: z.string(),
   }),
   "level-bar": z.object({
     playerLevel: z.string(),
     perkPointsRemaining: z.string(),
     perkPointsSpent: z.string(),
-    perkPointsPerLevel: z.string(),
+    perkPointsInfo: z.string(),
     skillPointsRemaining: z.string(),
     skillPointsSpent: z.string(),
-    skillPointsPerLevel: z.string(),
+    skillPointsInfo: z.string(),
+    trainingLevelsRemaining: z.string(),
+    trainingLevelsSpent: z.string(),
+    trainingLevelsInfo: z.string(),
+    trainingOverBudgetAlert: z.string(),
     overBudget: z.string(),
+    perkOverBudgetAlert: z.string(),
+    skillOverBudgetAlert: z.string(),
+    playerLevelSkillCapSingle: z.string(),
+    playerLevelSkillCapMultiple: z.string(),
+    playerLevelSkillIncreaseSingle: z.string(),
+    playerLevelSkillIncreaseMultiple: z.string(),
+    playerLevelPerkReqSingle: z.string(),
+    playerLevelPerkReqMultiple: z.string(),
+    playerLevelWarningMixed: z.string(),
+    playerLevelAttributeOverBudgetSingle: z.string(),
+    playerLevelAttributeOverBudgetMultiple: z.string(),
+    buildIssuesAlert: z.string(),
+    setToMinimumLevel: z.string(),
+    setToMinimumLevelInfo: z.string(),
   }),
   panels: z.record(z.string(), z.record(z.string(), z.string())),
   errors: z.record(z.string(), z.string()),
 });
 
+export type AttributeStat = z.infer<typeof attributeStatSchema>;
 export type SkillLevelBaseline = z.infer<typeof skillLevelBaselineSchema>;
 export type SkillFloorSource = z.infer<typeof skillFloorSourceSchema>;
 export type Effect = z.infer<typeof effectSchema>;
+export type StatDefinition = z.infer<typeof statDefinitionSchema>;
+export type StatsCatalog = z.infer<typeof statsSchema>;
+export type RaceEffectsMap = z.infer<typeof raceEffectsSchema>;
 export type Manifest = z.infer<typeof manifestSchema>;
 export type Mechanics = z.infer<typeof mechanicsSchema>;
+export type CharacterOption = z.infer<typeof characterOptionSchema>;
+export type CharacterOptionChoice = z.infer<typeof characterOptionChoiceSchema>;
 export type Race = z.infer<typeof raceSchema>;
-export type StandingStone = z.infer<typeof standingStoneSchema>;
-export type Blessing = z.infer<typeof blessingSchema>;
+export type Birthsign = z.infer<typeof birthsignSchema>;
+export type Deity = z.infer<typeof deitySchema>;
 export type Trait = z.infer<typeof traitSchema>;
 export type Skill = z.infer<typeof skillSchema>;
 export type Perk = z.infer<typeof perkSchema>;
@@ -314,9 +472,11 @@ export type Labels = z.infer<typeof labelsSchema>;
 export interface GameData {
   manifest: Manifest;
   mechanics: Mechanics;
+  stats: StatsCatalog;
+  characterOptions: CharacterOption[];
   races: Race[];
-  standingStones: StandingStone[];
-  blessings: Blessing[];
+  birthsigns: Birthsign[];
+  deities: Deity[];
   traits: Trait[];
   skills: Skill[];
   perkTrees: Record<string, PerkTree>;

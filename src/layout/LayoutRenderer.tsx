@@ -4,8 +4,6 @@ import type { Layout } from "@/data/schemas";
 
 import { CharacterSetupPanel } from "@/panels/CharacterSetupPanel";
 
-import { AttributesPanel } from "@/panels/AttributesPanel";
-
 import { MiddleWorkspacePanel } from "@/panels/MiddleWorkspacePanel";
 
 import { SkillTreesSidebarPanel } from "@/panels/SkillTreesSidebarPanel";
@@ -17,8 +15,6 @@ import { cn } from "@/lib/utils";
 export const panelRegistry: Record<string, ComponentType> = {
 
   "character-setup": CharacterSetupPanel,
-
-  attributes: AttributesPanel,
 
   "skill-trees": MiddleWorkspacePanel,
 

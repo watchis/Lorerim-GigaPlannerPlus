@@ -3,16 +3,21 @@ import { persist } from "zustand/middleware";
 import type { AppData } from "@/data/schemas";
 import {
   allocatePerk as allocatePerkInBuild,
+  applySkillLevelChange,
+  applySkillTrainingRangeChange,
   canSelectMajorSkill,
   canSelectMinorSkill,
   canSelectTrait,
   computeBuild,
   createInitialBuildState,
+  migrateBuildState,
   createSkillReqConflict,
   clampPlayerLevel,
+  getEarnedAttributeChoices,
   getPerksDroppedBelowSkillRequirement,
   getSkillFloor,
   isAllocatableSkill,
+  preserveSkillPointAllocations,
   reconcileBuild,
   removePerk as removePerkFromBuild,
   tryTakePerk as tryTakePerkInBuild,
@@ -22,17 +27,41 @@ import {
   type ComputedBuild,
   type SkillReqConflict,
 } from "@/engine/buildEngine";
-import { useUiStore } from "@/store/uiStore";
 import {
   createInitialLibrary,
+  createMilestone,
   createSavedBuild,
+  getActiveSavedBuildBuild,
+  getDefaultVariantName,
+  getVariantBuild,
+  getVariantCount,
+  getVariantName,
   migrateLegacyStorage,
   nextBuildName,
+  nextMilestoneName,
+  nextVariantCopyName,
+  normalizeSavedBuild,
+  pickMilestoneToPromote,
+  promoteMilestoneToDefault,
   reorderBuildsInList,
+  reorderVariantsInEntry,
+  touchSavedBuild,
   updateSavedBuildInList,
   type SavedBuild,
   LIBRARY_STORAGE_KEY,
 } from "@/store/savedBuilds";
+
+function recompute(data: AppData, build: BuildState): ComputedBuild {
+  return computeBuild(data.game, build);
+}
+
+function syncActiveEntryBuild(
+  savedBuilds: SavedBuild[],
+  activeBuildId: string,
+  build: BuildState,
+): SavedBuild[] {
+  return updateSavedBuildInList(savedBuilds, activeBuildId, build);
+}
 
 interface BuildStore {
   gameData: AppData | null;
@@ -43,19 +72,22 @@ interface BuildStore {
   skillReqConflict: SkillReqConflict | null;
   init: (data: AppData) => void;
   setRace: (raceId: string) => void;
-  setStandingStone: (stoneId: string) => void;
-  setBlessing: (blessingId: string) => void;
+  setBirthsign: (birthsignId: string) => void;
+  setDeity: (deityId: string) => void;
+  setCharacterOptionChoice: (optionId: string, choiceId: string) => void;
   toggleTrait: (traitId: string) => void;
   toggleMajorSkill: (skillId: string) => void;
   toggleMinorSkill: (skillId: string) => void;
   adjustAttribute: (stat: keyof Attributes, delta: number) => void;
   setPlayerLevel: (level: number) => void;
   setSkillLevel: (skillId: string, level: number) => void;
+  setSkillTrainingRange: (skillId: string, tierIndex: number, count: number) => void;
   togglePerk: (perkId: string) => void;
   tryTakePerk: (perkId: string) => boolean;
   allocatePerk: (perkId: string) => boolean;
   removePerk: (perkId: string) => void;
   resetSkillPerks: (skillId: string) => void;
+  resetSkillTraining: (skillId: string) => void;
   resetAllPerks: () => void;
   setDescription: (description: string) => void;
   loadBuild: (build: BuildState) => void;
@@ -64,14 +96,47 @@ interface BuildStore {
   deleteSavedBuildSlot: (id: string) => void;
   renameSavedBuildSlot: (id: string, name: string) => void;
   selectSavedBuildSlot: (id: string) => void;
-  importBuildAsSlot: (build: BuildState, name?: string) => void;
-  importBuildLibrary: (entries: Array<{ name: string; build: BuildState; updatedAt?: number }>) => void;
+  importBuildAsSlot: (
+    build: BuildState,
+    name?: string,
+    milestones?: Array<{ name: string; build: BuildState }>,
+    defaultVariantName?: string,
+  ) => void;
+  importBuildLibrary: (
+    entries: Array<{
+      name: string;
+      build: BuildState;
+      milestones?: Array<{ name: string; build: BuildState }>;
+      defaultVariantName?: string;
+      updatedAt?: number;
+    }>,
+  ) => void;
   reorderSavedBuildSlot: (fromIndex: number, toIndex: number) => void;
   clearSkillReqConflict: () => void;
+  selectMilestone: (milestoneId: string | null) => void;
+  createVariant: (name?: string) => void;
+  copyVariant: (variantId: string | null) => void;
+  importVariant: (build: BuildState, name?: string) => void;
+  deleteActiveVariant: () => void;
+  renameActiveVariant: (name: string) => void;
+  deleteVariant: (variantId: string | null) => void;
+  renameVariant: (variantId: string | null, name: string) => void;
+  reorderVariants: (fromIndex: number, toIndex: number) => void;
 }
 
-function recompute(data: AppData, build: BuildState): ComputedBuild {
-  return computeBuild(data.game, build);
+function getActiveEntry(savedBuilds: SavedBuild[], activeBuildId: string): SavedBuild | undefined {
+  const entry = savedBuilds.find((b) => b.id === activeBuildId);
+  return entry ? normalizeSavedBuild(entry) : undefined;
+}
+
+function updateActiveEntry(
+  savedBuilds: SavedBuild[],
+  activeBuildId: string,
+  updater: (entry: SavedBuild) => SavedBuild,
+): SavedBuild[] {
+  return savedBuilds.map((entry) =>
+    entry.id === activeBuildId ? updater(normalizeSavedBuild(entry)) : normalizeSavedBuild(entry),
+  );
 }
 
 function commitBuild(
@@ -91,10 +156,27 @@ function commitBuild(
   });
 }
 
-function focusSkillReqConflict(conflict: SkillReqConflict): void {
-  const { setMiddleView, setActiveSkillTreeId } = useUiStore.getState();
-  setMiddleView("skill-trees");
-  setActiveSkillTreeId(conflict.skillId);
+function commitMainBuild(
+  set: (partial: Partial<BuildStore>) => void,
+  get: () => BuildStore,
+  nextBuild: BuildState,
+  skillReqConflict?: SkillReqConflict | null,
+): void {
+  const { gameData, savedBuilds, activeBuildId } = get();
+  if (!gameData) return;
+
+  const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, get().build);
+  const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, (entry) => ({
+    ...touchSavedBuild({ ...entry, activeMilestoneId: null }, nextBuild),
+    activeMilestoneId: null,
+  }));
+
+  set({
+    build: nextBuild,
+    savedBuilds: nextBuilds,
+    computed: recompute(gameData, nextBuild),
+    ...(skillReqConflict !== undefined ? { skillReqConflict } : {}),
+  });
 }
 
 function resolveSkillReqConflict(
@@ -103,11 +185,7 @@ function resolveSkillReqConflict(
   nextBuild: BuildState,
 ): SkillReqConflict | null {
   const dropped = getPerksDroppedBelowSkillRequirement(game, previousBuild, nextBuild);
-  const conflict = createSkillReqConflict(game, nextBuild, dropped);
-  if (conflict) {
-    focusSkillReqConflict(conflict);
-  }
-  return conflict;
+  return createSkillReqConflict(game, nextBuild, dropped);
 }
 
 function activateBuild(
@@ -117,14 +195,15 @@ function activateBuild(
   savedBuilds: SavedBuild[],
 ): void {
   const { gameData } = get();
-  const entry = savedBuilds.find((b) => b.id === buildId);
+  const entry = getActiveEntry(savedBuilds, buildId);
   if (!entry || !gameData) return;
 
+  const build = getActiveSavedBuildBuild(entry);
   set({
     activeBuildId: buildId,
-    build: entry.build,
-    savedBuilds,
-    computed: recompute(gameData, entry.build),
+    build,
+    savedBuilds: savedBuilds.map((item) => normalizeSavedBuild(item)),
+    computed: recompute(gameData, build),
   });
 }
 
@@ -147,27 +226,49 @@ export const useBuildStore = create<BuildStore>()(
         init: (data) => {
           const { build } = get();
           const baseLevel = data.game.mechanics.leveling.baseLevel;
-          const migratedBuild = reconcileBuild(data.game, {
+          const migratedBuild = reconcileBuild(data.game, migrateBuildState({
             ...build,
             playerLevel: build.playerLevel ?? baseLevel,
-          });
+            characterOptionChoices: build.characterOptionChoices ?? {},
+          }));
           set({ gameData: data, build: migratedBuild, computed: recompute(data, migratedBuild) });
         },
 
         setRace: (raceId) => {
           const { gameData, build } = get();
           if (!gameData) return;
-          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, raceId }));
+          const candidate = { ...build, raceId };
+          const preserved = preserveSkillPointAllocations(gameData.game, build, candidate);
+          commitBuild(set, get, reconcileBuild(gameData.game, preserved));
         },
 
-        setStandingStone: (stoneId) => {
+        setBirthsign: (birthsignId) => {
           const { build } = get();
-          commitBuild(set, get, { ...build, standingStoneId: stoneId });
+          commitBuild(set, get, { ...build, birthsignId });
         },
 
-        setBlessing: (blessingId) => {
+        setDeity: (deityId) => {
           const { build } = get();
-          commitBuild(set, get, { ...build, blessingId });
+          commitBuild(set, get, { ...build, deityId });
+        },
+
+        setCharacterOptionChoice: (optionId, choiceId) => {
+          const { gameData, build } = get();
+          if (!gameData) return;
+
+          const option = gameData.game.characterOptions.find((entry) => entry.id === optionId);
+          if (!option || !option.choices.some((choice) => choice.id === choiceId)) return;
+
+          const characterOptionChoices = {
+            ...build.characterOptionChoices,
+            [optionId]: choiceId,
+          };
+
+          commitBuild(
+            set,
+            get,
+            reconcileBuild(gameData.game, { ...build, characterOptionChoices }),
+          );
         },
 
         toggleTrait: (traitId) => {
@@ -199,7 +300,9 @@ export const useBuildStore = create<BuildStore>()(
             majorSkillIds.push(skillId);
           }
 
-          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, majorSkillIds }));
+          const candidate = { ...build, majorSkillIds };
+          const preserved = preserveSkillPointAllocations(gameData.game, build, candidate);
+          commitBuild(set, get, reconcileBuild(gameData.game, preserved));
         },
 
         toggleMinorSkill: (skillId) => {
@@ -213,7 +316,9 @@ export const useBuildStore = create<BuildStore>()(
             minorSkillIds.push(skillId);
           }
 
-          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, minorSkillIds }));
+          const candidate = { ...build, minorSkillIds };
+          const preserved = preserveSkillPointAllocations(gameData.game, build, candidate);
+          commitBuild(set, get, reconcileBuild(gameData.game, preserved));
         },
 
         adjustAttribute: (stat, delta) => {
@@ -230,7 +335,7 @@ export const useBuildStore = create<BuildStore>()(
             build.attributeBonus.stamina -
             current +
             nextValue;
-          if (totalUsed > gameData.game.manifest.limits.initialAttributePoints) return;
+          if (totalUsed > getEarnedAttributeChoices(gameData.game, build)) return;
 
           commitBuild(set, get, {
             ...build,
@@ -244,24 +349,34 @@ export const useBuildStore = create<BuildStore>()(
 
           const playerLevel = clampPlayerLevel(gameData.game, level);
           const nextBuild = reconcileBuild(gameData.game, { ...build, playerLevel });
-          const conflict = resolveSkillReqConflict(gameData.game, build, nextBuild);
-
-          commitBuild(set, get, nextBuild, conflict);
+          const skillReqConflict = resolveSkillReqConflict(gameData.game, build, nextBuild);
+          commitBuild(set, get, nextBuild, skillReqConflict);
         },
 
         setSkillLevel: (skillId, level) => {
           const { gameData, build } = get();
           if (!gameData) return;
 
-          const skillLevels = {
-            ...build.skillLevels,
-            [skillId]: level,
-          };
+          const nextBuild = applySkillLevelChange(gameData.game, build, skillId, level);
+          const skillReqConflict = resolveSkillReqConflict(gameData.game, build, nextBuild);
 
-          const nextBuild = reconcileBuild(gameData.game, { ...build, skillLevels });
-          const conflict = resolveSkillReqConflict(gameData.game, build, nextBuild);
+          commitBuild(set, get, nextBuild, skillReqConflict);
+        },
 
-          commitBuild(set, get, nextBuild, conflict);
+        setSkillTrainingRange: (skillId, tierIndex, count) => {
+          const { gameData, build } = get();
+          if (!gameData) return;
+
+          const nextBuild = applySkillTrainingRangeChange(
+            gameData.game,
+            build,
+            skillId,
+            tierIndex,
+            count,
+          );
+          const skillReqConflict = resolveSkillReqConflict(gameData.game, build, nextBuild);
+
+          commitBuild(set, get, nextBuild, skillReqConflict);
         },
 
         togglePerk: (perkId) => {
@@ -313,6 +428,8 @@ export const useBuildStore = create<BuildStore>()(
           const floor = getSkillFloor(gameData.game, build, skillId);
           const skillPerkIds = new Set(tree.perks.map((p) => p.id));
           const selectedPerkIds = build.selectedPerkIds.filter((id) => !skillPerkIds.has(id));
+          const skillTrainingRanges = { ...build.skillTrainingRanges };
+          delete skillTrainingRanges[skillId];
           commitBuild(
             set,
             get,
@@ -320,6 +437,24 @@ export const useBuildStore = create<BuildStore>()(
               ...build,
               selectedPerkIds,
               skillLevels: { ...build.skillLevels, [skillId]: floor },
+              skillTrainingRanges,
+            }),
+          );
+        },
+
+        resetSkillTraining: (skillId) => {
+          const { gameData, build } = get();
+          if (!gameData) return;
+
+          const skillTrainingRanges = { ...build.skillTrainingRanges };
+          delete skillTrainingRanges[skillId];
+
+          commitBuild(
+            set,
+            get,
+            reconcileBuild(gameData.game, {
+              ...build,
+              skillTrainingRanges,
             }),
           );
         },
@@ -329,15 +464,22 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const skillLevels = { ...build.skillLevels };
+          const skillTrainingRanges = { ...build.skillTrainingRanges };
           for (const skillId of gameData.game.manifest.skills) {
             if (!isAllocatableSkill(gameData.game, skillId)) continue;
             skillLevels[skillId] = getSkillFloor(gameData.game, build, skillId);
+            delete skillTrainingRanges[skillId];
           }
 
           commitBuild(
             set,
             get,
-            reconcileBuild(gameData.game, { ...build, selectedPerkIds: [], skillLevels }),
+            reconcileBuild(gameData.game, {
+              ...build,
+              selectedPerkIds: [],
+              skillLevels,
+              skillTrainingRanges,
+            }),
           );
         },
 
@@ -347,11 +489,13 @@ export const useBuildStore = create<BuildStore>()(
         },
 
         loadBuild: (build) => {
-          commitBuild(set, get, build);
+          const { gameData } = get();
+          if (!gameData) return;
+          commitMainBuild(set, get, reconcileBuild(gameData.game, migrateBuildState(build)));
         },
 
         resetBuild: () => {
-          commitBuild(set, get, createInitialBuildState());
+          commitMainBuild(set, get, createInitialBuildState());
         },
 
         createSavedBuildSlot: (name) => {
@@ -409,14 +553,19 @@ export const useBuildStore = create<BuildStore>()(
           activateBuild(set, get, id, syncedBuilds);
         },
 
-        importBuildAsSlot: (importedBuild, name) => {
+        importBuildAsSlot: (importedBuild, name, importedMilestones = [], defaultVariantName) => {
           const { savedBuilds, build, activeBuildId, gameData } = get();
           if (!gameData) return;
 
           const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
+          const milestones = importedMilestones.map((entry) =>
+            createMilestone(entry.name, reconcileBuild(gameData.game, entry.build)),
+          );
           const newEntry = createSavedBuild(
             name?.trim() || nextBuildName(syncedBuilds),
             importedBuild,
+            milestones,
+            defaultVariantName,
           );
 
           set({
@@ -431,10 +580,27 @@ export const useBuildStore = create<BuildStore>()(
           const { gameData } = get();
           if (!gameData || entries.length === 0) return;
 
-          const imported = entries.map((entry) =>
-            createSavedBuild(entry.name, entry.build),
-          );
+          const imported = entries.map((entry) => {
+            const milestones = (entry.milestones ?? []).map((milestone) =>
+              createMilestone(
+                milestone.name,
+                reconcileBuild(gameData.game, milestone.build),
+              ),
+            );
+            return createSavedBuild(
+              entry.name,
+              entry.build,
+              milestones,
+              entry.defaultVariantName,
+            );
+          });
           for (let i = 0; i < imported.length; i += 1) {
+            if (entries[i]?.defaultVariantName) {
+              imported[i] = {
+                ...imported[i],
+                defaultVariantName: entries[i].defaultVariantName!.trim() || imported[i].defaultVariantName,
+              };
+            }
             if (entries[i]?.updatedAt) {
               imported[i] = { ...imported[i], updatedAt: entries[i].updatedAt! };
             }
@@ -456,6 +622,219 @@ export const useBuildStore = create<BuildStore>()(
         },
 
         clearSkillReqConflict: () => set({ skillReqConflict: null }),
+
+        selectMilestone: (milestoneId) => {
+          const { gameData, savedBuilds, activeBuildId, build } = get();
+          if (!gameData) return;
+
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          if (!entry) return;
+
+          if (milestoneId && !entry.milestones.some((m) => m.id === milestoneId)) return;
+
+          const nextEntry: SavedBuild = {
+            ...entry,
+            activeMilestoneId: milestoneId,
+          };
+          const nextBuild = getActiveSavedBuildBuild(nextEntry);
+          const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
+
+          set({
+            savedBuilds: nextBuilds,
+            build: nextBuild,
+            computed: recompute(gameData, nextBuild),
+          });
+        },
+
+        createVariant: (name) => {
+          const { gameData, savedBuilds, activeBuildId, build } = get();
+          if (!gameData) return;
+
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          if (!entry) return;
+
+          const freshBuild = reconcileBuild(gameData.game, createInitialBuildState());
+          const milestoneName =
+            name?.trim() ||
+            nextMilestoneName(
+              entry.milestones,
+              freshBuild.playerLevel,
+              getDefaultVariantName(entry),
+            );
+          const milestone = createMilestone(milestoneName, freshBuild);
+
+          const nextEntry: SavedBuild = {
+            ...entry,
+            milestones: [...entry.milestones, milestone],
+            activeMilestoneId: milestone.id,
+            updatedAt: Date.now(),
+          };
+          const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
+
+          set({
+            savedBuilds: nextBuilds,
+            build: milestone.build,
+            computed: recompute(gameData, milestone.build),
+          });
+        },
+
+        copyVariant: (variantId) => {
+          const { gameData, savedBuilds, activeBuildId, build } = get();
+          if (!gameData) return;
+
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          if (!entry) return;
+
+          const sourceName = getVariantName(entry, variantId);
+          const milestoneName = nextVariantCopyName(sourceName, entry);
+          const milestone = createMilestone(
+            milestoneName,
+            reconcileBuild(gameData.game, getVariantBuild(entry, variantId)),
+          );
+
+          const nextEntry: SavedBuild = {
+            ...entry,
+            milestones: [...entry.milestones, milestone],
+            activeMilestoneId: milestone.id,
+            updatedAt: Date.now(),
+          };
+          const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
+
+          set({
+            savedBuilds: nextBuilds,
+            build: milestone.build,
+            computed: recompute(gameData, milestone.build),
+          });
+        },
+
+        importVariant: (importedBuild, name) => {
+          const { gameData, savedBuilds, activeBuildId, build } = get();
+          if (!gameData) return;
+
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          if (!entry) return;
+
+          const reconciled = reconcileBuild(gameData.game, importedBuild);
+          const milestoneName =
+            name?.trim() ||
+            nextMilestoneName(
+              entry.milestones,
+              reconciled.playerLevel,
+              getDefaultVariantName(entry),
+            );
+          const milestone = createMilestone(milestoneName, reconciled);
+
+          const nextEntry: SavedBuild = {
+            ...entry,
+            milestones: [...entry.milestones, milestone],
+            activeMilestoneId: milestone.id,
+            updatedAt: Date.now(),
+          };
+          const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
+
+          set({
+            savedBuilds: nextBuilds,
+            build: milestone.build,
+            computed: recompute(gameData, milestone.build),
+          });
+        },
+
+        deleteActiveVariant: () => {
+          const { savedBuilds, activeBuildId } = get();
+          const entry = getActiveEntry(savedBuilds, activeBuildId);
+          if (!entry) return;
+          get().deleteVariant(entry.activeMilestoneId);
+        },
+
+        renameActiveVariant: (name) => {
+          const { savedBuilds, activeBuildId } = get();
+          const entry = getActiveEntry(savedBuilds, activeBuildId);
+          if (!entry) return;
+          get().renameVariant(entry.activeMilestoneId, name);
+        },
+
+        deleteVariant: (variantId) => {
+          const { gameData, savedBuilds, activeBuildId, build } = get();
+          if (!gameData) return;
+
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          if (!entry || getVariantCount(entry) <= 1) return;
+
+          let nextEntry: SavedBuild;
+
+          if (variantId === null) {
+            const toPromote = pickMilestoneToPromote(entry.milestones);
+            if (!toPromote) return;
+            nextEntry = {
+              ...promoteMilestoneToDefault(entry, toPromote.id),
+              updatedAt: Date.now(),
+            };
+          } else {
+            const wasActive = entry.activeMilestoneId === variantId;
+            nextEntry = {
+              ...entry,
+              milestones: entry.milestones.filter((m) => m.id !== variantId),
+              activeMilestoneId: wasActive ? null : entry.activeMilestoneId,
+              updatedAt: Date.now(),
+            };
+          }
+
+          const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
+          const activeChanged =
+            (variantId === null && entry.activeMilestoneId === null) ||
+            (variantId !== null && entry.activeMilestoneId === variantId);
+
+          if (activeChanged) {
+            const nextBuild = getActiveSavedBuildBuild(nextEntry);
+            set({
+              savedBuilds: nextBuilds,
+              build: nextBuild,
+              computed: recompute(gameData, nextBuild),
+            });
+            return;
+          }
+
+          set({ savedBuilds: nextBuilds });
+        },
+
+        renameVariant: (variantId, name) => {
+          const trimmed = name.trim();
+          if (!trimmed) return;
+
+          const { savedBuilds, activeBuildId } = get();
+          set({
+            savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) => {
+              if (variantId === null) {
+                return { ...current, defaultVariantName: trimmed, updatedAt: Date.now() };
+              }
+
+              return {
+                ...current,
+                milestones: current.milestones.map((milestone) =>
+                  milestone.id === variantId ? { ...milestone, name: trimmed } : milestone,
+                ),
+                updatedAt: Date.now(),
+              };
+            }),
+          });
+        },
+
+        reorderVariants: (fromIndex, toIndex) => {
+          const { savedBuilds, activeBuildId, build } = get();
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+
+          set({
+            savedBuilds: updateActiveEntry(syncedBuilds, activeBuildId, (entry) => ({
+              ...reorderVariantsInEntry(entry, fromIndex, toIndex),
+              updatedAt: Date.now(),
+            })),
+          });
+        },
       };
     },
     {
@@ -467,6 +846,17 @@ export const useBuildStore = create<BuildStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (!state?.gameData) return;
+        state.savedBuilds = state.savedBuilds.map((entry) => {
+          const normalized = normalizeSavedBuild(entry);
+          return {
+            ...normalized,
+            build: migrateBuildState(normalized.build),
+            milestones: normalized.milestones.map((milestone) => ({
+              ...milestone,
+              build: migrateBuildState(milestone.build),
+            })),
+          };
+        });
         if (state.build.raceId === null) {
           state.build = { ...state.build, raceId: "none" };
         }
@@ -474,7 +864,11 @@ export const useBuildStore = create<BuildStore>()(
         if (state.build.playerLevel == null || Number.isNaN(state.build.playerLevel)) {
           state.build = { ...state.build, playerLevel: baseLevel };
         }
-        state.build = reconcileBuild(state.gameData.game, state.build);
+        const activeEntry = getActiveEntry(state.savedBuilds, state.activeBuildId);
+        if (activeEntry) {
+          state.build = getActiveSavedBuildBuild(activeEntry);
+        }
+        state.build = reconcileBuild(state.gameData.game, migrateBuildState(state.build));
         state.computed = recompute(state.gameData, state.build);
       },
     },

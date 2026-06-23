@@ -1,0 +1,1458 @@
+{
+  "version": 2,
+  "source": "multidyls.github.io/GigaPlanner v4.0.31 (live export) + LoreRim-only perk branches",
+  "grid": {
+    "width": 20,
+    "height": 45
+  },
+  "positions": {
+    "smithing:craftsmanship": {
+      "x": 10,
+      "y": 28
+    },
+    "smithing:advanced blacksmithing": {
+      "x": 10,
+      "y": 38
+    },
+    "smithing:arcane craftsmanship": {
+      "x": 6,
+      "y": 38
+    },
+    "smithing:legendary blacksmithing": {
+      "x": 13,
+      "y": 38
+    },
+    "smithing:advanced light armors": {
+      "x": 4,
+      "y": 25
+    },
+    "smithing:elven smithing": {
+      "x": 4,
+      "y": 19
+    },
+    "smithing:glass smithing": {
+      "x": 2,
+      "y": 6
+    },
+    "smithing:dwarven smithing": {
+      "x": 15,
+      "y": 25
+    },
+    "smithing:orcish smithing": {
+      "x": 15,
+      "y": 19
+    },
+    "smithing:ebony smithing": {
+      "x": 17,
+      "y": 6
+    },
+    "smithing:daedric smithing": {
+      "x": 10,
+      "y": 8
+    },
+    "smithing:draconic blacksmithing": {
+      "x": 10,
+      "y": 3
+    },
+    "heavy-armor:conditioning": {
+      "x": 11,
+      "y": 40
+    },
+    "heavy-armor:relentless onslaught": {
+      "x": 11,
+      "y": 30
+    },
+    "heavy-armor:devastating tackle": {
+      "x": 7,
+      "y": 24
+    },
+    "heavy-armor:combat casting": {
+      "x": 5,
+      "y": 29
+    },
+    "heavy-armor:combat trance": {
+      "x": 3,
+      "y": 20
+    },
+    "heavy-armor:combat meditation": {
+      "x": 4,
+      "y": 11
+    },
+    "heavy-armor:battle mage": {
+      "x": 4,
+      "y": 4
+    },
+    "heavy-armor:combat training": {
+      "x": 15,
+      "y": 30
+    },
+    "heavy-armor:immovable": {
+      "x": 14,
+      "y": 21
+    },
+    "heavy-armor:fortitude": {
+      "x": 16,
+      "y": 21
+    },
+    "heavy-armor:power of the combatant": {
+      "x": 17,
+      "y": 14
+    },
+    "heavy-armor:juggernaut": {
+      "x": 15,
+      "y": 4
+    },
+    "heavy-armor:mounted combat": {
+      "x": 15,
+      "y": 40
+    },
+    "block:improved blocking": {
+      "x": 10,
+      "y": 36
+    },
+    "block:experienced blocking": {
+      "x": 10,
+      "y": 19
+    },
+    "block:torch combat": {
+      "x": 13,
+      "y": 24
+    },
+    "block:strong grip": {
+      "x": 2,
+      "y": 26
+    },
+    "block:elemental protection": {
+      "x": 3,
+      "y": 13
+    },
+    "block:defensive stance": {
+      "x": 7,
+      "y": 7
+    },
+    "block:powerful bashes": {
+      "x": 16,
+      "y": 26
+    },
+    "block:shield strike": {
+      "x": 12,
+      "y": 18
+    },
+    "block:overpowering bashes": {
+      "x": 16,
+      "y": 19
+    },
+    "block:disarming bash": {
+      "x": 14,
+      "y": 8
+    },
+    "block:unstoppable charge": {
+      "x": 10,
+      "y": 3
+    },
+    "two-handed:great weapon mastery": {
+      "x": 10,
+      "y": 40
+    },
+    "two-handed:barbaric might": {
+      "x": 10,
+      "y": 33
+    },
+    "two-handed:quarterstaff & battlestaff focus": {
+      "x": 4,
+      "y": 29
+    },
+    "two-handed:defensive strike": {
+      "x": 4,
+      "y": 23
+    },
+    "two-handed:hafted blade focus": {
+      "x": 6,
+      "y": 29
+    },
+    "two-handed:shield breaker": {
+      "x": 6,
+      "y": 23
+    },
+    "two-handed:longblade focus": {
+      "x": 13,
+      "y": 29
+    },
+    "two-handed:reversal": {
+      "x": 13,
+      "y": 23
+    },
+    "two-handed:warhammer focus": {
+      "x": 15,
+      "y": 29
+    },
+    "two-handed:onslaught": {
+      "x": 15,
+      "y": 23
+    },
+    "two-handed:devastating charge": {
+      "x": 8,
+      "y": 19
+    },
+    "two-handed:devastating strike": {
+      "x": 11,
+      "y": 19
+    },
+    "two-handed:hyper armor": {
+      "x": 10,
+      "y": 10
+    },
+    "two-handed:mighty strike": {
+      "x": 10,
+      "y": 6
+    },
+    "two-handed:warbringer": {
+      "x": 10,
+      "y": 1
+    },
+    "one-handed:weapon mastery": {
+      "x": 10,
+      "y": 39
+    },
+    "one-handed:penetrating strikes": {
+      "x": 10,
+      "y": 30
+    },
+    "one-handed:short blade focus": {
+      "x": 4,
+      "y": 26
+    },
+    "one-handed:puncture": {
+      "x": 4,
+      "y": 22
+    },
+    "one-handed:war axe focus": {
+      "x": 6,
+      "y": 26
+    },
+    "one-handed:armsbreaker": {
+      "x": 6,
+      "y": 22
+    },
+    "one-handed:mace focus": {
+      "x": 13,
+      "y": 26
+    },
+    "one-handed:stunning blow": {
+      "x": 13,
+      "y": 22
+    },
+    "one-handed:sword & spear focus": {
+      "x": 15,
+      "y": 26
+    },
+    "one-handed:disarming strike": {
+      "x": 15,
+      "y": 22
+    },
+    "one-handed:powerful charge": {
+      "x": 11,
+      "y": 17
+    },
+    "one-handed:powerful strike": {
+      "x": 8,
+      "y": 17
+    },
+    "one-handed:relentless onslaught": {
+      "x": 10,
+      "y": 3
+    },
+    "one-handed:flurry": {
+      "x": 17,
+      "y": 33
+    },
+    "one-handed:storm of steel": {
+      "x": 16,
+      "y": 11
+    },
+    "one-handed:hand to hand": {
+      "x": 6,
+      "y": 41
+    },
+    "one-handed:grappling": {
+      "x": 2,
+      "y": 40
+    },
+    "one-handed:takedown": {
+      "x": 1,
+      "y": 36
+    },
+    "one-handed:unarmed defense": {
+      "x": 5,
+      "y": 36
+    },
+    "one-handed:unarmed stance": {
+      "x": 2,
+      "y": 30
+    },
+    "one-handed:armed spelllcasting": {
+      "x": 14,
+      "y": 39
+    },
+    "one-handed:balanced wielding": {
+      "x": 12,
+      "y": 33
+    },
+    "marksman:ranged combat training": {
+      "x": 12,
+      "y": 40
+    },
+    "marksman:ranger": {
+      "x": 8,
+      "y": 35
+    },
+    "marksman:eagle eye": {
+      "x": 8,
+      "y": 28
+    },
+    "marksman:marksman's focus": {
+      "x": 4,
+      "y": 18
+    },
+    "marksman:rapid reload": {
+      "x": 4,
+      "y": 13
+    },
+    "marksman:quick shot": {
+      "x": 10,
+      "y": 17
+    },
+    "marksman:power shot": {
+      "x": 5,
+      "y": 9
+    },
+    "marksman:precise aim": {
+      "x": 14,
+      "y": 30
+    },
+    "marksman:piercing shot": {
+      "x": 14,
+      "y": 19
+    },
+    "marksman:penetrating shot": {
+      "x": 13,
+      "y": 8
+    },
+    "marksman:stunning precision": {
+      "x": 8,
+      "y": 3
+    },
+    "marksman:sniper": {
+      "x": 7,
+      "y": 38
+    },
+    "marksman:bow strike": {
+      "x": 10,
+      "y": 30
+    },
+    "marksman:knife expertise": {
+      "x": 12,
+      "y": 30
+    },
+    "marksman:hunter": {
+      "x": 5,
+      "y": 40
+    },
+    "evasion:agility": {
+      "x": 10,
+      "y": 38
+    },
+    "evasion:dodge": {
+      "x": 13,
+      "y": 28
+    },
+    "evasion:light armor training": {
+      "x": 9,
+      "y": 26
+    },
+    "evasion:dexterity": {
+      "x": 6,
+      "y": 16
+    },
+    "evasion:agile spellcasting": {
+      "x": 5,
+      "y": 23
+    },
+    "evasion:wind walker": {
+      "x": 7,
+      "y": 10
+    },
+    "evasion:vexing flanker": {
+      "x": 13,
+      "y": 17
+    },
+    "evasion:combat reflexes": {
+      "x": 11,
+      "y": 9
+    },
+    "evasion:meteoric reflexes": {
+      "x": 9,
+      "y": 4
+    },
+    "evasion:unarmored": {
+      "x": 5,
+      "y": 32
+    },
+    "sneak:stealth": {
+      "x": 9,
+      "y": 38
+    },
+    "sneak:deft strike": {
+      "x": 14,
+      "y": 28
+    },
+    "sneak:anatomical lore": {
+      "x": 15,
+      "y": 19
+    },
+    "sneak:advanced anatomical lore": {
+      "x": 12,
+      "y": 15
+    },
+    "sneak:muffled movement": {
+      "x": 5,
+      "y": 27
+    },
+    "sneak:light steps": {
+      "x": 6,
+      "y": 16
+    },
+    "sneak:acrobatics": {
+      "x": 11,
+      "y": 9
+    },
+    "sneak:shadowrunner": {
+      "x": 15,
+      "y": 5
+    },
+    "wayfarer:cheap tricks": {
+      "x": 8,
+      "y": 39
+    },
+    "wayfarer:advanced lockpicking": {
+      "x": 8,
+      "y": 30
+    },
+    "wayfarer:treasure hunter": {
+      "x": 8,
+      "y": 22
+    },
+    "wayfarer:sophisticated lockpicking": {
+      "x": 8,
+      "y": 14
+    },
+    "wayfarer:masterly lockpicking": {
+      "x": 8,
+      "y": 6
+    },
+    "wayfarer:leader": {
+      "x": 5,
+      "y": 31
+    },
+    "wayfarer:captain": {
+      "x": 5,
+      "y": 24
+    },
+    "wayfarer:commander": {
+      "x": 5,
+      "y": 18
+    },
+    "wayfarer:legion": {
+      "x": 5,
+      "y": 11
+    },
+    "wayfarer:lone wolf": {
+      "x": 13,
+      "y": 31
+    },
+    "wayfarer:solo": {
+      "x": 13,
+      "y": 24
+    },
+    "wayfarer:maverick": {
+      "x": 13,
+      "y": 18
+    },
+    "wayfarer:one man legion": {
+      "x": 13,
+      "y": 11
+    },
+    "finesse:nimble fingers": {
+      "x": 7,
+      "y": 39
+    },
+    "finesse:cutpurse": {
+      "x": 2,
+      "y": 33
+    },
+    "finesse:poisoner": {
+      "x": 2,
+      "y": 25
+    },
+    "finesse:misdirection": {
+      "x": 2,
+      "y": 17
+    },
+    "finesse:perfected art": {
+      "x": 2,
+      "y": 8
+    },
+    "finesse:sound body": {
+      "x": 11,
+      "y": 28
+    },
+    "finesse:sound mind": {
+      "x": 11,
+      "y": 17
+    },
+    "finesse:sound spirit": {
+      "x": 11,
+      "y": 6
+    },
+    "finesse:outlaw": {
+      "x": 7,
+      "y": 33
+    },
+    "finesse:thief": {
+      "x": 7,
+      "y": 22
+    },
+    "finesse:lucky 7": {
+      "x": 7,
+      "y": 11
+    },
+    "finesse:trapper": {
+      "x": 14,
+      "y": 39
+    },
+    "speech:haggling": {
+      "x": 10,
+      "y": 39
+    },
+    "speech:merchant": {
+      "x": 9,
+      "y": 28
+    },
+    "speech:fencing": {
+      "x": 11,
+      "y": 22
+    },
+    "speech:silver tongue": {
+      "x": 7,
+      "y": 39
+    },
+    "speech:leadership": {
+      "x": 8,
+      "y": 19
+    },
+    "speech:masquerade": {
+      "x": 7,
+      "y": 8
+    },
+    "speech:war cry": {
+      "x": 6,
+      "y": 22
+    },
+    "speech:commander": {
+      "x": 11,
+      "y": 30
+    },
+    "speech:lore of the thu'um": {
+      "x": 17,
+      "y": 39
+    },
+    "speech:destructive urge": {
+      "x": 14,
+      "y": 39
+    },
+    "speech:indomitable force": {
+      "x": 14,
+      "y": 33
+    },
+    "speech:spiritual equilibrium": {
+      "x": 14,
+      "y": 25
+    },
+    "speech:the way of the voice": {
+      "x": 15,
+      "y": 17
+    },
+    "speech:tongue's insight": {
+      "x": 17,
+      "y": 11
+    },
+    "speech:shout focus": {
+      "x": 12,
+      "y": 36
+    },
+    "alchemy:alchemical lore": {
+      "x": 6,
+      "y": 38
+    },
+    "alchemy:improved elixirs": {
+      "x": 14,
+      "y": 36
+    },
+    "alchemy:night vision": {
+      "x": 17,
+      "y": 28
+    },
+    "alchemy:concentrated poisons": {
+      "x": 6,
+      "y": 27
+    },
+    "alchemy:regeneration": {
+      "x": 14,
+      "y": 18
+    },
+    "alchemy:catalysis": {
+      "x": 11,
+      "y": 21
+    },
+    "alchemy:improved poisons": {
+      "x": 7,
+      "y": 17
+    },
+    "alchemy:immunization": {
+      "x": 11,
+      "y": 11
+    },
+    "alchemy:fortified muscles": {
+      "x": 9,
+      "y": 25
+    },
+    "alchemy:alchemical intellect": {
+      "x": 14,
+      "y": 5
+    },
+    "alchemy:purification process": {
+      "x": 9,
+      "y": 2
+    },
+    "alchemy:drunken combat": {
+      "x": 2,
+      "y": 33
+    },
+    "alchemy:gourmet": {
+      "x": 2,
+      "y": 28
+    },
+    "alchemy:herbalist": {
+      "x": 2,
+      "y": 22
+    },
+    "illusion:novice illusion": {
+      "x": 10,
+      "y": 39
+    },
+    "illusion:apprentice illusion": {
+      "x": 10,
+      "y": 30
+    },
+    "illusion:adept illusion": {
+      "x": 10,
+      "y": 22
+    },
+    "illusion:expert illusion": {
+      "x": 10,
+      "y": 14
+    },
+    "illusion:master illusion": {
+      "x": 10,
+      "y": 6
+    },
+    "illusion:perceptual illusions": {
+      "x": 2,
+      "y": 30
+    },
+    "illusion:deceptive image": {
+      "x": 5,
+      "y": 25
+    },
+    "illusion:environmental manipulation": {
+      "x": 4,
+      "y": 19
+    },
+    "illusion:emotional illusions": {
+      "x": 17,
+      "y": 30
+    },
+    "illusion:mesmerize": {
+      "x": 14,
+      "y": 25
+    },
+    "illusion:domination": {
+      "x": 15,
+      "y": 19
+    },
+    "illusion:shadow shaping": {
+      "x": 5,
+      "y": 14
+    },
+    "illusion:shadows of conflict": {
+      "x": 7,
+      "y": 11
+    },
+    "illusion:master of shadows": {
+      "x": 6,
+      "y": 6
+    },
+    "illusion:delusive illusions": {
+      "x": 14,
+      "y": 14
+    },
+    "illusion:curse": {
+      "x": 12,
+      "y": 11
+    },
+    "illusion:obliterate the mind": {
+      "x": 13,
+      "y": 6
+    },
+    "illusion:empowered illusion": {
+      "x": 4,
+      "y": 39
+    },
+    "conjuration:novice conjuration": {
+      "x": 10,
+      "y": 39
+    },
+    "conjuration:apprentice conjuration": {
+      "x": 15,
+      "y": 30
+    },
+    "conjuration:adept conjuration": {
+      "x": 17,
+      "y": 22
+    },
+    "conjuration:expert conjuration": {
+      "x": 17,
+      "y": 14
+    },
+    "conjuration:master conjuration": {
+      "x": 15,
+      "y": 6
+    },
+    "conjuration:mystic binding": {
+      "x": 13,
+      "y": 28
+    },
+    "conjuration:mystic infusion": {
+      "x": 14,
+      "y": 22
+    },
+    "conjuration:mystic empowerment": {
+      "x": 14,
+      "y": 17
+    },
+    "conjuration:mystic disruption": {
+      "x": 13,
+      "y": 8
+    },
+    "conjuration:necromancy": {
+      "x": 8,
+      "y": 25
+    },
+    "conjuration:ritualism": {
+      "x": 8,
+      "y": 19
+    },
+    "conjuration:siphon corpse": {
+      "x": 9,
+      "y": 12
+    },
+    "conjuration:dark infusion": {
+      "x": 7,
+      "y": 8
+    },
+    "conjuration:empowered conjuration": {
+      "x": 5,
+      "y": 25
+    },
+    "conjuration:cognitive flexibility": {
+      "x": 6,
+      "y": 14
+    },
+    "conjuration:daedric binding": {
+      "x": 4,
+      "y": 30
+    },
+    "conjuration:spiritual binding": {
+      "x": 2,
+      "y": 22
+    },
+    "conjuration:gates of oblivion": {
+      "x": 2,
+      "y": 17
+    },
+    "conjuration:dark channeling": {
+      "x": 4,
+      "y": 10
+    },
+    "conjuration:waters of oblivion": {
+      "x": 2,
+      "y": 6
+    },
+    "conjuration:spirit calling": {
+      "x": 11,
+      "y": 30
+    },
+    "conjuration:spiritual bond": {
+      "x": 11,
+      "y": 22
+    },
+    "conjuration:spirit guardian": {
+      "x": 11,
+      "y": 14
+    },
+    "conjuration:ancient spirits": {
+      "x": 10,
+      "y": 8
+    },
+    "conjuration:soul magic": {
+      "x": 15,
+      "y": 17
+    },
+    "conjuration:necropotence": {
+      "x": 14,
+      "y": 11
+    },
+    "destruction:novice destruction": {
+      "x": 10,
+      "y": 39
+    },
+    "destruction:apprentice destruction": {
+      "x": 12,
+      "y": 30
+    },
+    "destruction:adept destruction": {
+      "x": 11,
+      "y": 22
+    },
+    "destruction:expert destruction": {
+      "x": 12,
+      "y": 14
+    },
+    "destruction:master destruction": {
+      "x": 13,
+      "y": 6
+    },
+    "destruction:improved cloaks": {
+      "x": 17,
+      "y": 25
+    },
+    "destruction:elemental mastery": {
+      "x": 15,
+      "y": 19
+    },
+    "destruction:destructive blow": {
+      "x": 12,
+      "y": 21
+    },
+    "destruction:empowered destruction": {
+      "x": 14,
+      "y": 36
+    },
+    "destruction:impact": {
+      "x": 17,
+      "y": 30
+    },
+    "destruction:blood magic": {
+      "x": 2,
+      "y": 33
+    },
+    "destruction:consume life": {
+      "x": 1,
+      "y": 22
+    },
+    "destruction:entropic focus": {
+      "x": 4,
+      "y": 30
+    },
+    "destruction:entropic disarray": {
+      "x": 3,
+      "y": 18
+    },
+    "destruction:arcane focus": {
+      "x": 6,
+      "y": 28
+    },
+    "destruction:arcane disruption": {
+      "x": 4,
+      "y": 14
+    },
+    "destruction:pyromancy": {
+      "x": 7,
+      "y": 21
+    },
+    "destruction:cremation": {
+      "x": 7,
+      "y": 15
+    },
+    "destruction:fire mastery": {
+      "x": 6,
+      "y": 6
+    },
+    "destruction:cryomancy": {
+      "x": 8,
+      "y": 25
+    },
+    "destruction:deep freeze": {
+      "x": 8,
+      "y": 12
+    },
+    "destruction:frost mastery": {
+      "x": 8,
+      "y": 6
+    },
+    "destruction:electromancy": {
+      "x": 10,
+      "y": 30
+    },
+    "destruction:electrostatic discharge": {
+      "x": 10,
+      "y": 17
+    },
+    "destruction:lightning mastery": {
+      "x": 11,
+      "y": 6
+    },
+    "restoration:painful regrets": {
+      "x": 15,
+      "y": 39
+    },
+    "restoration:novice restoration": {
+      "x": 10,
+      "y": 39
+    },
+    "restoration:apprentice restoration": {
+      "x": 11,
+      "y": 30
+    },
+    "restoration:adept restoration": {
+      "x": 11,
+      "y": 22
+    },
+    "restoration:expert restoration": {
+      "x": 11,
+      "y": 14
+    },
+    "restoration:master restoration": {
+      "x": 8,
+      "y": 6
+    },
+    "restoration:empowered restoration": {
+      "x": 16,
+      "y": 34
+    },
+    "restoration:focused mind": {
+      "x": 12,
+      "y": 20
+    },
+    "restoration:power of life": {
+      "x": 12,
+      "y": 11
+    },
+    "restoration:essence of life": {
+      "x": 14,
+      "y": 8
+    },
+    "restoration:improved protection": {
+      "x": 14,
+      "y": 25
+    },
+    "restoration:improved wards": {
+      "x": 15,
+      "y": 17
+    },
+    "restoration:ward mastery": {
+      "x": 14,
+      "y": 30
+    },
+    "restoration:improved healing": {
+      "x": 2,
+      "y": 30
+    },
+    "restoration:respite": {
+      "x": 1,
+      "y": 19
+    },
+    "restoration:improved turning": {
+      "x": 4,
+      "y": 28
+    },
+    "restoration:mystic turning": {
+      "x": 3,
+      "y": 17
+    },
+    "restoration:heliomancy": {
+      "x": 6,
+      "y": 25
+    },
+    "restoration:scorching light": {
+      "x": 5,
+      "y": 14
+    },
+    "restoration:venomancy": {
+      "x": 8,
+      "y": 22
+    },
+    "restoration:paralyzing poison": {
+      "x": 7,
+      "y": 11
+    },
+    "alteration:novice alteration": {
+      "x": 9,
+      "y": 39
+    },
+    "alteration:apprentice alteration": {
+      "x": 11,
+      "y": 30
+    },
+    "alteration:adept alteration": {
+      "x": 10,
+      "y": 22
+    },
+    "alteration:expert alteration": {
+      "x": 11,
+      "y": 14
+    },
+    "alteration:master alteration": {
+      "x": 13,
+      "y": 6
+    },
+    "alteration:transmutation": {
+      "x": 14,
+      "y": 33
+    },
+    "alteration:transmutational mending": {
+      "x": 16,
+      "y": 28
+    },
+    "alteration:empowered alterations": {
+      "x": 6,
+      "y": 30
+    },
+    "alteration:kinetomancy": {
+      "x": 13,
+      "y": 25
+    },
+    "alteration:power of the force": {
+      "x": 16,
+      "y": 19
+    },
+    "alteration:improved mage armor": {
+      "x": 6,
+      "y": 25
+    },
+    "alteration:versatile armor": {
+      "x": 5,
+      "y": 19
+    },
+    "alteration:magic resistance": {
+      "x": 13,
+      "y": 17
+    },
+    "alteration:stability": {
+      "x": 8,
+      "y": 17
+    },
+    "alteration:metamagical thesis": {
+      "x": 6,
+      "y": 12
+    },
+    "alteration:metamagical empowerment": {
+      "x": 3,
+      "y": 6
+    },
+    "alteration:weather magic": {
+      "x": 9,
+      "y": 11
+    },
+    "alteration:master of storms": {
+      "x": 6,
+      "y": 6
+    },
+    "alteration:magical absorption": {
+      "x": 10,
+      "y": 6
+    },
+    "alteration:unskilled spellcasting": {
+      "x": 3,
+      "y": 39
+    },
+    "alteration:metamagic": {
+      "x": 13,
+      "y": 39
+    },
+    "alteration:willpower": {
+      "x": 16,
+      "y": 39
+    },
+    "enchanting:enchanter's insight": {
+      "x": 9,
+      "y": 38
+    },
+    "enchanting:arcane artificery": {
+      "x": 14,
+      "y": 30
+    },
+    "enchanting:soul gem mastery": {
+      "x": 12,
+      "y": 24
+    },
+    "enchanting:arcane experimentation": {
+      "x": 12,
+      "y": 19
+    },
+    "enchanting:artificer's insight": {
+      "x": 13,
+      "y": 14
+    },
+    "enchanting:elemental lore": {
+      "x": 7,
+      "y": 24
+    },
+    "enchanting:corpus lore": {
+      "x": 7,
+      "y": 17
+    },
+    "enchanting:skill lore": {
+      "x": 9,
+      "y": 10
+    },
+    "enchanting:enchantment mastery": {
+      "x": 12,
+      "y": 7
+    },
+    "enchanting:artifact enchanter": {
+      "x": 11,
+      "y": 3
+    },
+    "sneak:arcane assassin": {
+      "x": 11,
+      "y": 22
+    },
+    "enchanting:staff channeling": {
+      "x": 15,
+      "y": 25
+    },
+    "smithing:tailoring & polishing": {
+      "x": 7,
+      "y": 33
+    },
+    "smithing:shivering isles smithing": {
+      "x": 10,
+      "y": 18
+    },
+    "marksman:sharp throw": {
+      "x": 7,
+      "y": 14
+    },
+    "wayfarer:hunter": {
+      "x": 15,
+      "y": 30
+    },
+    "wayfarer:survival instincts": {
+      "x": 15,
+      "y": 19
+    },
+    "wayfarer:pacification": {
+      "x": 15,
+      "y": 8
+    },
+    "finesse:pocket sand": {
+      "x": 18,
+      "y": 28
+    },
+    "finesse:quick sand": {
+      "x": 18,
+      "y": 17
+    },
+    "finesse:poisoned clamps": {
+      "x": 14,
+      "y": 25
+    },
+    "finesse:salt on the wound": {
+      "x": 14,
+      "y": 14
+    },
+    "speech:battle muse": {
+      "x": 4,
+      "y": 39
+    },
+    "speech:standing ovation": {
+      "x": 1,
+      "y": 28
+    },
+    "speech:boozy bard": {
+      "x": 3,
+      "y": 28
+    },
+    "speech:windborne melody": {
+      "x": 4,
+      "y": 28
+    },
+    "speech:skald": {
+      "x": 5,
+      "y": 19
+    },
+    "speech:symphony of storms": {
+      "x": 5,
+      "y": 11
+    },
+    "enchanting:wand mastery": {
+      "x": 14,
+      "y": 17
+    },
+    "evasion:athletics": {
+      "x": 10,
+      "y": 17
+    },
+    "one-handed:final stand": {
+      "x": 15,
+      "y": 17
+    },
+    "one-handed:heavy slam": {
+      "x": 13,
+      "y": 17
+    },
+    "one-handed:guillotine": {
+      "x": 6,
+      "y": 17
+    },
+    "one-handed:death adder": {
+      "x": 4,
+      "y": 17
+    },
+    "two-handed:battle hide": {
+      "x": 4,
+      "y": 18
+    },
+    "two-handed:execute": {
+      "x": 6,
+      "y": 18
+    },
+    "two-handed:critical slam": {
+      "x": 15,
+      "y": 18
+    },
+    "two-handed:death or glory": {
+      "x": 13,
+      "y": 18
+    },
+    "marksman:focus on the prey": {
+      "x": 12,
+      "y": 25
+    },
+    "marksman:three crows": {
+      "x": 12,
+      "y": 17
+    },
+    "marksman:lion's arrow": {
+      "x": 8,
+      "y": 8
+    },
+    "block:weapons master": {
+      "x": 6,
+      "y": 25
+    },
+    "block:masterly strike": {
+      "x": 6,
+      "y": 19
+    },
+    "block:shield's best friend": {
+      "x": 11,
+      "y": 22
+    },
+    "smithing:smithing specialization": {
+      "x": 12,
+      "y": 33
+    },
+    "smithing:iron lore": {
+      "x": 14,
+      "y": 31
+    },
+    "heavy-armor:cushioned": {
+      "x": 11,
+      "y": 24
+    },
+    "heavy-armor:defiance": {
+      "x": 11,
+      "y": 17
+    },
+    "heavy-armor:never kneel": {
+      "x": 11,
+      "y": 10
+    },
+    "heavy-armor:reap the whirlwind": {
+      "x": 11,
+      "y": 2
+    },
+    "evasion:annoying mosquitoes": {
+      "x": 10,
+      "y": 11
+    },
+    "evasion:evasive leap": {
+      "x": 14,
+      "y": 22
+    },
+    "evasion:as a leaf": {
+      "x": 12,
+      "y": 23
+    },
+    "finesse:death's emperor": {
+      "x": 5,
+      "y": 17
+    },
+    "finesse:mutiny": {
+      "x": 5,
+      "y": 8
+    },
+    "finesse:lawless world": {
+      "x": 6,
+      "y": 28
+    },
+    "wayfarer:lockdown": {
+      "x": 11,
+      "y": 25
+    },
+    "wayfarer:hotwire": {
+      "x": 11,
+      "y": 17
+    },
+    "wayfarer:percussive maintenance": {
+      "x": 11,
+      "y": 8
+    },
+    "sneak:problem solver": {
+      "x": 17,
+      "y": 14
+    },
+    "sneak:fog of war": {
+      "x": 17,
+      "y": 33
+    },
+    "sneak:tripwire": {
+      "x": 7,
+      "y": 28
+    },
+    "sneak:whiplash": {
+      "x": 8,
+      "y": 19
+    },
+    "sneak:cloak and dagger": {
+      "x": 17,
+      "y": 22
+    },
+    "alchemy:alkahest": {
+      "x": 5,
+      "y": 11
+    },
+    "alchemy:world serpent": {
+      "x": 6,
+      "y": 6
+    },
+    "enchanting:charge tap": {
+      "x": 17,
+      "y": 17
+    },
+    "enchanting:you shall not pass": {
+      "x": 15,
+      "y": 11
+    },
+    "alteration:geomancer": {
+      "x": 16,
+      "y": 40
+    },
+    "alteration:philosopher's stone": {
+      "x": 7,
+      "y": 42
+    },
+    "block:surprise attack": {
+      "x": 6,
+      "y": 13
+    },
+    "block:strike the jugular": {
+      "x": 6,
+      "y": 8
+    },
+    "block:master of all": {
+      "x": 6,
+      "y": 4
+    },
+    "destruction:rune mastery": {
+      "x": 5,
+      "y": 24
+    },
+    "destruction:blood glutton": {
+      "x": 1,
+      "y": 15
+    },
+    "destruction:eldritch artist": {
+      "x": 3,
+      "y": 12
+    },
+    "destruction:disciple of the mystics": {
+      "x": 4,
+      "y": 9
+    },
+    "marksman:hidden blade": {
+      "x": 6,
+      "y": 35
+    },
+    "one-handed:piercing strike": {
+      "x": 15,
+      "y": 17
+    },
+    "one-handed:deathbringer": {
+      "x": 18,
+      "y": 3
+    },
+    "restoration:mental acuity": {
+      "x": 17,
+      "y": 28
+    },
+    "restoration:masterly wards": {
+      "x": 15,
+      "y": 10
+    },
+    "restoration:venomaster": {
+      "x": 7,
+      "y": 6
+    },
+    "restoration:heliomaster": {
+      "x": 5,
+      "y": 8
+    },
+    "restoration:greater vitality": {
+      "x": 1,
+      "y": 12
+    },
+    "sneak:shadow opportunist": {
+      "x": 9,
+      "y": 10
+    },
+    "two-handed:longweapon focus": {
+      "x": 8,
+      "y": 29
+    },
+    "wayfarer:animal taming": {
+      "x": 2,
+      "y": 40
+    },
+    "wayfarer:animal riding": {
+      "x": 2,
+      "y": 31
+    },
+    "wayfarer:beastmaster": {
+      "x": 2,
+      "y": 22
+    }
+  }
+}

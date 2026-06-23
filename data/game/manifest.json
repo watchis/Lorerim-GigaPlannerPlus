@@ -1,5 +1,5 @@
 {
-  "version": "4.0.31",
+  "version": "5.0.3.2",
   "name": "LoreRim",
   "limits": {
     "majorSkills": 3,
@@ -7,7 +7,10 @@
     "traits": 2,
     "initialAttributePoints": 0
   },
-  "nonAllocatableSkills": ["destiny", "traits"],
+  "nonAllocatableSkills": [
+    "destiny",
+    "traits"
+  ],
   "skills": [
     "smithing",
     "heavy-armor",

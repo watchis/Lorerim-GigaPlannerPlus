@@ -11,14 +11,44 @@
   --color-accent: #c9a227;
   --color-accent-muted: #8a7020;
   --color-health: #8b2942;
+  --color-error: #d64a5f;
+  --color-error-muted: #f0b0bb;
+  --color-magicka: #4a6fa5;
+  --color-stamina: #3d7a52;
   --font-heading: Cinzel, serif;
   --font-body: Inter, system-ui, sans-serif;
   --radius-md: 8px;
   --shadow-glow: 0 0 20px rgba(201, 162, 39, 0.15);
+  --shadow-error-glow: 0 0 20px rgba(214, 74, 95, 0.6);
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-muted) 40%, transparent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  margin-block: 2px;
+  margin-inline: 2px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-muted) 35%, transparent);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-muted) 55%, transparent);
+  background-clip: padding-box;
 }
 
 html,
@@ -53,4 +83,22 @@ textarea,
 select,
 button {
   font: inherit;
+}
+
+.scroll-area-thumb {
+  background: color-mix(in srgb, var(--color-muted) 35%, transparent);
+  border-radius: 999px;
+}
+
+.group:hover > .scroll-area-thumb {
+  background: color-mix(in srgb, var(--color-muted) 55%, transparent);
+}
+
+/* Sit scrollbar in panel padding so list items stay full width */
+.picker-list-scroll {
+  overflow: visible;
+}
+
+.picker-list-scroll > [data-radix-scroll-area-scrollbar][data-orientation="vertical"] {
+  right: -0.375rem;
 }

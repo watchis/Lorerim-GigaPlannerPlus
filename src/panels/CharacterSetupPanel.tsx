@@ -1,11 +1,15 @@
-import { ChevronRight, X } from "lucide-react";
+import type { KeyboardEvent } from "react";
+import { ChevronRight, Settings, X } from "lucide-react";
+import { AttributesAllocator } from "@/components/AttributesAllocator";
+import { DestinyTreeSection } from "@/components/DestinyTreeSection";
 import { SkillIcon } from "@/components/SkillIcon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getTraitLimit } from "@/engine/buildEngine";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
-
 interface SelectedChip {
   id: string;
   label: string;
@@ -18,30 +22,38 @@ interface SelectionChipProps {
 }
 
 function SelectionChip({ item, onRemove }: SelectionChipProps) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
+    if (!onRemove) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onRemove();
+    }
+  };
+
   return (
-    <button
-      type="button"
+    <span
+      role={onRemove ? "button" : undefined}
+      tabIndex={onRemove ? 0 : undefined}
       onClick={onRemove}
-      disabled={!onRemove}
+      onKeyDown={handleKeyDown}
       className={cn(
-        "group inline-flex max-w-full items-center gap-1 rounded-md border border-[var(--color-border)]/50",
-        "bg-[var(--color-background)]/60 py-0.5 pl-1.5 text-[11px] leading-tight text-[var(--color-foreground)]",
+        "group inline-flex max-w-full items-center gap-1.5 rounded-md border border-[var(--color-border)]/50",
+        "bg-[var(--color-surface-elevated)]/40 px-2 py-0.5 text-[11px] font-medium leading-tight text-[var(--color-foreground)]",
         onRemove &&
-          "cursor-pointer pr-1 hover:border-[var(--color-accent)]/35 hover:bg-[var(--color-accent)]/8 hover:text-[var(--color-accent)]",
-        !onRemove && "cursor-default pr-1.5",
+          "cursor-pointer hover:border-[var(--color-accent)]/35 hover:bg-[var(--color-accent)]/8 hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50",
       )}
     >
       {item.icon && (
         <SkillIcon
           skillId={item.id}
-          className="h-3 w-3 text-[var(--color-accent-muted)] group-hover:text-[var(--color-accent)]"
+          className="h-3.5 w-3.5 shrink-0 text-[var(--color-accent-muted)] group-hover:text-[var(--color-accent)]"
         />
       )}
-      <span className="truncate font-medium">{item.label}</span>
+      <span className="truncate">{item.label}</span>
       {onRemove && (
         <X className="h-3 w-3 shrink-0 text-[var(--color-muted)] opacity-50 group-hover:text-[var(--color-accent)] group-hover:opacity-100" />
       )}
-    </button>
+    </span>
   );
 }
 
@@ -55,6 +67,7 @@ interface SetupPickerRowProps {
   remaining?: number;
   multi?: boolean;
   noneLabel: string;
+  hideEmptyLabel?: boolean;
 }
 
 function rowSummary(
@@ -79,12 +92,15 @@ function SetupPickerRow({
   remaining,
   multi = false,
   noneLabel,
+  hideEmptyLabel = false,
 }: SetupPickerRowProps) {
   const hasSelection = selectedItems.length > 0;
   const subline = multi
     ? hasSelection
       ? null
-      : noneLabel
+      : hideEmptyLabel
+        ? null
+        : noneLabel
     : rowSummary(selectedItems, remaining, noneLabel);
   const isEmpty = !hasSelection;
 
@@ -141,7 +157,7 @@ function SetupPickerRow({
         )}
       </div>
       {multi && hasSelection && (
-        <div className="flex flex-wrap gap-1 px-0.5">
+        <div className="flex flex-wrap gap-1.5 px-0.5">
           {selectedItems.map((item, index) => (
             <SelectionChip
               key={`${picker}-${item.id}`}
@@ -160,34 +176,36 @@ export function CharacterSetupPanel() {
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const setRace = useBuildStore((s) => s.setRace);
-  const setStandingStone = useBuildStore((s) => s.setStandingStone);
-  const setBlessing = useBuildStore((s) => s.setBlessing);
+  const setBirthsign = useBuildStore((s) => s.setBirthsign);
+  const setDeity = useBuildStore((s) => s.setDeity);
   const toggleTrait = useBuildStore((s) => s.toggleTrait);
   const toggleMajorSkill = useBuildStore((s) => s.toggleMajorSkill);
   const toggleMinorSkill = useBuildStore((s) => s.toggleMinorSkill);
   const setupPicker = useUiStore((s) => s.setupPicker);
+  const characterOptionsOpen = useUiStore((s) => s.characterOptionsOpen);
   const toggleSetupPicker = useUiStore((s) => s.toggleSetupPicker);
+  const toggleCharacterOptions = useUiStore((s) => s.toggleCharacterOptions);
 
   if (!gameData) return null;
 
   const { game } = gameData;
   const majorRemaining = game.manifest.limits.majorSkills - build.majorSkillIds.length;
   const minorRemaining = game.manifest.limits.minorSkills - build.minorSkillIds.length;
-  const traitsRemaining = game.manifest.limits.traits - build.traitIds.length;
+  const traitsRemaining = getTraitLimit(game, build) - build.traitIds.length;
   const noneLabel = labels.noneSelected ?? "None selected";
 
   const selectedRaceName =
     build.raceId && build.raceId !== "none"
       ? (game.races.find((r) => r.id === build.raceId)?.name ?? build.raceId)
       : null;
-  const selectedStoneName =
-    build.standingStoneId && build.standingStoneId !== "none"
-      ? (game.standingStones.find((s) => s.id === build.standingStoneId)?.name ??
-        build.standingStoneId)
+  const selectedBirthsignName =
+    build.birthsignId && build.birthsignId !== "none"
+      ? (game.birthsigns.find((s) => s.id === build.birthsignId)?.name ??
+        build.birthsignId)
       : null;
-  const selectedBlessingName =
-    build.blessingId && build.blessingId !== "none"
-      ? (game.blessings.find((b) => b.id === build.blessingId)?.name ?? build.blessingId)
+  const selectedDeityName =
+    build.deityId && build.deityId !== "none"
+      ? (game.deities.find((b) => b.id === build.deityId)?.name ?? build.deityId)
       : null;
 
   const selectedTraitItems = build.traitIds.map((id) => ({
@@ -207,8 +225,23 @@ export function CharacterSetupPanel() {
 
   return (
     <Card className="flex-shrink-0">
-      <CardHeader className="pb-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-base">{labels.title}</CardTitle>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-8 w-8 shrink-0 text-[var(--color-muted)]",
+            characterOptionsOpen &&
+              "bg-[var(--color-accent)]/10 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/15 hover:text-[var(--color-accent)]",
+          )}
+          onClick={toggleCharacterOptions}
+          aria-label={labels.openOptions ?? "Character options"}
+          aria-pressed={characterOptionsOpen}
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="space-y-1.5">
@@ -226,38 +259,42 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
           <SetupPickerRow
-            label={labels.standingStone}
-            picker="standing-stone"
-            isActive={setupPicker === "standing-stone"}
-            onOpen={() => toggleSetupPicker("standing-stone")}
+            label={labels.birthsign}
+            picker="birthsign"
+            isActive={setupPicker === "birthsign"}
+            onOpen={() => toggleSetupPicker("birthsign")}
             selectedItems={
-              selectedStoneName && build.standingStoneId
-                ? [{ id: build.standingStoneId, label: selectedStoneName }]
+              selectedBirthsignName && build.birthsignId
+                ? [{ id: build.birthsignId, label: selectedBirthsignName }]
                 : []
             }
-            onRemove={() => setStandingStone("none")}
+            onRemove={() => setBirthsign("none")}
             noneLabel={noneLabel}
           />
           <SetupPickerRow
-            label={labels.blessing}
-            picker="blessing"
-            isActive={setupPicker === "blessing"}
-            onOpen={() => toggleSetupPicker("blessing")}
+            label={labels.deity}
+            picker="deity"
+            isActive={setupPicker === "deity"}
+            onOpen={() => toggleSetupPicker("deity")}
             selectedItems={
-              selectedBlessingName && build.blessingId
-                ? [{ id: build.blessingId, label: selectedBlessingName }]
+              selectedDeityName && build.deityId
+                ? [{ id: build.deityId, label: selectedDeityName }]
                 : []
             }
-            onRemove={() => setBlessing("none")}
+            onRemove={() => setDeity("none")}
             noneLabel={noneLabel}
           />
         </div>
-        <div className="space-y-1.5 border-t border-[var(--color-border)]/70 pt-3">
+        <div className="border-y border-[var(--color-border)]/70 py-3">
+          <AttributesAllocator embedded />
+        </div>
+        <div className="space-y-1.5">
           <SetupPickerRow
             label={labels.traits}
             remaining={traitsRemaining}
             picker="traits"
             multi
+            hideEmptyLabel
             isActive={setupPicker === "traits"}
             onOpen={() => toggleSetupPicker("traits")}
             selectedItems={selectedTraitItems}
@@ -269,6 +306,7 @@ export function CharacterSetupPanel() {
             remaining={majorRemaining}
             picker="major-skills"
             multi
+            hideEmptyLabel
             isActive={setupPicker === "major-skills"}
             onOpen={() => toggleSetupPicker("major-skills")}
             selectedItems={selectedMajorItems}
@@ -280,6 +318,7 @@ export function CharacterSetupPanel() {
             remaining={minorRemaining}
             picker="minor-skills"
             multi
+            hideEmptyLabel
             isActive={setupPicker === "minor-skills"}
             onOpen={() => toggleSetupPicker("minor-skills")}
             selectedItems={selectedMinorItems}
@@ -287,6 +326,7 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
         </div>
+        <DestinyTreeSection />
       </CardContent>
     </Card>
   );

@@ -1,5 +1,4 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
@@ -17,8 +16,21 @@ export function AppShell({ variant = "default" }: AppShellProps) {
       <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface)]/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link to="/" className="group flex min-w-0 items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-accent-muted)] bg-[var(--color-accent)]/10 text-[var(--color-accent)] shadow-[var(--shadow-glow)]">
-              <Sparkles className="h-4 w-4" />
+            <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-visible">
+              <svg
+                viewBox="0 0 32 32"
+                fill="none"
+                className="h-10 w-10 text-[var(--color-accent)] drop-shadow-[0_0_4px_rgba(201,162,39,0.15)]"
+                aria-hidden
+              >
+                <path
+                  d="M8 22 L16 8 L24 22 Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  fill="none"
+                />
+                <circle cx="16" cy="18" r="3" fill="currentColor" />
+              </svg>
             </span>
             <span className="min-w-0">
               <span className="block truncate font-[family-name:var(--font-heading)] text-base font-semibold tracking-wide text-[var(--color-accent)] sm:text-lg">
@@ -85,12 +97,6 @@ export function AppShell({ variant = "default" }: AppShellProps) {
       <main className="flex min-h-0 flex-1 flex-col">
         <Outlet />
       </main>
-
-      {variant === "default" && (
-        <footer className="border-t border-[var(--color-border)] bg-[var(--color-surface)]/50 px-4 py-4 text-center text-xs text-[var(--color-muted)] sm:px-6">
-          {labels.app.footer}
-        </footer>
-      )}
     </div>
   );
 }

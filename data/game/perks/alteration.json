@@ -3,7 +3,7 @@
   "skillName": "Alteration",
   "grid": {
     "width": 25,
-    "height": 25
+    "height": 34
   },
   "perks": [
     {
@@ -11,40 +11,44 @@
       "name": "Novice Alteration",
       "skillReq": 0,
       "position": {
-        "x": 11,
-        "y": 21
+        "x": 8,
+        "y": 33
       },
       "prerequisites": [],
       "description": "You've taught yourself a few Novice level spells and learned how to cast them with decreased effort while your newfound knowledge also allows you to augment all Alteration spells.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alteration-apprentice-alteration",
       "name": "Apprentice Alteration",
       "skillReq": 25,
       "position": {
-        "x": 14,
-        "y": 17
+        "x": 10,
+        "y": 24
       },
       "prerequisites": [
-        "alteration-novice-alteration"
+        "alteration-novice-alteration",
+        "alteration-geomancer"
       ],
       "description": "By pursuing your apprenticeship in Alteration, you've gained knowledge of Apprentice level spells which you now augment while casting them with less effort.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alteration-adept-alteration",
       "name": "Adept Alteration",
       "skillReq": 50,
       "position": {
-        "x": 12,
-        "y": 12
+        "x": 10,
+        "y": 13
       },
       "prerequisites": [
         "alteration-apprentice-alteration"
       ],
       "description": "By advancing further into the school of Alteration, you've gained some Adept level spells and learned how to augment and cast spells of this rank more easily.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alteration-expert-alteration",
@@ -52,237 +56,29 @@
       "skillReq": 75,
       "position": {
         "x": 14,
-        "y": 8
+        "y": 7
       },
       "prerequisites": [
         "alteration-adept-alteration"
       ],
       "description": "You've unlocked almost every secret in the school of Alteration and you've acquired some Expert level spells. You can now cast spells of this level easier and augment them to an almost otherworldly extent.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alteration-master-alteration",
       "name": "Master Alteration",
       "skillReq": 100,
       "position": {
-        "x": 16,
-        "y": 3
+        "x": 19,
+        "y": 0
       },
       "prerequisites": [
         "alteration-expert-alteration"
       ],
       "description": "Your knowledge of Alteration has become all-encompassing. You taught yourself a Master level spell and you can cast the most complex spells from this school with less effort while augmenting them beyond mortal limits.",
-      "effects": []
-    },
-    {
-      "id": "alteration-transmutation",
-      "name": "Transmutation",
-      "skillReq": 25,
-      "position": {
-        "x": 18,
-        "y": 18
-      },
-      "prerequisites": [
-        "alteration-novice-alteration"
-      ],
-      "description": "Transmutation, size-shifting, shape-shifting spells are stonger and more efficient. (1.1x magnitude, 1.1x duration, 0.9x cost for transmutation spells)",
-      "effects": []
-    },
-    {
-      "id": "alteration-transmutational-mending",
-      "name": "Transmutational Mending",
-      "skillReq": 75,
-      "position": {
-        "x": 20,
-        "y": 15
-      },
-      "prerequisites": [
-        "alteration-transmutation"
-      ],
-      "description": "Health is increased and regenerates while transmutation spell is active. (+50 health and +1/s health regeneration while transmutation spell is active)",
-      "effects": []
-    },
-    {
-      "id": "alteration-empowered-alterations",
-      "name": "Empowered Alterations",
-      "skillReq": 25,
-      "position": {
-        "x": 8,
-        "y": 17
-      },
-      "prerequisites": [
-        "alteration-novice-alteration"
-      ],
-      "description": "Dual casting an Alteration spell overcharges the effects into an even more powerful version.",
-      "effects": []
-    },
-    {
-      "id": "alteration-kinetomancy",
-      "name": "Kinetomancy",
-      "skillReq": 25,
-      "position": {
-        "x": 16,
-        "y": 14
-      },
-      "prerequisites": [
-        "alteration-apprentice-alteration"
-      ],
-      "description": "You can more easily handle telekinetic spells, increasing their power and efficiency. (1.2x magnitude, 0.8x cost for telekinetic spells)",
-      "effects": []
-    },
-    {
-      "id": "alteration-power-of-the-force",
-      "name": "Power of the Force",
-      "skillReq": 75,
-      "position": {
-        "x": 20,
-        "y": 11
-      },
-      "prerequisites": [
-        "alteration-kinetomancy"
-      ],
-      "description": "Your telekinetic spells cause devastating impact, dealing more damage and knocking off stronger targets. (+25% physical telekinetic spell damage, +10% magic resistance threshold for telekinetic knockdown effect)",
-      "effects": []
-    },
-    {
-      "id": "alteration-improved-mage-armor",
-      "name": "Improved Mage Armor",
-      "skillReq": 25,
-      "position": {
-        "x": 8,
-        "y": 14
-      },
-      "prerequisites": [
-        "alteration-apprentice-alteration"
-      ],
-      "description": "You've mastered the art of casting armor spells. Their effect is maximized when you don't wear any distracting armor. (1.5x armor and shield spell magnitude when not wearing chest armor, 1.2x when wearing chest armor)",
-      "effects": []
-    },
-    {
-      "id": "alteration-versatile-armor",
-      "name": "Versatile Armor",
-      "skillReq": 50,
-      "position": {
-        "x": 6,
-        "y": 11
-      },
-      "prerequisites": [
-        "alteration-improved-mage-armor"
-      ],
-      "description": "You've expanded the versatility of your Armor and Shield spells, enabling them to decrease incoming elemental and physical damage. (0.8x incoming fire, frost, shock, physical damage when Armor or Shield spell is active)",
-      "effects": []
-    },
-    {
-      "id": "alteration-magic-resistance",
-      "name": "Magic Resistance",
-      "skillReq": 25,
-      "position": {
-        "x": 16,
-        "y": 9
-      },
-      "prerequisites": [
-        "alteration-apprentice-alteration"
-      ],
-      "description": "You're able to block a part of a dangerous spell's effect. (+10% magic resistance)",
-      "effects": []
-    },
-    {
-      "id": "alteration-magic-resistance-2",
-      "name": "Magic Resistance",
-      "skillReq": 50,
-      "position": {
-        "x": 16,
-        "y": 9
-      },
-      "prerequisites": [
-        "alteration-magic-resistance"
-      ],
-      "description": "You are able to block more of a dangerous spell's effect. (+20% magic resistance)",
-      "effects": []
-    },
-    {
-      "id": "alteration-magic-resistance-3",
-      "name": "Magic Resistance",
-      "skillReq": 75,
-      "position": {
-        "x": 16,
-        "y": 9
-      },
-      "prerequisites": [
-        "alteration-magic-resistance-2"
-      ],
-      "description": "You are able to block even more of a dangerous spell's effect. (+30% magic resistance)",
-      "effects": []
-    },
-    {
-      "id": "alteration-stability",
-      "name": "Stability",
-      "skillReq": 50,
-      "position": {
-        "x": 10,
-        "y": 9
-      },
-      "prerequisites": [
-        "alteration-adept-alteration"
-      ],
-      "description": "You've become exceptionally good at making your alteration spells more stable. Thus, they now last longer. (1.5x alteration spell duration)",
-      "effects": []
-    },
-    {
-      "id": "alteration-metamagical-thesis",
-      "name": "Metamagical Thesis",
-      "skillReq": 75,
-      "position": {
-        "x": 7,
-        "y": 7
-      },
-      "prerequisites": [
-        "alteration-stability"
-      ],
-      "description": "Your knowledge of the very fabric of magic itself allows you to cast any spell of any school with decreased effort. (0.9x spell cost for all schools of magic)",
-      "effects": []
-    },
-    {
-      "id": "alteration-metamagical-empowerment",
-      "name": "Metamagical Empowerment",
-      "skillReq": 100,
-      "position": {
-        "x": 4,
-        "y": 3
-      },
-      "prerequisites": [
-        "alteration-metamagical-thesis"
-      ],
-      "description": "Having delved even deeper in metamagical lore, you can cast any spell more effectively and augment all other magical effects. (1.1x magnitude, 1.1x duration for all schools of magic)",
-      "effects": []
-    },
-    {
-      "id": "alteration-weather-magic",
-      "name": "Weather Magic",
-      "skillReq": 50,
-      "position": {
-        "x": 11,
-        "y": 6
-      },
-      "prerequisites": [
-        "alteration-adept-alteration"
-      ],
-      "description": "Wind spells are stronger and more efficient. (1.2x magnitude, 1.2x duration, 0.8x cost for wind spells)",
-      "effects": []
-    },
-    {
-      "id": "alteration-master-of-storms",
-      "name": "Master of Storms",
-      "skillReq": 75,
-      "position": {
-        "x": 8,
-        "y": 3
-      },
-      "prerequisites": [
-        "alteration-weather-magic"
-      ],
-      "description": "Wind spells are more devastating at exteriors, and you can summon a thunderstorm with Control Weather spell. (1.33x wind spell magnitude at exteriors, can choose Storm weather with Control Weather spell)",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alteration-magical-absorption",
@@ -290,111 +86,307 @@
       "skillReq": 100,
       "position": {
         "x": 12,
-        "y": 3
+        "y": 0
       },
       "prerequisites": [
         "alteration-expert-alteration"
       ],
-      "description": "You've mastered the art of absorbing Magicka from incoming spells, and are now able to fully absorb their power from time to time. (+10% magic absorb chance)",
-      "effects": []
+      "description": "You've mastered the art of absorbing Magicka from incoming spells, and are now able to fully absorb their power from time to time. [+10% magic absorb chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicAbsorb",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-versatile-armor",
+      "name": "Versatile Armor",
+      "skillReq": 50,
+      "position": {
+        "x": 3,
+        "y": 11
+      },
+      "prerequisites": [
+        "alteration-improved-mage-armor"
+      ],
+      "description": "You've expanded the versatility of your Armor and Shield spells, enabling them to decrease incoming elemental and physical damage. [0.8x incoming fire, frost, shock, physical damage when Armor or Shield spell is active]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-stability",
+      "name": "Stability",
+      "skillReq": 50,
+      "position": {
+        "x": 6,
+        "y": 7
+      },
+      "prerequisites": [
+        "alteration-adept-alteration"
+      ],
+      "description": "You've become exceptionally good at making your alteration spells more stable. Thus, they now last longer. [1.5x alteration spell duration]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-metamagical-thesis",
+      "name": "Metamagical Thesis",
+      "skillReq": 75,
+      "position": {
+        "x": 0,
+        "y": 9
+      },
+      "prerequisites": [
+        "alteration-stability"
+      ],
+      "description": "Your knowledge of the very fabric of magic itself allows you to cast any spell of any school with decreased effort. [0.9x spell cost for all schools of magic]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-metamagical-empowerment",
+      "name": "Metamagical Empowerment",
+      "skillReq": 100,
+      "position": {
+        "x": 1,
+        "y": 1
+      },
+      "prerequisites": [
+        "alteration-metamagical-thesis"
+      ],
+      "description": "Having delved even deeper in metamagical lore, you can cast any spell more effectively and augment all other magical effects. [1.1x magnitude, 1.1x duration for all schools of magic]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-improved-mage-armor",
+      "name": "Improved Mage Armor",
+      "skillReq": 25,
+      "position": {
+        "x": 6,
+        "y": 15
+      },
+      "prerequisites": [
+        "alteration-apprentice-alteration"
+      ],
+      "description": "You've mastered the art of casting armor spells. Their effect is maximized when you don't wear any distracting armor. [1.5x armor and shield spell magnitude when not wearing chest armor, 1.2x when wearing chest armor]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-empowered-alteration",
+      "name": "Empowered Alteration",
+      "skillReq": 25,
+      "position": {
+        "x": 6,
+        "y": 24
+      },
+      "prerequisites": [
+        "alteration-novice-alteration"
+      ],
+      "description": "Dual casting an Alteration spell overcharges the effects into an even more powerful version.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-geomancer",
+      "name": "Geomancer",
+      "skillReq": 30,
+      "position": {
+        "x": 15,
+        "y": 15
+      },
+      "prerequisites": [],
+      "description": "If wearing no light or heavy armor, you take 20% less physical damage from attacks while charging or concentrating on a spell.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-transmutation",
+      "name": "Transmutation",
+      "skillReq": 25,
+      "position": {
+        "x": 13,
+        "y": 29
+      },
+      "prerequisites": [
+        "alteration-novice-alteration"
+      ],
+      "description": "Transmutation, size-shifting, shape-shifting spells are stonger and more efficient. [1.1x magnitude, 1.1x duration, 0.9x cost for transmutation spells]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-transmutational-mending",
+      "name": "Transmutational Mending",
+      "skillReq": 75,
+      "position": {
+        "x": 18,
+        "y": 24
+      },
+      "prerequisites": [
+        "alteration-transmutation"
+      ],
+      "description": "Health is increased and regenerates while transmutation spell is active. [+50 health and +1/s health regeneration while transmutation spell is active]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-kinetomancy",
+      "name": "Kinetomancy",
+      "skillReq": 25,
+      "position": {
+        "x": 15,
+        "y": 21
+      },
+      "prerequisites": [
+        "alteration-apprentice-alteration"
+      ],
+      "description": "You can more easily handle telekinetic spells, increasing their power and efficiency. [1.25x magnitude, 0.9x cost for telekinetic spells]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-power-of-the-force",
+      "name": "Power of the Force",
+      "skillReq": 75,
+      "position": {
+        "x": 19,
+        "y": 17
+      },
+      "prerequisites": [
+        "alteration-kinetomancy"
+      ],
+      "description": "Your telekinetic spells cause devastating impact, dealing more damage and knocking off stronger targets. [+25% physical telekinetic spell damage, +10% magic resistance threshold for telekinetic knockdown effect]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicResist",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-weather-magic",
+      "name": "Weather Magic",
+      "skillReq": 50,
+      "position": {
+        "x": 9,
+        "y": 6
+      },
+      "prerequisites": [
+        "alteration-adept-alteration"
+      ],
+      "description": "Wind spells are stronger and more efficient. [1.25x magnitude, 1.25x duration, 0.9x cost for wind spells]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alteration-master-of-storms",
+      "name": "Master of Storms",
+      "skillReq": 75,
+      "position": {
+        "x": 5,
+        "y": 1
+      },
+      "prerequisites": [
+        "alteration-weather-magic"
+      ],
+      "description": "Wind spells are more devastating at exteriors, and you can summon a thunderstorm with Control Weather spell. [1.33x wind spell magnitude at exteriors, can choose Storm weather with Control Weather spell]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alteration-unskilled-spellcasting",
       "name": "Unskilled Spellcasting",
       "skillReq": 0,
       "position": {
-        "x": 4,
-        "y": 21
+        "x": 1,
+        "y": 33
       },
       "prerequisites": [],
-      "description": "You can cast simple spells without mastering them but with less potency. (Spells up to Novice level cost 50% less magicka to cast without mastery perks)",
-      "effects": []
+      "description": "You can cast simple spells without mastering them but with less potency. [Spells up to Novice level cost 50% less magicka to cast without mastery perks]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
-      "id": "alteration-unskilled-spellcasting-2",
+      "id": "alteration-unskilled-spellcasting-r2",
       "name": "Unskilled Spellcasting",
       "skillReq": 0,
-      "playerLevelReq": 10,
       "position": {
-        "x": 4,
-        "y": 21
+        "x": 1,
+        "y": 33
       },
-      "prerequisites": [
-        "alteration-unskilled-spellcasting"
+      "prerequisites": [],
+      "description": "You can cast simple spells without mastering them but with less potency. [Spells up to Apprentice level cost 50% less magicka to cast without mastery perks, +0.5% spell power for each skill level]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -50,
+          "isPercent": true
+        }
       ],
-      "description": "You can cast simple spells without mastering them but with less potency. (Spells up to Apprentice level cost 50% less magicka to cast without mastery perks, +0.5% spell power for each skill level)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
-      "id": "alteration-unskilled-spellcasting-3",
+      "id": "alteration-unskilled-spellcasting-r3",
       "name": "Unskilled Spellcasting",
       "skillReq": 0,
-      "playerLevelReq": 20,
       "position": {
-        "x": 4,
-        "y": 21
+        "x": 1,
+        "y": 33
       },
-      "prerequisites": [
-        "alteration-unskilled-spellcasting-2"
+      "prerequisites": [],
+      "description": "You can cast simple spells without mastering them but with less potency. [Spells up to Adept level cost 50% less magicka to cast without mastery perks, +1% spell power for each skill level]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -50,
+          "isPercent": true
+        }
       ],
-      "description": "You can cast simple spells without mastering them but with less potency. (Spells up to Adept level cost 50% less magicka to cast without mastery perks, +1% spell power for each skill level)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "alteration-metamagic",
       "name": "Metamagic",
       "skillReq": 0,
-      "playerLevelReq": 10,
       "position": {
-        "x": 16,
-        "y": 21
+        "x": 15,
+        "y": 33
       },
       "prerequisites": [],
-      "description": "You can empower your spells in cost of more Magicka to cast them. (Apply one of the three bonuses with 50% more magicka cost: 20% higher magnitude, 20% longer duration, 3x longer spell range)",
-      "effects": []
+      "description": "You can empower your spells in cost of more Magicka to cast them. [Apply one of the three bonuses with 30% more magicka cost: 20% higher magnitude, 20% longer duration, 3x longer spell range]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "alteration-willpower",
-      "name": "Willpower",
-      "skillReq": 0,
-      "playerLevelReq": 10,
+      "id": "alteration-philosopher-s-stone",
+      "name": "Philosopher's Stone",
+      "skillReq": 10,
       "position": {
-        "x": 20,
-        "y": 21
+        "x": 24,
+        "y": 33
       },
       "prerequisites": [],
-      "description": "Your strong willpower provides resistance to harmful magic and more stamina. (+5% magic resistance when Magic Resistance perk is not taken, +10 stamina)",
-      "effects": []
-    },
-    {
-      "id": "alteration-willpower-2",
-      "name": "Willpower",
-      "skillReq": 0,
-      "playerLevelReq": 10,
-      "position": {
-        "x": 20,
-        "y": 21
-      },
-      "prerequisites": [
-        "alteration-willpower"
-      ],
-      "description": "Your strong willpower provides resistance to harmful magic and more stamina. (+10% magic resistance when Magic Resistance perk is not taken, +20 stamina)",
-      "effects": []
-    },
-    {
-      "id": "alteration-willpower-3",
-      "name": "Willpower",
-      "skillReq": 0,
-      "playerLevelReq": 10,
-      "position": {
-        "x": 20,
-        "y": 21
-      },
-      "prerequisites": [
-        "alteration-willpower-2"
-      ],
-      "description": "Your strong willpower provides resistance to harmful magic and more stamina. (+15% magic resistance when Magic Resistance perk is not taken, +30 stamina)",
-      "effects": []
+      "description": "Once a day, generates gold equal to ten times your Alteration skill level.",
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

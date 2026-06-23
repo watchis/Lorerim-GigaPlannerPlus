@@ -99,7 +99,7 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
               Load
             </Button>
           </div>
-          {error && <p className="text-sm text-[var(--color-health)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
         </div>
 
         <Button variant="destructive" className="w-full" onClick={resetBuild}>

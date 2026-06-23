@@ -5,9 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:editor": "vite --config tools/data-editor/vite.config.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "import:lorerim": "node tools/import/import-lorerim.mjs",
+    "import:perks": "node tools/import/sync-perk-trees.mjs",
+    "import:fix-perk-positions": "node tools/import/fix-perk-grid-positions.mjs",
+    "import:sync-perk-layout": "node tools/import/sync-giga-planner-layout.mjs",
+    "import:apply-perk-layout": "node tools/import/apply-giga-planner-layout.mjs",
+    "import:compare-avif": "node tools/import/compare-avif-perks.mjs",
+    "import:probe-sources": "node tools/import/probe-plugin-sources.mjs",
+    "import:prune-perks": "node tools/import/prune-orphan-perks.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
@@ -19,7 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fflate": "^0.8.3",
-    "lucide-react": "^0.525.0",
+    "lucide-react": "^1.21.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
@@ -28,6 +37,7 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@fcrick/tes-data": "^0.0.1",
     "@eslint/js": "^9.30.1",
     "@tailwindcss/vite": "^4.1.11",
     "@types/node": "^24.0.12",

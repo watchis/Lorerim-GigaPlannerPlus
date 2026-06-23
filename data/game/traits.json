@@ -1,40 +1,532 @@
 {
   "traits": [
     {
-      "id": "bruiser",
-      "name": "Bruiser",
-      "description": "You hit harder in melee combat but carry less.",
-      "effects": [
-        { "type": "derivedStat", "stat": "oneHandDamage", "value": 10, "isPercent": true },
-        { "type": "derivedStat", "stat": "twoHandDamage", "value": 10, "isPercent": true },
-        { "type": "derivedStat", "stat": "carryWeight", "value": -25, "isPercent": false }
+      "id": "unbound-hands",
+      "name": "Unbound Hands",
+      "description": "Handwear constricts you.",
+      "bonus": "Spells are 15% stronger and unarmed attacks do +30 more damage when not wearing gloves/gauntlets. However, they suffer the opposite effect when wearing gloves/gauntlets.",
+      "effects": [],
+      "bonusDetails": [
+        "Spells are 15% stronger and unarmed attacks do +30 more damage when not wearing gloves/gauntlets. They suffer the opposite effect when wearing gloves/gauntlets."
       ]
     },
     {
-      "id": "bookworm",
-      "name": "Bookworm",
-      "description": "You learn faster from books but start with less stamina.",
+      "id": "hoarder",
+      "name": "Hoarder",
+      "description": "You love carrying stuff around, even if it's junk.",
+      "bonus": "Gain +200 carryweight. Selling prices are 50% worse.",
       "effects": [
-        { "type": "attribute", "stat": "magicka", "value": 25 },
-        { "type": "attribute", "stat": "stamina", "value": -15 }
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 200,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "priceModifier",
+          "value": -50,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": []
+    },
+    {
+      "id": "jack-of-all-spells",
+      "name": "Jack of All Spells",
+      "description": "But master of none. Novice, Apprentice and Adept spells are 20% stronger or longer lasting, expert and master spells are 20% weaker or shorter.",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "fast-shot",
+      "name": "Fast Shot",
+      "description": "You'd rather shoot fast than shoot hard.",
+      "bonus": "Bows draw 40% faster, crossbows reload 40% faster. However, bows and crossbows deal 30% less damage.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "drawSpeed",
+          "value": 40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "reloadSpeed",
+          "value": 40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "bowDamage",
+          "value": -30,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "crossbowDamage",
+          "value": -30,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": []
+    },
+    {
+      "id": "disciplined",
+      "name": "Disciplined",
+      "description": "Shoot to kill.",
+      "bonus": "Bows and crossbows deal 20% more damage. However, they draw/reload 40% slower.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "bowDamage",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "crossbowDamage",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "drawSpeed",
+          "value": -40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "reloadSpeed",
+          "value": -40,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": []
+    },
+    {
+      "id": "king-of-worms",
+      "name": "King of Worms",
+      "description": "You've gained hidden insight into necromantic arts.",
+      "bonus": "You can have 1 additional summon or undead thrall. However, the duration of summon and resurrecting spells is reduced by 33%.",
+      "effects": [],
+      "bonusDetails": [
+        "You can have 1 additional summon or undead thrall.",
+        "The duration of summon and resurrecting spells is reduced by 33%."
       ]
     },
     {
-      "id": "pack-rat",
-      "name": "Pack Rat",
-      "description": "You can carry more but move slightly slower.",
+      "id": "gambler",
+      "name": "Gambler",
+      "description": "You go in all or nothing.",
+      "bonus": "Gain 30% chance to critical hit. However, overall weapon damage is reduced by 40%. When you land a critical hit, your attacks do 10% more damage for 30 seconds (stackable up to 5 times).",
       "effects": [
-        { "type": "derivedStat", "stat": "carryWeight", "value": 50, "isPercent": false },
-        { "type": "derivedStat", "stat": "moveSpeed", "value": -5, "isPercent": true }
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 30,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": -40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": -40,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "When you land a critical hit, your attacks do 10% more damage for 30 seconds (stackable up to 5 times)."
       ]
     },
     {
-      "id": "nimble",
-      "name": "Nimble",
-      "description": "You move faster but have less health.",
+      "id": "good-natured",
+      "name": "Good Natured",
+      "description": "You have a good heart.",
+      "bonus": "Deal 20% less damage with weapons and Destruction spells. However, while wearing an amulet of the divines beneficial spells and potions last 20% longer and you take 20% less damage.",
       "effects": [
-        { "type": "derivedStat", "stat": "moveSpeed", "value": 10, "isPercent": true },
-        { "type": "attribute", "stat": "health", "value": -20 }
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": -20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": -20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "spellDamage",
+          "value": -20,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "While wearing an amulet of the divines beneficial spells and potions last 20% longer and you take 20% less damage."
+      ]
+    },
+    {
+      "id": "old-fashioned",
+      "name": "Old Fashioned",
+      "description": "If it ain't broke, don't fix it. Weapons, armor and magical staves made of iron, wood, steel, forsworn, scaled, leather fur or hide are 15% stronger. Otherwise, they are 10% weaker.",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "bane-of-the-wicked",
+      "name": "Bane of the Wicked",
+      "description": "You are an enemy to all things abhorrent.",
+      "bonus": "Deal 20% more damage to undead, daedra and werewolves. However, do 10% less damage to other beings.",
+      "effects": [],
+      "bonusDetails": [
+        "Deal 20% more damage to undead.",
+        "Daedra and werewolves.",
+        "Do 10% less damage to other beings."
+      ]
+    },
+    {
+      "id": "defiler",
+      "name": "Defiler",
+      "description": "The only use you have for the living is to resurrect them in death.",
+      "bonus": "Deal 20% more damage to playable races. However, do 10% less damage to other beings.",
+      "effects": [],
+      "bonusDetails": [
+        "Deal 20% more damage to playable races.",
+        "Do 10% less damage to other beings."
+      ]
+    },
+    {
+      "id": "soul-reaver",
+      "name": "Soul Reaver",
+      "description": "You've claimed countless souls for your gain.",
+      "bonus": "Weapon and armor enchantments are 15% stronger and use 15% less charge. Armor rating and weapon damage is reduced by 20%.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": -40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": -40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": -20,
+          "isPercent": false
+        }
+      ],
+      "bonusDetails": [
+        "Weapon and armor enchantments are 15% stronger and use 15% less charge."
+      ]
+    },
+    {
+      "id": "pacifist",
+      "name": "Pacifist",
+      "description": "",
+      "bonus": "When your arms are lowered you restore 2 magicka and stamina per second. However, raising your hands in combat will have the opposite effect. Those born under the sign of the Atronach only restore 1 but still drain 2.",
+      "effects": [],
+      "bonusDetails": [
+        "When your arms are lowered you restore 2 magicka and stamina per second. Raising your hands in combat will have the opposite effect.",
+        "Those born under the sign of the Atronach only restore 1 but still drain 2."
+      ]
+    },
+    {
+      "id": "bad-natured",
+      "name": "Bad Natured",
+      "description": "You were born into wickedness.",
+      "bonus": "Your attacks while being crouched deals 20% more and you're better at pickpocketing. However, attacks while standing up do 20% less and wearing a divine amulet will hurt you.",
+      "effects": [],
+      "bonusDetails": [
+        "Your attacks while being crouched deals 20% more and you're better at pickpocketing.",
+        "Attacks while standing up do 20% less and wearing a divine amulet will hurt you."
+      ]
+    },
+    {
+      "id": "focused",
+      "name": "Focused",
+      "description": "When in danger, you think before acting.",
+      "bonus": "When at less than 50% health, you regenerate 5 magicka per second and absorb 10% of incoming spells. However, you take 10% more damage when below this threshold.",
+      "effects": [],
+      "bonusDetails": [
+        "When at less than 50% health, you regenerate 5 magicka per second and absorb 10% of incoming spells.",
+        "You take 10% more damage when below this threshold."
+      ]
+    },
+    {
+      "id": "glutton",
+      "name": "Glutton",
+      "description": "You LOVE food but hate medicine.",
+      "bonus": "Food benefits are 25% stronger but potions have only 50% their efficiency.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "potionEffectiveness",
+          "value": -25,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": []
+    },
+    {
+      "id": "witcher",
+      "name": "Witcher",
+      "description": "",
+      "bonus": "Potions and poisons you craft are 30% more effective, and consuming raw ingredients grants 3 times the effect. However, you can only benefit from up to four active potion effects at a time.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "potionEffectiveness",
+          "value": 30,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "You can only benefit from up to four active potion effects at a time."
+      ]
+    },
+    {
+      "id": "skilled",
+      "name": "Skilled",
+      "description": "",
+      "bonus": "Reading skill books grants an extra skill point and trainers cost 50% less, however every 5 levels you don't gain a perk point.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "priceModifier",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "Every 5 levels you don't gain a perk point."
+      ]
+    },
+    {
+      "id": "master-of-destiny",
+      "name": "Master of Destiny",
+      "description": "You reject the influence of fate and star signs.",
+      "bonus": "Your birthsigns bonuses are removed, but you begin the game with 5 additional perk points and a permanent +5 boost to all skills.",
+      "effects": [],
+      "bonusDetails": [
+        "Your birthsigns bonuses are removed.",
+        "You begin the game with 5 additional perk points and a permanent +5 boost to all skills."
+      ]
+    },
+    {
+      "id": "dovah-tinvaak",
+      "name": "Dovah Tinvaak",
+      "description": "You are fluent in Dragon speech and as such can shout 20% more often, at 30% reduced effectiveness.",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "way-of-the-voice",
+      "name": "Way of the Voice",
+      "description": "You follow the pacifist creed of the Greybeards, and as such your hostile shouts are 30% less effective, but using non-hostile shouts has a 20% chance reset the shout cooldown.",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "elemental-conduit",
+      "name": "Elemental Conduit",
+      "description": "",
+      "bonus": "Fire spells are more powerful in sunny weather but lose potency in the rain. Shock spells are enhanced during rain but are less effective in snowy conditions. Frost spells excel in snowy weather but weaken under sunny skies.",
+      "effects": [],
+      "bonusDetails": [
+        "Fire spells are more powerful in sunny weather but lose potency in the rain.",
+        "Shock spells are enhanced during rain but are less effective in snowy conditions.",
+        "Frost spells excel in snowy weather but weaken under sunny skies."
+      ]
+    },
+    {
+      "id": "giantkin",
+      "name": "Giantkin",
+      "description": "Descended from the mighty giants.",
+      "bonus": "you gain 10% magic resistance and damage with blunt weapons, however you cannot read skill books, or use scrolls and staves.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicResist",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "You cannot read skill books.",
+        "Or use scrolls and staves."
+      ]
+    },
+    {
+      "id": "angler",
+      "name": "Angler",
+      "description": "Your bond with the sea grants unique benefits.",
+      "bonus": "Mudcrabs and slaughterfish become friendly toward you. Fishing yields more valuable items. Fishing rods deal double damage, can be tempered and have a chance to summon a mudcrab to fight at your side. The summoned mudcrab becomes stronger if you're carrying an insect or small fish. Fishing rods can be enchanted. However, your affinity with the waters leaves you 10% more vulnerable to shock damage.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "shockResist",
+          "value": -10,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "Mudcrabs and slaughterfish become friendly toward you.",
+        "Fishing rods deal double damage.",
+        "Can be tempered and have a chance to summon a mudcrab to fight at your side.",
+        "The summoned mudcrab becomes stronger if you're carrying an insect or small fish.",
+        "Fishing rods can be enchanted."
+      ]
+    },
+    {
+      "id": "addict",
+      "name": "Addict",
+      "description": "Addict: You've developed some bad habits.",
+      "bonus": "Skooma and alcohol benefits last 2x as long and you can craft skooma at cooking pot. When not under the effects of alcohol or skooma, you have a 25% chance to get staggered when hit.",
+      "effects": [],
+      "bonusDetails": [
+        "Skooma and alcohol benefits last 2x as long and you can craft skooma at cooking pot.",
+        "When not under the effects of alcohol or skooma, you have a 25% chance to get staggered when hit."
+      ]
+    },
+    {
+      "id": "nosferatu",
+      "name": "Nosferatu",
+      "description": "You're an ugly sight and live in the sewers.",
+      "bonus": "-50 speech, no health, magicka or stamina regen outdoors. Eating skeever meat gives you a 20% speed boost and restores 10 health, magicka and stamina per second for 180 seconds.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "speech",
+          "value": -50,
+          "isPercent": false
+        }
+      ],
+      "bonusDetails": [
+        "No health, magicka or stamina regen outdoors.",
+        "Eating skeever meat gives you a 20% speed boost and restores 10 health, magicka and stamina per second for 180 seconds."
+      ]
+    },
+    {
+      "id": "druid",
+      "name": "Druid",
+      "description": "Druids are attuned to nature, making spriggans friendly and increasing power of druidic spells by 30%.",
+      "bonus": "You can craft Lifebloom Essence from Taproot and Spriggan Sap for powerful regeneration. However, your bond with the wild leaves you 25% more vulnerable to fire and axes.",
+      "effects": [],
+      "bonusDetails": [
+        "You can craft Lifebloom Essence from Taproot and Spriggan Sap for powerful regeneration.",
+        "Your bond with the wild leaves you 25% more vulnerable to fire and axes."
+      ]
+    },
+    {
+      "id": "disbeliever",
+      "name": "Disbeliever",
+      "description": "You reject the influence of gods, placing your faith in logic and reason instead.",
+      "bonus": "Dwemer armor has 40% higher armor rating and Dwemer weapons are 40% stronger, but you cannot receive blessings.",
+      "effects": [],
+      "bonusDetails": [
+        "Dwemer armor has 40% higher armor rating and Dwemer weapons are 40% stronger.",
+        "You cannot receive blessings."
+      ]
+    },
+    {
+      "id": "homeowner-breezehome",
+      "name": "Homeowner Breezehome",
+      "description": "A cozy, centrally located gem right in the heart of Whiterun! Nestled near the bustling markets and steps from the esteemed Jorrvaskr, this charming two-story home boasts a warm hearth, ample storage, and breathtaking views of Dragonsreach. Perfect for first-time homeowners or warriors seeking a respite between adventures! Act fast—homes in Whiterun don't stay on the market for long!",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "homeowner-honeyside",
+      "name": "Homeowner Honeyside",
+      "description": "Looking for waterfront living? Honeyside offers a picturesque retreat on the edge of Riften's serene lake, complete with a private dock for those who enjoy boating... or discreet getaways. This lovely home features a spacious main room, a private alchemy lab, and direct access to the city's mysterious underbelly. Whether you're a noble merchant or someone with less conventional business ventures, Honeyside is the perfect investment!",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "homeowner-vlindrel-hall",
+      "name": "Homeowner Vlindrel Hall",
+      "description": "Ever dreamed of luxury carved from the very bones of Nirn itself? Vlindrel Hall is an exquisite Dwemer-built residence perched atop the majestic cliffs of Markarth. With unparalleled city views, this spacious stone manor offers robust security, a regal atmosphere, and the distinct honor of living in the most unique architectural marvel in all of Skyrim. If you value history, prestige, and absolute fortification, look no further!",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "homeowner-hjerim",
+      "name": "Homeowner Hjerim",
+      "description": "Grand, imposing, and brimming with character, Hjerim is a Nord's dream home! Located in the esteemed Valunstrad district of Windhelm, this sprawling estate boasts extensive living space, an optional armory for proud warriors, and a deep connection to Skyrim's storied past. While some whispers surround its history, a proper Dragonborn doesn't scare easily! Make this ancient fortress your own and leave your mark on Windhelm!",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "homeowner-proudspire-manor",
+      "name": "Homeowner Proudspire Manor",
+      "description": "The very pinnacle of high-class living in Skyrim's capital! This palatial three-story estate stands proudly in Solitude's noble district, offering lavish furnishings, a grand dining hall, and the prestige of owning the largest purchasable home in the province. Close to the Bard's College, the Blue Palace, and the best shopping Skyrim has to offer, this is the perfect home for discerning buyers with impeccable taste. Luxury has never looked so good!",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "introvert",
+      "name": "Introvert",
+      "description": "You thrive in solitude but falter in the crowd.",
+      "bonus": "When facing three or fewer enemies, you deal 15% more damage, whether with weapons or Destruction magic. Against four or more, your nerves get the better of you, and you deal 10% less.",
+      "effects": [],
+      "bonusDetails": [
+        "When facing three or fewer enemies, you deal 15% more damage, whether with weapons or Destruction magic.",
+        "Against four or more.",
+        "You deal 10% less."
+      ]
+    },
+    {
+      "id": "gollum",
+      "name": "Lurker",
+      "description": "",
+      "bonus": "When not wearing any clothes or armor sneak attacks deal 2.5 times more damage and can sneak 25% better, and are 100% immune to disease. Eating fish when it's raw and wriggling triggers a powerful effect that lasts 10 minutes. However, armor provides no protection, cooked food offers no benefits, and weapons with a weight above 10 will deal no damage.",
+      "effects": [],
+      "bonusDetails": [
+        "When not wearing any clothes or armor sneak attacks deal 2.5 times more damage and can sneak 25% better, and are 100% immune to disease.",
+        "Eating fish when it's raw and wriggling triggers a powerful effect that lasts 10 minutes.",
+        "Armor provides no protection.",
+        "Weapons with a weight above 10 will deal no damage."
+      ]
+    },
+    {
+      "id": "au-naturel",
+      "name": "Au Naturel",
+      "description": "Embrace your divine gifts! Start with +100 health, magicka, and stamina. For each piece of armor or clothing you wear, you lose 40 from each attribute (up to a maximum loss of -160 with four pieces equipped). Additionally, you gain +1 to health, magicka, and stamina per level for each empty armor slot (head, chest, hands, and feet).",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "rage",
+      "name": "Rage",
+      "description": "You posses a natural fight response.",
+      "bonus": "When at less than 50% health, you deal 10% more damage and take 10% less damage. However, you move 30% slower when below this threshold.",
+      "effects": [],
+      "bonusDetails": [
+        "When at less than 50% health, you deal 10% more damage and take 10% less damage.",
+        "You move 30% slower when below this threshold."
       ]
     }
   ]

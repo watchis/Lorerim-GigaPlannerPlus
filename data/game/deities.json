@@ -1,0 +1,700 @@
+{
+  "deities": [
+    {
+      "id": "none",
+      "name": "None",
+      "shrine": "-",
+      "follower": "-",
+      "devotee": "-",
+      "tenets": "-",
+      "race": "All",
+      "starting": "",
+      "requirement": "-",
+      "effects": []
+    },
+    {
+      "id": "akatosh",
+      "name": "Akatosh",
+      "shrine": "Learn all skills 15% faster.",
+      "follower": "Attacks, spells, scrolls, shouts and enchantments are up to 30% better against dragons. Able to craft a powerful amulet by using amulets of the Eight Divines.",
+      "devotee": "Praying to Akatosh resets the cooldown of your most recently used shout and power. Craft a powerful amulet with 5 of each of the nine divines amulets.",
+      "tenets": "Fulfill your destiny by saving Tamriel. Raise your character level. Absorb dragon souls. Never openly break the laws of Skyrim.",
+      "race": "Human",
+      "starting": "Breton / Imperial / Khajiit / Nord",
+      "requirement": "Human blood",
+      "effects": []
+    },
+    {
+      "id": "arkay",
+      "name": "Arkay",
+      "shrine": "Increases your Health by 30 points.",
+      "follower": "Regenerate up to 5% of your maximum Health per second based on missing Health. Can perform Arkay's Rites.",
+      "devotee": "Revive with full Health upon taking fatal damage. Must pray to use this ability again. Attribute fortifying spells are up to 20% stronger.",
+      "tenets": "Slay the undead and their summoners. Perform Arkay's Rites. Never openly break the laws of Skyrim. Never summon the undead or become one of them.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "health",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "auriel",
+      "name": "Auriel",
+      "shrine": "You are 10% more effective with missile weapons.",
+      "follower": "Deal up to 20% more damage to vampires and take up to 20% less damage from vampires. Auriel's bow uses up to 80% less charge.",
+      "devotee": "Sun spells and bows are up to 20% stronger. Wearing Elven, Glass or Ancient Falmer armor set increases Glass and Elven damage by up to 20%.",
+      "tenets": "Fulfill your destiny by saving Tamriel. Master all skills. Become my Champion at my sacred Chantry. High Elves are most deserving of my favor.",
+      "race": "High Elven, Wood Elven / Breton",
+      "starting": "",
+      "requirement": "Race restricted",
+      "effects": []
+    },
+    {
+      "id": "azura",
+      "name": "Azura",
+      "shrine": "Resist 10% of magic.",
+      "follower": "Foes within mag feet can absorb spells and suffer up to 20% reduced magic resistance, chameleon and blind spells are up to 25% cheaper",
+      "devotee": "Activate a target below 30% - 60% health (based on favor) to paralyze them with 1 Health. Soul trapping spells cost up to 40% less to cast.",
+      "tenets": "Trap souls in my name. Explore new locations. Pray only at twilight, preferably outside. Dark Elves and those skilled in Illusion are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "baan-dar",
+      "name": "Baan Dar",
+      "shrine": "Lockpicking and Pickpocketing is 25% easier.",
+      "follower": "Pickpocketing and selling to fences is up to 50% better. Alchemical powders deal up to 30% more damage and oils gain 2 extra uses.",
+      "devotee": "Pray to ignite skooma in people's inventory within 250 feet doing massive damage. Throwing knives do up to 50% more damage. Skooma no longer can kill you.",
+      "tenets": "Pick locks and pockets successfully. Khajiit and those skilled in Archery are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Baan Dar does not accept those who are not of Khajiit or Wood Elven blood.",
+      "effects": []
+    },
+    {
+      "id": "boethiah",
+      "name": "Boethiah",
+      "shrine": "You are 10% more effective with one-handed weapons.",
+      "follower": "Your attacks deal up to 30% more damage when fighting only one opponent.",
+      "devotee": "During prayer, you may invoke superior Daedric Invisibility for 90 seconds. If broken by a sneak attack, it deals 25% more damage.",
+      "tenets": "Murder the innocent. Slay people who stand in your way. Strike unseen with sneak attacks. Dark Elves are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "clavicus-vile",
+      "name": "Clavicus Vile",
+      "shrine": "Conjuration spells cost 10% less to cast.",
+      "follower": "Conjuration spells and effects are up to 20% stronger. Pray to make a Pact to gain favor with Clavicus Vile.",
+      "devotee": "Pray to make a Wish, permanently gaining an additional perk point. Most teleporting and traversal spells are up to 50% cheaper to cast.",
+      "tenets": "Pray to accept a Pact and complete it as written within the allotted time. Never break or ignore my Pacts.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "dibella",
+      "name": "Dibella",
+      "shrine": "Prices are 20% better.",
+      "follower": "Take up to 20% less physical and magical damage while you have 2 or more allies in combat or 1 ally and have lover's comfort.",
+      "devotee": "Activate a person in combat to make them unequip their items and follow you for 90 seconds. Illusion spells are up to 15% stronger or longer lasting, twice that for charm, rally and command spells.",
+      "tenets": "Persuade others. Receive the blessing of Lover's Comfort. Find a new Sybil for my Temple. Pray only in the nude. Never openly break the laws of Skyrim.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "priceModifier",
+          "value": 20,
+          "isPercent": true
+        }
+      ]
+    },
+    {
+      "id": "ebonarm",
+      "name": "Ebonarm",
+      "shrine": "Armor rating of heavy armor pieces is increased by 10%.",
+      "follower": "One Handed raises damage blocked, Block raises armor rating and Heavy Armor raises attack damage. 15% at 100 of the corresponding skill level. These bonuses are doubled in an Oblivion Realm.",
+      "devotee": "Transfer armor of enemies within mag feet by up to 200. Doubled against daedra. Bonus to frost and shock resist when wearing Ebony Armor.",
+      "tenets": "Slay daedra. Defeat epic foes. Complete miscellaneous quests for the people of Skyrim. Those skilled in Block are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Ebonarm does not accept those who are not of Breton or Dark Elven blood.",
+      "effects": []
+    },
+    {
+      "id": "hermaeus-mora",
+      "name": "Hermaeus Mora",
+      "shrine": "Spells and effects you cast on yourself last 10% longer.",
+      "follower": "Find Eldritch Pages on corpses. Similar Eldritch Pages can be bound at a tanning rack to create Eldritch Tomes that improve magic and shouts.",
+      "devotee": "Pray to permanently raise a skill of your choice by one level. Entropic spells are up to 20% stronger based on favor.",
+      "tenets": "Read Eldritch Pages and bind them into Eldritch Tomes. Read books that teach new skills. Become my Champion at the Summit of Apocrypha.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "hircine",
+      "name": "Hircine",
+      "shrine": "Regenerate Stamina 25% faster.",
+      "follower": "Deal up to 60% more attack damage to living targets with down to 50% or less Health.",
+      "devotee": "Pray to invoke a Hunt within 500 feet, revealing the living and exposing them to Bitter Mercy. Werebeasts can now deal up to 30% more damage to undead under half health.",
+      "tenets": "Slay the living in open combat, especially those stronger than you. Live as a werewolf. Pray in the wild. Those skilled in Light Armor are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "jephre",
+      "name": "Jephre",
+      "shrine": "Carrying capacity increased by 50 points.",
+      "follower": "Take up to 20% less physical damage from non-animals or up to 50% less from animals when unarmored. Eating meat is twice as strong, plant based food gives no benefit.",
+      "devotee": "Health and stamina quickly restores outdoors and out of combat. Deal up to 20% more damage when unarmored. Praying to Jephre brings clear weather.",
+      "tenets": "Explore new locations. Read the stories of others. Hunt animals. Wood Elves are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": []
+    },
+    {
+      "id": "julianos",
+      "name": "Julianos",
+      "shrine": "Increases your Magicka by 30 points.",
+      "follower": "Spells last up to 25% longer and hostile spells are up to 20% weaker.",
+      "devotee": "Spells have up to 25% more magnitude.",
+      "tenets": "Master the skills of the Mage. Strive to raise your Magicka. Never openly break the laws of Skyrim.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "magicka",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "jyggalag",
+      "name": "Jyggalag",
+      "shrine": "Deal 15% more attack damage and critical damage against daedra.",
+      "follower": "Generates 8 Obelisks of Order in Skyrim. Activating one grants 20 points of Health, Magicka and Stamina.",
+      "devotee": "Activate an opponent in combat to trap them in an inert but invulnerable state for 3 seconds. Take no physical damage while staggered.",
+      "tenets": "Activate my Obelisks of Order. Clear dungeons of evil. Slay daedra. Never serve Sheogorath. Those skilled in Heavy Armor are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": []
+    },
+    {
+      "id": "kynareth",
+      "name": "Kynareth",
+      "shrine": "Increases your Stamina by 30 points.",
+      "follower": "Plant-based food is 50% stronger and longer lasting. When not sneaking, gain up to 25% more damage and critical damage with bows and daggers.",
+      "devotee": "Pray to summon a Sabre Cat mount. Friendly creatures and spirit summons are healed. Gain 10% critical hit chance with bows and dagger while not sneaking.",
+      "tenets": "Explore new locations. Strive to raise your Stamina. Receive the Voice of the Sky. Pray only outdoors. Never openly break the laws of Skyrim.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "stamina",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "leki",
+      "name": "Leki",
+      "shrine": "Armor rating of light armor pieces is increased by 10%.",
+      "follower": "All melee attacks ignore up to 30% of an opponent's armor.",
+      "devotee": "During prayer, you may spend 5% favor to gain up to 50% melee damage against targets at full hp for 60 minutes or 10 battles.",
+      "tenets": "Bring the Civil War to a conclusion. Make and improve weapons. Master the skills of the Warrior.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Leki does not accept those who are not of Redguard blood.",
+      "effects": []
+    },
+    {
+      "id": "magnus",
+      "name": "Magnus",
+      "shrine": "Increases Shock Resistance by 15%.",
+      "follower": "Magicka does not regenerate. While holding a staff or wand, touch and rune spells are up to 20% stronger or longer lasting and enchantments use 50% less charge.",
+      "devotee": "Potions and ingredients restore up to 50% more magicka. When under the effects of a magicka potion, soul gems provide up to 50% more charge.",
+      "tenets": "Practice magic successfully while praying. Safeguard the Eye of Magnus. Create enchanted items.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": []
+    },
+    {
+      "id": "malacath",
+      "name": "Malacath",
+      "shrine": "Your power attacks cost 10% less Stamina.",
+      "follower": "Your power attacks are up to 15% stronger and cost up to 15% less stamina.",
+      "devotee": "When an enemy dies within mag feet, their killer is healed based on the amount of overkill damage dealt (scaling with favor with Malacath).",
+      "tenets": "Defeat epic foes. Improve weapons and armor. Never commit a crime against the strongholds. Orcs and those skilled in Smithing are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "mannimarco",
+      "name": "Mannimarco",
+      "shrine": "Conjuration spells are 10% more effective.",
+      "follower": "Undead Conjurations last up to 20% longer and necrotic spells are up to 10% more powerful.",
+      "devotee": "Undead Conjurations deal up to 20% more physical damage.",
+      "tenets": "Trap souls in my name. Pray only at night. Never accept Arkay's blessing. Those skilled in Conjuration are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": []
+    },
+    {
+      "id": "mara",
+      "name": "Mara",
+      "shrine": "Restoration spells cost 10% less to cast.",
+      "follower": "While your hands are lowered, restore attributes 0.5 per second. Restoration spells are up to 20% stronger based on favor. Praying cures all diseases.",
+      "devotee": "Living allies within mag feet are healed up to 20 points of magicka and health per second. Take 25% less physical damage when your hands are lowered.",
+      "tenets": "Be married. Own one or more houses. Be generous to beggars and children. Receive the blessing of Lover's Comfort. Never openly break the laws of Skyrim.",
+      "race": "All",
+      "starting": "Breton / Imperial / Nord / Bosmer",
+      "requirement": "None",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -10,
+          "isPercent": true
+        }
+      ]
+    },
+    {
+      "id": "mehrunes-dagon",
+      "name": "Mehrunes Dagon",
+      "shrine": "Destruction spells are 5% more effective.",
+      "follower": "Drain magicka when praying. Stop praying at 20% or less to gain more favor and Burning Path activations. Craft potions of immolation using potions of magicka restore at the cooking pot.",
+      "devotee": "Nearby foes burn for up to 40 damage and explode on death. Pray to recharge. Nearby friendly Daedra have their attributes healed.",
+      "tenets": "Slay people who stand in your way. Defile the shrines of my enemies. Those skilled in Destruction are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "mephala",
+      "name": "Mephala",
+      "shrine": "Poisons you mix are 10% more effective.",
+      "follower": "Sneak attacks deal up to 20% more damage from behind when not wearing heavy armor.",
+      "devotee": "During prayer, seize control of the nearest person within 75 feet to fight for you. Follower ability buffed to up to 30% sneak damage.",
+      "tenets": "Poison your weapons. Strike unseen with sneak attacks. Intimidate the weak. Dark Elves are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "meridia",
+      "name": "Meridia",
+      "shrine": "Restoration spells are 5% more effective.",
+      "follower": "Fire, Turning and Sun spells are up to 20% better. Physical attacks are up to 30% better against undead..",
+      "devotee": "Activate an undead opponent in combat to call down a solar strike to deal massive damage to undead in a wide area.",
+      "tenets": "Slay the undead. Never summon the undead or become one of them. High Elves and those skilled in Restoration are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "molag-bal",
+      "name": "Molag Bal",
+      "shrine": "Destruction spells cost 10% less to cast.",
+      "follower": "Absorbs up to 10 Magicka and Stamina per second from nearby enemies in combat.",
+      "devotee": "Activate a hostile below level 50 in combat to banish them to Coldharbour. Pray to request the items. Blood magic is up to 20% stronger.",
+      "tenets": "Slay people who stand in your way. Trap souls in my name. Live as a vampire and never seek a cure. Those skilled in Destruction are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "morwha",
+      "name": "Morwha",
+      "shrine": "Healing spells restore 15% more Health.",
+      "follower": "Meditation restores up to 200 Health for you and allies out of combat. Some enemies can drop milk or honey. This can be used to create a curative potion.",
+      "devotee": "Praying to Morwha blesses you with enchanted fruit that restores or fortifies an attribute. These fruits can be further improved using milk and honey.",
+      "tenets": "Be married. Receive the blessing of Lover's Comfort. Harvest the fruits of nature. Eat as much food as you want.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Morwha does not accept those who are not of Redguard blood.",
+      "effects": []
+    },
+    {
+      "id": "namira",
+      "name": "Namira",
+      "shrine": "Increases Disease Resistance by 25%.",
+      "follower": "Reduces Poison Resist of all within mag feet by up to 40%. Grants strong stomach and strange meat on kills.",
+      "devotee": "Poisoning a person or putting a Human Heart, Flesh or Strange Meat into their inventory attracts insects, reducing armor by up to 20 and dealing up to 40 disease damage.",
+      "tenets": "Murder the innocent. Poison your weapons. Eat the corpses of the dead with my Ring. Be generous to beggars.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "nocturnal",
+      "name": "Nocturnal",
+      "shrine": "You are 10% harder to detect.",
+      "follower": "Praying clears non-violent crime bounties up to up to 5000 gold. Shadow spells are up to 30% better and 50% at night.",
+      "devotee": "During the night, you are much less likely to be detected and are more proficient with picking pockets. During prayer, you may astrally observe the nearest person within 300 feet.",
+      "tenets": "Pickpocket Mysterious Coinpurses. Pick locks successfully. Pray only at night, preferably in darkness. Those skilled in Sneak are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "detectDifficulty",
+          "value": 10,
+          "isPercent": true
+        }
+      ]
+    },
+    {
+      "id": "peryite",
+      "name": "Peryite",
+      "shrine": "Increases Poison Resistance by 20%.",
+      "follower": "Poison spells are up to 20% stronger or longer lasting. Pray for Peryite's Gifts to gain favor.",
+      "devotee": "Activate a living opponent in combat to inflict all of Peryite's Gifts you have on the target, plus 20 disease damage per second for each gift. Pray to recharge.",
+      "tenets": "Catch as many diseases as you can. Accept my Gifts of pestilence. Pray only while diseased. Never accept a cure for your afflictions.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "phynaster",
+      "name": "Phynaster",
+      "shrine": "Increases Frost Resistance by 15%.",
+      "follower": "Take up to 20% less damage based on favor, immunity to stagger and 50% attribute regeneration while standing still.",
+      "devotee": "During prayer, you may teleport back to the last location where you prayed. Gain to 25% absorb chance and 100% poison and disease resist while not moving.",
+      "tenets": "Explore new locations. Find the standing stones of Skyrim. Harvest the fruits of nature. Bretons are most deserving of my favor.",
+      "race": "High Elven, Wood Elven / Breton",
+      "starting": "",
+      "requirement": "Race restricted",
+      "effects": []
+    },
+    {
+      "id": "rajhin",
+      "name": "Rajhin",
+      "shrine": "Lockpicking expertise increased by 2 and Pickpocketing is 25% easier.",
+      "follower": "Chance to find a large amount of additional gold in containers. Most sneak or thieving related potions and spells last up to twice as long.",
+      "devotee": "Pray to Rajhin to break a pickable lock within 20 feet. No fall damage if not wearing heavy armor and chance to gain valuable loot on slain enemies while tresspassing.",
+      "tenets": "Explore new locations. Bribe people as needed. Pick locks successfully. Those skilled in Lockpicking are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Rajhin does not accept those who are not of Khajiit blood.",
+      "effects": []
+    },
+    {
+      "id": "sai",
+      "name": "Sai",
+      "shrine": "Armor rating of light armor pieces is increased by 10%.",
+      "follower": "Pray to bet gold on a game of dice. When sprinting, move 10% faster and restore 1 Health and Stamina per second. When not sprinting, move 10% slower and lose 100% health and stamina regeneration.",
+      "devotee": "Staking 1000 gold or more on a game of dice also adds 1 point of Stamina to your wager.",
+      "tenets": "Gamble while meditating and win.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": []
+    },
+    {
+      "id": "sanguine",
+      "name": "Sanguine",
+      "shrine": "Using beneficial potions and alchemical ingredients is 10% better.",
+      "follower": "Regeneration is increaesed by 100% while alcohol, skooma or any other harmful alchemy effects are active. Alcohol is up to 100% stronger based on favor with Sanguine.",
+      "devotee": "Can pray in combat, forcing the 5 nearest hostile people to dance for 20 seconds. Dancing targets take up to 20% more damage.",
+      "tenets": "Make mischief and commit misdemeanors and crimes worthy of a bounty. Indulge in mead, wine and ale. Find your own way out of jail.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "satakal",
+      "name": "Satakal",
+      "shrine": "Regenerate Health 25% faster.",
+      "follower": "Shrine blessings from any other gods are up to 75% more effective and last longer.",
+      "devotee": "Pray to become reborn as a different person, moving points between your attributes.",
+      "tenets": "Fulfill your destiny by saving Tamriel. Strive to raise your Health. Absorb dragon souls.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Satakal does not accept those who are not of Redguard blood.",
+      "effects": []
+    },
+    {
+      "id": "sheogorath",
+      "name": "Sheogorath",
+      "shrine": "Grants a random blessing!",
+      "follower": "Praying grants a random Touch of Madness. High favor with Sheogorath yields more beneficial effects.",
+      "devotee": "Receive a Touch of Madness whenever you enter combat. All skills level 25 or below are 20% better.",
+      "tenets": "Pray often and receive Sheogorath's Touch of Madness. Never disrespect cheese.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "shor",
+      "name": "Shor",
+      "shrine": "Deal 15% more attack damage and critical damage against elves.",
+      "follower": "Take almost no poise damage, deal up to 15% more and take up to 15% less physical damage against non-humans or animals.",
+      "devotee": "When in combat with a mighty foe, Shor sends a Shield-Thane to assist. Pray to recharge. Elemental resistance increased by 15%.",
+      "tenets": "Fulfill your destiny by saving Tamriel. Master the skills of the Warrior. Slay elves. Defeat epic foes.",
+      "race": "Human",
+      "starting": "",
+      "requirement": "Human blood",
+      "effects": []
+    },
+    {
+      "id": "sithis",
+      "name": "Sithis",
+      "shrine": "Sneak attacks deal 5% more damage.",
+      "follower": "Up to 25% harder to detect by those within 30 feet. Chance to find Human Hearts on people you kill.",
+      "devotee": "While sneaking, activate a door to briefly turn it into a Void portal. Targets within 60 feet who are not detecting you are pulled in and killed.",
+      "tenets": "Murder the innocent. Pray while sacrificing a Human Heart or Human Flesh. Send your victims to the Void. Argonians are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "st-alessia",
+      "name": "St. Alessia",
+      "shrine": "Followers within 50 feet gain 100 points of armor and 10% magic resistance.",
+      "follower": "Pray for a Divine blessing of your choice. Divine blessings are up to 100% better. Take up to 20% less damage from humans.",
+      "devotee": "While under the effects of a Divine blessing, can talk to most non-hostile humans to make them a friend and potential follower.",
+      "tenets": "Have a follower at your side. Slay elves. Receive the blessing of a Divine.",
+      "race": "Human",
+      "starting": "",
+      "requirement": "Human blood",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicResist",
+          "value": 10,
+          "isPercent": true
+        }
+      ]
+    },
+    {
+      "id": "stendarr",
+      "name": "Stendarr",
+      "shrine": "Block 15% more damage.",
+      "follower": "Physical attacks against undead slowly restore your health. Take up to 50% less attack damage from all attacks as your health decreases..",
+      "devotee": "During prayer, you may spend 10% favor to gain up to 40% improved attack, defense and healing for 120 seconds or 3 battles.",
+      "tenets": "Clear dungeons of evil. Slay daedra and the undead. Complete side quests. Never openly break the laws of Skyrim. Never practice the foul summoning arts.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "damageTaken",
+          "value": -15,
+          "isPercent": true
+        }
+      ]
+    },
+    {
+      "id": "syrabane",
+      "name": "Syrabane",
+      "shrine": "Regenerate Magicka 25% faster.",
+      "follower": "You are more likely to find spell tomes, staves and scrolls on enemies you kill. Arcane spells are up to 20% stronger based on favor.",
+      "devotee": "All spells cost up to 20% less to cast.",
+      "tenets": "Acquire knowledge by reading books. Study a wide variety of spells. High Elves are most deserving of my favor.",
+      "race": "High Elven, Wood Elven / Breton",
+      "starting": "",
+      "requirement": "Race restricted",
+      "effects": []
+    },
+    {
+      "id": "tall-papa",
+      "name": "Tall Papa",
+      "shrine": "Items are enchanted 5% stronger.",
+      "follower": "Bound weapons deal up to 20% more base damage and bound armor provides 30% more armor rating.",
+      "devotee": "On death, become ethereal for a time period based on favor. If combat ends while ethereal, brings you back to life 10% favor. Pray to reset. Ghosts deal up to 50% less damage to you.",
+      "tenets": "Touch the Fractures scattered around Skyrim. Create enchanted items. Those skilled in Enchanting are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Tall Papa does not accept those who are not of Redguard blood.",
+      "effects": []
+    },
+    {
+      "id": "talos",
+      "name": "Talos",
+      "shrine": "Time between shouts is reduced.",
+      "follower": "Attacks and shouts against playable races, Snow Elves and Falmer are increased by up to 20%.",
+      "devotee": "Your remaining shout cooldown is halved whenever an enemy dies within mag feet.",
+      "tenets": "Bring the Civil War to a conclusion. Learn the dragon tongue. Absorb dragon souls. Slay elves and the Thalmor. Never openly break the laws of Skyrim.",
+      "race": "Human",
+      "starting": "Imperial / Nord",
+      "requirement": "Human blood",
+      "effects": []
+    },
+    {
+      "id": "the-all-maker",
+      "name": "the All-Maker",
+      "shrine": "Deal 15% more attack damage and critical damage against animals.",
+      "follower": "Bonuses from The All Maker Stones are doubled. Gain up to 10% weapon damage while having an unused All Maker Stone Power.",
+      "devotee": "After using an All-Maker Stone power, pray to the All-Maker to have it restored to you.",
+      "tenets": "Cleanse the All-Maker Stones. Hunt animals. Explore new locations. Pray only outdoors. Nords are most deserving of my favor.",
+      "race": "Human",
+      "starting": "",
+      "requirement": "Human blood",
+      "effects": []
+    },
+    {
+      "id": "the-hist",
+      "name": "the Hist",
+      "shrine": "Resist 100% of fire damage.",
+      "follower": "Pray to gain up and to 50 point bonus to all attributes for up to 1000 seconds. Up to 100 when under the influence of Sleeping Tree Sap.",
+      "devotee": "Absorb up to 40% stamina and magicka from nearby dead creatures and people. Sleeping tree sap lasts up to 20 times longer and is up to 100% stronger..",
+      "tenets": "Explore new locations. Slay daedra. Pray only outdoors. Never summon a daedra.",
+      "race": "All",
+      "starting": "",
+      "requirement": "The Hist does not accept those who are not of Argonian blood.",
+      "effects": []
+    },
+    {
+      "id": "the-hoonding",
+      "name": "the HoonDing",
+      "shrine": "Poise damage from attacks and bashes is 50% more effective.",
+      "follower": "Staggering an opponent reduces armor by up to 300 points for 60 seconds.",
+      "devotee": "The Hoonding gives you 25% chance to take no poise damage, take 25% less physical damage when not staggered, 25% more when staggered and deal 25% more weapon damage to staggered enemies.",
+      "tenets": "Slay your foes in open combat, especially those stronger than you. Those skilled in One-Handed are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "The HoonDing does not accept those who are not of Redguard blood.",
+      "effects": []
+    },
+    {
+      "id": "the-magna-ge",
+      "name": "the Magna-Ge",
+      "shrine": "Alteration spells are 10% more effective.",
+      "follower": "Out of combat, gain 50 points of weapon charge per second and 5 while in combat, up to their charge level when last equipped or recharged.",
+      "devotee": "During prayer, you may let the Magna-Ge carry you to a location within line of sight. Up to 10% better Cloak and Alteration spells",
+      "tenets": "Create enchanted items. Explore new locations. Pray only outdoors at night. High Elves and those skilled in Alteration are most deserving of our favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": []
+    },
+    {
+      "id": "the-old-ways",
+      "name": "the Old Ways",
+      "shrine": "Deal 15% more attack damage and critical damage against animals.",
+      "follower": "Pray while sacrificing 100 gold worth of gemstones to assume the powers of an animal god. Deal & up to 15% more or less damage when wearing full Forsworn, Fur, Leather or Hide.",
+      "devotee": "Able to assume the powers of the Dragon. per hour. Frost spells are up to 20% stronger based on favor.",
+      "tenets": "Slay people who stand in your way. Absorb dragon souls. Assume our powers through prayer. Nords are most deserving of our favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "The animal gods do not accept those who are not of Nord or Breton blood.",
+      "effects": []
+    },
+    {
+      "id": "the-riddle-thar",
+      "name": "the Riddle'Thar",
+      "shrine": "Unarmed strikes do 20 additional damage.",
+      "follower": "Gain bonuses based on day of the week ranging from attribute boosts, attribute regeneration and resistances.",
+      "devotee": "During prayer, an ancient Mane will grant a blessing they believe to be appropriate. Double bonus from day cycles.",
+      "tenets": "Master the skills of the Warrior, Thief and Mage. Strive to raise your Health, Magicka and Stamina. Each is as important as the others. Pray only at night.",
+      "race": "All",
+      "starting": "",
+      "requirement": "The Riddle'Thar does not accept those who are not of Khajiit blood.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "unarmedDamage",
+          "value": 20,
+          "isPercent": false
+        }
+      ]
+    },
+    {
+      "id": "trinimac",
+      "name": "Trinimac",
+      "shrine": "You are 10% more effective with two-handed weapons.",
+      "follower": "Gain 20% attack damage if health is above 90% and 20% if stamina is above 90%.",
+      "devotee": "When praying, you may become ethereal and invulnerable until your next attack.",
+      "tenets": "Slay humans. Defeat epic foes. Never accept Boethiah's blessing or serve her. Those skilled in Two-Handed are most deserving of my favor.",
+      "race": "High Elven, Wood Elven / Orcish",
+      "starting": "",
+      "requirement": "Race restricted",
+      "effects": []
+    },
+    {
+      "id": "vaermina",
+      "name": "Vaermina",
+      "shrine": "Illusion spells cost 10% less to cast.",
+      "follower": "Mind affecting illusion spells work on targets up to 20 levels higher and cost up to 50% less magicka while out of combat.",
+      "devotee": "Activate a sleeping person to summon an illusion to accompany you for ten hours. Illusion spells are up to 10% stronger when not rested.",
+      "tenets": "Witness the death of those under your mind affecting spells. Kill people in their sleep. Sleep to pray. Those skilled in Illusion are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Must have served this deity",
+      "effects": []
+    },
+    {
+      "id": "xarxes",
+      "name": "Xarxes",
+      "shrine": "Scrolls are 10% more effective.",
+      "follower": "2 additional skill point from skill books. Scrolls scale based on enchanting skill 20% at level 100 enchanting.",
+      "devotee": "Pray to ascend in a trance, revealing all characters in a very large radius. Scrolls scale based on you magic skill level of the scroll type 20% at 100 skill level.",
+      "tenets": "Explore new locations. Read the stories of others. Study a wide variety of spells. Bretons are most deserving of my favor.",
+      "race": "High Elven, Wood Elven / Breton",
+      "starting": "",
+      "requirement": "Race restricted",
+      "effects": []
+    },
+    {
+      "id": "z-en",
+      "name": "Z'en",
+      "shrine": "Alteration spells cost 10% less to cast.",
+      "follower": "Alchemy is up to 15% more effective. Gain 1 extra potion crafted.",
+      "devotee": "Pray to open and trade with an unlimited extradimensional storage space which has 5000 gold. Gain 2 more poison doses before needing to re-apply the poison.",
+      "tenets": "Bribe people as needed. Harvest the fruits of nature. Eat as much food as you want. Those skilled in Speech are most deserving of my favor.",
+      "race": "All",
+      "starting": "",
+      "requirement": "Z'en does not accept those who are not of Wood Elven blood.",
+      "effects": []
+    },
+    {
+      "id": "zenithar",
+      "name": "Zenithar",
+      "shrine": "Able to improve items 5% better.",
+      "follower": "Tempering weapons or armor is up to 15% better and unenchanted weapons deal up to 10% more damage.",
+      "devotee": "Pray to Zenithar to buy and sell items directly. Gain a very difficult crafting recipe. This recipe allows you to create perk potions at the Aetherium Forge.",
+      "tenets": "Invest in stores and merchants. Seek out skill training. Make weapons and armor. Never openly break the laws of Skyrim.",
+      "race": "All",
+      "starting": "",
+      "requirement": "None",
+      "effects": []
+    }
+  ]
+}

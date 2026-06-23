@@ -2,8 +2,8 @@
   "skillId": "alchemy",
   "skillName": "Alchemy",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 22,
+    "height": 34
   },
   "perks": [
     {
@@ -12,138 +12,119 @@
       "skillReq": 0,
       "position": {
         "x": 7,
-        "y": 21
+        "y": 33
       },
       "prerequisites": [],
       "description": "You've acquired basic alchemical insights and understand how to work with a laboratory. Thus, you can now craft your own potions and poisons.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "alchemy-alchemical-lore-2",
+      "id": "alchemy-alchemical-lore-r2",
       "name": "Alchemical Lore",
       "skillReq": 20,
       "position": {
         "x": 7,
-        "y": 21
+        "y": 33
       },
-      "prerequisites": [
-        "alchemy-alchemical-lore"
-      ],
+      "prerequisites": [],
       "description": "Through obscure knowledge, you now can enhance your mixtures and craft alchemistic powders at a smelter. Besides, your sensory organs have become very keen. Thus, you determine all the alchemical properties of consumed ingredients.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-improved-elixirs",
       "name": "Improved Elixirs",
       "skillReq": 25,
       "position": {
-        "x": 18,
-        "y": 19
+        "x": 20,
+        "y": 31
       },
       "prerequisites": [
         "alchemy-alchemical-lore"
       ],
       "description": "Having refinined the brewing process, your potions are now 25% stronger.",
-      "effects": []
-    },
-    {
-      "id": "alchemy-night-vision",
-      "name": "Night Vision",
-      "skillReq": 25,
-      "position": {
-        "x": 21,
-        "y": 15
-      },
-      "prerequisites": [
-        "alchemy-improved-elixirs"
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "potionEffectiveness",
+          "value": 25,
+          "isPercent": true
+        }
       ],
-      "description": "Having altered your body with extracts from a sabrecat eye, you can now make your eyes see in the dark at will.",
-      "effects": []
-    },
-    {
-      "id": "alchemy-concentrated-poisons",
-      "name": "Concentrated Poisons",
-      "skillReq": 25,
-      "position": {
-        "x": 7,
-        "y": 15
-      },
-      "prerequisites": [
-        "alchemy-alchemical-lore"
-      ],
-      "description": "Your experience in the obscure alchemical arts allows you to concentrate your poisons. Thus, you can make most of them last longer before they need to be reapplied.",
-      "effects": []
-    },
-    {
-      "id": "alchemy-regeneration",
-      "name": "Regeneration",
-      "skillReq": 50,
-      "position": {
-        "x": 18,
-        "y": 10
-      },
-      "prerequisites": [
-        "alchemy-improved-elixirs"
-      ],
-      "description": "Having altered your body with extracts from troll fat, slaughterfish eggs and spriggan sap, you're now able to regenerate your body, and do so even more rapidly when you are immersed in water.",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-catalysis",
       "name": "Catalysis",
       "skillReq": 50,
       "position": {
-        "x": 14,
-        "y": 12
+        "x": 16,
+        "y": 19
       },
       "prerequisites": [
         "alchemy-improved-elixirs"
       ],
       "description": "You've started experimenting with a catalyst that increases the yield of the brewing process.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "alchemy-catalysis-2",
+      "id": "alchemy-catalysis-r2",
       "name": "Catalysis",
       "skillReq": 100,
       "position": {
-        "x": 14,
-        "y": 12
+        "x": 16,
+        "y": 19
       },
-      "prerequisites": [
-        "alchemy-catalysis"
-      ],
+      "prerequisites": [],
       "description": "You've perfected the catalyst. Thereby, you can craft double the amount of mixtures with the same amount of ingredients.",
-      "effects": []
-    },
-    {
-      "id": "alchemy-improved-poisons",
-      "name": "Improved Poisons",
-      "skillReq": 50,
-      "position": {
-        "x": 8,
-        "y": 9
-      },
-      "prerequisites": [
-        "alchemy-concentrated-poisons"
-      ],
-      "description": "By adding small amounts of truly horrifying ingredients, you are able to make your poisons more potent.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-immunization",
       "name": "Immunization",
       "skillReq": 75,
       "position": {
-        "x": 14,
-        "y": 6
+        "x": 15,
+        "y": 7
       },
       "prerequisites": [
         "alchemy-catalysis",
         "alchemy-improved-poisons"
       ],
       "description": "You've discovered a way to make your body more resiliant to disease and poison (50% and 25% respectively)",
-      "effects": []
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "diseaseResist",
+          "value": 50,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "poisonResist",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alchemy-purification-process",
+      "name": "Purification Process",
+      "skillReq": 100,
+      "position": {
+        "x": 12,
+        "y": 0
+      },
+      "prerequisites": [
+        "alchemy-immunization"
+      ],
+      "description": "You've found a method to eliminate disadvantages from your mixtures and to make all of them even more potent.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-fortified-muscles",
@@ -151,13 +132,14 @@
       "skillReq": 75,
       "position": {
         "x": 12,
-        "y": 14
+        "y": 19
       },
       "prerequisites": [
         "alchemy-immunization"
       ],
       "description": "Having altered your body with extracts from troll fat and a mammoth heart, you've become more resilient to harm.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-alchemical-intellect",
@@ -170,91 +152,162 @@
       "prerequisites": [
         "alchemy-immunization"
       ],
-      "description": "Having altered your body with extracts from a Dremora's Heart and Ectoplasm, your mind has transcended mortal limits, expanding your magicka and improving your spell casting.",
-      "effects": []
+      "description": "Having altered your body with extracts from a Dremora's Heart and Ectoplasm, your mind has transcended mortal limits, expanding your magicka and regeneration.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "alchemy-purification-process",
-      "name": "Purification Process",
-      "skillReq": 100,
+      "id": "alchemy-night-vision",
+      "name": "Night Vision",
+      "skillReq": 25,
       "position": {
-        "x": 11,
-        "y": 1
+        "x": 21,
+        "y": 25
       },
       "prerequisites": [
-        "alchemy-immunization"
+        "alchemy-improved-elixirs"
       ],
-      "description": "You've found a method to eliminate disadvantages from your mixtures and to make all of them even more potent.",
-      "effects": []
+      "description": "Having altered your body with extracts from a sabrecat eye, you can now make your eyes see in the dark at will.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alchemy-regeneration",
+      "name": "Regeneration",
+      "skillReq": 50,
+      "position": {
+        "x": 19,
+        "y": 16
+      },
+      "prerequisites": [
+        "alchemy-improved-elixirs"
+      ],
+      "description": "Having altered your body with extracts from troll fat, slaughterfish eggs and spriggan sap, you're now able to regenerate your body, and do so even more rapidly when you are immersed in water.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alchemy-concentrated-poisons",
+      "name": "Concentrated Poisons",
+      "skillReq": 25,
+      "position": {
+        "x": 8,
+        "y": 25
+      },
+      "prerequisites": [
+        "alchemy-alchemical-lore"
+      ],
+      "description": "Your experience in the obscure alchemical arts allows you to concentrate your poisons. Thus, you can make most of them last longer before they need to be reapplied.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "alchemy-improved-poisons",
+      "name": "Improved Poisons",
+      "skillReq": 50,
+      "position": {
+        "x": 8,
+        "y": 15
+      },
+      "prerequisites": [
+        "alchemy-concentrated-poisons"
+      ],
+      "description": "By adding small amounts of truly horrifying ingredients, you are able to make your poisons 25% more potent.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "potionEffectiveness",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-drunken-combat",
       "name": "Drunken Combat",
       "skillReq": 0,
-      "playerLevelReq": 10,
       "position": {
-        "x": 2,
-        "y": 18
+        "x": 0,
+        "y": 33
       },
       "prerequisites": [],
-      "description": "Alcohol pumps you up, boosting your strength and stamina. (Removes Alcohol Blur, regenerate 2 stamina per second and do 10% more damage with melee attacks while tipsy)",
-      "effects": []
+      "description": "Alcohol pumps you up, boosting your strength and stamina. [Removes negative alcohol effects, regenerate 2 stamina per second and do 10% more damage with melee attacks while tipsy]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
-      "id": "alchemy-drunken-combat-2",
+      "id": "alchemy-drunken-combat-r2",
       "name": "Drunken Combat",
       "skillReq": 0,
-      "playerLevelReq": 20,
       "position": {
-        "x": 2,
-        "y": 18
+        "x": 0,
+        "y": 33
       },
-      "prerequisites": [
-        "alchemy-drunken-combat"
+      "prerequisites": [],
+      "description": "Alcohol pumps you up, boosting your strength and stamina. [Removes Alcohol Blur, regenerate 3 stamina per second and do 20% more damage with melee attacks while drunk]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 20,
+          "isPercent": true
+        }
       ],
-      "description": "Alcohol pumps you up, boosting your strength and stamina. (Removes Alcohol Blur, regenerate 3 stamina per second and do 20% more damage with melee attacks while drunk)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-gourmet",
       "name": "Gourmet",
       "skillReq": 0,
-      "playerLevelReq": 10,
       "position": {
-        "x": 2,
-        "y": 15
+        "x": 0,
+        "y": 27
       },
       "prerequisites": [],
-      "description": "You keep a healthy diet, maximizing the nutrition of foods. (Food effects are 50% stronger and longer lasting)",
-      "effects": []
+      "description": "You keep a healthy diet, maximizing the nutrition of foods. [Food effects are 50% stronger and longer lasting]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "potionEffectiveness",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-herbalist",
       "name": "Herbalist",
       "skillReq": 0,
-      "playerLevelReq": 10,
       "position": {
-        "x": 2,
-        "y": 12
+        "x": 0,
+        "y": 21
       },
       "prerequisites": [],
-      "description": "You can directly consume alchemical ingredients to draw their effects. (2x magnitude for ingredients consumed)",
-      "effects": []
+      "description": "You can directly consume alchemical ingredients to draw their effects. [2x magnitude for ingredients consumed]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "alchemy-herbalist-2",
+      "id": "alchemy-herbalist-r2",
       "name": "Herbalist",
       "skillReq": 0,
-      "playerLevelReq": 20,
       "position": {
-        "x": 2,
-        "y": 12
+        "x": 0,
+        "y": 21
       },
-      "prerequisites": [
-        "alchemy-herbalist"
-      ],
-      "description": "You can directly consume alchemical ingredients to draw their effects. (5x magnitude for ingredients consumed)",
-      "effects": []
+      "prerequisites": [],
+      "description": "You can directly consume alchemical ingredients to draw their effects. [5x magnitude for ingredients consumed]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-alkahest",
@@ -262,13 +315,14 @@
       "skillReq": 60,
       "position": {
         "x": 6,
-        "y": 6
+        "y": 9
       },
       "prerequisites": [
         "alchemy-improved-poisons"
       ],
       "description": "Your poisons are highly corrosive, enabling you to ignore 20% of the armor rating of an affected target for their duration.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "alchemy-world-serpent",
@@ -276,13 +330,14 @@
       "skillReq": 90,
       "position": {
         "x": 8,
-        "y": 3
+        "y": 4
       },
       "prerequisites": [
         "alchemy-alkahest"
       ],
       "description": "When you shout, your blood turns poisonous for 15 seconds. The next time you get hit with a weapon, retaliate with a powerful poisonous strike that deals 50 points of poison damage per second for 10 seconds.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

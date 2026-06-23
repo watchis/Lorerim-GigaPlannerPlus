@@ -12,7 +12,7 @@ function getStatLabel(stat: string, mechanics: Mechanics): string {
   return derived?.label ?? formatStatId(stat);
 }
 
-function formatSignedValue(value: number, isPercent?: boolean): string {
+export function formatSignedBonusValue(value: number, isPercent: boolean): string {
   const sign = value > 0 ? "+" : "";
   return `${sign}${value}${isPercent ? "%" : ""}`;
 }
@@ -20,15 +20,20 @@ function formatSignedValue(value: number, isPercent?: boolean): string {
 export function formatEffectBonus(effect: Effect, mechanics: Mechanics): string {
   if (effect.type === "attribute") {
     const label = effect.stat.charAt(0).toUpperCase() + effect.stat.slice(1);
-    return `${label}: ${formatSignedValue(effect.value)}`;
+    return `${label}: ${formatSignedBonusValue(effect.value, false)}`;
   }
 
   if (effect.type === "skillPointsPerLevel") {
-    return `Skill points per level: ${formatSignedValue(effect.value)}`;
+    return `Skill points per level: ${formatSignedBonusValue(effect.value, false)}`;
+  }
+
+  if (effect.type === "flag") {
+    const label = getStatLabel(effect.stat, mechanics);
+    return label;
   }
 
   const derived = mechanics.derivedStats.find((entry) => entry.id === effect.stat);
   const label = getStatLabel(effect.stat, mechanics);
   const isPercent = effect.isPercent ?? derived?.isPercent ?? false;
-  return `${label}: ${formatSignedValue(effect.value, isPercent)}`;
+  return `${label}: ${formatSignedBonusValue(effect.value, isPercent)}`;
 }

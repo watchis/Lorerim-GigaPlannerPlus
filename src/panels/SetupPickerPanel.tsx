@@ -1,39 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { PickerOptionTile } from "@/components/picker/PickerListItem";
 import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearchInput";
-import { SkillIcon } from "@/components/SkillIcon";import { BlessingDetailContent } from "@/components/option-details/BlessingDetailContent";
+import { SkillIcon } from "@/components/SkillIcon";
+import { DeityDetailContent } from "@/components/option-details/DeityDetailContent";
 import { RaceDetailContent } from "@/components/option-details/RaceDetailContent";
-import { StandingStoneDetailContent } from "@/components/option-details/StandingStoneDetailContent";
+import { BirthsignDetailContent } from "@/components/option-details/BirthsignDetailContent";
 import { TraitDetailContent } from "@/components/option-details/TraitDetailContent";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { StandingStone } from "@/data/schemas";
 import {
   canSelectMajorSkill,
   canSelectMinorSkill,
   canSelectTrait,
+  getTraitLimit,
 } from "@/engine/buildEngine";
-import { cn } from "@/lib/utils";import { SingleSelectPickerView, type SingleSelectOption } from "@/panels/SingleSelectPickerView";
+import { cn } from "@/lib/utils";
+import { SingleSelectPickerView, type SingleSelectOption } from "@/panels/SingleSelectPickerView";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
-
-function standingStoneDetails(stone: StandingStone): string[] {
-  if (stone.bonusDetails?.length) return stone.bonusDetails;
-  if (stone.bonus.trim()) return [stone.bonus];
-  return [];
-}
 
 function pickerTitle(picker: SetupPicker, labels: Record<string, string>): string {
   switch (picker) {
     case "race":
       return labels.race;
-    case "standing-stone":
-      return labels.standingStone;
-    case "blessing":
-      return labels.blessing;
+    case "birthsign":
+      return labels.birthsign;
+    case "deity":
+      return labels.deity;
     case "traits":
       return labels.traits;
     case "major-skills":
@@ -46,12 +41,26 @@ function pickerTitle(picker: SetupPicker, labels: Record<string, string>): strin
 function isDetailPicker(picker: SetupPicker): boolean {
   return (
     picker === "race" ||
-    picker === "standing-stone" ||
-    picker === "blessing" ||
+    picker === "birthsign" ||
+    picker === "deity" ||
     picker === "traits"
   );
 }
 
+function pickerGuideUrl(picker: SetupPicker): string | undefined {
+  switch (picker) {
+    case "race":
+      return "https://www.lorerim.com/guides/character/race";
+    case "birthsign":
+      return "https://www.lorerim.com/guides/character/birthsign";
+    case "deity":
+      return "https://www.lorerim.com/guides/character/divine";
+    case "traits":
+      return "https://www.lorerim.com/guides/character/traits";
+    default:
+      return undefined;
+  }
+}
 function pickerRemaining(
   picker: SetupPicker,
   game: NonNullable<ReturnType<typeof useBuildStore.getState>["gameData"]>["game"],
@@ -59,7 +68,7 @@ function pickerRemaining(
 ): number {
   switch (picker) {
     case "traits":
-      return game.manifest.limits.traits - build.traitIds.length;
+      return getTraitLimit(game, build) - build.traitIds.length;
     case "major-skills":
       return game.manifest.limits.majorSkills - build.majorSkillIds.length;
     case "minor-skills":
@@ -77,6 +86,14 @@ interface MultiSelectOption {
   onSelect: () => void;
 }
 
+function sortPickerOptions(options: SingleSelectOption[]): SingleSelectOption[] {
+  const noneOption = options.find((option) => option.id === "none");
+  const rest = options
+    .filter((option) => option.id !== "none")
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  return noneOption ? [noneOption, ...rest] : rest;
+}
+
 export function SetupPickerPanel() {
   const labels = usePanelLabels("character-setup");
   const setupPicker = useUiStore((s) => s.setupPicker);
@@ -84,8 +101,8 @@ export function SetupPickerPanel() {
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const setRace = useBuildStore((s) => s.setRace);
-  const setStandingStone = useBuildStore((s) => s.setStandingStone);
-  const setBlessing = useBuildStore((s) => s.setBlessing);
+  const setBirthsign = useBuildStore((s) => s.setBirthsign);
+  const setDeity = useBuildStore((s) => s.setDeity);
   const toggleTrait = useBuildStore((s) => s.toggleTrait);
   const toggleMajorSkill = useBuildStore((s) => s.toggleMajorSkill);
   const toggleMinorSkill = useBuildStore((s) => s.toggleMinorSkill);
@@ -105,6 +122,7 @@ export function SetupPickerPanel() {
     setupPicker === "minor-skills";
   const remaining = showRemaining ? pickerRemaining(setupPicker, game, build) : null;
   const title = pickerTitle(setupPicker, labels);
+  const guideUrl = pickerGuideUrl(setupPicker);
 
   const detailLabels = {
     baseStats: labels.baseStats,
@@ -145,41 +163,41 @@ export function SetupPickerPanel() {
           />
         ),
     }));
-  } else if (setupPicker === "standing-stone") {
-    focusId = build.standingStoneId ?? "none";
-    detailOptions = game.standingStones.map((stone) => ({
-      id: stone.id,
-      name: stone.name,
-      isSelected: (build.standingStoneId ?? "none") === stone.id,
-      onSelect: () => setStandingStone(stone.id),
+  } else if (setupPicker === "birthsign") {
+    focusId = build.birthsignId ?? "none";
+    detailOptions = game.birthsigns.map((birthsign) => ({
+      id: birthsign.id,
+      name: birthsign.name,
+      isSelected: (build.birthsignId ?? "none") === birthsign.id,
+      onSelect: () => setBirthsign(birthsign.id),
       detail:
-        stone.id === "none" ? (
+        birthsign.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
-            No standing stone bonus will be applied to this build.
+            No birthsign bonus will be applied to this build.
           </p>
         ) : (
-          <StandingStoneDetailContent
-            stone={{ ...stone, bonusDetails: standingStoneDetails(stone) }}
+          <BirthsignDetailContent
+            birthsign={birthsign}
             labels={{ bonuses: labels.bonuses }}
             hideHeader
           />
         ),
     }));
-  } else if (setupPicker === "blessing") {
-    focusId = build.blessingId ?? "none";
-    detailOptions = game.blessings.map((blessing) => ({
-      id: blessing.id,
-      name: blessing.name,
-      isSelected: (build.blessingId ?? "none") === blessing.id,
-      onSelect: () => setBlessing(blessing.id),
+  } else if (setupPicker === "deity") {
+    focusId = build.deityId ?? "none";
+    detailOptions = game.deities.map((deity) => ({
+      id: deity.id,
+      name: deity.name,
+      isSelected: (build.deityId ?? "none") === deity.id,
+      onSelect: () => setDeity(deity.id),
       detail:
-        blessing.id === "none" ? (
+        deity.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
-            No divine blessing will be applied to this build.
+            No deity will be applied to this build.
           </p>
         ) : (
-          <BlessingDetailContent
-            blessing={blessing}
+          <DeityDetailContent
+            deity={deity}
             races={game.races}
             labels={{
               races: labels.races,
@@ -203,7 +221,6 @@ export function SetupPickerPanel() {
       detail: (
         <TraitDetailContent
           trait={trait}
-          mechanics={game.mechanics}
           labels={{ bonuses: labels.bonuses }}
           hideHeader
         />
@@ -239,24 +256,40 @@ export function SetupPickerPanel() {
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <CardHeader className="flex-shrink-0 flex-row items-center justify-between gap-3 space-y-0 border-b border-[var(--color-border)]/50 pb-3">
-        <div className="min-w-0">
-          <CardTitle className="text-base">{title}</CardTitle>
-          {remaining !== null && (
-            <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-              {remaining} {labels.remaining ?? "remaining"}
-            </p>
-          )}
-        </div>
-        <Button variant="ghost" size="sm" className="shrink-0" onClick={() => setSetupPicker(null)}>
-          <ChevronLeft className="h-4 w-4" />
-          {labels.backToOverview ?? "Overview"}
-        </Button>
-      </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 pt-3">        {detailPicker ? (
+      <WorkspacePanelHeader
+        back={{
+          label: labels.backToOverview ?? "Overview",
+          onClick: () => setSetupPicker(null),
+        }}
+        title={title}
+        subtitle={
+          remaining !== null || guideUrl ? (
+            <>
+              {remaining !== null && (
+                <span>{`${remaining} ${labels.remaining ?? "remaining"}`}</span>
+              )}
+              {guideUrl && (
+                <a
+                  href={guideUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "text-[var(--color-accent)] hover:text-[var(--color-accent-muted)] hover:underline",
+                    remaining !== null && "mt-1 block",
+                  )}
+                >
+                  {labels.guideReadMore}
+                </a>
+              )}
+            </>
+          ) : undefined
+        }
+      />
+      <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 pt-3">
+        {detailPicker ? (
           <SingleSelectPickerView
             key={setupPicker}
-            options={detailOptions}
+            options={sortPickerOptions(detailOptions)}
             selectedId={focusId}
             emptyDetail="Select an option to view details."
             searchPlaceholder={labels.search}

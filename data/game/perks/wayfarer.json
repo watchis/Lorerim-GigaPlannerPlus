@@ -2,8 +2,8 @@
   "skillId": "wayfarer",
   "skillName": "Wayfarer",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 21,
+    "height": 34
   },
   "perks": [
     {
@@ -11,278 +11,400 @@
       "name": "Cheap Tricks",
       "skillReq": 0,
       "position": {
-        "x": 11,
-        "y": 21
+        "x": 5,
+        "y": 33
       },
       "prerequisites": [],
-      "description": "You have learned the basics of the art of picking locks and carrying found goods. (+3 lockpicking expertise, +25 carry weight, forge lockpicks with Craftsmanship)",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-advanced-lockpicking",
-      "name": "Advanced Lockpicking",
-      "skillReq": 25,
-      "position": {
-        "x": 11,
-        "y": 17
-      },
-      "prerequisites": [
-        "wayfarer-cheap-tricks"
+      "description": "You have learned the basics of the art of picking locks and carrying found goods. [+3 lockpicking expertise, +25 carry weight, forge lockpicks with Craftsmanship]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "lockpicking",
+          "value": 3,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 25,
+          "isPercent": false
+        }
       ],
-      "description": "You have extended your repertoire of lockpicking tricks and are able to carry more loot. (+2 Lockpicking Expertise, +25 carry weight)",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-treasure-hunter",
-      "name": "Treasure Hunter",
-      "skillReq": 40,
-      "position": {
-        "x": 11,
-        "y": 12
-      },
-      "prerequisites": [
-        "wayfarer-advanced-lockpicking"
-      ],
-      "description": "You are able to locate secret spaces in containers when you search them. (15% chance to find special loot in select chests)",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-sophisticated-lockpicking",
-      "name": "Sophisticated Lockpicking",
-      "skillReq": 60,
-      "position": {
-        "x": 11,
-        "y": 8
-      },
-      "prerequisites": [
-        "wayfarer-treasure-hunter"
-      ],
-      "description": "You have memorized the inner mechanics of sophisticated locks and security systems and are able to haul more loot out. (+2 Lockpicking Expertise, +25 Carry Weight)",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-masterly-lockpicking",
-      "name": "Masterly Lockpicking",
-      "skillReq": 90,
-      "position": {
-        "x": 11,
-        "y": 3
-      },
-      "prerequisites": [
-        "wayfarer-sophisticated-lockpicking"
-      ],
-      "description": "You learned everything there is to know about the art of lockpicking and hauling loot. (+2 Lockpicking Expertise, +25 Carry Weight, locks never break)",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-leader",
-      "name": "Leader",
-      "skillReq": 25,
-      "position": {
-        "x": 6,
-        "y": 17
-      },
-      "prerequisites": [
-        "wayfarer-cheap-tricks"
-      ],
-      "description": "Nearby allies, but not the player, gain 150 armor rating and 15% magical resistance.",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-captain",
-      "name": "Captain",
-      "skillReq": 40,
-      "position": {
-        "x": 6,
-        "y": 13
-      },
-      "prerequisites": [
-        "wayfarer-leader"
-      ],
-      "description": "Allies, but not the player, regenerate health, stamina and magicka 50% faster.",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-commander",
-      "name": "Commander",
-      "skillReq": 60,
-      "position": {
-        "x": 6,
-        "y": 10
-      },
-      "prerequisites": [
-        "wayfarer-captain"
-      ],
-      "description": "Nearby allies, but not the player, gain 10% resist to fire, frost and shock.",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-legion",
-      "name": "Legion",
-      "skillReq": 100,
-      "position": {
-        "x": 6,
-        "y": 6
-      },
-      "prerequisites": [
-        "wayfarer-commander"
-      ],
-      "description": "Deal 10% more damage when you are fighting with allies.",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "wayfarer-lone-wolf",
       "name": "Lone Wolf",
       "skillReq": 25,
       "position": {
-        "x": 17,
-        "y": 17
+        "x": 12,
+        "y": 25
       },
       "prerequisites": [
         "wayfarer-cheap-tricks"
       ],
       "description": "Gain 15% magic resistance and 150 armor rating when fighting alone.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "wayfarer-solo",
       "name": "Solo",
       "skillReq": 40,
       "position": {
-        "x": 17,
-        "y": 13
+        "x": 12,
+        "y": 18
       },
       "prerequisites": [
         "wayfarer-lone-wolf"
       ],
       "description": "Regenerate health, stamina and magicka 50% faster when you are fighting alone.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "wayfarer-maverick",
       "name": "Maverick",
       "skillReq": 60,
       "position": {
-        "x": 17,
-        "y": 10
+        "x": 12,
+        "y": 12
       },
       "prerequisites": [
         "wayfarer-solo"
       ],
       "description": "You resist 10% fire, frost and shock damage when fighting alone.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "wayfarer-one-man-legion",
       "name": "One Man Legion",
       "skillReq": 100,
       "position": {
-        "x": 17,
-        "y": 6
+        "x": 12,
+        "y": 5
       },
       "prerequisites": [
         "wayfarer-maverick"
       ],
       "description": "Deal 10% more damage when you are fighting alone.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "wayfarer-hunter",
-      "name": "Hunter",
-      "skillReq": 20,
+      "id": "wayfarer-advanced-lockpicking",
+      "name": "Advanced Lockpicking",
+      "skillReq": 25,
       "position": {
-        "x": 20,
-        "y": 17
+        "x": 5,
+        "y": 26
       },
       "prerequisites": [
         "wayfarer-cheap-tricks"
       ],
-      "description": "You've spent significant time hunting in the wilderness and can deal more damage to most animals. Deal 20% more damage to all animals.",
-      "effects": []
+      "description": "You have extended your repertoire of lockpicking tricks and are able to carry more loot. [+2 Lockpicking Expertise, +25 carry weight]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "lockpicking",
+          "value": 2,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 25,
+          "isPercent": false
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
-      "id": "wayfarer-hunter-2",
-      "name": "Hunter",
+      "id": "wayfarer-treasure-hunter",
+      "name": "Treasure Hunter",
       "skillReq": 40,
       "position": {
-        "x": 20,
-        "y": 17
+        "x": 5,
+        "y": 16
       },
       "prerequisites": [
-        "wayfarer-hunter"
+        "wayfarer-advanced-lockpicking"
       ],
-      "description": "You've spent significant time hunting in the wilderness and can deal more damage to most animals. Deal 40% more damage to all animals.",
-      "effects": []
+      "description": "You are able to locate secret spaces in containers when you search them. [15% chance to find special loot in select chests]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "wayfarer-survival-instincts",
-      "name": "Survival Instincts",
-      "skillReq": 40,
-      "position": {
-        "x": 20,
-        "y": 11
-      },
-      "prerequisites": [
-        "wayfarer-hunter"
-      ],
-      "description": "While others would ignore the threats of the elements, you understand the danger. Regenerate stamina and magicka 100% faster when outdoors and out of combat.",
-      "effects": []
-    },
-    {
-      "id": "wayfarer-taming",
-      "name": "Taming",
+      "id": "wayfarer-sophisticated-lockpicking",
+      "name": "Sophisticated Lockpicking",
       "skillReq": 60,
       "position": {
-        "x": 20,
+        "x": 5,
+        "y": 8
+      },
+      "prerequisites": [
+        "wayfarer-treasure-hunter"
+      ],
+      "description": "You have memorized the inner mechanics of sophisticated security systems, are more precise and are able to haul more loot out. [+2 Lockpicking Expertise, +25 Carry Weight, +5 Armor Penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "lockpicking",
+          "value": 2,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 25,
+          "isPercent": false
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-masterly-lockpicking",
+      "name": "Masterly Lockpicking",
+      "skillReq": 90,
+      "position": {
+        "x": 5,
+        "y": 0
+      },
+      "prerequisites": [
+        "wayfarer-sophisticated-lockpicking"
+      ],
+      "description": "You learned everything there is to know about the art of lockpicking, precision and hauling loot. [+2 Lockpicking Expertise, +25 Carry Weight, locks never break, +5 Armor Penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "lockpicking",
+          "value": 2,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 25,
+          "isPercent": false
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-leader",
+      "name": "Leader",
+      "skillReq": 25,
+      "position": {
+        "x": 0,
+        "y": 25
+      },
+      "prerequisites": [
+        "wayfarer-cheap-tricks"
+      ],
+      "description": "Nearby allies, but not the player, gain 150 armor rating and 15% magical resistance.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 150,
+          "isPercent": false
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-captain",
+      "name": "Captain",
+      "skillReq": 40,
+      "position": {
+        "x": 0,
+        "y": 18
+      },
+      "prerequisites": [
+        "wayfarer-leader"
+      ],
+      "description": "Allies, but not the player, regenerate health, stamina and magicka 50% faster.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-commander",
+      "name": "Commander",
+      "skillReq": 60,
+      "position": {
+        "x": 0,
+        "y": 12
+      },
+      "prerequisites": [
+        "wayfarer-captain"
+      ],
+      "description": "Nearby allies, but not the player, gain 10% resist to fire, frost and shock.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-legion",
+      "name": "Legion",
+      "skillReq": 100,
+      "position": {
+        "x": 0,
         "y": 5
+      },
+      "prerequisites": [
+        "wayfarer-commander"
+      ],
+      "description": "Deal 10% more damage when you are fighting with allies.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-pacification",
+      "name": "Pacification",
+      "skillReq": 50,
+      "position": {
+        "x": 16,
+        "y": 2
       },
       "prerequisites": [
         "wayfarer-survival-instincts"
       ],
-      "description": "You have mastered the outdoors and all of Skyrim's fauna. Gain a power to tame nearby animals under 50% health. Also move 10% faster outdoors.",
-      "effects": []
+      "description": "You have mastered the outdoors and all of Skyrim's fauna. Gain an expert illusion spell to pacify nearby animals. Also move 20% faster outdoors and 10% faster indoors.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-survival-instincts",
+      "name": "Survival Instincts",
+      "skillReq": 30,
+      "position": {
+        "x": 16,
+        "y": 13
+      },
+      "prerequisites": [
+        "wayfarer-hunter"
+      ],
+      "description": "While others would ignore the threats of the elements, you understand the danger. Regenerate health, stamina and magicka 100% faster when outdoors or out of combat.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-hunter",
+      "name": "Hunter",
+      "skillReq": 10,
+      "position": {
+        "x": 16,
+        "y": 25
+      },
+      "prerequisites": [
+        "wayfarer-cheap-tricks"
+      ],
+      "description": "You've spent significant time hunting in the wilderness and can deal more damage to animals. Deal 20% more damage to all animals and half that to dragons.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-hunter-r2",
+      "name": "Hunter",
+      "skillReq": 40,
+      "position": {
+        "x": 16,
+        "y": 25
+      },
+      "prerequisites": [],
+      "description": "You've spent significant time hunting in the wilderness and can deal more damage to animals. Deal 40% more damage to all animals and half that to dragons.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "wayfarer-lockdown",
       "name": "Lockdown",
       "skillReq": 40,
       "position": {
-        "x": 14,
-        "y": 14
+        "x": 8,
+        "y": 16
       },
       "prerequisites": [
         "wayfarer-advanced-lockpicking"
       ],
       "description": "Activate a hostile automaton to lockpick your way into its engine. Lock difficulty is based on its current Health. Pick its lock within 15 seconds to reduce its Health to 1 and shut it down for 60 seconds. If you fail, you can't try again for 30 seconds.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "wayfarer-hotwire",
       "name": "Hotwire",
       "skillReq": 60,
       "position": {
-        "x": 14,
-        "y": 9
+        "x": 8,
+        "y": 8
       },
       "prerequisites": [
         "wayfarer-lockdown"
       ],
       "description": "Activate an automaton under Lockdown to lockpick its brain. Succeed within 15 seconds to hack the automaton, forcing it to follow you and fight for you. If you fail, you can't try again for 30 seconds. You can only have one Hotwired Automaton at a time.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "wayfarer-percussive-maintenance",
       "name": "Percussive Maintenance",
       "skillReq": 100,
       "position": {
-        "x": 14,
-        "y": 5
+        "x": 8,
+        "y": 0
       },
       "prerequisites": [
         "wayfarer-hotwire"
       ],
       "description": "Your Hotwired Automaton moves 30% faster and attacks 20% faster. Hitting your Hotwired Automaton with a mace or warhammer repairs it 150 points (or 300 points on a power attack) and further increases attack speed by 50% for 10 seconds.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-beastmaster",
+      "name": "Beastmaster",
+      "skillReq": 80,
+      "position": {
+        "x": 20,
+        "y": 4
+      },
+      "prerequisites": [
+        "wayfarer-animal-riding"
+      ],
+      "description": "Increases the total size limit of your tamed animals by 1, enabling you to tame more and bigger animals.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-animal-riding",
+      "name": "Animal Riding",
+      "skillReq": 50,
+      "position": {
+        "x": 20,
+        "y": 11
+      },
+      "prerequisites": [
+        "wayfarer-animal-taming"
+      ],
+      "description": "Able to ride tamed animals with size 5 or up.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "wayfarer-animal-taming",
+      "name": "Animal Taming",
+      "skillReq": 10,
+      "position": {
+        "x": 20,
+        "y": 19
+      },
+      "prerequisites": [
+        "wayfarer-hunter"
+      ],
+      "description": "Able to tame animals. Aggressive animals must be reduced to 25% health first. Total size of your tamed animals is limited by Wayfarer skill.",
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

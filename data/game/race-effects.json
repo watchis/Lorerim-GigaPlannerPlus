@@ -1,0 +1,286 @@
+{
+  "bosmer": [
+    {
+      "type": "derivedStat",
+      "stat": "armorPenetrationRanged",
+      "value": 5,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "poisonResist",
+      "value": 25,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "diseaseResist",
+      "value": 50,
+      "isPercent": true
+    },
+    {
+      "type": "flag",
+      "stat": "rawFood"
+    },
+    {
+      "type": "derivedStat",
+      "stat": "shockResist",
+      "value": 25,
+      "isPercent": true
+    }
+  ],
+  "redguard": [
+    {
+      "type": "derivedStat",
+      "stat": "sprintCostReduction",
+      "value": 1,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "armorPenetrationMelee",
+      "value": 5,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "poisonResist",
+      "value": 50,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "diseaseResist",
+      "value": 50,
+      "isPercent": true
+    }
+  ],
+  "orsimer": [
+    {
+      "type": "derivedStat",
+      "stat": "armorRating",
+      "value": 150,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "magicResist",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "flag",
+      "stat": "rawFood"
+    }
+  ],
+  "nord": [
+    {
+      "type": "derivedStat",
+      "stat": "shoutPower",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "shoutCooldownReduction",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "meleeDamage",
+      "value": 5,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "frostResist",
+      "value": 50,
+      "isPercent": true
+    }
+  ],
+  "khajiit": [
+    {
+      "type": "derivedStat",
+      "stat": "unarmedDamage",
+      "value": 5,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "moveSpeed",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "sneakSpeed",
+      "value": 20,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "fallDamageReduction",
+      "value": 75,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "lockpicking",
+      "value": 2,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "detectDifficulty",
+      "value": 20,
+      "isPercent": true
+    },
+    {
+      "type": "flag",
+      "stat": "rawFood"
+    },
+    {
+      "type": "flag",
+      "stat": "nightEye"
+    }
+  ],
+  "imperial": [
+    {
+      "type": "derivedStat",
+      "stat": "healthRegen",
+      "value": 25,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "magickaRegen",
+      "value": 25,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "staminaRegen",
+      "value": 25,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "speech",
+      "value": 15,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "priceModifier",
+      "value": 15,
+      "isPercent": true
+    }
+  ],
+  "altmer": [
+    {
+      "type": "derivedStat",
+      "stat": "magickaRegen",
+      "value": 50,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "spellDamage",
+      "value": 5,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "fireResist",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "frostResist",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "shockResist",
+      "value": 10,
+      "isPercent": true
+    }
+  ],
+  "dunmer": [
+    {
+      "type": "derivedStat",
+      "stat": "spellDamage",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "fireResist",
+      "value": 50,
+      "isPercent": true
+    }
+  ],
+  "breton": [
+    {
+      "type": "derivedStat",
+      "stat": "magicAbsorb",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "magicResist",
+      "value": 15,
+      "isPercent": true
+    }
+  ],
+  "argonian": [
+    {
+      "type": "derivedStat",
+      "stat": "healthRegenRate",
+      "value": 1.5,
+      "isPercent": false
+    },
+    {
+      "type": "derivedStat",
+      "stat": "potionEffectiveness",
+      "value": 10,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "poisonResist",
+      "value": 75,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "diseaseResist",
+      "value": 75,
+      "isPercent": true
+    },
+    {
+      "type": "flag",
+      "stat": "rawFood"
+    },
+    {
+      "type": "flag",
+      "stat": "waterbreathing"
+    },
+    {
+      "type": "derivedStat",
+      "stat": "swimmingSpeed",
+      "value": 20,
+      "isPercent": true
+    },
+    {
+      "type": "derivedStat",
+      "stat": "unarmedDamage",
+      "value": 20,
+      "isPercent": false
+    }
+  ]
+}

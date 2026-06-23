@@ -1,0 +1,2382 @@
+[
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Craftsmanship",
+    "xPos": 50,
+    "yPos": 62.857142857142854
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Advanced Blacksmithing",
+    "xPos": 50,
+    "yPos": 85.71428571428571
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Arcane Craftsmanship",
+    "xPos": 30,
+    "yPos": 85.71428571428571
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Legendary Blacksmithing",
+    "xPos": 70,
+    "yPos": 85.71428571428571
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Advanced Light Armors",
+    "xPos": 20,
+    "yPos": 57.142857142857146
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Elven Smithing",
+    "xPos": 20,
+    "yPos": 42.857142857142854
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Glass Smithing",
+    "xPos": 10,
+    "yPos": 14.285714285714286
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Dwarven Smithing",
+    "xPos": 80,
+    "yPos": 57.142857142857146
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Orcish Smithing",
+    "xPos": 80,
+    "yPos": 42.857142857142854
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Ebony Smithing",
+    "xPos": 90,
+    "yPos": 14.285714285714286
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Daedric Smithing",
+    "xPos": 50,
+    "yPos": 18.571428571428573
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Draconic Blacksmithing",
+    "xPos": 50,
+    "yPos": 7.142857142857143
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Conditioning",
+    "xPos": 55.333333333333336,
+    "yPos": 90.22222222222223
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Relentless Onslaught",
+    "xPos": 55.333333333333336,
+    "yPos": 69.11111111111111
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Devastating Tackle",
+    "xPos": 38.888888888888886,
+    "yPos": 55.55555555555556
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Combat Casting",
+    "xPos": 28.88888888888889,
+    "yPos": 66.88888888888889
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Combat Trance",
+    "xPos": 16.22222222222222,
+    "yPos": 44.44444444444444
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Combat Meditation",
+    "xPos": 18.666666666666668,
+    "yPos": 24.444444444444443
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Battle Mage",
+    "xPos": 22.88888888888889,
+    "yPos": 8
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Combat Training",
+    "xPos": 78.88888888888889,
+    "yPos": 68.22222222222223
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Immovable",
+    "xPos": 74.88888888888889,
+    "yPos": 48
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Fortitude",
+    "xPos": 86,
+    "yPos": 48
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Power of the Combatant",
+    "xPos": 88.88888888888889,
+    "yPos": 31.11111111111111
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Juggernaut",
+    "xPos": 81.33333333333333,
+    "yPos": 8
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Mounted Combat",
+    "xPos": 81.33333333333333,
+    "yPos": 90.22222222222223
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Improved Blocking",
+    "xPos": 50,
+    "yPos": 80.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Experienced Blocking",
+    "xPos": 50,
+    "yPos": 43
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Torch Combat",
+    "xPos": 66.66666666666667,
+    "yPos": 55.5
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Strong Grip",
+    "xPos": 10,
+    "yPos": 59.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Elemental Protection",
+    "xPos": 18.333333333333332,
+    "yPos": 28.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Defensive Stance",
+    "xPos": 34.333333333333336,
+    "yPos": 15
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Powerful Bashes",
+    "xPos": 83.33333333333333,
+    "yPos": 59.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Shield Strike",
+    "xPos": 63.333333333333336,
+    "yPos": 40
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Overpowering Bashes",
+    "xPos": 83.33333333333333,
+    "yPos": 43.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Disarming Bash",
+    "xPos": 75,
+    "yPos": 18.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Unstoppable Charge",
+    "xPos": 50,
+    "yPos": 7.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Great Weapon Mastery",
+    "xPos": 50,
+    "yPos": 90.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Barbaric Might",
+    "xPos": 50,
+    "yPos": 75
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Quarterstaff Focus",
+    "xPos": 18.75,
+    "yPos": 65.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Defensive Strike",
+    "xPos": 18.75,
+    "yPos": 53
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Hafted Blade Focus",
+    "xPos": 31.25,
+    "yPos": 65.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Shield Breaker",
+    "xPos": 31.25,
+    "yPos": 53
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Longblade Focus",
+    "xPos": 68.75,
+    "yPos": 65.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Reversal",
+    "xPos": 68.75,
+    "yPos": 53
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Warhammer Focus",
+    "xPos": 81.25,
+    "yPos": 65.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Onslaught",
+    "xPos": 81.25,
+    "yPos": 53
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Devastating Charge",
+    "xPos": 40,
+    "yPos": 43.75
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Devastating Strike",
+    "xPos": 60,
+    "yPos": 43.75
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Hyper Armor",
+    "xPos": 50,
+    "yPos": 22.75
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Mighty Strike",
+    "xPos": 50,
+    "yPos": 12.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Warbringer",
+    "xPos": 50,
+    "yPos": 2.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Weapon Mastery",
+    "xPos": 50,
+    "yPos": 87.75
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Penetrating Strikes",
+    "xPos": 50,
+    "yPos": 68.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Short Blade Focus",
+    "xPos": 21.25,
+    "yPos": 60
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Puncture",
+    "xPos": 21.25,
+    "yPos": 50
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "War Axe Focus",
+    "xPos": 33.75,
+    "yPos": 60
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Armsbreaker",
+    "xPos": 33.75,
+    "yPos": 50
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Mace Focus",
+    "xPos": 66.25,
+    "yPos": 60
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Stunning Blow",
+    "xPos": 66.25,
+    "yPos": 50
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Sword & Spear Focus",
+    "xPos": 78.75,
+    "yPos": 60
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Disarming Strike",
+    "xPos": 78.75,
+    "yPos": 50
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Powerful Charge",
+    "xPos": 56.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Powerful Strike",
+    "xPos": 43.75,
+    "yPos": 37.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Relentless Onslaught",
+    "xPos": 50,
+    "yPos": 6.25
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Flurry",
+    "xPos": 87.5,
+    "yPos": 75
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Storm of Steel",
+    "xPos": 83.75,
+    "yPos": 25
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Hand to Hand",
+    "xPos": 31.25,
+    "yPos": 93.75
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Grappling",
+    "xPos": 12.5,
+    "yPos": 91.25
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Takedown",
+    "xPos": 6.25,
+    "yPos": 81.25
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Unarmed Defense",
+    "xPos": 25,
+    "yPos": 81.25
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Unarmed Stance",
+    "xPos": 12.5,
+    "yPos": 68.75
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Armed Spelllcasting",
+    "xPos": 75,
+    "yPos": 87.75
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Balanced Wielding",
+    "xPos": 62.5,
+    "yPos": 75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Ranged Combat Training",
+    "xPos": 62.5,
+    "yPos": 90
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Ranger",
+    "xPos": 44.25,
+    "yPos": 80.5
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Eagle Eye",
+    "xPos": 42.5,
+    "yPos": 62.5
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Marksman's Focus",
+    "xPos": 20.75,
+    "yPos": 40.25
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Rapid Reload",
+    "xPos": 22.5,
+    "yPos": 29.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Quick Shot",
+    "xPos": 50,
+    "yPos": 37.5
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Power Shot",
+    "xPos": 25,
+    "yPos": 19.5
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Precise Aim",
+    "xPos": 75,
+    "yPos": 68.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Piercing Shot",
+    "xPos": 73.5,
+    "yPos": 43.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Penetrating Shot",
+    "xPos": 68.75,
+    "yPos": 18.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Stunning Precision",
+    "xPos": 43.5,
+    "yPos": 6.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Sniper",
+    "xPos": 36.75,
+    "yPos": 85.5
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Bow Strike",
+    "xPos": 53.75,
+    "yPos": 68.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Knife Expertise",
+    "xPos": 63.75,
+    "yPos": 68.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Hunter",
+    "xPos": 28.5,
+    "yPos": 90
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Agility",
+    "xPos": 54.75,
+    "yPos": 86.25
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Dodge",
+    "xPos": 69.25,
+    "yPos": 63.5
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Light Armor Training",
+    "xPos": 48,
+    "yPos": 60
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Dexterity",
+    "xPos": 32,
+    "yPos": 37
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Agile Spellcasting",
+    "xPos": 28.75,
+    "yPos": 53.25
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Wind Walker",
+    "xPos": 35.5,
+    "yPos": 23
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Vexing Flanker",
+    "xPos": 66.75,
+    "yPos": 39.75
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Combat Reflexes",
+    "xPos": 59.25,
+    "yPos": 20
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Meteoric Reflexes",
+    "xPos": 48.75,
+    "yPos": 8.75
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Unarmored",
+    "xPos": 26.75,
+    "yPos": 73.5
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Stealth",
+    "xPos": 47.25,
+    "yPos": 87.25
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Deft Strike",
+    "xPos": 75,
+    "yPos": 63
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Anatomical Lore",
+    "xPos": 77,
+    "yPos": 43.5
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Advanced Anatomical Lore",
+    "xPos": 65,
+    "yPos": 33.5
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Muffled Movement",
+    "xPos": 25,
+    "yPos": 61.25
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Light Steps",
+    "xPos": 31.25,
+    "yPos": 36.75
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Acrobatics",
+    "xPos": 56.75,
+    "yPos": 19.75
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Shadowrunner",
+    "xPos": 81,
+    "yPos": 11.25
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Cheap Tricks",
+    "xPos": 43.75,
+    "yPos": 87.5
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Advanced Lockpicking",
+    "xPos": 43.75,
+    "yPos": 68.75
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Treasure Hunter",
+    "xPos": 43.75,
+    "yPos": 50
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Sophisticated Lockpicking",
+    "xPos": 43.75,
+    "yPos": 31.25
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Masterly Lockpicking",
+    "xPos": 43.75,
+    "yPos": 12.5
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Leader",
+    "xPos": 25,
+    "yPos": 70
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Captain",
+    "xPos": 25,
+    "yPos": 55
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Commander",
+    "xPos": 25,
+    "yPos": 40
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Legion",
+    "xPos": 25,
+    "yPos": 25
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Lone Wolf",
+    "xPos": 68.75,
+    "yPos": 70
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Solo",
+    "xPos": 68.75,
+    "yPos": 55
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Maverick",
+    "xPos": 68.75,
+    "yPos": 40
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "One Man Legion",
+    "xPos": 68.75,
+    "yPos": 25
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Nimble Fingers",
+    "xPos": 37.5,
+    "yPos": 87.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Cutpurse",
+    "xPos": 12.5,
+    "yPos": 75
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Poisoner",
+    "xPos": 12.5,
+    "yPos": 56.25
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Misdirection",
+    "xPos": 12.5,
+    "yPos": 37.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Perfected Art",
+    "xPos": 12.5,
+    "yPos": 18.75
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Sound Body",
+    "xPos": 56.25,
+    "yPos": 62.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Sound Mind",
+    "xPos": 56.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Sound Spirit",
+    "xPos": 56.25,
+    "yPos": 12.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Outlaw",
+    "xPos": 37.5,
+    "yPos": 75
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Thief",
+    "xPos": 37.5,
+    "yPos": 50
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Lucky 7",
+    "xPos": 37.5,
+    "yPos": 25
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Trapper",
+    "xPos": 75,
+    "yPos": 87.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Haggling",
+    "xPos": 50,
+    "yPos": 87.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Merchant",
+    "xPos": 46.25,
+    "yPos": 62.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Fencing",
+    "xPos": 56.25,
+    "yPos": 50
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Silver Tongue",
+    "xPos": 37.5,
+    "yPos": 87.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Leadership",
+    "xPos": 43.75,
+    "yPos": 43.75
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Masquerade",
+    "xPos": 37.5,
+    "yPos": 18.75
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "War Cry",
+    "xPos": 31.25,
+    "yPos": 50
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Commander",
+    "xPos": 56.25,
+    "yPos": 68.75
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Lore of the Thu'um",
+    "xPos": 87.5,
+    "yPos": 87.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Destructive Urge",
+    "xPos": 75,
+    "yPos": 87.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Indomitable Force",
+    "xPos": 75,
+    "yPos": 75
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Spiritual Equilibrium",
+    "xPos": 75,
+    "yPos": 56.25
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "The Way of the Voice",
+    "xPos": 81.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Tongue's Insight",
+    "xPos": 87.5,
+    "yPos": 25
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Shout Focus",
+    "xPos": 62.5,
+    "yPos": 81.25
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Alchemical Lore",
+    "xPos": 30.7,
+    "yPos": 86.25
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Improved Elixirs",
+    "xPos": 75.7,
+    "yPos": 80.75
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Night Vision",
+    "xPos": 87,
+    "yPos": 62.5
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Concentrated Poisons",
+    "xPos": 30.7,
+    "yPos": 61.5
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Regeneration",
+    "xPos": 75.7,
+    "yPos": 40.5
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Catalysis",
+    "xPos": 60.333333333333336,
+    "yPos": 48.5
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Improved Poisons",
+    "xPos": 34.666666666666664,
+    "yPos": 39
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Immunization",
+    "xPos": 57.333333333333336,
+    "yPos": 24.5
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Fortified Muscles",
+    "xPos": 49.333333333333336,
+    "yPos": 56.25
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Alchemical Intellect",
+    "xPos": 73,
+    "yPos": 11.25
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Purification Process",
+    "xPos": 46.666666666666664,
+    "yPos": 5
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Drunken Combat",
+    "xPos": 10,
+    "yPos": 75
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Gourmet",
+    "xPos": 10,
+    "yPos": 62.5
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Herbalist",
+    "xPos": 10,
+    "yPos": 50
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Novice Illusion",
+    "xPos": 50,
+    "yPos": 87.5
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Apprentice Illusion",
+    "xPos": 50,
+    "yPos": 68.75
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Adept Illusion",
+    "xPos": 50,
+    "yPos": 50
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Expert Illusion",
+    "xPos": 50,
+    "yPos": 31.25
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Master Illusion",
+    "xPos": 50,
+    "yPos": 12.5
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Perceptual Illusions",
+    "xPos": 12.5,
+    "yPos": 68.75
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Deceptive Image",
+    "xPos": 25,
+    "yPos": 56.25
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Environmental Manipulation",
+    "xPos": 18.75,
+    "yPos": 43.75
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Emotional Illusions",
+    "xPos": 87.5,
+    "yPos": 68.75
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Mesmerize",
+    "xPos": 75,
+    "yPos": 56.25
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Domination",
+    "xPos": 81.25,
+    "yPos": 43.75
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Shadow Shaping",
+    "xPos": 25,
+    "yPos": 31.25
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Shadows of Conflict",
+    "xPos": 37.5,
+    "yPos": 25
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Master of Shadows",
+    "xPos": 31.25,
+    "yPos": 12.5
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Delusive Illusions",
+    "xPos": 75,
+    "yPos": 31.25
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Curse",
+    "xPos": 62.5,
+    "yPos": 25
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Obliterate the Mind",
+    "xPos": 68.75,
+    "yPos": 12.5
+  },
+  {
+    "skill": 12,
+    "skillName": "Illusion",
+    "name": "Empowered Illusion",
+    "xPos": 18.75,
+    "yPos": 87.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Novice Conjuration",
+    "xPos": 50,
+    "yPos": 87.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Apprentice Conjuration",
+    "xPos": 81.25,
+    "yPos": 68.75
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Adept Conjuration",
+    "xPos": 91.875,
+    "yPos": 50
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Expert Conjuration",
+    "xPos": 91.4,
+    "yPos": 31.25
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Master Conjuration",
+    "xPos": 81.25,
+    "yPos": 12.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Mystic Binding",
+    "xPos": 68.75,
+    "yPos": 62.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Mystic Infusion",
+    "xPos": 75,
+    "yPos": 50
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Mystic Empowerment",
+    "xPos": 71.875,
+    "yPos": 37.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Mystic Disruption",
+    "xPos": 66.875,
+    "yPos": 18.75
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Necromancy",
+    "xPos": 43.75,
+    "yPos": 56.25
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Ritualism",
+    "xPos": 43.75,
+    "yPos": 43.75
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Siphon Corpse",
+    "xPos": 46.875,
+    "yPos": 28.125
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Dark Infusion",
+    "xPos": 37.5,
+    "yPos": 18.75
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Empowered Conjuration",
+    "xPos": 28.125,
+    "yPos": 56.25
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Cognitive Flexibility",
+    "xPos": 31.25,
+    "yPos": 31.25
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Daedric Binding",
+    "xPos": 18.75,
+    "yPos": 68.75
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Spiritual Binding",
+    "xPos": 12.5,
+    "yPos": 50
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Gates of Oblivion",
+    "xPos": 12.5,
+    "yPos": 37.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Dark Channeling",
+    "xPos": 21.875,
+    "yPos": 21.875
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Waters of Oblivion",
+    "xPos": 12.5,
+    "yPos": 12.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Spirit Calling",
+    "xPos": 56.25,
+    "yPos": 68.75
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Spiritual Bond",
+    "xPos": 56.25,
+    "yPos": 50
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Spirit Guardian",
+    "xPos": 59.375,
+    "yPos": 31.25
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Ancient Spirits",
+    "xPos": 53.125,
+    "yPos": 18.75
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Soul Magic",
+    "xPos": 81.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 13,
+    "skillName": "Conjuration",
+    "name": "Necropotence",
+    "xPos": 75,
+    "yPos": 25
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Novice Destruction",
+    "xPos": 50,
+    "yPos": 87.5
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Apprentice Destruction",
+    "xPos": 62.5,
+    "yPos": 68.75
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Adept Destruction",
+    "xPos": 56.25,
+    "yPos": 50
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Expert Destruction",
+    "xPos": 62.5,
+    "yPos": 31.25
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Master Destruction",
+    "xPos": 68.75,
+    "yPos": 12.5
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Improved Cloaks",
+    "xPos": 87.5,
+    "yPos": 56.25
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Elemental Mastery",
+    "xPos": 81.25,
+    "yPos": 43.75
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Destructive Blow",
+    "xPos": 65,
+    "yPos": 46.875
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Empowered Destruction",
+    "xPos": 75,
+    "yPos": 81.25
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Impact",
+    "xPos": 87.5,
+    "yPos": 68.75
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Blood Magic",
+    "xPos": 9.375,
+    "yPos": 75
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Consume Life",
+    "xPos": 6.25,
+    "yPos": 50
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Entropic Focus",
+    "xPos": 21.875,
+    "yPos": 68.75
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Entropic Disarray",
+    "xPos": 16.875,
+    "yPos": 41.875
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Arcane Focus",
+    "xPos": 31.25,
+    "yPos": 62.5
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Arcane Disruption",
+    "xPos": 21.875,
+    "yPos": 31.25
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Pyromancy",
+    "xPos": 37.5,
+    "yPos": 46.875
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Cremation",
+    "xPos": 34.375,
+    "yPos": 34.375
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Fire Mastery",
+    "xPos": 31.25,
+    "yPos": 12.5
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Cyromancy",
+    "xPos": 43.75,
+    "yPos": 56.25
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Deep Freeze",
+    "xPos": 43.75,
+    "yPos": 28.125
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Frost Mastery",
+    "xPos": 43.75,
+    "yPos": 12.5
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Electromancy",
+    "xPos": 50,
+    "yPos": 68.75
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Electrostatic Discharge",
+    "xPos": 50,
+    "yPos": 37.5
+  },
+  {
+    "skill": 14,
+    "skillName": "Destruction",
+    "name": "Lightning Mastery",
+    "xPos": 56.25,
+    "yPos": 12.5
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Painful Regrets",
+    "xPos": 81.25,
+    "yPos": 87.5
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Novice Restoration",
+    "xPos": 50,
+    "yPos": 87.5
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Apprentice Restoration",
+    "xPos": 56.25,
+    "yPos": 68.75
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Adept Restoration",
+    "xPos": 56.25,
+    "yPos": 50
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Expert Restoration",
+    "xPos": 56.25,
+    "yPos": 31.25
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Master Restoration",
+    "xPos": 43.75,
+    "yPos": 12.5
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Empowered Restoration",
+    "xPos": 84.375,
+    "yPos": 78.125
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Focused Mind",
+    "xPos": 65.625,
+    "yPos": 45.625
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Power of Life",
+    "xPos": 65.625,
+    "yPos": 25
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Essence of Life",
+    "xPos": 75,
+    "yPos": 18.75
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Improved Protection",
+    "xPos": 75,
+    "yPos": 56.25
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Improved Wards",
+    "xPos": 81.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Ward Mastery",
+    "xPos": 75,
+    "yPos": 68.75
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Improved Healing",
+    "xPos": 10,
+    "yPos": 68.75
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Respite",
+    "xPos": 7.5,
+    "yPos": 43.75
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Improved Turning",
+    "xPos": 20,
+    "yPos": 62.5
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Mystic Turning",
+    "xPos": 17.5,
+    "yPos": 37.5
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Heliomancy",
+    "xPos": 30,
+    "yPos": 56.25
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Scorching Light",
+    "xPos": 27.5,
+    "yPos": 31.25
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Venomancy",
+    "xPos": 40,
+    "yPos": 50
+  },
+  {
+    "skill": 15,
+    "skillName": "Restoration",
+    "name": "Paralyzing Poison",
+    "xPos": 37.5,
+    "yPos": 25
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Novice Alteration",
+    "xPos": 45.833333333333336,
+    "yPos": 87.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Apprentice Alteration",
+    "xPos": 58.333333333333336,
+    "yPos": 68.75
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Adept Alteration",
+    "xPos": 50,
+    "yPos": 50
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Expert Alteration",
+    "xPos": 58.333333333333336,
+    "yPos": 31.25
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Master Alteration",
+    "xPos": 66.66666666666667,
+    "yPos": 12.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Transmutation",
+    "xPos": 75,
+    "yPos": 75
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Transmutational Mending",
+    "xPos": 83.33333333333333,
+    "yPos": 62.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Empowered Alterations",
+    "xPos": 33.333333333333336,
+    "yPos": 68.75
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Kinetomancy",
+    "xPos": 66.66666666666667,
+    "yPos": 56.25
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Power of the Force",
+    "xPos": 83.33333333333333,
+    "yPos": 43.75
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Improved Mage Armor",
+    "xPos": 33.333333333333336,
+    "yPos": 56.25
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Versatile Armor",
+    "xPos": 25,
+    "yPos": 43.75
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Magic Resistance",
+    "xPos": 66.66666666666667,
+    "yPos": 37.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Stability",
+    "xPos": 41.666666666666664,
+    "yPos": 37.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Metamagical Thesis",
+    "xPos": 29.166666666666668,
+    "yPos": 28.125
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Metamagical Empowerment",
+    "xPos": 16.666666666666668,
+    "yPos": 12.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Weather Magic",
+    "xPos": 45.833333333333336,
+    "yPos": 25
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Master of Storms",
+    "xPos": 33.333333333333336,
+    "yPos": 12.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Magical Absorption",
+    "xPos": 50,
+    "yPos": 12.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Unskilled Spellcasting",
+    "xPos": 16.666666666666668,
+    "yPos": 87.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Metamagic",
+    "xPos": 66.66666666666667,
+    "yPos": 87.5
+  },
+  {
+    "skill": 16,
+    "skillName": "Alteration",
+    "name": "Willpower",
+    "xPos": 83.33333333333333,
+    "yPos": 87.5
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Enchanter's Insight",
+    "xPos": 45.75,
+    "yPos": 85.5
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Arcane Artificery",
+    "xPos": 75,
+    "yPos": 68.75
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Soul Gem Mastery",
+    "xPos": 61.5,
+    "yPos": 54.5
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Arcane Experimentation",
+    "xPos": 64.75,
+    "yPos": 44
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Artificer's Insight",
+    "xPos": 66,
+    "yPos": 31.25
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Elemental Lore",
+    "xPos": 34.5,
+    "yPos": 54.75
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Corpus Lore",
+    "xPos": 37.5,
+    "yPos": 37.5
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Skill Lore",
+    "xPos": 47.75,
+    "yPos": 23.25
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Enchantment Mastery",
+    "xPos": 64.5,
+    "yPos": 16
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Artifact Enchanter",
+    "xPos": 56.25,
+    "yPos": 7.5
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Arcane Assassin",
+    "xPos": 56.25,
+    "yPos": 50
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Staff Channeling",
+    "xPos": 81.25,
+    "yPos": 56.25
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Tailoring & Polishing",
+    "xPos": 36,
+    "yPos": 75
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Shivering Isles Smithing",
+    "xPos": 50,
+    "yPos": 40
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Sharp Throw",
+    "xPos": 37.5,
+    "yPos": 31.25
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Hunter",
+    "xPos": 81.25,
+    "yPos": 68.75
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Survival Instincts",
+    "xPos": 81.25,
+    "yPos": 43.75
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Taming",
+    "xPos": 81.25,
+    "yPos": 18.75
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Pocket Sand",
+    "xPos": 93.75,
+    "yPos": 62.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Quick Sand",
+    "xPos": 93.75,
+    "yPos": 37.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Poisoned Clamps",
+    "xPos": 75,
+    "yPos": 56.25
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Salt on the Wound",
+    "xPos": 75,
+    "yPos": 31.25
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Battle Muse",
+    "xPos": 21.25,
+    "yPos": 87.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Standing Ovation",
+    "xPos": 5,
+    "yPos": 62.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Boozy Bard",
+    "xPos": 13.75,
+    "yPos": 62.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Windborne Melody",
+    "xPos": 22.5,
+    "yPos": 62.5
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Skald",
+    "xPos": 23.75,
+    "yPos": 43.75
+  },
+  {
+    "skill": 10,
+    "skillName": "Speech",
+    "name": "Symphony of Storms",
+    "xPos": 25,
+    "yPos": 25
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Wand Mastery",
+    "xPos": 75,
+    "yPos": 37.5
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Athletics",
+    "xPos": 50,
+    "yPos": 37.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Final Stand",
+    "xPos": 78.75,
+    "yPos": 37.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Heavy Slam",
+    "xPos": 66.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Guillotine",
+    "xPos": 33.75,
+    "yPos": 37.5
+  },
+  {
+    "skill": 4,
+    "skillName": "One-Handed",
+    "name": "Death Adder",
+    "xPos": 21.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Battle Hide",
+    "xPos": 18.75,
+    "yPos": 40.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Execute",
+    "xPos": 31.25,
+    "yPos": 40.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Critical Slam",
+    "xPos": 81.25,
+    "yPos": 40.5
+  },
+  {
+    "skill": 3,
+    "skillName": "Two-Handed",
+    "name": "Death or Glory",
+    "xPos": 68.75,
+    "yPos": 40.5
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Focus on the Prey",
+    "xPos": 62.5,
+    "yPos": 56.25
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Three Crows",
+    "xPos": 62.5,
+    "yPos": 38.75
+  },
+  {
+    "skill": 5,
+    "skillName": "Marksman",
+    "name": "Lion's Arrow",
+    "xPos": 43.75,
+    "yPos": 18.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Weapons Master",
+    "xPos": 33.333333333333336,
+    "yPos": 55.75
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Masterly Strike",
+    "xPos": 33.333333333333336,
+    "yPos": 43.25
+  },
+  {
+    "skill": 2,
+    "skillName": "Block",
+    "name": "Shield's Best Friend",
+    "xPos": 58.333333333333336,
+    "yPos": 50
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Smithing Specialization",
+    "xPos": 64,
+    "yPos": 75
+  },
+  {
+    "skill": 0,
+    "skillName": "Smithing",
+    "name": "Iron Law",
+    "xPos": 74,
+    "yPos": 70
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Cushioned",
+    "xPos": 55.333333333333336,
+    "yPos": 55.55555555555556
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Defiance",
+    "xPos": 55.333333333333336,
+    "yPos": 38.888888888888886
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Never Kneel",
+    "xPos": 55.333333333333336,
+    "yPos": 22.22222222222222
+  },
+  {
+    "skill": 1,
+    "skillName": "Heavy Armor",
+    "name": "Reap the Whirlwind",
+    "xPos": 55.333333333333336,
+    "yPos": 5.555555555555555
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Annoying Mosquitoes",
+    "xPos": 50,
+    "yPos": 25
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "Evasive Leap",
+    "xPos": 75,
+    "yPos": 50
+  },
+  {
+    "skill": 6,
+    "skillName": "Evasion",
+    "name": "As a Leaf",
+    "xPos": 62.5,
+    "yPos": 53
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Death's Emperor",
+    "xPos": 25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Mutiny",
+    "xPos": 25,
+    "yPos": 18.75
+  },
+  {
+    "skill": 9,
+    "skillName": "Finesse",
+    "name": "Lawless World",
+    "xPos": 31.25,
+    "yPos": 62.5
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Lockdown",
+    "xPos": 56.25,
+    "yPos": 56.25
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Hotwire",
+    "xPos": 56.25,
+    "yPos": 37.5
+  },
+  {
+    "skill": 8,
+    "skillName": "Wayfarer",
+    "name": "Percussive Maintenance",
+    "xPos": 56.25,
+    "yPos": 18.75
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Problem Solver",
+    "xPos": 87.5,
+    "yPos": 31.25
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Fog of War",
+    "xPos": 87.5,
+    "yPos": 75
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Tripwire",
+    "xPos": 37.5,
+    "yPos": 62.5
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Whiplash",
+    "xPos": 43.75,
+    "yPos": 43.75
+  },
+  {
+    "skill": 7,
+    "skillName": "Sneak",
+    "name": "Cloak and Dagger",
+    "xPos": 87.5,
+    "yPos": 50
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "Alkahest",
+    "xPos": 25,
+    "yPos": 25
+  },
+  {
+    "skill": 11,
+    "skillName": "Alchemy",
+    "name": "World Serpent",
+    "xPos": 33.333333333333336,
+    "yPos": 12.5
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "Charge Tap",
+    "xPos": 87.5,
+    "yPos": 37.5
+  },
+  {
+    "skill": 17,
+    "skillName": "Enchanting",
+    "name": "You Shall Not Pass",
+    "xPos": 81.25,
+    "yPos": 25
+  }
+]

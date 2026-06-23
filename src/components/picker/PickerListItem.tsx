@@ -29,10 +29,12 @@ export function PickerListItem({
       onFocus={onPreview}
       onClick={onSelect}
       className={cn(
-        "flex w-full items-center gap-2 rounded-[var(--radius-md)] border border-transparent px-2.5 py-2 text-left transition-colors",
-        isPreview && "border-[var(--color-border)] bg-[var(--color-surface-elevated)]",
-        !isPreview && "hover:bg-[var(--color-surface-elevated)]/70",
-        isSelected && "border-[var(--color-accent)]/35 bg-[var(--color-accent)]/8",
+        "flex w-full min-w-0 max-w-full items-center gap-2 rounded-[var(--radius-md)] border px-2.5 py-2 text-left transition-colors",
+        isSelected
+          ? "border-[var(--color-accent)]/35 bg-[var(--color-accent)]/8"
+          : isPreview
+            ? "border-[var(--color-accent-muted)]/50 bg-[var(--color-surface-elevated)]"
+            : "border-[var(--color-border)]/40 hover:border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)]/70",
         !isEnabled && !isSelected && "cursor-not-allowed opacity-45",
       )}
     >
@@ -97,7 +99,7 @@ export function PickerListPanel({ children, className }: { children: ReactNode; 
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface)]/40 p-2",
+        "flex min-h-0 min-w-0 flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface)]/40 p-2",
         className,
       )}
     >

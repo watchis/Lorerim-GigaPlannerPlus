@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent, type MouseEvent, type ReactNode, type RefObject } from "react";
+import { useMemo, useRef, useState, type DragEvent, type MouseEvent, type ReactNode, type RefObject } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertCircle,
@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearchInput";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { GameData } from "@/data/schemas";
@@ -40,6 +41,11 @@ import { cn } from "@/lib/utils";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import type { SavedBuild } from "@/store/savedBuilds";
+import {
+  getActiveSavedBuildBuild,
+  getDefaultVariantName,
+  normalizeSavedBuild,
+} from "@/store/savedBuilds";
 
 function formatUpdatedAt(timestamp: number): string {
   return new Date(timestamp).toLocaleString(undefined, {
@@ -67,29 +73,72 @@ function getBuildSummary(build: BuildState, game: GameData, labels: Record<strin
       ? game.races.find((race) => race.id === build.raceId)?.name
       : null;
 
+  const level = build.playerLevel ?? game.mechanics.leveling.baseLevel;
+
   return {
     raceLabel: raceName ?? labels.noRace,
-    perkLabel: formatLabel(labels.perkCount, { count: build.selectedPerkIds.length }),
+    level,
+    perkCount: build.selectedPerkIds.length,
   };
 }
 
-function stopPropagation(event: MouseEvent) {
+interface BuildActionProps {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  destructive?: boolean;
+  children: ReactNode;
+}
+
+function BuildAction({ label, onClick, disabled, destructive, children }: BuildActionProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={cn("inline-flex", disabled && "cursor-not-allowed")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "h-8 w-8",
+              destructive && "text-[var(--color-error)] hover:text-[var(--color-error)]",
+            )}
+            disabled={disabled}
+            onClick={(event) => {
+              stopPropagation(event);
+              onClick();
+            }}
+          >
+            {children}
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top">{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function stopPropagation(event: MouseEvent | DragEvent) {
   event.stopPropagation();
 }
 
-function StatusBanner({ type, message }: { type: "success" | "error"; message: string }) {
-  const Icon = type === "success" ? CheckCircle2 : AlertCircle;
+function ImportFeedbackLine({ feedback }: { feedback: ImportFeedback | null }) {
+  if (!feedback) return null;
+
+  const Icon = feedback.type === "success" ? CheckCircle2 : AlertCircle;
+  const isError = feedback.type === "error";
+
   return (
     <div
       className={cn(
-        "flex items-start gap-2 rounded-[var(--radius-md)] border px-3 py-2 text-sm",
-        type === "success"
-          ? "border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
-          : "border-[var(--color-health)]/40 bg-[var(--color-health)]/10 text-[var(--color-foreground)]",
+        "flex items-center gap-2 leading-snug",
+        isError
+          ? "rounded-[var(--radius-md)] border border-[var(--color-error)]/50 bg-[var(--color-error)]/10 px-2.5 py-1.5 text-sm font-medium text-[var(--color-error)]"
+          : "text-xs text-[var(--color-accent)]",
       )}
+      role={isError ? "alert" : "status"}
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-      <span>{message}</span>
+      <Icon className={cn("shrink-0", isError ? "h-4 w-4" : "h-3.5 w-3.5")} />
+      <span>{feedback.message}</span>
     </div>
   );
 }
@@ -98,20 +147,24 @@ function PanelHeader({
   icon: Icon,
   title,
   description,
+  compact = false,
 }: {
   icon: typeof Link2;
   title: string;
   description: string;
+  compact?: boolean;
 }) {
   return (
-    <CardHeader className="pb-3">
+    <CardHeader className={cn("pb-3", compact && "pb-2")}>
       <div className="flex gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0">
           <CardTitle className="text-base">{title}</CardTitle>
-          <CardDescription className="mt-1 text-xs leading-relaxed">{description}</CardDescription>
+          {!compact && (
+            <CardDescription className="mt-1 text-xs leading-relaxed">{description}</CardDescription>
+          )}
         </div>
       </div>
     </CardHeader>
@@ -144,7 +197,7 @@ function ActiveBuildCodeBlock({
   onCopyLink,
 }: ActiveBuildCodeBlockProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="min-w-0">
         <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
           {labels.activeBuildCode}
@@ -157,20 +210,56 @@ function ActiveBuildCodeBlock({
       <button
         type="button"
         onClick={onCopyCode}
-        className="group flex w-full items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 px-3 py-2 text-left transition-colors hover:border-[var(--color-accent-muted)]"
+        aria-live="polite"
+        className={cn(
+          "group flex w-full items-center gap-2 rounded-[var(--radius-md)] border px-3 py-2 text-left transition-colors",
+          copiedAction === "code"
+            ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10"
+            : "border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 hover:border-[var(--color-accent-muted)]",
+        )}
       >
         <code className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-[var(--color-accent)]">
           {code}
         </code>
-        <Copy className="h-4 w-4 shrink-0 text-[var(--color-muted)] group-hover:text-[var(--color-accent)]" />
+        {copiedAction === "code" ? (
+          <span className="flex shrink-0 items-center gap-1.5 text-[var(--color-accent)]">
+            <Check className="h-4 w-4" />
+            <span className="text-xs font-medium">{labels.copiedCode}</span>
+          </span>
+        ) : (
+          <Copy className="h-4 w-4 shrink-0 text-[var(--color-muted)] group-hover:text-[var(--color-accent)]" />
+        )}
       </button>
 
-      <Button variant="outline" size="sm" className="w-full" onClick={onCopyLink}>
-        <Link2 className="h-3.5 w-3.5" />
-        {copiedAction === "link" ? labels.copiedLink : labels.copyLink}
+      <Button
+        variant={copiedAction === "link" ? "default" : "outline"}
+        size="sm"
+        className={cn(
+          "w-full transition-colors",
+          copiedAction === "link" && "bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/90",
+        )}
+        onClick={onCopyLink}
+      >
+        {copiedAction === "link" ? (
+          <>
+            <Check className="h-3.5 w-3.5" />
+            {labels.copiedLink}
+          </>
+        ) : (
+          <>
+            <Link2 className="h-3.5 w-3.5" />
+            {labels.copyLink}
+          </>
+        )}
       </Button>
     </div>
   );
+}
+
+interface ImportFeedback {
+  type: "success" | "error";
+  message: string;
+  context: "code" | "file";
 }
 
 interface TransferSidebarProps {
@@ -183,6 +272,7 @@ interface TransferSidebarProps {
   onCopyActiveCode: () => void;
   onCopyActiveLink: () => void;
   activeCodeCopied: "code" | "link" | null;
+  importFeedback: ImportFeedback | null;
   fileInputRef: RefObject<HTMLInputElement | null>;
   fileDragOver: boolean;
   onFileDragOver: (event: DragEvent<HTMLButtonElement>) => void;
@@ -203,6 +293,7 @@ function TransferSidebar({
   onCopyActiveCode,
   onCopyActiveLink,
   activeCodeCopied,
+  importFeedback,
   fileInputRef,
   fileDragOver,
   onFileDragOver,
@@ -212,15 +303,19 @@ function TransferSidebar({
   onExportActive,
   onExportLibrary,
 }: TransferSidebarProps) {
+  const codeFeedback = importFeedback?.context === "code" ? importFeedback : null;
+  const fileFeedback = importFeedback?.context === "file" ? importFeedback : null;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Card>
         <PanelHeader
           icon={Link2}
           title={labels.shareCodeTitle}
           description={labels.shareCodeDescription}
+          compact
         />
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <ActiveBuildCodeBlock
             buildName={activeBuildName}
             code={activeBuildCode}
@@ -230,28 +325,43 @@ function TransferSidebar({
             onCopyLink={onCopyActiveLink}
           />
 
-          <div className="space-y-2 border-t border-[var(--color-border)]/60 pt-4">
+          <div className="space-y-2 border-t border-[var(--color-border)]/60 pt-3">
             <SectionLabel>{labels.importCodeTitle}</SectionLabel>
-            <textarea
-              id="import-code"
-              value={codeInput}
-              onChange={(e) => onCodeInputChange(e.target.value)}
-              placeholder={labels.importCodePlaceholder}
-              rows={3}
-              className="w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 px-3 py-2 font-mono text-xs text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!codeInput.trim()}
-                onClick={() => onImportCode(false)}
-              >
-                {labels.importAsNew}
-              </Button>
-              <Button size="sm" disabled={!codeInput.trim()} onClick={() => onImportCode(true)}>
-                {labels.importToActive}
-              </Button>
+            <div className="flex flex-col gap-2">
+              <textarea
+                id="import-code"
+                value={codeInput}
+                onChange={(e) => onCodeInputChange(e.target.value)}
+                placeholder={labels.importCodePlaceholder}
+                rows={2}
+                aria-invalid={codeFeedback?.type === "error"}
+                className={cn(
+                  "w-full resize-none rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/60 px-3 py-2 font-mono text-xs text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2",
+                  codeFeedback?.type === "error"
+                    ? "border-[var(--color-error)] bg-[var(--color-error)]/5 focus:border-[var(--color-error)] focus:ring-[var(--color-error)]/25"
+                    : "border-[var(--color-border)] focus:border-[var(--color-accent-muted)] focus:ring-[var(--color-accent)]/30",
+                )}
+              />
+              <div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!codeInput.trim()}
+                    onClick={() => onImportCode(false)}
+                  >
+                    {labels.importAsNew}
+                  </Button>
+                  <Button size="sm" disabled={!codeInput.trim()} onClick={() => onImportCode(true)}>
+                    {labels.importToActive}
+                  </Button>
+                </div>
+                {codeFeedback && (
+                  <div className="pt-2">
+                    <ImportFeedbackLine feedback={codeFeedback} />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -262,47 +372,60 @@ function TransferSidebar({
           icon={Archive}
           title={labels.backupTitle}
           description={formatLabel(labels.backupDescription, { extension: labels.backupExtension })}
+          compact
         />
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <div className="space-y-2">
             <SectionLabel>{labels.backupImportTitle}</SectionLabel>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={`${BUILD_BACKUP_EXTENSION},.json,application/json`}
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onFileSelect(file);
-                e.target.value = "";
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={onFileDragOver}
-              onDragLeave={onFileDragLeave}
-              onDrop={onFileDrop}
-              className={cn(
-                "flex w-full flex-col items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed px-3 py-4 text-center transition-colors",
-                fileDragOver
-                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-foreground)]"
-                  : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-accent-muted)] hover:text-[var(--color-foreground)]",
-              )}
-            >
-              <Archive className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]" />
-              <span className="text-sm">{labels.chooseBackupFile}</span>
-              <span className="text-xs text-[var(--color-muted)]">{labels.backupExtension}</span>
-            </button>
+            <div className="flex flex-col gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={`${BUILD_BACKUP_EXTENSION},.json,application/json`}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) onFileSelect(file);
+                  e.target.value = "";
+                }}
+              />
+              <div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={onFileDragOver}
+                  onDragLeave={onFileDragLeave}
+                  onDrop={onFileDrop}
+                  className={cn(
+                    "flex w-full flex-col items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed px-3 text-center transition-colors",
+                    fileFeedback ? "py-2.5" : "py-4",
+                    fileFeedback?.type === "error"
+                      ? "border-[var(--color-error)] bg-[var(--color-error)]/5 text-[var(--color-foreground)]"
+                      : fileDragOver
+                      ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-foreground)]"
+                      : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-accent-muted)] hover:text-[var(--color-foreground)]",
+                  )}
+                >
+                  <Archive className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]" />
+                  <span className="text-sm">{labels.chooseBackupFile}</span>
+                  <span className="text-xs text-[var(--color-muted)]">{labels.backupExtension}</span>
+                </button>
+                {fileFeedback && (
+                  <div className="pt-2">
+                    <ImportFeedbackLine feedback={fileFeedback} />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2 border-t border-[var(--color-border)]/60 pt-4">
+          <div className="space-y-2 border-t border-[var(--color-border)]/60 pt-3">
             <SectionLabel>{labels.backupExportTitle}</SectionLabel>
             <div className="grid gap-2">
               <button
                 type="button"
                 onClick={onExportActive}
-                className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-3 py-2.5 text-left transition-colors hover:border-[var(--color-accent-muted)] hover:bg-[var(--color-surface-elevated)]"
+                className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-3 py-2 text-left transition-colors hover:border-[var(--color-accent-muted)] hover:bg-[var(--color-surface-elevated)]"
               >
                 <Download className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
                 <span className="text-sm text-[var(--color-foreground)]">{labels.exportActive}</span>
@@ -310,7 +433,7 @@ function TransferSidebar({
               <button
                 type="button"
                 onClick={onExportLibrary}
-                className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-3 py-2.5 text-left transition-colors hover:border-[var(--color-accent-muted)] hover:bg-[var(--color-surface-elevated)]"
+                className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-3 py-2 text-left transition-colors hover:border-[var(--color-accent-muted)] hover:bg-[var(--color-surface-elevated)]"
               >
                 <Download className="h-4 w-4 shrink-0 text-[var(--color-accent)]" />
                 <span className="text-sm text-[var(--color-foreground)]">{labels.exportAll}</span>
@@ -329,7 +452,10 @@ interface SavedBuildCardProps {
   isActive: boolean;
   isDragging: boolean;
   isDragOver: boolean;
+  canReorder: boolean;
+  canDelete: boolean;
   labels: Record<string, string>;
+  milestoneLabels: Record<string, string>;
   game: GameData;
   onSelect: () => void;
   onDragStart: () => void;
@@ -338,7 +464,6 @@ interface SavedBuildCardProps {
   onDropItem: (fromIndex: number) => void;
   onRename: (name: string) => void;
   onDelete: () => void;
-  canDelete: boolean;
 }
 
 function SavedBuildCard({
@@ -347,7 +472,10 @@ function SavedBuildCard({
   isActive,
   isDragging,
   isDragOver,
+  canReorder,
+  canDelete,
   labels,
+  milestoneLabels,
   game,
   onSelect,
   onDragStart,
@@ -356,14 +484,14 @@ function SavedBuildCard({
   onDropItem,
   onRename,
   onDelete,
-  canDelete,
 }: SavedBuildCardProps) {
+  const suppressClickRef = useRef(false);
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState(entry.name);
-  const summary = getBuildSummary(entry.build, game, labels);
+  const activeBuild = getActiveSavedBuildBuild(entry);
+  const summary = getBuildSummary(activeBuild, game, labels);
 
-  const startEditing = (event: MouseEvent) => {
-    stopPropagation(event);
+  const startEditing = () => {
     setDraftName(entry.name);
     setEditing(true);
   };
@@ -378,134 +506,134 @@ function SavedBuildCard({
     setEditing(false);
   };
 
-  const handleDelete = (event: MouseEvent) => {
-    stopPropagation(event);
-    onDelete();
-  };
-
   const handleDragStart = (event: DragEvent<HTMLDivElement>) => {
-    event.stopPropagation();
+    if (!canReorder || editing) {
+      event.preventDefault();
+      return;
+    }
+
+    stopPropagation(event);
+    suppressClickRef.current = true;
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", String(index));
     onDragStart();
   };
 
+  const handleDragEnd = (event: DragEvent<HTMLDivElement>) => {
+    stopPropagation(event);
+    onDragEnd();
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+  };
+
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (!canReorder || editing) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     onDragOverItem();
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (!canReorder || editing) return;
     event.preventDefault();
-    event.stopPropagation();
+    stopPropagation(event);
     const fromIndex = Number(event.dataTransfer.getData("text/plain"));
     if (!Number.isNaN(fromIndex)) {
       onDropItem(fromIndex);
     }
   };
 
+  const handleSelect = () => {
+    if (suppressClickRef.current || isActive) return;
+    onSelect();
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-3">
+        <input
+          value={draftName}
+          onChange={(event) => setDraftName(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") commitRename();
+            if (event.key === "Escape") cancelEditing();
+          }}
+          className="h-9 min-w-0 flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          autoFocus
+        />
+        <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={commitRename} aria-label={labels.saveRename}>
+          <Check className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={cancelEditing} aria-label={labels.cancelRename}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div
+      draggable={canReorder}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onClick={handleSelect}
+      onKeyDown={(event) => {
+        if (isActive || event.key !== "Enter") return;
+        event.preventDefault();
+        handleSelect();
+      }}
+      role={isActive ? undefined : "button"}
+      tabIndex={isActive ? undefined : 0}
+      aria-label={canReorder ? labels.dragToReorder : undefined}
       className={cn(
-        "relative flex overflow-hidden rounded-[var(--radius-lg)] border text-left transition-all",
+        "relative flex items-center gap-2 transition-all",
         isDragging && "opacity-40",
-        isDragOver && "border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/40",
-        !isDragging && !isDragOver && (isActive
-          ? "border-[var(--color-accent)]/60 bg-[var(--color-accent)]/[0.07] shadow-[var(--shadow-glow)]"
-          : "border-[var(--color-border)]/80 bg-[var(--color-surface-elevated)]/40 hover:border-[var(--color-accent-muted)]/60 hover:bg-[var(--color-surface-elevated)]/70"),
+        isDragOver && "z-10 ring-1 ring-inset ring-[var(--color-accent)]/50",
+        isActive && "bg-[var(--color-accent)]/[0.04]",
+        canReorder && "cursor-grab active:cursor-grabbing",
+        !isActive && !isDragging && "hover:bg-[var(--color-surface-elevated)]/80",
       )}
     >
       {isActive && (
-        <div className="absolute inset-y-0 left-0 w-1 bg-[var(--color-accent)]" aria-hidden />
+        <div className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--color-accent)]" aria-hidden />
       )}
 
       <div
-        role="button"
-        tabIndex={editing ? -1 : 0}
-        draggable={!editing}
-        aria-label={labels.dragToReorder}
-        onDragStart={handleDragStart}
-        onDragEnd={(event) => {
-          event.stopPropagation();
-          onDragEnd();
-        }}
-        onClick={stopPropagation}
-        className="flex shrink-0 cursor-grab touch-none items-center self-stretch border-r border-[var(--color-border)]/50 px-2.5 text-[var(--color-muted)] hover:text-[var(--color-foreground)] active:cursor-grabbing"
+        className={cn(
+          "flex shrink-0 touch-none items-center px-2 text-[var(--color-muted)]",
+          canReorder ? "cursor-grab active:cursor-grabbing" : "opacity-30",
+        )}
+        aria-hidden
       >
         <GripVertical className="h-4 w-4" />
       </div>
 
-      <div
-        role="button"
-        tabIndex={editing ? -1 : 0}
-        onClick={editing ? undefined : onSelect}
-        onKeyDown={(event) => {
-          if (editing || event.key !== "Enter") return;
-          onSelect();
-        }}
-        className={cn(
-          "min-w-0 flex-1 p-4 outline-none",
-          editing ? "cursor-default" : "cursor-pointer",
-        )}
-      >
-        {editing ? (
-          <div className="flex items-center gap-2" onClick={stopPropagation}>
-            <input
-              value={draftName}
-              onChange={(e) => setDraftName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") commitRename();
-                if (e.key === "Escape") cancelEditing();
-              }}
-              className="flex-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-              autoFocus
-            />
-            <Button variant="ghost" size="icon" onClick={commitRename} aria-label={labels.saveRename}>
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={cancelEditing} aria-label={labels.cancelRename}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="truncate font-medium text-[var(--color-foreground)]">{entry.name}</h3>
-                {isActive && (
-                  <span className="shrink-0 rounded-full border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
-                    {labels.activeBadge}
-                  </span>
-                )}
-              </div>
-              <p className="mt-1 truncate text-xs text-[var(--color-muted)]">
-                {summary.raceLabel} · {summary.perkLabel} · {formatUpdatedAt(entry.updatedAt)}
-              </p>
-            </div>
+      <div className="min-w-0 flex-1 py-3 pr-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <h4 className="truncate text-sm font-semibold text-[var(--color-foreground)]">{entry.name}</h4>
+          {isActive && (
+            <span className="rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
+              {labels.activeBadge}
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-xs text-[var(--color-muted)]">
+          {summary.raceLabel} ·{" "}
+          {formatLabel(milestoneLabels.stepMeta, { level: summary.level, perks: summary.perkCount })} ·{" "}
+          {formatUpdatedAt(entry.updatedAt)}
+        </p>
+      </div>
 
-            <div className="flex shrink-0 items-center gap-0.5" onClick={stopPropagation}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={startEditing}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{labels.renameBuild}</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDelete} disabled={!canDelete}>
-                    <Trash2 className="h-3.5 w-3.5 text-[var(--color-health)]" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{labels.deleteBuild}</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        )}
+      <div className="flex shrink-0 items-center gap-0.5 pr-2" onClick={stopPropagation}>
+        <BuildAction label={labels.renameBuild} onClick={startEditing}>
+          <Pencil className="h-3.5 w-3.5" />
+        </BuildAction>
+        <BuildAction label={labels.deleteBuild} onClick={onDelete} disabled={!canDelete} destructive>
+          <Trash2 className="h-3.5 w-3.5" />
+        </BuildAction>
       </div>
     </div>
   );
@@ -515,6 +643,7 @@ export function BuildsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { labels: allLabels } = useThemeConfig();
   const labels = usePanelLabels("build-library");
+  const milestoneLabels = allLabels.milestones;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
@@ -529,23 +658,39 @@ export function BuildsPage() {
   const reorderSavedBuildSlot = useBuildStore((s) => s.reorderSavedBuildSlot);
 
   const [codeInput, setCodeInput] = useState("");
-  const [importError, setImportError] = useState<string | null>(null);
-  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const [importFeedback, setImportFeedback] = useState<ImportFeedback | null>(null);
   const [fileDragOver, setFileDragOver] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [activeCodeCopied, setActiveCodeCopied] = useState<"code" | "link" | null>(null);
+  const [buildSearchQuery, setBuildSearchQuery] = useState("");
+
+  const visibleBuilds = useMemo(() => {
+    if (!gameData) return [];
+
+    return savedBuilds
+      .map((entry, index) => ({ entry, index }))
+      .filter(({ entry }) => {
+        const activeVariant = getActiveSavedBuildBuild(entry);
+        const summary = getBuildSummary(activeVariant, gameData.game, labels);
+        return matchesPickerSearch(buildSearchQuery, [
+          entry.name,
+          summary.raceLabel,
+          String(summary.level),
+        ]);
+      });
+  }, [savedBuilds, buildSearchQuery, gameData, labels]);
 
   if (!gameData) return null;
 
   const modpackVersion = gameData.game.manifest.version;
   const activeBuild = savedBuilds.find((entry) => entry.id === activeBuildId);
   const activeBuildCode = encodeBuild(build, gameData.game);
+  const isFilteringBuilds = buildSearchQuery.trim().length > 0;
 
-  const showSuccess = (message: string) => {
-    setImportSuccess(message);
-    setImportError(null);
-    setTimeout(() => setImportSuccess(null), 4000);
+  const showSuccess = (message: string, context: ImportFeedback["context"]) => {
+    setImportFeedback({ type: "success", message, context });
+    setTimeout(() => setImportFeedback(null), 4000);
   };
 
   const handleImportCode = (replaceActive: boolean) => {
@@ -553,15 +698,18 @@ export function BuildsPage() {
       const decoded = decodeBuild(codeInput.trim(), gameData.game);
       if (replaceActive) {
         loadBuild(decoded);
-        showSuccess(labels.importedToActive);
+        showSuccess(labels.importedToActive, "code");
       } else {
         importBuildAsSlot(decoded);
-        showSuccess(labels.importedAsNew);
+        showSuccess(labels.importedAsNew, "code");
       }
       setCodeInput("");
     } catch {
-      setImportError(allLabels.errors.invalidBuildCode);
-      setImportSuccess(null);
+      setImportFeedback({
+        type: "error",
+        message: allLabels.errors.invalidBuildCode,
+        context: "code",
+      });
     }
   };
 
@@ -576,15 +724,23 @@ export function BuildsPage() {
           throw new Error(labels.importEmptyLibrary);
         }
         importBuildLibrary(library.savedBuilds);
-        showSuccess(labels.importedLibrary);
+        showSuccess(labels.importedLibrary, "file");
       } else {
         const exported = parseExportedBuild(data);
-        importBuildAsSlot(exported.build, exported.name);
-        showSuccess(labels.importedAsNew);
+        importBuildAsSlot(
+          exported.build,
+          exported.name,
+          exported.milestones,
+          exported.defaultVariantName,
+        );
+        showSuccess(labels.importedAsNew, "file");
       }
     } catch (error) {
-      setImportError(error instanceof Error ? error.message : allLabels.errors.invalidBuildCode);
-      setImportSuccess(null);
+      setImportFeedback({
+        type: "error",
+        message: error instanceof Error ? error.message : allLabels.errors.invalidBuildCode,
+        context: "file",
+      });
     }
   };
 
@@ -613,10 +769,17 @@ export function BuildsPage() {
   };
 
   const handleExportActive = () => {
-    const name = activeBuild?.name ?? "build";
+    const entry = activeBuild ? normalizeSavedBuild(activeBuild) : null;
+    const name = entry?.name ?? "build";
     downloadBackupFile(
       buildBackupFilename(name),
-      createExportedBuild(name, build, modpackVersion),
+      createExportedBuild(
+        name,
+        entry?.build ?? build,
+        modpackVersion,
+        entry?.milestones ?? [],
+        entry ? getDefaultVariantName(entry) : undefined,
+      ),
     );
   };
 
@@ -636,8 +799,8 @@ export function BuildsPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-6 overflow-y-auto px-4 py-8 sm:px-6 sm:py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4">
+      <header className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-[var(--color-accent-muted)]">
             {labels.eyebrow}
@@ -657,60 +820,84 @@ export function BuildsPage() {
         </Button>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-        <section className="min-w-0 space-y-3">
-          <div className="flex items-center justify-between gap-3">
+      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:overflow-hidden">
+        <section className="flex min-h-0 min-w-0 flex-col gap-3 lg:h-full lg:overflow-hidden">
+          <div className="flex shrink-0 items-center justify-between gap-3">
             <h2 className="font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-accent)]">
               {labels.savedBuildsTitle}
             </h2>
-            <Button variant="outline" size="sm" onClick={() => createSavedBuildSlot()}>
-              <Plus className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 shrink-0 gap-1.5 px-2.5 text-xs border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 hover:border-[var(--color-accent-muted)] hover:bg-[var(--color-surface-elevated)]"
+              onClick={() => createSavedBuildSlot()}
+            >
+              <Plus className="h-3 w-3 text-[var(--color-accent)]" />
               {labels.newBuild}
             </Button>
           </div>
 
-          <div className="space-y-2">
-            {savedBuilds.map((entry, index) => (
-              <SavedBuildCard
-                key={entry.id}
-                index={index}
-                entry={entry}
-                isActive={entry.id === activeBuildId}
-                isDragging={draggedIndex === index}
-                isDragOver={dragOverIndex === index && draggedIndex !== index}
-                labels={labels}
-                game={gameData.game}
-                onSelect={() => selectSavedBuildSlot(entry.id)}
-                onDragStart={() => setDraggedIndex(index)}
-                onDragEnd={clearBuildDrag}
-                onDragOverItem={() => setDragOverIndex(index)}
-                onDropItem={(fromIndex) => handleBuildDrop(fromIndex, index)}
-                onRename={(name) => renameSavedBuildSlot(entry.id, name)}
-                onDelete={() => deleteSavedBuildSlot(entry.id)}
-                canDelete={savedBuilds.length > 1}
-              />
-            ))}
+          <PickerSearchInput
+            value={buildSearchQuery}
+            onChange={setBuildSearchQuery}
+            placeholder={labels.searchBuilds}
+          />
+
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 max-lg:max-h-[calc(100dvh-20rem)]">
+            {visibleBuilds.length === 0 ? (
+              <p className="px-1 py-6 text-center text-sm text-[var(--color-muted)]">
+                {labels.noSearchResults}
+              </p>
+            ) : (
+              <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/20">
+                {visibleBuilds.map(({ entry, index }, displayIndex) => (
+                  <div
+                    key={entry.id}
+                    className={cn(displayIndex > 0 && "border-t border-[var(--color-border)]/50")}
+                  >
+                    <SavedBuildCard
+                      index={index}
+                      entry={entry}
+                      isActive={entry.id === activeBuildId}
+                      isDragging={draggedIndex === index}
+                      isDragOver={dragOverIndex === index && draggedIndex !== index}
+                      canReorder={savedBuilds.length > 1 && !isFilteringBuilds}
+                      canDelete={savedBuilds.length > 1}
+                      labels={labels}
+                      milestoneLabels={milestoneLabels}
+                      game={gameData.game}
+                      onSelect={() => selectSavedBuildSlot(entry.id)}
+                      onDragStart={() => setDraggedIndex(index)}
+                      onDragEnd={clearBuildDrag}
+                      onDragOverItem={() => setDragOverIndex(index)}
+                      onDropItem={(fromIndex) => handleBuildDrop(fromIndex, index)}
+                      onRename={(name) => renameSavedBuildSlot(entry.id, name)}
+                      onDelete={() => deleteSavedBuildSlot(entry.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
-        <aside className="lg:sticky lg:top-6">
-          {(importSuccess || importError) && (
-            <div className="mb-4 space-y-2">
-              {importSuccess && <StatusBanner type="success" message={importSuccess} />}
-              {importError && <StatusBanner type="error" message={importError} />}
-            </div>
-          )}
-
+        <aside className="shrink-0">
           <TransferSidebar
             labels={labels}
             activeBuildName={activeBuild?.name}
             activeBuildCode={activeBuildCode}
             codeInput={codeInput}
-            onCodeInputChange={setCodeInput}
+            onCodeInputChange={(value) => {
+              setCodeInput(value);
+              if (importFeedback?.context === "code") {
+                setImportFeedback(null);
+              }
+            }}
             onImportCode={handleImportCode}
             onCopyActiveCode={handleCopyActiveCode}
             onCopyActiveLink={handleCopyActiveLink}
             activeCodeCopied={activeCodeCopied}
+            importFeedback={importFeedback}
             fileInputRef={fileInputRef}
             fileDragOver={fileDragOver}
             onFileDragOver={(e) => {

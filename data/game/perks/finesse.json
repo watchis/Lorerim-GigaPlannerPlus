@@ -2,8 +2,8 @@
   "skillId": "finesse",
   "skillName": "Finesse",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 17,
+    "height": 33
   },
   "perks": [
     {
@@ -11,294 +11,370 @@
       "name": "Nimble Fingers",
       "skillReq": 0,
       "position": {
-        "x": 9,
-        "y": 21
+        "x": 4,
+        "y": 32
       },
       "prerequisites": [],
       "description": "You've spent some time improving your sleight of hand, which gives you substantial chances when pickpocketing.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "finesse-nimble-fingers-2",
+      "id": "finesse-nimble-fingers-r2",
       "name": "Nimble Fingers",
       "skillReq": 20,
       "position": {
-        "x": 9,
-        "y": 21
-      },
-      "prerequisites": [
-        "finesse-nimble-fingers"
-      ],
-      "description": "Your fingers have become very nimble, and besides other advantages, they allow you to pickpocket even better and to apply poisons on your victims. Why fight if a vial of deadly venom can also do the trick?",
-      "effects": []
-    },
-    {
-      "id": "finesse-cutpurse",
-      "name": "Cutpurse",
-      "skillReq": 30,
-      "position": {
-        "x": 3,
-        "y": 18
-      },
-      "prerequisites": [
-        "finesse-nimble-fingers"
-      ],
-      "description": "Pickpocketing gold, keys, gems and jewelry is 50% easier. Pickpocketing sleeping targets is much easier.",
-      "effects": []
-    },
-    {
-      "id": "finesse-poisoner",
-      "name": "Poisoner",
-      "skillReq": 50,
-      "position": {
-        "x": 3,
-        "y": 14
-      },
-      "prerequisites": [
-        "finesse-cutpurse"
-      ],
-      "description": "Poisons placed in targets' pockets are 50% stronger when target is not detecting you.",
-      "effects": []
-    },
-    {
-      "id": "finesse-misdirection",
-      "name": "Misdirection",
-      "skillReq": 70,
-      "position": {
-        "x": 3,
-        "y": 9
-      },
-      "prerequisites": [
-        "finesse-poisoner"
-      ],
-      "description": "Can pickpocket equipped weapons, arrows and staves.",
-      "effects": []
-    },
-    {
-      "id": "finesse-perfected-art",
-      "name": "Perfected Art",
-      "skillReq": 100,
-      "position": {
-        "x": 3,
-        "y": 5
-      },
-      "prerequisites": [
-        "finesse-misdirection"
-      ],
-      "description": "Your legendary skill means you almost never get caught. Poisons placed in pockets are 50% stronger on already poisoned targets.",
-      "effects": []
-    },
-    {
-      "id": "finesse-sound-body",
-      "name": "Sound Body",
-      "skillReq": 30,
-      "position": {
-        "x": 14,
-        "y": 15
+        "x": 4,
+        "y": 32
       },
       "prerequisites": [],
-      "prerequisitesAny": [
-        "finesse-nimble-fingers",
-        "finesse-trapper"
-      ],
-      "description": "You have unburdened your body. You gain 100 armor rating when not wearing armor and gain 10% armor penetration and 10 unarmed damage when unarmored.",
-      "effects": []
-    },
-    {
-      "id": "finesse-sound-body-2",
-      "name": "Sound Body",
-      "skillReq": 30,
-      "position": {
-        "x": 14,
-        "y": 15
-      },
-      "prerequisites": [
-        "finesse-sound-body"
-      ],
-      "description": "You have unburdened your body. You gain 200 armor rating when not wearing armor and gain 20% armor penetration and 20 unarmed damage when unarmored.",
-      "effects": []
-    },
-    {
-      "id": "finesse-sound-mind",
-      "name": "Sound Mind",
-      "skillReq": 60,
-      "position": {
-        "x": 14,
-        "y": 9
-      },
-      "prerequisites": [
-        "finesse-sound-body"
-      ],
-      "description": "You've unburdened your inner thoughts, gaining 10% resistance to magic and 50% greater health, stamina and magicka regen when unarmored.",
-      "effects": []
-    },
-    {
-      "id": "finesse-sound-spirit",
-      "name": "Sound Spirit",
-      "skillReq": 80,
-      "position": {
-        "x": 14,
-        "y": 3
-      },
-      "prerequisites": [
-        "finesse-sound-mind"
-      ],
-      "description": "You have unburdened your spirit and now shouts are 10% stronger and last 10% longer also you are 25% more resistant to diseases and poisons when unarmored.",
-      "effects": []
+      "description": "Your fingers have become very nimble, and besides other advantages, they allow you to pickpocket even better and to apply poisons on your victims. Why fight if a vial of deadly venom can also do the trick?",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-outlaw",
       "name": "Outlaw",
       "skillReq": 20,
       "position": {
-        "x": 9,
-        "y": 18
+        "x": 4,
+        "y": 26
       },
       "prerequisites": [
         "finesse-nimble-fingers"
       ],
       "description": "You've been in and out of jail, where most people wither away you've used the time to reflect and train Gain 5 Health, Magicka and Stamina per Jail Escapes, Up To 5 Times.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-thief",
       "name": "Thief",
       "skillReq": 50,
       "position": {
-        "x": 9,
-        "y": 12
+        "x": 4,
+        "y": 18
       },
       "prerequisites": [
         "finesse-outlaw"
       ],
       "description": "Gain carry weight, light armor rating and sneak ability per pocket picked, 10 carry weight, 2% light armor rating and 3% sneak ability per 20 pockets picked, maxing out at 100.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-lucky-7",
       "name": "Lucky 7",
       "skillReq": 77,
       "position": {
-        "x": 9,
-        "y": 6
+        "x": 6,
+        "y": 10
       },
       "prerequisites": [
         "finesse-thief"
       ],
-      "description": "You gain elemental resist based on how much gold you are currently carrying (Up to 21% Fire/Frost/Shock Resist, (3% per 5k gold, maxed at 35k))",
-      "effects": []
+      "description": "You gain elemental resist based on how much gold you are currently carrying [Up to 21% Fire/Frost/Shock Resist, (3% per 5k gold, maxed at 35k)]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-cutpurse",
+      "name": "Cutpurse",
+      "skillReq": 30,
+      "position": {
+        "x": 0,
+        "y": 26
+      },
+      "prerequisites": [
+        "finesse-nimble-fingers"
+      ],
+      "description": "Pickpocketing gold, keys, gems and jewelry is 50% easier. Pickpocketing sleeping targets is much easier.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-poisoner",
+      "name": "Poisoner",
+      "skillReq": 50,
+      "position": {
+        "x": 0,
+        "y": 18
+      },
+      "prerequisites": [
+        "finesse-cutpurse"
+      ],
+      "description": "Poisons placed in targets' pockets are 50% stronger when target is not detecting you.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-misdirection",
+      "name": "Misdirection",
+      "skillReq": 70,
+      "position": {
+        "x": 0,
+        "y": 8
+      },
+      "prerequisites": [
+        "finesse-poisoner"
+      ],
+      "description": "Can pickpocket equipped weapons, arrows and staves.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-perfected-art",
+      "name": "Perfected Art",
+      "skillReq": 100,
+      "position": {
+        "x": 5,
+        "y": 0
+      },
+      "prerequisites": [
+        "finesse-misdirection"
+      ],
+      "description": "Your legendary skill means you almost never get caught. Poisons placed in pockets are 50% stronger on already poisoned targets.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-sound-body",
+      "name": "Sound Body",
+      "skillReq": 30,
+      "position": {
+        "x": 8,
+        "y": 26
+      },
+      "prerequisites": [
+        "finesse-nimble-fingers",
+        "finesse-trapper"
+      ],
+      "description": "You have unburdened your body. You gain 75 armor rating and gain 5% armor penetration and 5 unarmed damage.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 150,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 5,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 5,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-sound-body-r2",
+      "name": "Sound Body",
+      "skillReq": 30,
+      "position": {
+        "x": 8,
+        "y": 26
+      },
+      "prerequisites": [
+        "finesse-nimble-fingers",
+        "finesse-trapper"
+      ],
+      "description": "You have unburdened your body. You gain 150 armor rating and gain 10% armor penetration and 10 unarmed damage.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 300,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-sound-mind",
+      "name": "Sound Mind",
+      "skillReq": 60,
+      "position": {
+        "x": 8,
+        "y": 17
+      },
+      "prerequisites": [
+        "finesse-sound-body"
+      ],
+      "description": "You've unburdened your inner thoughts, gaining 75% greater health, stamina and magicka regen.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-sound-spirit",
+      "name": "Sound Spirit",
+      "skillReq": 80,
+      "position": {
+        "x": 8,
+        "y": 8
+      },
+      "prerequisites": [
+        "finesse-sound-mind"
+      ],
+      "description": "You have unburdened your spirit and now shouts are 10% stronger and last 10% longer also you are 10% more resistant to elements and magic.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "shoutPower",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-trapper",
       "name": "Trapper",
       "skillReq": 0,
       "position": {
-        "x": 18,
-        "y": 21
+        "x": 12,
+        "y": 32
       },
       "prerequisites": [],
       "description": "You can now pickup and deploy Bear Traps, and craft them yourself at the forge. Bear Traps deal extra damage based on your Finesse skill.",
-      "effects": []
-    },
-    {
-      "id": "finesse-pocket-sand",
-      "name": "Pocket Sand",
-      "skillReq": 25,
-      "position": {
-        "x": 23,
-        "y": 15
-      },
-      "prerequisites": [
-        "finesse-trapper"
-      ],
-      "description": "You're quick thinking and even quicker with your hands. Can now create pocket sand at a forge and use it to impair enemies.",
-      "effects": []
-    },
-    {
-      "id": "finesse-quick-sand",
-      "name": "Quick Sand",
-      "skillReq": 50,
-      "position": {
-        "x": 23,
-        "y": 9
-      },
-      "prerequisites": [
-        "finesse-pocket-sand"
-      ],
-      "description": "Your pocket sand can now slow down enemies, making it easier to escape combat.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-poisoned-clamps",
       "name": "Poisoned Clamps",
       "skillReq": 25,
       "position": {
-        "x": 18,
-        "y": 14
+        "x": 12,
+        "y": 17
       },
       "prerequisites": [
         "finesse-trapper"
       ],
       "description": "Traps can now be poisoned.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-salt-on-the-wound",
       "name": "Salt on the Wound",
       "skillReq": 50,
       "position": {
-        "x": 18,
+        "x": 12,
         "y": 8
       },
       "prerequisites": [
         "finesse-poisoned-clamps"
       ],
       "description": "When deploying a trap, you can consume elemental salt to coat it. Affected enemies take minor elemental damage, and on death, summon an atronach.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "finesse-death-s-emperor",
-      "name": "Death's Emperor",
-      "skillReq": 70,
+      "id": "finesse-pocket-sand",
+      "name": "Pocket Sand",
+      "skillReq": 25,
       "position": {
-        "x": 6,
-        "y": 9
+        "x": 16,
+        "y": 17
+      },
+      "prerequisites": [
+        "finesse-trapper"
+      ],
+      "description": "You're quick thinking and even quicker with your hands Can now create pocket sand at a forge and use it to impair enemies.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-quick-sand",
+      "name": "Quick Sand",
+      "skillReq": 50,
+      "position": {
+        "x": 16,
+        "y": 8
+      },
+      "prerequisites": [
+        "finesse-pocket-sand"
+      ],
+      "description": "Your pocket sand can now slow down enemies by 25%, making it easier to escape combat.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-quick-sand-r2",
+      "name": "Quick Sand",
+      "skillReq": 75,
+      "position": {
+        "x": 16,
+        "y": 8
       },
       "prerequisites": [],
-      "prerequisitesAny": [
-        "finesse-poisoner",
-        "finesse-thief"
-      ],
-      "description": "A cursed septim appears in your inventory. When someone else is in possession of the coin, your attacks deal 25% more damage and critical damage to them.",
-      "effects": []
+      "description": "Your pocket sand now deals physical damage over time.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-mutiny",
       "name": "Mutiny",
       "skillReq": 100,
       "position": {
-        "x": 6,
+        "x": 5,
         "y": 5
       },
       "prerequisites": [
         "finesse-death-s-emperor"
       ],
       "description": "Grants the \"Mutiny\" power. At will, activates the curse of the Death's Emperor, causing whoever is in possession of the coin to attack randomly for 30 seconds. Any deaths resulting from this can't be traced back to you.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "finesse-death-s-emperor",
+      "name": "Death's Emperor",
+      "skillReq": 70,
+      "position": {
+        "x": 2,
+        "y": 14
+      },
+      "prerequisites": [
+        "finesse-thief",
+        "finesse-poisoner"
+      ],
+      "description": "A cursed septim appears in your inventory. When someone else is in possession of the coin, your attacks deal 25% more damage and critical damage to them.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "finesse-lawless-world",
       "name": "Lawless World",
       "skillReq": 40,
       "position": {
-        "x": 8,
-        "y": 15
+        "x": 6,
+        "y": 22
       },
       "prerequisites": [
         "finesse-outlaw"
       ],
       "description": "Petty crimes are slowly forgotten, allowing your bounties for non-violent crimes to decay at a rate of 50% of your Pickpocket skill level each day.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

@@ -2,8 +2,8 @@
   "skillId": "heavy-armor",
   "skillName": "Heavy Armor",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 21,
+    "height": 31
   },
   "perks": [
     {
@@ -11,235 +11,303 @@
       "name": "Conditioning",
       "skillReq": 0,
       "position": {
-        "x": 13,
-        "y": 22
+        "x": 10,
+        "y": 30
       },
       "prerequisites": [],
-      "description": "You've accustomed yourself to using heavy armor. (No stamina drain for wearing heavy armor, unique bonus when wearing high-quality materials, -35% armor weight penalty)",
-      "effects": []
-    },
-    {
-      "id": "heavy-armor-relentless-onslaught",
-      "name": "Relentless Onslaught",
-      "skillReq": 20,
-      "position": {
-        "x": 13,
-        "y": 17
-      },
-      "prerequisites": [
-        "heavy-armor-conditioning"
+      "description": "You've accustomed yourself to using heavy armor. [No stamina drain for wearing heavy armor, unique bonus when wearing high-quality materials, -35% armor weight penalty]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 35,
+          "isPercent": true
+        }
       ],
-      "description": "After extensive training you now can sprint in heavy armor without problems. (no sprinting stamina cost penalty, take 80% less melee damage when bullrushing, -10% armor weight penalty)",
-      "effects": []
-    },
-    {
-      "id": "heavy-armor-devastating-tackle",
-      "name": "Devastating Tackle",
-      "skillReq": 50,
-      "position": {
-        "x": 9,
-        "y": 13
-      },
-      "prerequisites": [
-        "heavy-armor-relentless-onslaught"
-      ],
-      "description": "When in full heavy armor, you can cause devastating impact when bull-rushing. (Bull-rush while wearing 4 or more pieces of heavy armor does double damage and has higher chance to knockdown)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-combat-casting",
       "name": "Combat Casting",
       "skillReq": 25,
       "position": {
-        "x": 7,
-        "y": 16
+        "x": 2,
+        "y": 24
       },
       "prerequisites": [
         "heavy-armor-conditioning"
       ],
-      "description": "You are able to keep concentrated enough in heavy armor. (No spell cost penalty for casting Novice and Apprentice spells in heavy armor)",
-      "effects": []
+      "description": "You are able to keep concentrated enough in heavy armor. [No spell cost penalty for casting Novice and Apprentice spells in heavy armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-combat-trance",
       "name": "Combat Trance",
       "skillReq": 50,
       "position": {
-        "x": 4,
-        "y": 11
+        "x": 0,
+        "y": 18
       },
       "prerequisites": [
         "heavy-armor-combat-casting"
       ],
-      "description": "Your heavy armor distracts you even less. (No spell cost penalty for casting Adept spells in heavy armor)",
-      "effects": []
+      "description": "Your heavy armor distracts you even less. [No spell cost penalty for casting Adept spells in heavy armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-combat-meditation",
       "name": "Combat Meditation",
       "skillReq": 75,
       "position": {
-        "x": 4,
-        "y": 6
+        "x": 0,
+        "y": 9
       },
       "prerequisites": [
         "heavy-armor-combat-trance"
       ],
-      "description": "You're accustomed to your heavy armor so much that you can now cast even sophisticated spells with relative ease. (No spell cost penalty for casting Expert spells in heavy armor)",
-      "effects": []
+      "description": "You're accustomed to your heavy armor so much that you can now cast even sophisticated spells with relative ease. [No spell cost penalty for casting Expert spells in heavy armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-battle-mage",
       "name": "Battle Mage",
       "skillReq": 100,
       "position": {
-        "x": 5,
-        "y": 2
+        "x": 3,
+        "y": 0
       },
       "prerequisites": [
         "heavy-armor-combat-meditation"
       ],
-      "description": "You have mastered spellcasting while wearing heavy armor. (No spell cost penalty for casting Master spells in heavy armor, 15% less spell cost when wearing all heavy armor: head, chest, hands, feet)",
-      "effects": []
+      "description": "You have mastered spellcasting while wearing heavy armor. [No spell cost penalty for casting Master spells and 10% stronger and longer lasting spells while wearing heavy armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-combat-training",
       "name": "Combat Training",
       "skillReq": 25,
       "position": {
-        "x": 19,
-        "y": 16
+        "x": 18,
+        "y": 24
       },
       "prerequisites": [
         "heavy-armor-conditioning"
       ],
-      "description": "You are less hindered by your armor and can attack with ease. (No power attack stamina cost penalty, increased unarmed damage with heavy gauntlets, -10% armor weight penalty)",
-      "effects": []
-    },
-    {
-      "id": "heavy-armor-immovable",
-      "name": "Immovable",
-      "skillReq": 50,
-      "position": {
-        "x": 18,
-        "y": 12
-      },
-      "prerequisites": [
-        "heavy-armor-combat-training"
+      "description": "You are less hindered by your armor and can attack with ease. [No power attack stamina cost penalty, increased unarmed damage with heavy gauntlets, -10% armor weight penalty]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 10,
+          "isPercent": true
+        }
       ],
-      "description": "When in full heavy armor, you can pose a defensive stance to reduce incoming impact. (Resist physical, elemental and poise damage by 33% while attacking, casting, walking or standing still wearing 4 or more pieces of heavy armor)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-fortitude",
       "name": "Fortitude",
       "skillReq": 50,
       "position": {
-        "x": 21,
-        "y": 12
+        "x": 20,
+        "y": 18
       },
       "prerequisites": [
         "heavy-armor-combat-training"
       ],
-      "description": "Your training made you stronger and you are now less burdened by the rigidity of your armor. (+40 stamina, +20 carry weight, -10% armor weight penalty)",
-      "effects": []
+      "description": "Your training made you stronger and you are now less burdened by the rigidity of your armor. [+40 stamina, +20 carry weight, -10% armor weight penalty]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 20,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-power-of-the-combatant",
       "name": "Power of the Combatant",
       "skillReq": 75,
       "position": {
-        "x": 21,
-        "y": 7
+        "x": 20,
+        "y": 9
       },
       "prerequisites": [
         "heavy-armor-fortitude"
       ],
-      "description": "Taking hits gives you a rush of adrenaline. (Restore 15 stamina over 6 seconds after taking a hit, -10% armor weight penalty)",
-      "effects": []
+      "description": "Taking hits gives you a rush of adrenaline. [Restore 15 stamina over 6 seconds after taking a hit, -10% armor weight penalty]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-juggernaut",
       "name": "Juggernaut",
       "skillReq": 100,
       "position": {
-        "x": 20,
-        "y": 2
+        "x": 17,
+        "y": 0
       },
       "prerequisites": [
         "heavy-armor-power-of-the-combatant"
       ],
-      "description": "You've reached perfection in the skill of wearing heavy armor and are now significantly more maneuverable in it. (15% less armor weight, 10% more armor rating, 50% less poise damage when wearing all heavy armor: head, chest, hands, feet)",
-      "effects": []
+      "description": "You've reached perfection in the skill of wearing heavy armor and are now significantly more maneuverable in it. [15% less armor weight, 10% more armor rating, 50% less poise damage when wearing all heavy armor: head, chest, hands, feet]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "heavy-armor-relentless-onslaught",
+      "name": "Relentless Onslaught",
+      "skillReq": 20,
+      "position": {
+        "x": 10,
+        "y": 24
+      },
+      "prerequisites": [
+        "heavy-armor-conditioning"
+      ],
+      "description": "After extensive training you now can sprint in heavy armor without problems. [no sprinting stamina cost penalty, take 80% less melee damage when bullrushing, -10% armor weight penalty]",
+      "effects": [
+        {
+          "type": "flag",
+          "stat": "noSprintCost"
+        },
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "heavy-armor-devastating-tackle",
+      "name": "Devastating Tackle",
+      "skillReq": 50,
+      "position": {
+        "x": 6,
+        "y": 18
+      },
+      "prerequisites": [
+        "heavy-armor-relentless-onslaught"
+      ],
+      "description": "When in full heavy armor, you can cause devastating impact when bull-rushing. [Bull-rush while wearing 4 or more pieces of heavy armor does double damage and has higher chance to knockdown]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "heavy-armor-immovable",
+      "name": "Immovable",
+      "skillReq": 50,
+      "position": {
+        "x": 16,
+        "y": 18
+      },
+      "prerequisites": [
+        "heavy-armor-combat-training"
+      ],
+      "description": "When in full heavy armor, you can pose a defensive stance to reduce incoming impact. [Resist physical, elemental and poise damage by 50% while standing still, attacking or casting while wearing 4 or more pieces of heavy armor]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-mounted-combat",
       "name": "Mounted Combat",
       "skillReq": 0,
-      "playerLevelReq": 10,
       "position": {
-        "x": 20,
-        "y": 22
+        "x": 18,
+        "y": 30
       },
       "prerequisites": [],
-      "description": "You can deal more damage with melee weapons while mounted. (1.5x melee attack damage while on horseback)",
-      "effects": []
+      "description": "You can deal more damage with melee weapons while mounted. [1.5x melee attack damage while on horseback]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-cushioned",
       "name": "Cushioned",
       "skillReq": 30,
       "position": {
-        "x": 13,
-        "y": 13
+        "x": 10,
+        "y": 18
       },
       "prerequisites": [
         "heavy-armor-relentless-onslaught"
       ],
       "description": "You take half damage from falling if wearing all Heavy Armor.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-defiance",
       "name": "Defiance",
       "skillReq": 50,
       "position": {
-        "x": 13,
-        "y": 9
+        "x": 10,
+        "y": 12
       },
       "prerequisites": [
         "heavy-armor-cushioned"
       ],
-      "description": "You are trained to deflect incoming attacks while wearing all Heavy Armor. Whenever an enemy attacks you, you gain 15 points of armor rating for 10 seconds. This effect stacks.",
-      "effects": []
+      "description": "You are trained to deflect incoming attacks while wearing all Heavy Armor. Whenever an enemy attacks you, you gain 30 points of armor rating for 10 seconds. This effect stacks.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-never-kneel",
       "name": "Never Kneel",
       "skillReq": 75,
       "position": {
-        "x": 13,
-        "y": 5
+        "x": 10,
+        "y": 6
       },
       "prerequisites": [
         "heavy-armor-defiance"
       ],
       "description": "If wearing all Heavy Armor, take 30% less attack damage from power attacks.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "heavy-armor-reap-the-whirlwind",
       "name": "Reap the Whirlwind",
       "skillReq": 100,
       "position": {
-        "x": 13,
-        "y": 1
+        "x": 10,
+        "y": 0
       },
       "prerequisites": [
         "heavy-armor-never-kneel"
       ],
       "description": "When struck by a power attack or power bash, your attacks deal 50% more damage to the attacker for 5 seconds if wearing all Heavy Armor.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

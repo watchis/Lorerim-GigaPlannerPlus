@@ -2,229 +2,100 @@
   "skillId": "restoration",
   "skillName": "Restoration",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 33,
+    "height": 34
   },
   "perks": [
-    {
-      "id": "restoration-painful-regrets",
-      "name": "Painful Regrets",
-      "skillReq": 0,
-      "position": {
-        "x": 20,
-        "y": 21
-      },
-      "prerequisites": [],
-      "description": "You've honestly reflected your sins, and you truly regret what pain you have inflicted upon others. All spells cost 10% less but buying/selling prices are much higher.",
-      "effects": []
-    },
     {
       "id": "restoration-novice-restoration",
       "name": "Novice Restoration",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 21
+        "x": 17,
+        "y": 33
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "restoration-empowered-restoration"
+      ],
       "description": "You've taught yourself a few Novice level spells and learned how to cast them with decreased effort while your newfound knowledge also allows you to augment all Restoration spells.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-apprentice-restoration",
       "name": "Apprentice Restoration",
       "skillReq": 25,
       "position": {
-        "x": 14,
-        "y": 17
+        "x": 19,
+        "y": 24
       },
       "prerequisites": [
-        "restoration-novice-restoration"
+        "restoration-novice-restoration",
+        "restoration-mental-acuity"
       ],
       "description": "By pursuing your apprenticeship in Restoration, you've gained knowledge of Apprentice level spells which you now augment while casting them with less effort.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-adept-restoration",
       "name": "Adept Restoration",
       "skillReq": 50,
       "position": {
-        "x": 14,
-        "y": 12
+        "x": 18,
+        "y": 15
       },
       "prerequisites": [
         "restoration-apprentice-restoration"
       ],
       "description": "By advancing further into the school of Restoration, you've gained some Adept level spells and learned how to augment and cast spells of this rank more easily.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-expert-restoration",
       "name": "Expert Restoration",
       "skillReq": 75,
       "position": {
-        "x": 14,
-        "y": 8
+        "x": 18,
+        "y": 5
       },
       "prerequisites": [
         "restoration-adept-restoration"
       ],
       "description": "You've unlocked almost every secret in the school of Restoration and you've acquired some Expert level spells. You can now cast spells of this level easier and augment them to an almost otherworldly extent.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-master-restoration",
       "name": "Master Restoration",
       "skillReq": 100,
       "position": {
-        "x": 11,
-        "y": 3
+        "x": 13,
+        "y": 0
       },
       "prerequisites": [
         "restoration-expert-restoration"
       ],
       "description": "Your knowledge of Restoration has become all-encompassing.You taught yourself a Master level spell and you can cast the most complex spells from this school with less effort while augmenting them beyond mortal limits.",
-      "effects": []
-    },
-    {
-      "id": "restoration-empowered-restoration",
-      "name": "Empowered Restoration",
-      "skillReq": 25,
-      "position": {
-        "x": 20,
-        "y": 19
-      },
-      "prerequisites": [
-        "restoration-novice-restoration"
-      ],
-      "description": "Dual casting a Restoration spell overcharges the effects into an even more powerful version.",
-      "effects": []
-    },
-    {
-      "id": "restoration-focused-mind",
-      "name": "Focused Mind",
-      "skillReq": 25,
-      "position": {
-        "x": 16,
-        "y": 11
-      },
-      "prerequisites": [
-        "restoration-apprentice-restoration"
-      ],
-      "description": "You've learned to focus your mind. Thus, you can keep your concentration even in stressful situations and regenerate your magicka faster. (+50% magicka regeneration)",
-      "effects": []
-    },
-    {
-      "id": "restoration-power-of-life",
-      "name": "Power of Life",
-      "skillReq": 50,
-      "position": {
-        "x": 16,
-        "y": 6
-      },
-      "prerequisites": [
-        "restoration-focused-mind"
-      ],
-      "description": "Your studies of healing magic now grant you the power of making yourself almost invulnerable for a short duration once a day.",
-      "effects": []
-    },
-    {
-      "id": "restoration-essence-of-life",
-      "name": "Essence of Life",
-      "skillReq": 75,
-      "position": {
-        "x": 18,
-        "y": 5
-      },
-      "prerequisites": [
-        "restoration-power-of-life"
-      ],
-      "description": "Your understanding of healing and how magic and life are intertwined allows you to call upon your newfound power more often.",
-      "effects": []
-    },
-    {
-      "id": "restoration-improved-protection",
-      "name": "Improved Protection",
-      "skillReq": 25,
-      "position": {
-        "x": 18,
-        "y": 14
-      },
-      "prerequisites": [
-        "restoration-novice-restoration"
-      ],
-      "description": "Ward, Fortify, and Resist spells are stonger and more efficient. (1.1x magnitude, 1.1x duration, 0.9x cost for protection spells)",
-      "effects": []
-    },
-    {
-      "id": "restoration-improved-wards",
-      "name": "Improved Wards",
-      "skillReq": 75,
-      "position": {
-        "x": 20,
-        "y": 9
-      },
-      "prerequisites": [
-        "restoration-improved-protection"
-      ],
-      "description": "Your arcane wards now absorb magicka from incoming spells and have improved efficiency. (25% ward spell absorption, 0.9x ward spell cost)",
-      "effects": []
-    },
-    {
-      "id": "restoration-ward-mastery",
-      "name": "Ward Mastery",
-      "skillReq": 50,
-      "position": {
-        "x": 18,
-        "y": 17
-      },
-      "prerequisites": [
-        "restoration-novice-restoration"
-      ],
-      "description": "You are more proficient with ward spells, using them more efficiently to block magic. (Ward spells cost 50% less magicka, +10% magic resistance when holding Ward spell in hand)",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-improved-healing",
       "name": "Improved Healing",
       "skillReq": 25,
       "position": {
-        "x": 2,
-        "y": 17
+        "x": 10,
+        "y": 30
       },
       "prerequisites": [
         "restoration-novice-restoration"
       ],
-      "description": "You've gained more knowledge about healing spells, allowing you to heal wounds more efficiently. (1.1x magnitude, 0.9x cost for healing and cure spells)",
-      "effects": []
-    },
-    {
-      "id": "restoration-respite",
-      "name": "Respite",
-      "skillReq": 75,
-      "position": {
-        "x": 2,
-        "y": 11
-      },
-      "prerequisites": [
-        "restoration-improved-healing"
-      ],
-      "description": "In addition to curing wounds, your healing spells now reinvigorate the body itself, restoring subject's stamina. (healing spells restore stamina by 0.5x of healing done)",
-      "effects": []
-    },
-    {
-      "id": "restoration-improved-turning",
-      "name": "Improved Turning",
-      "skillReq": 25,
-      "position": {
-        "x": 5,
-        "y": 15
-      },
-      "prerequisites": [
-        "restoration-novice-restoration"
-      ],
-      "description": "Turn, Purify, and Abjuration spells are stonger and more efficient. (1.1x magnitude, 1.1x duration, 0.9x cost for turn spells)",
-      "effects": []
+      "description": "You've gained more knowledge about healing spells, allowing you to heal wounds more efficiently. [1.1x magnitude, 0.9x cost for healing and cure spells]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-mystic-turning",
@@ -232,27 +103,169 @@
       "skillReq": 75,
       "position": {
         "x": 4,
-        "y": 9
+        "y": 12
       },
       "prerequisites": [
         "restoration-improved-turning"
       ],
-      "description": "You've learned the art of weaving mystical energies into your spells, making all of them more effective against the undead and Daedra. (1.1x spell magnitude, 1.2x spell duration on undead and daedra)",
-      "effects": []
+      "description": "You've learned the art of weaving mystical energies into your spells, making all of them more effective against the undead and Daedra. [1.1x spell magnitude, 1.2x spell duration on undead and daedra]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-respite",
+      "name": "Respite",
+      "skillReq": 75,
+      "position": {
+        "x": 3,
+        "y": 23
+      },
+      "prerequisites": [
+        "restoration-improved-healing"
+      ],
+      "description": "In addition to curing wounds, your healing spells now reinvigorate the body itself, restoring subject's stamina. [healing spells restore stamina by 0.5x of healing done]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-improved-wards",
+      "name": "Improved Wards",
+      "skillReq": 75,
+      "position": {
+        "x": 29,
+        "y": 15
+      },
+      "prerequisites": [
+        "restoration-improved-protection"
+      ],
+      "description": "Your arcane wards now absorb magicka from incoming spells and have improved efficiency. [25% ward spell absorption, 0.9x ward spell cost]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-empowered-restoration",
+      "name": "Empowered Restoration",
+      "skillReq": 25,
+      "position": {
+        "x": 26,
+        "y": 31
+      },
+      "prerequisites": [
+        "restoration-novice-restoration"
+      ],
+      "description": "Dual casting a Restoration spell overcharges the effects into an even more powerful version.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-mental-acuity",
+      "name": "Mental Acuity",
+      "skillReq": 25,
+      "position": {
+        "x": 21,
+        "y": 16
+      },
+      "prerequisites": [
+        "restoration-apprentice-restoration"
+      ],
+      "description": "You've learned to focus your thoughts. Thus, you can keep your concentration even in stressful situations and regenerate your magicka faster. [+50% magicka regeneration]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-power-of-life",
+      "name": "Power of Life",
+      "skillReq": 50,
+      "position": {
+        "x": 21,
+        "y": 9
+      },
+      "prerequisites": [
+        "restoration-mental-acuity"
+      ],
+      "description": "Your studies of healing magic now grant you the power of making yourself almost invulnerable for a short duration once a day.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-essence-of-life",
+      "name": "Essence of Life",
+      "skillReq": 75,
+      "position": {
+        "x": 24,
+        "y": 2
+      },
+      "prerequisites": [
+        "restoration-power-of-life"
+      ],
+      "description": "Your understanding of healing and how magic and life are intertwined allows you to call upon your newfound power more often.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-painful-regrets",
+      "name": "Painful Regrets",
+      "skillReq": 0,
+      "position": {
+        "x": 32,
+        "y": 33
+      },
+      "prerequisites": [],
+      "description": "You've honestly reflected your sins, and you truly regret what pain you have inflicted upon others. All spells cost 25% more but buying/selling prices are 25% better.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "priceModifier",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-venomancy",
+      "name": "Venomancy",
+      "skillReq": 25,
+      "position": {
+        "x": 13,
+        "y": 16
+      },
+      "prerequisites": [
+        "restoration-novice-restoration"
+      ],
+      "description": "You now are able to improve your poison spells and thereby increase their effectiveness. [1.1x magnitude, 0.9x cost for poison spells]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-paralyzing-poison",
+      "name": "Paralyzing Poison",
+      "skillReq": 75,
+      "position": {
+        "x": 13,
+        "y": 7
+      },
+      "prerequisites": [
+        "restoration-venomancy"
+      ],
+      "description": "Your poison spells are much more potent, rendering targets more susceptible to poison and paralyzing those with low resistance to poison or magic. [paralysis effect for poison spells, poison spells temporarily reduce target's poison resistance by 10% if not immune]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-heliomancy",
       "name": "Heliomancy",
       "skillReq": 25,
       "position": {
-        "x": 7,
-        "y": 14
+        "x": 10,
+        "y": 19
       },
       "prerequisites": [
         "restoration-novice-restoration"
       ],
-      "description": "You now are able to improve your sun spells and thereby increase their effectiveness. (1.1x magnitude, 0.9x cost for sun spells)",
-      "effects": []
+      "description": "You now are able to improve your sun spells and thereby increase their effectiveness. [1.1x magnitude, 0.9x cost for sun spells]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "restoration-scorching-light",
@@ -260,41 +273,133 @@
       "skillReq": 75,
       "position": {
         "x": 7,
-        "y": 8
+        "y": 10
       },
       "prerequisites": [
         "restoration-heliomancy"
       ],
-      "description": "Your sun spells are infused with radiant energy, dealing more damage to undead and even damage the living. (25% stagger chance when dual-casted, extra damage over time to undead, sun spells that only work on undead now deal half damage to living)",
-      "effects": []
+      "description": "Your sun spells are infused with radiant energy, dealing more damage to undead and even damage the living. [25% stagger chance when dual-casted, extra damage over time to undead, sun spells that only work on undead now deal half damage to living]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "restoration-venomancy",
-      "name": "Venomancy",
+      "id": "restoration-improved-turning",
+      "name": "Improved Turning",
       "skillReq": 25,
       "position": {
-        "x": 10,
-        "y": 12
+        "x": 9,
+        "y": 24
       },
       "prerequisites": [
         "restoration-novice-restoration"
       ],
-      "description": "You now are able to improve your poison spells and thereby increase their effectiveness. (1.1x magnitude, 0.9x cost for poison spells)",
-      "effects": []
+      "description": "Turn, Purify, and Abjuration spells are stonger and more efficient. [1.1x magnitude, 1.1x duration, 0.9x cost for turn spells]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "restoration-paralyzing-poison",
-      "name": "Paralyzing Poison",
-      "skillReq": 75,
+      "id": "restoration-improved-protection",
+      "name": "Improved Protection",
+      "skillReq": 25,
       "position": {
-        "x": 9,
-        "y": 6
+        "x": 23,
+        "y": 23
       },
       "prerequisites": [
-        "restoration-venomancy"
+        "restoration-novice-restoration"
       ],
-      "description": "Your poison spells are much more potent, rendering targets more susceptible to poison and paralyzing those with low resistance to poison or magic. (paralysis effect for poison spells, poison spells temporarily reduce target's poison resistance by 10% if not immune)",
-      "effects": []
+      "description": "Ward, Fortify, and Resist spells are stonger and more efficient. [1.1x magnitude, 1.1x duration, 0.9x cost for protection spells]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-ward-mastery",
+      "name": "Ward Mastery",
+      "skillReq": 50,
+      "position": {
+        "x": 30,
+        "y": 25
+      },
+      "prerequisites": [
+        "restoration-novice-restoration"
+      ],
+      "description": "You are more proficient with ward spells, using them more efficiently to block magic. [Ward spells cost 50% less magicka, +10% magic resistance when holding Ward spell in hand]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-masterly-wards",
+      "name": "Masterly Wards",
+      "skillReq": 100,
+      "position": {
+        "x": 31,
+        "y": 8
+      },
+      "prerequisites": [
+        "restoration-improved-wards"
+      ],
+      "description": "Your mastery of wards has allowed you to gain anti-elemental prowess. [Gain 5% resistance to fire, frost and shock. Wards are 10% cheaper to cast.]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-venomaster",
+      "name": "Venomaster",
+      "skillReq": 100,
+      "position": {
+        "x": 10,
+        "y": 2
+      },
+      "prerequisites": [
+        "restoration-paralyzing-poison"
+      ],
+      "description": "You have used poison magic for so long that it courses through you. [Poison spells are 10% stronger and you gain 25% poison resistance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellDamage",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-heliomaster",
+      "name": "Heliomaster",
+      "skillReq": 100,
+      "position": {
+        "x": 6,
+        "y": 3
+      },
+      "prerequisites": [
+        "restoration-scorching-light"
+      ],
+      "description": "You have purged undead for so long that you are more attuned to holy magic and immune to disease. [Gain 10% stronger sun spells and 100% disease resistance]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "restoration-greater-vitality",
+      "name": "Greater Vitality",
+      "skillReq": 100,
+      "position": {
+        "x": 0,
+        "y": 15
+      },
+      "prerequisites": [
+        "restoration-respite"
+      ],
+      "description": "In a pinch, you can restore your vitals with ease. [Healing spells are 30% stronger and longer lasting below 30% health]",
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

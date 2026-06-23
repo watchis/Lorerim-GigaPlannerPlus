@@ -1,14 +1,16 @@
 {
   "leveling": {
     "baseLevel": 1,
-    "maxPlayerLevel": 100,
+    "maxPlayerLevel": 101,
     "maxSkillLevel": 100,
     "skillPointsPerLevel": 20,
     "perkPointsPerLevel": 1,
     "initialPerkPoints": 3,
     "maxSkillAbovePlayerLevel": 50,
+    "maxTrainingSkillLevel": 90,
+    "skillLevelIncreasesPerPlayerLevel": 5,
     "skillPointBaseline": "raceStarting",
-    "playerLevelSkillBaseline": "raceStarting",
+    "playerLevelSkillBaseline": "skillFloor",
     "skillPointFreeThroughFloor": true,
     "skillFloorSources": [
       { "type": "raceStarting" },

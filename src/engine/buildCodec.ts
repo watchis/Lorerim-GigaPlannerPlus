@@ -1,7 +1,8 @@
 import { gzipSync, gunzipSync } from "fflate";
 import type { GameData } from "@/data/schemas";
-import type { BuildState } from "@/engine/buildEngine";
+import { migrateBuildState, type BuildState } from "@/engine/buildEngine";
 import { getSkillFloor, reconcileBuild } from "@/engine/buildEngine";
+import { migrateLegacySkillTrainingCounts } from "@/lib/skillTraining";
 import {
   createBuildCodecRegistry,
   lookupId,
@@ -40,6 +41,7 @@ interface CompactBuildV2 {
   a?: [number, number, number];
   p?: number[];
   l?: [number, number][];
+  tr?: number[][];
   d?: string;
 }
 
@@ -77,8 +79,8 @@ function encodeBuildV1(state: BuildState, modpackVersion: string): string {
     v: BUILD_CODEC_V1,
     mv: modpackVersion,
     race: state.raceId,
-    stone: state.standingStoneId,
-    blessing: state.blessingId,
+    stone: state.birthsignId,
+    blessing: state.deityId,
     traits: state.traitIds,
     major: state.majorSkillIds,
     minor: state.minorSkillIds,
@@ -113,14 +115,14 @@ function encodeBuildV2(state: BuildState, registry: BuildCodecRegistry): string 
     payload.r = raceIndex;
   }
 
-  const stoneIndex = lookupIndex(registry.standingStoneIndex, state.standingStoneId, "standing stone");
+  const stoneIndex = lookupIndex(registry.birthsignIndex, state.birthsignId, "birthsign");
   if (stoneIndex !== undefined) {
     payload.s = stoneIndex;
   }
 
-  const blessingIndex = lookupIndex(registry.blessingIndex, state.blessingId, "blessing");
-  if (blessingIndex !== undefined) {
-    payload.b = blessingIndex;
+  const deityIndex = lookupIndex(registry.deityIndex, state.deityId, "deity");
+  if (deityIndex !== undefined) {
+    payload.b = deityIndex;
   }
 
   if (state.traitIds.length > 0) {
@@ -160,6 +162,24 @@ function encodeBuildV2(state: BuildState, registry: BuildCodecRegistry): string 
     payload.l = skillLevelEntries;
   }
 
+  const trainingEntries: number[][] = [];
+  for (const skillId of registry.skills) {
+    const ranges = state.skillTrainingRanges?.[skillId];
+    if (!ranges) continue;
+
+    const skillIndex = lookupIndex(registry.skillIndex, skillId, "skill");
+    if (skillIndex === undefined) continue;
+
+    ranges.forEach((count, tierIndex) => {
+      if (count > 0) {
+        trainingEntries.push([skillIndex, tierIndex, count]);
+      }
+    });
+  }
+  if (trainingEntries.length > 0) {
+    payload.tr = trainingEntries;
+  }
+
   if (state.description.trim()) {
     payload.d = state.description;
   }
@@ -177,10 +197,10 @@ function decodeBuildV1(code: string): BuildState {
     throw new Error(`Unsupported build codec version: ${payload.v}`);
   }
 
-  return payloadToBuildState({
+  return migrateBuildState(payloadToBuildState({
     raceId: payload.race === null ? "none" : (payload.race ?? "none"),
-    standingStoneId: payload.stone,
-    blessingId: payload.blessing,
+    birthsignId: payload.stone,
+    deityId: payload.blessing,
     traitIds: payload.traits ?? [],
     majorSkillIds: payload.major ?? [],
     minorSkillIds: payload.minor ?? [],
@@ -191,9 +211,10 @@ function decodeBuildV1(code: string): BuildState {
     },
     selectedPerkIds: payload.perks ?? [],
     skillLevels: {},
+    skillTrainingRanges: {},
     playerLevel: 1,
     description: payload.desc ?? "",
-  });
+  }));
 }
 
 function decodeBuildV2(code: string, registry: BuildCodecRegistry): BuildState {
@@ -217,11 +238,41 @@ function decodeBuildV2(code: string, registry: BuildCodecRegistry): BuildState {
       .map(([index, level]) => [lookupId(registry.skills, index, "skill")!, level] as const)
       .filter(([skillId]) => skillId !== null),
   );
+  const skillTrainingRanges: Record<string, number[]> = {};
+  const legacyTrainingCounts: Record<string, number> = {};
 
-  return payloadToBuildState({
+  for (const entry of payload.tr ?? []) {
+    if (entry.length >= 3) {
+      const [skillIndex, tierIndex, count] = entry;
+      const skillId = lookupId(registry.skills, skillIndex, "skill");
+      if (!skillId || count <= 0) continue;
+
+      const ranges = skillTrainingRanges[skillId] ?? [];
+      ranges[tierIndex] = count;
+      skillTrainingRanges[skillId] = ranges;
+      continue;
+    }
+
+    if (entry.length === 2) {
+      const [skillIndex, count] = entry;
+      const skillId = lookupId(registry.skills, skillIndex, "skill");
+      if (skillId && count > 0) {
+        legacyTrainingCounts[skillId] = count;
+      }
+    }
+  }
+
+  if (Object.keys(legacyTrainingCounts).length > 0) {
+    Object.assign(
+      skillTrainingRanges,
+      migrateLegacySkillTrainingCounts(registry.game, legacyTrainingCounts),
+    );
+  }
+
+  return migrateBuildState(payloadToBuildState({
     raceId: lookupId(registry.races, payload.r, "race") ?? "none",
-    standingStoneId: lookupId(registry.standingStones, payload.s, "standing stone"),
-    blessingId: lookupId(registry.blessings, payload.b, "blessing"),
+    birthsignId: lookupId(registry.birthsigns, payload.s, "birthsign"),
+    deityId: lookupId(registry.deities, payload.b, "deity"),
     traitIds: (payload.t ?? []).map((index) => lookupId(registry.traits, index, "trait")!),
     majorSkillIds: (payload.M ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
     minorSkillIds: (payload.m ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
@@ -232,34 +283,38 @@ function decodeBuildV2(code: string, registry: BuildCodecRegistry): BuildState {
     },
     selectedPerkIds: (payload.p ?? []).map((index) => lookupId(registry.perks, index, "perk")!),
     skillLevels,
+    skillTrainingRanges,
     playerLevel: payload.lv ?? registry.game.mechanics.leveling.baseLevel,
     description: payload.d ?? "",
-  }, registry.game);
+  }, registry.game));
 }
 
 function payloadToBuildState(partial: {
   raceId: string;
-  standingStoneId: string | null;
-  blessingId: string | null;
+  birthsignId: string | null;
+  deityId: string | null;
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
   attributeBonus: BuildState["attributeBonus"];
   selectedPerkIds: string[];
   skillLevels: BuildState["skillLevels"];
+  skillTrainingRanges?: BuildState["skillTrainingRanges"];
   playerLevel?: number;
   description: string;
 }, game?: GameData): BuildState {
   const build: BuildState = {
     raceId: partial.raceId,
-    standingStoneId: partial.standingStoneId,
-    blessingId: partial.blessingId,
+    birthsignId: partial.birthsignId,
+    deityId: partial.deityId,
     traitIds: partial.traitIds,
     majorSkillIds: partial.majorSkillIds,
     minorSkillIds: partial.minorSkillIds,
     attributeBonus: partial.attributeBonus,
+    characterOptionChoices: {},
     selectedPerkIds: partial.selectedPerkIds,
     skillLevels: partial.skillLevels,
+    skillTrainingRanges: partial.skillTrainingRanges ?? {},
     playerLevel: partial.playerLevel ?? game?.mechanics.leveling.baseLevel ?? 1,
     description: partial.description,
   };

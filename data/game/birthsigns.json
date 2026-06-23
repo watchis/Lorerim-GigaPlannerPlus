@@ -1,0 +1,378 @@
+{
+  "birthsigns": [
+    {
+      "id": "none",
+      "name": "None",
+      "group": "",
+      "description": "",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
+    },
+    {
+      "id": "apprentice",
+      "name": "Apprentice",
+      "group": "The Apprentice's Season is Sun's Height.",
+      "description": "Those born under the sign of the Apprentice are thought to have an affinity for magic, but also a vulnerability to magic.",
+      "bonus": "Magic weakness increased by 25%, magicka regenerates an extra 5 per second, spells are 20% cheaper.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicResist",
+          "value": -25,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -20,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "Magicka regenerates an extra 5 per second."
+      ]
+    },
+    {
+      "id": "atronach",
+      "name": "Atronach",
+      "group": "The Atronach is one of the Mage's Charges. Its season is Sun's Dusk.",
+      "description": "Those born under the sign of the Atronach are thought to be natural sorcerers with deep reserves of magicka, but that cannot generate their own magicka.",
+      "bonus": "Magicka increases by 300, do not lose magicka when hit, absorb chance increased by 25%, you cannot naturally regenerate magicka.",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "magicka",
+          "value": 300
+        },
+        {
+          "type": "derivedStat",
+          "stat": "magicAbsorb",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "Do not lose magicka when hit.",
+        "You cannot naturally regenerate magicka."
+      ]
+    },
+    {
+      "id": "lady",
+      "name": "Lady",
+      "group": "The Lady is one of the Warrior's Charges and her Season is Heartfire.",
+      "description": "Those born under the sign of the Lady are thought to be kind and tolerant.",
+      "bonus": "Health and Magicka increase by 40 and regenerate 80% faster, you can run or swim without exertion.",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "health",
+          "value": 40
+        },
+        {
+          "type": "attribute",
+          "stat": "magicka",
+          "value": 40
+        },
+        {
+          "type": "derivedStat",
+          "stat": "healthRegen",
+          "value": 80,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "magickaRegen",
+          "value": 80,
+          "isPercent": true
+        },
+        {
+          "type": "flag",
+          "stat": "noSprintCost"
+        }
+      ],
+      "bonusDetails": []
+    },
+    {
+      "id": "lord",
+      "name": "Lord",
+      "group": "The Lord's Season is First Seed and he oversees all of Tamriel during the planting.",
+      "description": "Those born under the sign of the Lord are thought to be stronger and healthier, although they are sometimes referred to as Trollkin due to their innate weakness to fire.",
+      "bonus": "Gain 15% Magic Resist and 150 armor rating, restore 1.5 health per second, gain 30% Weakness to Fire.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicResist",
+          "value": 15,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 150,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "healthRegenRate",
+          "value": 1.5,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "fireResist",
+          "value": -30,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": []
+    },
+    {
+      "id": "lover",
+      "name": "Lover",
+      "group": "The Lover is one of the Thief's Charges and her season is Sun's Dawn.",
+      "description": "Those born under the sign of the Lover are thought to be graceful and passionate.",
+      "bonus": "25% chance to take half damage, prices are 15% better. Shouts are 20% stronger.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "dodgeChance",
+          "value": 25,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "priceModifier",
+          "value": 15,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "shoutPower",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": []
+    },
+    {
+      "id": "mage",
+      "name": "Mage",
+      "group": "The Mage is a Guardian Constellation whose Season is Rain's Hand when magicka was first used by men.",
+      "description": "Those born under the sign of the Mage are thought to have more magicka and a talent for spellcasting.",
+      "bonus": "Magicka increases by 150. Spells are 30% stronger and longer lasting when over 50% magicka.",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "magicka",
+          "value": 150
+        }
+      ],
+      "bonusDetails": [
+        "Spells are 30% stronger and longer lasting when over 50% magicka."
+      ]
+    },
+    {
+      "id": "ritual",
+      "name": "Ritual",
+      "group": "The Ritual is one of the Mage's Charges and its Season is Morning Star.",
+      "description": "Those born under the sign of the Ritual are thought to have various abilities depending on the aspects of the moons and planets.",
+      "bonus": "Soul Gems restore 50% more charge. Daedric and Divine blessings are 50% stronger. Standing Stones effects are 200% stronger.",
+      "effects": [],
+      "bonusDetails": [
+        "Soul Gems restore 50% more charge.",
+        "Daedric and Divine blessings are 50% stronger.",
+        "Standing Stones effects are 200% stronger."
+      ]
+    },
+    {
+      "id": "serpent",
+      "name": "Serpent",
+      "group": "The Serpent wanders about in the sky and has no Season, though its motions are predictable to a degree.",
+      "description": "Those born under the sign of the Serpent are thought to have no characteristics in common except being the most blessed and the most cursed.",
+      "bonus": "Armor penetration with all weapons is increased by 15, poison deals 50% less damage to you, most paralysis effects don't adversely affect you, you receive Serpent's Curse power.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 15,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 15,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "poisonResist",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "You receive Serpent's Curse power."
+      ]
+    },
+    {
+      "id": "shadow",
+      "name": "Shadow",
+      "group": "The Shadow's Season is Second Seed.",
+      "description": "Those born under the sign of the Shadow are thought to have the ability to hide in shadows.",
+      "bonus": "You are 50% harder to detect, you can sneak without proficiency, movement noise is 30% quieter, you receive Moonshadow power.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "detectDifficulty",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "You can sneak without proficiency.",
+        "Movement noise is 30% quieter.",
+        "You receive Moonshadow power."
+      ]
+    },
+    {
+      "id": "steed",
+      "name": "Steed",
+      "group": "The Steed is one of the Warrior's Charges, and her Season is Mid Year.",
+      "description": "Those born under the sign of the Steed are thought to be impatient and always hurrying from one place to another.",
+      "bonus": "Movement is 10 percent faster and 20 percent when sprinting, stamina increased by 60, restore 1 stamina per second, most slow effects don't affect you.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "moveSpeed",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "attribute",
+          "stat": "stamina",
+          "value": 60
+        }
+      ],
+      "bonusDetails": [
+        "Movement is 10 percent faster and 20 percent when sprinting.",
+        "Restore 1 stamina per second.",
+        "Most slow effects don't affect you."
+      ]
+    },
+    {
+      "id": "thief",
+      "name": "Thief",
+      "group": "The Thief is the last Guardian Constellation, and her Season is the darkest month of Evening Star.",
+      "description": "Those born under the sign of the Thief are thought to take risks and evade harm. Their luck is thought to run out eventually, cutting their lives short.",
+      "bonus": "Pickpocketing is 50% easier, you are 40% harder to detect, move 20% faster when sneaking and can sneak without proficiency, 20% chance to avoid physical damage, 1% chance to take 50% more.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "detectDifficulty",
+          "value": 40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "sneakSpeed",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "dodgeChance",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": [
+        "Pickpocketing is 50% easier.",
+        "Move 20% faster when sneaking and can sneak without proficiency.",
+        "1% chance to take 50% more."
+      ]
+    },
+    {
+      "id": "tower",
+      "name": "Tower",
+      "group": "The Tower is one of the Thief's Charges and its Season is Frostfall.",
+      "description": "Those born under the sign of the Tower are thought to have a knack for finding gold and opening locks.",
+      "bonus": "Gain more gold when killing enemies, 50 more carryweight, lockpicking expertise is increased by 4, you can pick effortless locks in plain sight without being noticed, reflect 15% physical damage.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 50,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "lockpicking",
+          "value": 4,
+          "isPercent": false
+        }
+      ],
+      "bonusDetails": [
+        "Gain more gold when killing enemies.",
+        "Reflect 15% physical damage."
+      ]
+    },
+    {
+      "id": "warrior",
+      "name": "Warrior",
+      "group": "The Warrior is the first Guardian Constellation and he protects his charges during their Seasons. The Warrior's own season is Last Seed when his Strength is needed for the harvest.",
+      "description": "Those born under the sign of the Warrior are thought to be short-tempered and skilled with weapons.",
+      "bonus": "Health increases by 60, all weapons deal 10% more damage, armor penetration with all weapons is increased by 10 unarmed strikes do 10 additional damage.",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "health",
+          "value": 60
+        },
+        {
+          "type": "derivedStat",
+          "stat": "oneHandDamage",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "twoHandDamage",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "bowDamage",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "crossbowDamage",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 10,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 10,
+          "isPercent": false
+        },
+        {
+          "type": "derivedStat",
+          "stat": "unarmedDamage",
+          "value": 10,
+          "isPercent": false
+        }
+      ],
+      "bonusDetails": []
+    }
+  ]
+}

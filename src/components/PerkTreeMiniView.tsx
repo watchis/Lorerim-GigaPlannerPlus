@@ -1,47 +1,140 @@
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import type { PerkTree } from "@/data/schemas";
 import { cn } from "@/lib/utils";
-import { computePerkTreeEdges, getPerkGridCenter, getPerkTreeCompactViewBox, getVisiblePerksForTree } from "@/lib/perkTreeGrid";
+import {
+  computePerkTreeEdges,
+  getPerkGridCenter,
+  getPerkPositionKey,
+  getPerkTreeCompactViewBox,
+  getPerkTreeGridBounds,
+  getVisiblePerksForTree,
+} from "@/lib/perkTreeGrid";
 import { useBuildStore } from "@/store/buildStore";
 
 interface PerkTreeMiniViewProps {
   tree: PerkTree;
   className?: string;
   compact?: boolean;
+  conflictPerkIds?: string[];
 }
 
 const COMPACT_NODE_RADIUS = 0.5;
-const COMPACT_NODE_RADIUS_UNSELECTED = 0.29;
-const COMPACT_HALO_EXTRA = 0.13;
-const COMPACT_NODE_STROKE = 0.15;
-const COMPACT_EDGE_STROKE = 0.1;
-const COMPACT_EDGE_STROKE_ACTIVE = 0.19;
+const COMPACT_NODE_RADIUS_UNSELECTED = 0.40;
+const COMPACT_NODE_STROKE_HIGHLIGHT = 0.22;
+const COMPACT_EDGE_STROKE = 0.2;
+const COMPACT_EDGE_STROKE_ACTIVE = 0.25;
+const COMPACT_SELECTED_FILL = "color-mix(in srgb, var(--color-perk-selected) 90%, #fff0c8)";
+const COMPACT_CONFLICT_FILL = "color-mix(in srgb, var(--color-error) 88%, #ffd4dc)";
+const COMPACT_UNSELECTED_FILL = "var(--color-perk-available)";
 
-const COMPACT_UNSELECTED_FILL_OPACITY = 0.44;
-const COMPACT_UNSELECTED_STROKE_OPACITY = 0.56;
-const COMPACT_INACTIVE_EDGE_OPACITY = 0.4;
+const COMPACT_NODE_HALO_PAD = 0.1;
+const COMPACT_HIGHLIGHT_HALO_OPACITY = 0.62;
+const COMPACT_INACTIVE_EDGE_OPACITY = 0.72;
 const COMPACT_ACTIVE_EDGE_OPACITY = 1;
-const COMPACT_HALO_OPACITY = 0.68;
 const COMPACT_VIEWBOX_PADDING = 1;
 const COMPACT_VIEWBOX_ASPECT_PAD = 1.32;
 
 function compactNodeExtent(): number {
   return (
     COMPACT_NODE_RADIUS +
-    COMPACT_HALO_EXTRA +
-    COMPACT_NODE_STROKE / 2 +
+    COMPACT_NODE_HALO_PAD +
+    COMPACT_NODE_STROKE_HIGHLIGHT / 2 +
     COMPACT_EDGE_STROKE / 2 +
-    0.2
+    0.35
   );
 }
 
-export function PerkTreeMiniView({ tree, className, compact = false }: PerkTreeMiniViewProps) {
+function getNodeEdgeTrimRadius(
+  perkId: string,
+  selectedPerkIds: string[],
+  compact: boolean,
+  isConflict: boolean,
+): number {
+  const isSelected = selectedPerkIds.includes(perkId);
+
+  if (compact) {
+    if (isConflict) {
+      return COMPACT_NODE_RADIUS + COMPACT_NODE_HALO_PAD + COMPACT_NODE_STROKE_HIGHLIGHT / 2;
+    }
+    if (isSelected) {
+      return COMPACT_NODE_RADIUS + COMPACT_NODE_HALO_PAD + COMPACT_NODE_STROKE_HIGHLIGHT / 2;
+    }
+    return COMPACT_NODE_RADIUS_UNSELECTED;
+  }
+
+  if (isConflict) {
+    return (isSelected ? 0.45 : 0.35) + 0.2;
+  }
+  return (isSelected ? 0.45 : 0.35) + 0.1 / 2;
+}
+
+function CompactConflictNode({
+  cx,
+  cy,
+  radius,
+  glowFilterId,
+}: {
+  cx: number;
+  cy: number;
+  radius: number;
+  glowFilterId: string;
+}) {
+  return (
+    <g className="animate-pulse" filter={`url(#${glowFilterId})`}>
+      <circle
+        cx={cx}
+        cy={cy}
+        r={radius + COMPACT_NODE_HALO_PAD}
+        fill="var(--color-error)"
+        fillOpacity={COMPACT_HIGHLIGHT_HALO_OPACITY}
+      />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={radius}
+        fill={COMPACT_CONFLICT_FILL}
+        stroke="var(--color-error)"
+        strokeWidth={COMPACT_NODE_STROKE_HIGHLIGHT}
+        strokeOpacity={1}
+      />
+    </g>
+  );
+}
+
+export function PerkTreeMiniView({
+  tree,
+  className,
+  compact = false,
+  conflictPerkIds = [],
+}: PerkTreeMiniViewProps) {
+  const glowFilterId = useId().replace(/:/g, "");
   const selectedPerkIds = useBuildStore((s) => s.build.selectedPerkIds);
-  const { width, height } = tree.grid;
+  const gridBounds = useMemo(() => getPerkTreeGridBounds(tree), [tree]);
+  const { width, height, origin } = gridBounds;
+
+  const conflictPositionKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const perkId of conflictPerkIds) {
+      const perk = tree.perks.find((candidate) => candidate.id === perkId);
+      if (perk) {
+        keys.add(getPerkPositionKey(perk.position));
+      }
+    }
+    return keys;
+  }, [conflictPerkIds, tree.perks]);
 
   const edges = useMemo(
-    () => computePerkTreeEdges(tree, selectedPerkIds),
-    [tree, selectedPerkIds],
+    () =>
+      computePerkTreeEdges(tree, selectedPerkIds, {
+        nodeRadiusByPerkId: (perkId) => {
+          const perk = tree.perks.find((candidate) => candidate.id === perkId);
+          const isConflict = perk
+            ? conflictPositionKeys.has(getPerkPositionKey(perk.position))
+            : false;
+          return getNodeEdgeTrimRadius(perkId, selectedPerkIds, compact, isConflict);
+        },
+      }),
+    [tree, selectedPerkIds, compact, conflictPositionKeys],
   );
 
   const visiblePerks = useMemo(
@@ -51,7 +144,7 @@ export function PerkTreeMiniView({ tree, className, compact = false }: PerkTreeM
 
   const viewBox = useMemo(() => {
     if (!compact) {
-      return `0 0 ${width} ${height}`;
+      return `${origin.x} ${origin.y} ${width} ${height}`;
     }
     return getPerkTreeCompactViewBox(
       tree,
@@ -59,7 +152,7 @@ export function PerkTreeMiniView({ tree, className, compact = false }: PerkTreeM
       COMPACT_VIEWBOX_PADDING,
       COMPACT_VIEWBOX_ASPECT_PAD,
     );
-  }, [compact, tree, width, height]);
+  }, [compact, tree, origin.x, origin.y, width, height]);
 
   const nodeRadius = compact ? COMPACT_NODE_RADIUS : 0.45;
   const nodeRadiusUnselected = compact ? COMPACT_NODE_RADIUS_UNSELECTED : 0.35;
@@ -81,8 +174,17 @@ export function PerkTreeMiniView({ tree, className, compact = false }: PerkTreeM
         preserveAspectRatio="xMidYMid meet"
         style={{ overflow: "hidden" }}
       >
+        <defs>
+          <filter id={glowFilterId} x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="0.22" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
         {compact ? (
-          <>
+          <g>
             {edges
               .filter((edge) => !edge.active)
               .map((edge, i) => (
@@ -92,30 +194,12 @@ export function PerkTreeMiniView({ tree, className, compact = false }: PerkTreeM
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke="var(--color-foreground)"
+                  stroke="var(--color-perk-available)"
                   strokeWidth={COMPACT_EDGE_STROKE}
                   strokeOpacity={COMPACT_INACTIVE_EDGE_OPACITY}
                   strokeLinecap="round"
                 />
               ))}
-            {visiblePerks
-              .filter((perk) => !selectedPerkIds.includes(perk.id))
-              .map((perk) => {
-                const center = getPerkGridCenter(perk.position);
-                return (
-                  <circle
-                    key={perk.id}
-                    cx={center.x}
-                    cy={center.y}
-                    r={nodeRadiusUnselected}
-                    fill="var(--color-muted)"
-                    fillOpacity={COMPACT_UNSELECTED_FILL_OPACITY}
-                    stroke="var(--color-muted)"
-                    strokeWidth={0.1}
-                    strokeOpacity={COMPACT_UNSELECTED_STROKE_OPACITY}
-                  />
-                );
-              })}
             {edges
               .filter((edge) => edge.active)
               .map((edge, i) => (
@@ -131,40 +215,59 @@ export function PerkTreeMiniView({ tree, className, compact = false }: PerkTreeM
                   strokeLinecap="round"
                 />
               ))}
+          </g>
+        ) : null}
+        {compact ? (
+          <>
+            {visiblePerks
+              .filter((perk) => !selectedPerkIds.includes(perk.id))
+              .map((perk) => {
+                const center = getPerkGridCenter(perk.position);
+                return (
+                  <circle
+                    key={perk.id}
+                    cx={center.x}
+                    cy={center.y}
+                    r={nodeRadiusUnselected}
+                    fill={COMPACT_UNSELECTED_FILL}
+                  />
+                );
+              })}
             {visiblePerks
               .filter((perk) => selectedPerkIds.includes(perk.id))
               .map((perk) => {
                 const center = getPerkGridCenter(perk.position);
-                return (
-                  <g key={perk.id}>
-                    <circle
+                const isConflict = conflictPositionKeys.has(getPerkPositionKey(perk.position));
+
+                if (isConflict) {
+                  return (
+                    <CompactConflictNode
+                      key={perk.id}
                       cx={center.x}
                       cy={center.y}
-                      r={nodeRadius + COMPACT_HALO_EXTRA + 0.07}
-                      fill="var(--color-accent)"
-                      fillOpacity={COMPACT_HALO_OPACITY * 0.4}
+                      radius={nodeRadius}
+                      glowFilterId={glowFilterId}
                     />
+                  );
+                }
+
+                return (
+                  <g key={perk.id} filter={`url(#${glowFilterId})`}>
                     <circle
                       cx={center.x}
                       cy={center.y}
-                      r={nodeRadius + COMPACT_HALO_EXTRA}
+                      r={nodeRadius + COMPACT_NODE_HALO_PAD}
                       fill="var(--color-accent)"
-                      fillOpacity={COMPACT_HALO_OPACITY}
+                      fillOpacity={COMPACT_HIGHLIGHT_HALO_OPACITY}
                     />
                     <circle
                       cx={center.x}
                       cy={center.y}
                       r={nodeRadius}
-                      fill="var(--color-perk-selected)"
-                      stroke="var(--color-foreground)"
-                      strokeWidth={COMPACT_NODE_STROKE}
-                    />
-                    <circle
-                      cx={center.x}
-                      cy={center.y}
-                      r={nodeRadius * 0.24}
-                      fill="var(--color-foreground)"
-                      fillOpacity={0.9}
+                      fill={COMPACT_SELECTED_FILL}
+                      stroke="var(--color-accent)"
+                      strokeWidth={COMPACT_NODE_STROKE_HIGHLIGHT}
+                      strokeOpacity={1}
                     />
                   </g>
                 );
@@ -182,23 +285,56 @@ export function PerkTreeMiniView({ tree, className, compact = false }: PerkTreeM
                 stroke={edge.active ? "var(--color-accent)" : "var(--color-border)"}
                 strokeWidth={edge.active ? 0.15 : 0.1}
                 strokeOpacity={edge.active ? 0.85 : 0.35}
+                strokeLinecap="round"
               />
             ))}
             {visiblePerks.map((perk) => {
               const isSelected = selectedPerkIds.includes(perk.id);
+              const isConflict = conflictPositionKeys.has(getPerkPositionKey(perk.position));
               const center = getPerkGridCenter(perk.position);
 
               return (
-                <circle
-                  key={perk.id}
-                  cx={center.x}
-                  cy={center.y}
-                  r={isSelected ? nodeRadius : nodeRadiusUnselected}
-                  fill={isSelected ? "var(--color-perk-selected)" : "var(--color-surface-elevated)"}
-                  stroke={isSelected ? "var(--color-foreground)" : "var(--color-border)"}
-                  strokeWidth={0.1}
-                  strokeOpacity={1}
-                />
+                <g key={perk.id} className={isConflict ? "animate-pulse" : undefined}>
+                  {isConflict && (
+                    <>
+                      <circle
+                        cx={center.x}
+                        cy={center.y}
+                        r={(isSelected ? nodeRadius : nodeRadiusUnselected) + 0.2}
+                        fill="var(--color-error)"
+                        fillOpacity={0.3}
+                      />
+                      <circle
+                        cx={center.x}
+                        cy={center.y}
+                        r={(isSelected ? nodeRadius : nodeRadiusUnselected) + 0.1}
+                        fill="var(--color-error)"
+                        fillOpacity={0.5}
+                      />
+                    </>
+                  )}
+                  <circle
+                    cx={center.x}
+                    cy={center.y}
+                    r={isSelected ? nodeRadius : nodeRadiusUnselected}
+                    fill={
+                      isConflict
+                        ? "var(--color-error)"
+                        : isSelected
+                          ? "var(--color-perk-selected)"
+                          : "var(--color-surface-elevated)"
+                    }
+                    stroke={
+                      isConflict
+                        ? "var(--color-error-muted)"
+                        : isSelected
+                          ? "var(--color-foreground)"
+                          : "var(--color-border)"
+                    }
+                    strokeWidth={isConflict ? 0.14 : 0.1}
+                    strokeOpacity={1}
+                  />
+                </g>
               );
             })}
           </>

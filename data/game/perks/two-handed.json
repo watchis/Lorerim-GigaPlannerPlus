@@ -2,8 +2,8 @@
   "skillId": "two-handed",
   "skillName": "Two-Handed",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 19,
+    "height": 34
   },
   "perks": [
     {
@@ -11,391 +11,599 @@
       "name": "Great Weapon Mastery",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 22
+        "x": 9,
+        "y": 33
       },
       "prerequisites": [],
-      "description": "Your improved fighting techniques increase your damage dealt with two-handed weapons. (20% more damage)",
-      "effects": []
+      "description": "Your improved fighting techniques increase your damage dealt with two-handed weapons. [20% more damage]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
-      "id": "two-handed-great-weapon-mastery-2",
+      "id": "two-handed-great-weapon-mastery-r2",
       "name": "Great Weapon Mastery",
       "skillReq": 20,
       "position": {
-        "x": 12,
-        "y": 22
+        "x": 9,
+        "y": 33
       },
-      "prerequisites": [
-        "two-handed-great-weapon-mastery"
+      "prerequisites": [],
+      "description": "Your improved fighting techniques increase your damage dealt with two-handed weapons even more. [40% more damage]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 40,
+          "isPercent": true
+        }
       ],
-      "description": "Your improved fighting techniques increase your damage dealt with two-handed weapons even more. (40% more damage)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-barbaric-might",
       "name": "Barbaric Might",
       "skillReq": 20,
       "position": {
-        "x": 12,
-        "y": 18
+        "x": 9,
+        "y": 26
       },
       "prerequisites": [
         "two-handed-great-weapon-mastery"
       ],
-      "description": "Your power attacks become mighty blows that will penetrate armor and are less tiring. (-30% power attack stamina cost, +30% armor penetration)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-quarterstaff-focus",
-      "name": "Quarterstaff Focus",
-      "skillReq": 25,
-      "position": {
-        "x": 5,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-barbaric-might"
+      "description": "Your power attacks become mighty blows that will penetrate armor and are less tiring. [-30% power attack stamina cost, +30% armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "sprintCostReduction",
+          "value": 30,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 30,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 30,
+          "isPercent": true
+        }
       ],
-      "description": "You've learned the basics of quarterstaff combat. (Deal 10 stamina damage on-hit, +5% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-quarterstaff-focus-2",
-      "name": "Quarterstaff Focus",
-      "skillReq": 50,
-      "position": {
-        "x": 5,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-quarterstaff-focus"
-      ],
-      "description": "You've acquired the advanced techniques of quarterstaff combat. (Deal 15 stamina damage on-hit, +10% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-quarterstaff-focus-3",
-      "name": "Quarterstaff Focus",
-      "skillReq": 75,
-      "position": {
-        "x": 5,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-quarterstaff-focus-2"
-      ],
-      "description": "You've become a master of quarterstaff combat. (Deal 20 stamina damage on-hit, +15% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-defensive-strike",
-      "name": "Defensive Strike",
-      "skillReq": 50,
-      "position": {
-        "x": 5,
-        "y": 13
-      },
-      "prerequisites": [
-        "two-handed-quarterstaff-focus"
-      ],
-      "description": "You can more efficiently block and parry incoming attacks with quarterstaves. (quarterstaves block 50% better, and bashes do twice the damage)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-hafted-blade-focus",
-      "name": "Hafted Blade Focus",
-      "skillReq": 25,
-      "position": {
-        "x": 8,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-barbaric-might"
-      ],
-      "description": "You've become familiar with battle axes and halberds. (Attacks deal 40 extra damage over 20 seconds, +10% armor penetration)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-hafted-blade-focus-2",
-      "name": "Hafted Blade Focus",
-      "skillReq": 50,
-      "position": {
-        "x": 8,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-hafted-blade-focus"
-      ],
-      "description": "become an advanced battle axe and halberd fighter. (Attacks deal 60 extra damage over 20 seconds, +20% armor penetration)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-hafted-blade-focus-3",
-      "name": "Hafted Blade Focus",
-      "skillReq": 75,
-      "position": {
-        "x": 8,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-hafted-blade-focus-2"
-      ],
-      "description": "You've become a master of battle axe and halberd combat. (Attacks deal 80 extra damage over 20 seconds, +30% armor penetration)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-shield-breaker",
-      "name": "Shield Breaker",
-      "skillReq": 50,
-      "position": {
-        "x": 8,
-        "y": 13
-      },
-      "prerequisites": [
-        "two-handed-hafted-blade-focus"
-      ],
-      "description": "Your mighty swings can cleave through target's defense, hindering them from blocking next attacks. (power attacks reduce target's blockable damage by 90% and stamina regeneration by 25% for 10 seconds)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-longblade-focus",
-      "name": "Longblade Focus",
-      "skillReq": 25,
-      "position": {
-        "x": 17,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-barbaric-might"
-      ],
-      "description": "You've acquired the advanced techniques of using greatswords and pikes. (Attacks reduce target's melee damage by 10% for 10 seconds, +10% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-longblade-focus-2",
-      "name": "Longblade Focus",
-      "skillReq": 50,
-      "position": {
-        "x": 17,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-longblade-focus"
-      ],
-      "description": "You've acquired the advanced techniques of using greatswords and pikes. (Attacks reduce target's melee damage by 15% for 10 seconds, +20% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-longblade-focus-3",
-      "name": "Longblade Focus",
-      "skillReq": 75,
-      "position": {
-        "x": 17,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-longblade-focus-2"
-      ],
-      "description": "You've become a master of using greatswords and pikes. (Attacks reduce target's melee damage by 20% for 10 seconds, +30% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-reversal",
-      "name": "Reversal",
-      "skillReq": 50,
-      "position": {
-        "x": 17,
-        "y": 13
-      },
-      "prerequisites": [
-        "two-handed-longblade-focus"
-      ],
-      "description": "With enough momentum, you can slash deeper into targets with power attacks. (+25% critical hit chance and 2x critical hit damage when power attacking)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-warhammer-focus",
-      "name": "Warhammer Focus",
-      "skillReq": 25,
-      "position": {
-        "x": 20,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-barbaric-might"
-      ],
-      "description": "You've learned some techniques to crush armor with warhammers. (+15% armor penetration, +5% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-warhammer-focus-2",
-      "name": "Warhammer Focus",
-      "skillReq": 25,
-      "position": {
-        "x": 20,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-warhammer-focus"
-      ],
-      "description": "You've learned some techniques to crush armor with warhammers. (+30% armor penetration, +10% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-warhammer-focus-3",
-      "name": "Warhammer Focus",
-      "skillReq": 25,
-      "position": {
-        "x": 20,
-        "y": 16
-      },
-      "prerequisites": [
-        "two-handed-warhammer-focus-2"
-      ],
-      "description": "You've learned some techniques to crush armor with warhammers. (+45% armor penetration, +15% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-onslaught",
-      "name": "Onslaught",
-      "skillReq": 50,
-      "position": {
-        "x": 20,
-        "y": 13
-      },
-      "prerequisites": [
-        "two-handed-warhammer-focus"
-      ],
-      "description": "You can deliver maximum force with your warhammer to knock off targets that fail to resist. (power attacks with warhammers knock off targets by 10% chance, 25% more damage against staggered targets.)",
-      "effects": []
-    },
-    {
-      "id": "two-handed-devastating-charge",
-      "name": "Devastating Charge",
-      "skillReq": 25,
-      "position": {
-        "x": 10,
-        "y": 11
-      },
-      "prerequisites": [
-        "two-handed-barbaric-might"
-      ],
-      "description": "You've learned to perform a leaping power attack while sprinting, reducing your enemies to smithereens. (Able to do sprinting power attack which has a 50% chance to critical hit)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-devastating-strike",
       "name": "Devastating Strike",
       "skillReq": 50,
       "position": {
-        "x": 14,
-        "y": 11
+        "x": 12,
+        "y": 17
       },
       "prerequisites": [
         "two-handed-barbaric-might"
       ],
-      "description": "Your two-handed combat style has improved so much that all power attacks have become devastating. (25% more power attack damage, +10% critical hit chance)",
-      "effects": []
+      "description": "Your two-handed combat style has improved so much that all power attacks have become devastating. [20% more power attack damage, +10% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-hyper-armor",
       "name": "Hyper Armor",
       "skillReq": 75,
       "position": {
-        "x": 12,
-        "y": 5
+        "x": 9,
+        "y": 8
       },
       "prerequisites": [
         "two-handed-devastating-charge",
         "two-handed-devastating-strike"
       ],
-      "description": "Your power attacks are almost unstoppable. (Take 75% less poise damage while power attacking with two-handed weapons.)",
-      "effects": []
+      "description": "Your power attacks are almost unstoppable. [Take 75% less poise damage while power attacking with two-handed weapons.]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-mighty-strike",
       "name": "Mighty Strike",
       "skillReq": 100,
       "position": {
-        "x": 12,
-        "y": 3
+        "x": 9,
+        "y": 4
       },
       "prerequisites": [
         "two-handed-hyper-armor"
       ],
-      "description": "You can fell almost any foe with a single strike of your two-hander. (50% more poise damage)",
-      "effects": []
+      "description": "You can fell almost any foe with a single strike of your two-hander. [50% more poise damage]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-warbringer",
       "name": "Warbringer",
       "skillReq": 100,
       "position": {
-        "x": 12,
-        "y": 1
+        "x": 9,
+        "y": 0
       },
       "prerequisites": [
         "two-handed-mighty-strike"
       ],
-      "description": "Your barbaric instincts strengthen as you or your foe meet their end. (Your power attacks deal up to 100% more damage based on the difference between your health and your target's health)",
-      "effects": []
+      "description": "Your barbaric instincts strengthen as you or your foe meet their end. [Your two-handed power attacks deal up to 100% more damage based on the difference between your health and your target's health]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-devastating-charge",
+      "name": "Devastating Charge",
+      "skillReq": 25,
+      "position": {
+        "x": 6,
+        "y": 17
+      },
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
+      "description": "You've learned to perform a leaping power attack while sprinting, reducing your enemies to smithereens. [Able to do sprinting power attack which has a 50% chance to critical hit]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-hafted-blade-focus",
+      "name": "Hafted Blade Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 3,
+        "y": 20
+      },
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
+      "description": "You've become familiar with battle axes and halberds. [Attacks deal 20-60 extra damage over 20 seconds scaling with weapon skill, +10% armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-hafted-blade-focus-r2",
+      "name": "Hafted Blade Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 3,
+        "y": 20
+      },
+      "prerequisites": [],
+      "description": "become an advanced battle axe and halberd fighter. [Attacks deal 40-120 extra damage over 20 seconds scaling with weapon skill, +20% armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-hafted-blade-focus-r3",
+      "name": "Hafted Blade Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 3,
+        "y": 20
+      },
+      "prerequisites": [],
+      "description": "You've become a master of battle axe and halberd combat. [Attacks deal 60-180 extra damage over 20 seconds scaling with weapon skill, +30% armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 30,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 30,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-longweapon-focus",
+      "name": "Longweapon Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 15,
+        "y": 20
+      },
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
+      "description": "You've acquired the advanced techniques of using greatswords and pikes. [Attacks reduce target's melee damage by 11% for 10 seconds, +5% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-longweapon-focus-r2",
+      "name": "Longweapon Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 15,
+        "y": 20
+      },
+      "prerequisites": [],
+      "description": "You've acquired the advanced techniques of using greatswords and pikes. [Attacks reduce target's melee damage by 22% for 10 seconds, +10% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-longweapon-focus-r3",
+      "name": "Longweapon Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 15,
+        "y": 20
+      },
+      "prerequisites": [],
+      "description": "You've become a master of using greatswords and pikes. [Attacks reduce target's melee damage by 33% for 10 seconds, +15% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 30,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-warhammer-focus",
+      "name": "Warhammer Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 18,
+        "y": 21
+      },
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
+      "description": "You've learned some techniques to crush armor with warhammers. [3% more attack damage, +13% armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 13,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 13,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-warhammer-focus-r2",
+      "name": "Warhammer Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've become an advanced warhammer fighter and know how to find weak spots in enemy armor. [6% more attack damage, +30% armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 30,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 30,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-warhammer-focus-r3",
+      "name": "Warhammer Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 18,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've become a masterly warhammer fighter, rendering armor almost useless. [10% more attack damage, +40% armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 40,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-quarterstaff-battlestaff-focus",
+      "name": "Quarterstaff & Battlestaff Focus",
+      "skillReq": 25,
+      "position": {
+        "x": 0,
+        "y": 21
+      },
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
+      "description": "You've learned the basics of quarterstaff combat. [Power attacks cost 10% less stamina, +7% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 14,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-quarterstaff-battlestaff-focus-r2",
+      "name": "Quarterstaff & Battlestaff Focus",
+      "skillReq": 50,
+      "position": {
+        "x": 0,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've acquired the advanced techniques of quarterstaff combat. [Power attacks cost 20% less stamina, +14% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 28,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-quarterstaff-battlestaff-focus-r3",
+      "name": "Quarterstaff & Battlestaff Focus",
+      "skillReq": 75,
+      "position": {
+        "x": 0,
+        "y": 21
+      },
+      "prerequisites": [],
+      "description": "You've become a master of quarterstaff combat. [Power attacks cost 30% less stamina, +21% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 42,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-reversal",
+      "name": "Reversal",
+      "skillReq": 50,
+      "position": {
+        "x": 15,
+        "y": 16
+      },
+      "prerequisites": [
+        "two-handed-longweapon-focus"
+      ],
+      "description": "With enough momentum, you can slash deeper into targets with power attacks. [+10% critical hit chance and 2x critical hit damage when power attacking]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-onslaught",
+      "name": "Onslaught",
+      "skillReq": 50,
+      "position": {
+        "x": 18,
+        "y": 17
+      },
+      "prerequisites": [
+        "two-handed-warhammer-focus"
+      ],
+      "description": "You can deliver maximum force with your warhammer to knock off targets that fail to resist. [power attacks with warhammers knock off targets by 10% chance, 25% more damage against staggered targets.]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 25,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-shield-breaker",
+      "name": "Shield Breaker",
+      "skillReq": 50,
+      "position": {
+        "x": 3,
+        "y": 16
+      },
+      "prerequisites": [
+        "two-handed-hafted-blade-focus"
+      ],
+      "description": "Mighty swing with a battleaxe can cleave through target's defense, hindering them from blocking next attacks. [power attacks with battleaxes reduce target's blockable damage by 90% for 10 seconds]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-battle-hide",
       "name": "Battle Hide",
       "skillReq": 80,
       "position": {
-        "x": 5,
-        "y": 10
+        "x": 0,
+        "y": 13
       },
       "prerequisites": [
         "two-handed-defensive-strike"
       ],
       "description": "You take half damage from enemy attacks while power attacking or blocking with quarterstaves and battlestaves.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-execute",
       "name": "Execute",
       "skillReq": 80,
       "position": {
-        "x": 8,
-        "y": 10
+        "x": 3,
+        "y": 12
       },
       "prerequisites": [
         "two-handed-shield-breaker"
       ],
       "description": "Standing power attacks with battleaxes and halberds execute targets below 25% Health, delivering a critical strike that deals twenty times critical damage.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "two-handed-defensive-strike",
+      "name": "Defensive Strike",
+      "skillReq": 50,
+      "position": {
+        "x": 0,
+        "y": 17
+      },
+      "prerequisites": [
+        "two-handed-quarterstaff-battlestaff-focus"
+      ],
+      "description": "You can more efficiently block and counterattack with quarterstaves. [Quarterstaves block and bash twice as much and do 25% more critical damage]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-critical-slam",
       "name": "Critical Slam",
       "skillReq": 80,
       "position": {
-        "x": 20,
-        "y": 10
+        "x": 18,
+        "y": 13
       },
       "prerequisites": [
         "two-handed-onslaught"
       ],
       "description": "Whenever a standing power attack with a warhammer inflicts a critical strike, it deals 3% more critical damage per point of Stamina.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "two-handed-death-or-glory",
       "name": "Death or Glory",
       "skillReq": 80,
       "position": {
-        "x": 17,
-        "y": 10
+        "x": 15,
+        "y": 12
       },
       "prerequisites": [
         "two-handed-reversal"
       ],
-      "description": "Two-handed power attacks with greatswords and pikes deal up to 100% more damage below half Health. The damage bonus increases as your Health decreases.",
-      "effects": []
+      "description": "Two-handed attacks with greatswords and pikes deal up to 200% more damage below 90% Health. The damage bonus increases as your Health decreases.",
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

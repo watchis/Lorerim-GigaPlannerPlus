@@ -1,0 +1,886 @@
+{
+  "skillId": "destiny",
+  "skillName": "Destiny",
+  "perks": [
+    {
+      "id": "destiny-01",
+      "name": "Destiny",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 18
+      },
+      "prerequisites": [],
+      "description": "Increases carry weight by 25.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "carryWeight",
+          "value": 25,
+          "isPercent": false
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "destiny-02",
+      "name": "Focus",
+      "skillReq": 0,
+      "position": {
+        "x": 15,
+        "y": 15
+      },
+      "prerequisites": [],
+      "description": "Your Magicka Regeneration is increased by 50%.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magickaRegen",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-01"
+      ]
+    },
+    {
+      "id": "destiny-03",
+      "name": "Constitution",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 15
+      },
+      "prerequisites": [],
+      "description": "Your Health Regeneration is increased by 50%.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "healthRegen",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-01"
+      ]
+    },
+    {
+      "id": "destiny-04",
+      "name": "Endurance",
+      "skillReq": 0,
+      "position": {
+        "x": 27,
+        "y": 15
+      },
+      "prerequisites": [],
+      "description": "Your Stamina Regeneration is increased by 50%.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "staminaRegen",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-01"
+      ]
+    },
+    {
+      "id": "destiny-05",
+      "name": "Mage",
+      "skillReq": 0,
+      "position": {
+        "x": 9,
+        "y": 12
+      },
+      "prerequisites": [],
+      "description": "Your spells are 5% stronger or last 10% longer.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellDamage",
+          "value": 5,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-02"
+      ]
+    },
+    {
+      "id": "destiny-06",
+      "name": "Warrior",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 12
+      },
+      "prerequisites": [],
+      "description": "You deal 5% more weapon damage.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 5,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 5,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-03"
+      ]
+    },
+    {
+      "id": "destiny-07",
+      "name": "Thief",
+      "skillReq": 0,
+      "position": {
+        "x": 33,
+        "y": 12
+      },
+      "prerequisites": [],
+      "description": "You are 20% harder to detect.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "detectDifficulty",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-04"
+      ]
+    },
+    {
+      "id": "destiny-08",
+      "name": "Fortification",
+      "skillReq": 0,
+      "position": {
+        "x": 3,
+        "y": 9
+      },
+      "prerequisites": [],
+      "description": "Your Health, Magicka and Stamina are increased by 10 each.",
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "health",
+          "value": 10
+        },
+        {
+          "type": "attribute",
+          "stat": "magicka",
+          "value": 10
+        },
+        {
+          "type": "attribute",
+          "stat": "stamina",
+          "value": 10
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-05"
+      ]
+    },
+    {
+      "id": "destiny-09",
+      "name": "Magicka Surge",
+      "skillReq": 0,
+      "position": {
+        "x": 9,
+        "y": 9
+      },
+      "prerequisites": [],
+      "description": "Your Magicka Regeneration is increased by 400% when your Magicka falls below 25%.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-05"
+      ]
+    },
+    {
+      "id": "destiny-10",
+      "name": "Magic Shell",
+      "skillReq": 0,
+      "position": {
+        "x": 15,
+        "y": 9
+      },
+      "prerequisites": [],
+      "description": "Your magic resistance is increased by 10%.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-05",
+        "destiny-06"
+      ]
+    },
+    {
+      "id": "destiny-11",
+      "name": "Iron Skin",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 9
+      },
+      "prerequisites": [],
+      "description": "Every 10 seconds, taking damage increases your Armor Rating by 150 for 6 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-06"
+      ]
+    },
+    {
+      "id": "destiny-12",
+      "name": "Battle Spirit",
+      "skillReq": 0,
+      "position": {
+        "x": 27,
+        "y": 9
+      },
+      "prerequisites": [],
+      "description": "Power attacks increase your attack damage by 10% for 6 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-06",
+        "destiny-07"
+      ]
+    },
+    {
+      "id": "destiny-13",
+      "name": "Adrenaline",
+      "skillReq": 0,
+      "position": {
+        "x": 33,
+        "y": 9
+      },
+      "prerequisites": [],
+      "description": "Your Stamina Regeneration is increased by 200% when your Stamina falls below 25%.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-07"
+      ]
+    },
+    {
+      "id": "destiny-14",
+      "name": "Swiftness",
+      "skillReq": 0,
+      "position": {
+        "x": 39,
+        "y": 9
+      },
+      "prerequisites": [],
+      "description": "Every 10 seconds, taking damage increases your movement speed by 20% for 6 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-07"
+      ]
+    },
+    {
+      "id": "destiny-15",
+      "name": "Agent",
+      "skillReq": 0,
+      "position": {
+        "x": 3,
+        "y": 6
+      },
+      "prerequisites": [],
+      "description": "Enemy attacks against you slows them by 25% for 5 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-08"
+      ]
+    },
+    {
+      "id": "destiny-16",
+      "name": "Sorcerer",
+      "skillReq": 0,
+      "position": {
+        "x": 9,
+        "y": 6
+      },
+      "prerequisites": [],
+      "description": "You take 10% less damage while casting spells.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-09"
+      ]
+    },
+    {
+      "id": "destiny-17",
+      "name": "Spellsword",
+      "skillReq": 0,
+      "position": {
+        "x": 15,
+        "y": 6
+      },
+      "prerequisites": [],
+      "description": "You restore 15 magicka per weapon attack.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-10"
+      ]
+    },
+    {
+      "id": "destiny-18",
+      "name": "Knight",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 6
+      },
+      "prerequisites": [],
+      "description": "You take 10% less damage while power attacking, drawing a bow, or blocking.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "damageTaken",
+          "value": -10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-11"
+      ]
+    },
+    {
+      "id": "destiny-19",
+      "name": "Acrobat",
+      "skillReq": 0,
+      "position": {
+        "x": 27,
+        "y": 6
+      },
+      "prerequisites": [],
+      "description": "You regenerate stamina 100% faster.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-12"
+      ]
+    },
+    {
+      "id": "destiny-20",
+      "name": "Scout",
+      "skillReq": 0,
+      "position": {
+        "x": 33,
+        "y": 6
+      },
+      "prerequisites": [],
+      "description": "Your bows, crossbows and throwing knives do 10% more damage.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-13"
+      ]
+    },
+    {
+      "id": "destiny-21",
+      "name": "Spellblade",
+      "skillReq": 0,
+      "position": {
+        "x": 39,
+        "y": 6
+      },
+      "prerequisites": [],
+      "description": "Attacks with weapons have a 30% chance to interupt casting enemies.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-14"
+      ]
+    },
+    {
+      "id": "destiny-22",
+      "name": "Leadership",
+      "skillReq": 0,
+      "position": {
+        "x": 0,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Nearby allies move 15% faster during combat.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-15"
+      ]
+    },
+    {
+      "id": "destiny-23",
+      "name": "Hard Skin",
+      "skillReq": 0,
+      "position": {
+        "x": 3,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Your Armor Rating is increased by 100.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-15"
+      ]
+    },
+    {
+      "id": "destiny-24",
+      "name": "Healing Presence",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "You heal yourself and nearby allies for 10 Health every 10 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-15",
+        "destiny-16"
+      ]
+    },
+    {
+      "id": "destiny-25",
+      "name": "Absorbtion",
+      "skillReq": 0,
+      "position": {
+        "x": 9,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "You have a 10% chance to absorb the Magicka from incoming spells.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-16"
+      ]
+    },
+    {
+      "id": "destiny-26",
+      "name": "Conjuring Presence",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Nearby summoned or reanimated allies have 50 increased Health, 50 increased Armor Rating and reflect 15% physical damage.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-16",
+        "destiny-17"
+      ]
+    },
+    {
+      "id": "destiny-27",
+      "name": "Corrosive Weapon",
+      "skillReq": 0,
+      "position": {
+        "x": 15,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Power attacks reduces enemies magic resistance by 15% and Armor Rating by 75 for 10 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-17"
+      ]
+    },
+    {
+      "id": "destiny-28",
+      "name": "Leeching Spikes",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "You absorb 15 Health over 5 seconds from enemies attacking you once every 10 seconds for each enemy. While below 33% Health, absorbed Health is doubled.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-17",
+        "destiny-18"
+      ]
+    },
+    {
+      "id": "destiny-29",
+      "name": "Unyielding",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "While blocking, your health, magicka, stamina regeneration is increased by 50% and take 25% less poise damage.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-18"
+      ]
+    },
+    {
+      "id": "destiny-30",
+      "name": "Overwhelming Presence",
+      "skillReq": 0,
+      "position": {
+        "x": 24,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Close enemies have 100 reduced Armor Rating and 10% reduced elemental resist.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-18",
+        "destiny-19"
+      ]
+    },
+    {
+      "id": "destiny-31",
+      "name": "Smash",
+      "skillReq": 0,
+      "position": {
+        "x": 27,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Bashing does 20% more damage and power attacks deal 10% more damage.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 30,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-19"
+      ]
+    },
+    {
+      "id": "destiny-32",
+      "name": "Trickster",
+      "skillReq": 0,
+      "position": {
+        "x": 30,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "You have a 10% chance to evade enemy weapon attacks.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-19",
+        "destiny-20"
+      ]
+    },
+    {
+      "id": "destiny-33",
+      "name": "Swift Shadow",
+      "skillReq": 0,
+      "position": {
+        "x": 33,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "You move 25% faster while sneaking and deal 10% more crtitical damage.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-20"
+      ]
+    },
+    {
+      "id": "destiny-34",
+      "name": "Viper's Blade",
+      "skillReq": 0,
+      "position": {
+        "x": 36,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Attacks reduces enemies poison resistance by 25% for 10 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-20",
+        "destiny-21"
+      ]
+    },
+    {
+      "id": "destiny-35",
+      "name": "Evasion",
+      "skillReq": 0,
+      "position": {
+        "x": 39,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "You have a 10% chance to evade spells and attacks.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-21"
+      ]
+    },
+    {
+      "id": "destiny-36",
+      "name": "Silent Blade",
+      "skillReq": 0,
+      "position": {
+        "x": 42,
+        "y": 3
+      },
+      "prerequisites": [],
+      "description": "Your attacks deal 25 damage to Magicka and Stamina.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-21"
+      ]
+    },
+    {
+      "id": "destiny-37",
+      "name": "Bard",
+      "skillReq": 0,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Nearby allies deal 15% more physical damage and have 15% magic resistance during combat. Prices are 10% better.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicResist",
+          "value": 15,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "priceModifier",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-22"
+      ]
+    },
+    {
+      "id": "destiny-38",
+      "name": "Shaman",
+      "skillReq": 0,
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "If health, magicka or stamina are under 75%, weapons and spells are 5% better and an additional 5% when under 50% (stack up to 34% with all 3 under 50%)",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-23"
+      ]
+    },
+    {
+      "id": "destiny-39",
+      "name": "Templar",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Every 60 seconds, falling below 25% Health, you are immune to any damage for 3 seconds and heal yourself afterwards for 200 Health.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-24"
+      ]
+    },
+    {
+      "id": "destiny-40",
+      "name": "Archmage",
+      "skillReq": 0,
+      "position": {
+        "x": 9,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Your Spells are 15% stronger or last 30% longer.",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellDamage",
+          "value": 15,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": [
+        "destiny-25"
+      ]
+    },
+    {
+      "id": "destiny-41",
+      "name": "Summoner",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "You can summon or reanimate one additional minion.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-26"
+      ]
+    },
+    {
+      "id": "destiny-42",
+      "name": "Battlemage",
+      "skillReq": 0,
+      "position": {
+        "x": 15,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Power attacks cost 25% less stamina if you have a spell in your left hand. Spells are 15% stronger if you have a weapon in your right hand.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-27"
+      ]
+    },
+    {
+      "id": "destiny-43",
+      "name": "Blood Knight",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "While above 50% Health you deal 15% more weapon damage and while below 50% Health, you take 25% less magic damage.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-28"
+      ]
+    },
+    {
+      "id": "destiny-44",
+      "name": "General",
+      "skillReq": 0,
+      "position": {
+        "x": 21,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Your tempering ability, weapon damage and Armor Rating is increased by 10%.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-29"
+      ]
+    },
+    {
+      "id": "destiny-45",
+      "name": "Monk",
+      "skillReq": 0,
+      "position": {
+        "x": 24,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Your attacks absorb 60 health, magicka and stamina over 60 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-30"
+      ]
+    },
+    {
+      "id": "destiny-46",
+      "name": "Berserker",
+      "skillReq": 0,
+      "position": {
+        "x": 27,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "You take 25% less damage while power attacking and power attack stamina usage is reduced by 25%.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-31"
+      ]
+    },
+    {
+      "id": "destiny-47",
+      "name": "Saboteur",
+      "skillReq": 0,
+      "position": {
+        "x": 30,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Your deal 25% more poise damage and deal 25% more damage against staggered enemies.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-32"
+      ]
+    },
+    {
+      "id": "destiny-48",
+      "name": "Assassin",
+      "skillReq": 0,
+      "position": {
+        "x": 33,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Every 60 seconds, your next sneak attack deals 100% more damage.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-33"
+      ]
+    },
+    {
+      "id": "destiny-49",
+      "name": "Rogue",
+      "skillReq": 0,
+      "position": {
+        "x": 36,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Your attacks deal an additional 150 irresistible damage over 60 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-34"
+      ]
+    },
+    {
+      "id": "destiny-50",
+      "name": "Stalker",
+      "skillReq": 0,
+      "position": {
+        "x": 39,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Your attacks slows enemies by 50% and reduce magic resistance by 25% for 5 seconds.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-35"
+      ]
+    },
+    {
+      "id": "destiny-51",
+      "name": "Nightblade",
+      "skillReq": 0,
+      "position": {
+        "x": 42,
+        "y": 0
+      },
+      "prerequisites": [],
+      "description": "Against enemies that are out of Magicka or Stamina, your attacks deal 20% more damage.",
+      "effects": [],
+      "prerequisitesAny": [
+        "destiny-36"
+      ]
+    }
+  ],
+  "grid": {
+    "width": 43,
+    "height": 19
+  }
+}

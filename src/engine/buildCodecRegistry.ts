@@ -4,14 +4,14 @@ export interface BuildCodecRegistry {
   game: GameData;
   modpackVersion: string;
   races: readonly string[];
-  standingStones: readonly string[];
-  blessings: readonly string[];
+  birthsigns: readonly string[];
+  deities: readonly string[];
   traits: readonly string[];
   skills: readonly string[];
   perks: readonly string[];
   raceIndex: ReadonlyMap<string, number>;
-  standingStoneIndex: ReadonlyMap<string, number>;
-  blessingIndex: ReadonlyMap<string, number>;
+  birthsignIndex: ReadonlyMap<string, number>;
+  deityIndex: ReadonlyMap<string, number>;
   traitIndex: ReadonlyMap<string, number>;
   skillIndex: ReadonlyMap<string, number>;
   perkIndex: ReadonlyMap<string, number>;
@@ -35,8 +35,8 @@ function collectPerkIds(game: GameData): string[] {
 
 export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
   const races = game.races.map((race) => race.id);
-  const standingStones = game.standingStones.map((stone) => stone.id);
-  const blessings = game.blessings.map((blessing) => blessing.id);
+  const birthsigns = game.birthsigns.map((birthsign) => birthsign.id);
+  const deities = game.deities.map((deity) => deity.id);
   const traits = game.traits.map((trait) => trait.id);
   const skills = game.skills.map((skill) => skill.id);
   const perks = collectPerkIds(game);
@@ -45,14 +45,14 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
     game,
     modpackVersion: game.manifest.version,
     races,
-    standingStones,
-    blessings,
+    birthsigns,
+    deities,
     traits,
     skills,
     perks,
     raceIndex: indexById(races),
-    standingStoneIndex: indexById(standingStones),
-    blessingIndex: indexById(blessings),
+    birthsignIndex: indexById(birthsigns),
+    deityIndex: indexById(deities),
     traitIndex: indexById(traits),
     skillIndex: indexById(skills),
     perkIndex: indexById(perks),

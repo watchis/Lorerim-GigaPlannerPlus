@@ -12,9 +12,9 @@
     "health": "#8b2942",
     "magicka": "#2d5a87",
     "stamina": "#3d6b4f",
-    "perkAvailable": "#4a5568",
+    "perkAvailable": "#6d8499",
     "perkSelected": "#c9a227",
-    "perkLocked": "#3a3f4f",
+    "perkLocked": "#2a2e38",
     "perkPrereq": "#5a6278"
   },
   "fonts": {

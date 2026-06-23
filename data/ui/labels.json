@@ -2,8 +2,7 @@
   "app": {
     "title": "Lorerim GigaPlanner Plus",
     "subtitle": "Character Build Planner",
-    "versionLabel": "Modpack Version",
-    "footer": "Unofficial fan tool for the LoreRim Skyrim modpack. Not affiliated with LoreRim."
+    "versionLabel": "Modpack Version"
   },
   "nav": {
     "home": "Home",
@@ -11,40 +10,111 @@
     "builds": "My Builds"
   },
   "landing": {
-    "eyebrow": "LoreRim Build Planner",
-    "headline": "Plan your character before you enter Skyrim",
-    "description": "Pick your race, stone, blessing, traits, and perks — then save multiple builds locally in your browser and share them with a code.",
-    "cta": "Open Planner",
-    "ctaHint": "No account required. Builds auto-save in your browser.",
-    "feature1Title": "Character Setup",
-    "feature1Description": "Configure race, standing stone, blessing, traits, and major/minor skills with live validation against LoreRim rules.",
-    "feature2Title": "Interactive Skill Trees",
-    "feature2Description": "Browse and select perks with prerequisite checks, skill requirements, and tooltips driven by game data.",
-    "feature3Title": "Multiple Saved Builds",
-    "feature3Description": "Create, rename, switch, and delete builds. Everything saves automatically in local storage.",
-    "feature4Title": "Shareable Build Codes",
-    "feature4Description": "Copy a compact build code or load one from a link to recreate a character plan instantly."
+    "howItWorksTitle": "How it works",
+    "steps": [
+      {
+        "title": "Choose your foundation",
+        "description": "Pick race, birthsign, deity, traits, major/minor skills, and attribute choices."
+      },
+      {
+        "title": "Spend your points",
+        "description": "Allocate perks, raise skill levels, train skills, and plan destiny as you level up."
+      },
+      {
+        "title": "Save and revisit",
+        "description": "Builds auto-save locally. Create level variants, export backups, or share a compact code."
+      }
+    ],
+    "featuresTitle": "Built for LoreRim",
+    "features": [
+      {
+        "title": "Character Setup",
+        "description": "Configure every starting choice with live validation against LoreRim rules and race bonuses."
+      },
+      {
+        "title": "Full Perk Trees",
+        "description": "Every skill tree with prerequisite chains, skill requirements, player level gates, and rank tracking."
+      },
+      {
+        "title": "Destiny & Training",
+        "description": "Plan destiny points and skill training alongside perk points and tiered skill point costs."
+      },
+      {
+        "title": "Build Variants",
+        "description": "Capture snapshots at key levels to map your leveling path without losing your main plan."
+      },
+      {
+        "title": "Live Combat Stats",
+        "description": "Health, magicka, stamina, and tracked bonuses update as you change race, perks, and attributes."
+      },
+      {
+        "title": "Share & Backup",
+        "description": "Compact build codes, planner links, and .gpp backups — import anytime from the builds page."
+      }
+    ],
+    "recentBuildsTitle": "Continue planning",
+    "recentBuildsEmpty": "No saved builds yet. Open the planner and your work is saved automatically.",
+    "recentBuildsViewAll": "View all builds",
+    "importTitle": "Have a build code?",
+    "importDescription": "Paste a share code to load it directly in the planner.",
+    "importPlaceholder": "Paste build code...",
+    "importButton": "Load in planner"
   },
-  "planner": {
-    "intro": "Configure your build below. Changes save automatically to the active build slot."
+  "milestones": {
+    "title": "Variants",
+    "fullBuild": "Default",
+    "goalShort": "Goal",
+    "addStep": "Add variant",
+    "addMilestone": "Add milestone",
+    "emptyHint": "Capture how this build should look at key levels along the way.",
+    "viewingStep": "Viewing {name} · level {level}",
+    "levelShort": "Lv {level}",
+    "stepMeta": "Level {level} · {perks} perks",
+    "manageStep": "Manage step",
+    "manageVariants": "Manage variants",
+    "renameMilestone": "Rename",
+    "deleteMilestone": "Delete variant",
+    "saveRename": "Save name",
+    "cancelRename": "Cancel"
   },
   "level-bar": {
     "playerLevel": "Level",
     "perkPointsRemaining": "Perk points remaining",
     "perkPointsSpent": "spent",
-    "perkPointsPerLevel": "{count} perk pt/level",
+    "perkPointsInfo": "You start with {initial} perk points and get {perLevel} more each level to spend on perks.",
     "skillPointsRemaining": "Skill points remaining",
     "skillPointsSpent": "spent",
-    "skillPointsPerLevel": "{count} skill pt/level",
-    "overBudget": "over budget by {count}"
+    "skillPointsInfo": "You get {perLevel} skill points each level to raise skill levels beyond what you train for free.",
+    "trainingLevelsRemaining": "Training remaining",
+    "trainingLevelsSpent": "trained",
+    "trainingLevelsInfo": "You earn {perLevel} training levels per player level ({total} at level {playerLevel}). Training raises skill levels without spending skill points.",
+    "trainingOverBudgetAlert": "You have {used} trained skill levels but only {earned} are allowed at level {playerLevel}. Lower skills or raise your level to {required}.",
+    "overBudget": "over budget by {count}",
+    "perkOverBudgetAlert": "You have spent {count} more perk point(s) than earned at level {playerLevel}. Raise your level or remove perks.",
+    "skillOverBudgetAlert": "You have spent {count} more skill point(s) than earned at level {playerLevel}. Lower skills or raise your level.",
+    "playerLevelSkillCapSingle": "{skill} is level {skillLevel}, but the max at level {playerLevel} is {maxAllowed}. Lower the skill or raise your level.",
+    "playerLevelSkillCapMultiple": "{count} skills exceed the max allowed at level {playerLevel}. Lower those skills or raise your level.",
+    "playerLevelSkillIncreaseSingle": "{skill} is level {skillLevel}, which requires player level {required} (you are level {playerLevel}). Raise your level or lower the skill.",
+    "playerLevelSkillIncreaseMultiple": "{count} skills exceed the per-level skill gain limit at player level {playerLevel}. Raise your level or lower those skills.",
+    "playerLevelPerkReqSingle": "{perk} requires player level {required} (you are level {playerLevel}). Raise your level or remove the perk.",
+    "playerLevelPerkReqMultiple": "{count} selected perks require a higher player level than {playerLevel}.",
+    "playerLevelWarningMixed": "Some skills, perks, and attribute choices exceed limits at level {playerLevel}. Adjust your build or raise your level.",
+    "playerLevelAttributeOverBudgetSingle": "1 attribute choice exceeds what's allowed at level {playerLevel}. Remove choices or raise your level.",
+    "playerLevelAttributeOverBudgetMultiple": "{count} attribute choices exceed what's allowed at level {playerLevel}. Remove choices or raise your level.",
+    "buildIssuesAlert": "Your build has issues at level {playerLevel}. Hover for details.",
+    "setToMinimumLevel": "Set to minimum level",
+    "setToMinimumLevelInfo": "Set player level to the lowest level that supports your current perks, skills, attribute choices, and point spending."
   },
   "panels": {
     "character-setup": {
       "title": "Character Setup",
+      "overviewTitle": "Character Overview",
       "race": "Race",
+      "guideReadMore": "Read more",
       "selectRace": "Select race...",
-      "standingStone": "Standing Stone",
-      "blessing": "Blessing",
+      "birthsign": "Birthsign",
+      "deity": "Deity",
+      "attributes": "Attributes",
       "traits": "Traits",
       "majorSkills": "Major Skills",
       "minorSkills": "Minor Skills",
@@ -61,6 +131,7 @@
       "baseStats": "Base Stats",
       "startingSkills": "Starting skills",
       "bonuses": "Bonuses",
+      "conditional": "Conditional",
       "health": "Health",
       "magicka": "Magicka",
       "stamina": "Stamina",
@@ -74,14 +145,61 @@
       "followerBonus": "Follower",
       "devoteeBonus": "Devotee",
       "races": "Races",
-      "startingRaces": "Starting races"
+      "startingRaces": "Starting races",
+      "destiny": "Destiny",
+      "openDestinyTree": "Click to open perk tree",
+      "openOptions": "Character options"
+    },
+    "character-options": {
+      "title": "Character Options",
+      "subtitle": "Optional bonuses earned during your playthrough.",
+      "activeRewards": "Active rewards",
+      "clearSelection": "Clear",
+      "oghmaInfinium": "Oghma Infinium",
+      "oghmaDescription": "Choose which path you completed. Grants bonus perk points.",
+      "oghmaNone": "Not used",
+      "oghmaHealth": "Health",
+      "oghmaMagicka": "Magicka",
+      "oghmaStamina": "Stamina",
+      "oghmaPerkPoints": "+{count} perk points",
+      "oghmaAttributeBonus": "+{count} {attribute}",
+      "alduinBonusTrait": "Sovngarde Bonus Trait",
+      "alduinBonusTraitDescription": "Grants one additional trait on the Traits page.",
+      "alduinBonusTraitNone": "Not claimed",
+      "alduinBonusTraitClaimed": "Claimed",
+      "traitSlotReward": "+1 trait slot"
     },
     "attributes": {
       "title": "Attributes",
       "health": "Health",
       "magicka": "Magicka",
       "stamina": "Stamina",
-      "remaining": "Attribute choices remaining"
+      "remaining": "Attribute choices remaining",
+      "remainingShort": "left",
+      "overBudget": "over budget by {count}"
+    },
+    "variants-manager": {
+      "title": "Manage Variants",
+      "back": "Back",
+      "activeBadge": "Active",
+      "switchTo": "Switch to",
+      "create": "Create",
+      "createNew": "Create new",
+      "createHint": "Start a fresh variant at level 1 with default setup.",
+      "copy": "Copy",
+      "import": "Import",
+      "export": "Export",
+      "importTitle": "Import variant",
+      "importHint": "Drop a {extension} file here or click to browse",
+      "chooseImportFile": "Browse files",
+      "importedVariant": "Variant imported",
+      "importError": "Could not import variant",
+      "variantsSection": "Your variants",
+      "variantCount": "{count} variants",
+      "dragToReorder": "Drag to reorder",
+      "rename": "Rename",
+      "delete": "Delete",
+      "deleteOnlyVariant": "Cannot delete the only variant"
     },
     "skill-trees": {
       "title": "Skill Trees",
@@ -91,7 +209,19 @@
       "playerLevelReq": "Level requirement",
       "skillLevel": "Skill level",
       "skillLevelMin": "Min",
+      "perksMode": "Perks",
+      "trainingMode": "Training",
+      "trainingModeActive": "Training mode",
+      "resetTraining": "Reset training",
+      "trainingRangesTitle": "Training ranges",
+      "findTrainers": "Find trainers",
+      "trainingTierRange": "Levels {min}–{max}",
+      "trainingSkillTotal": "Trained on skill",
+      "trainingSkillLevel": "Level from training",
+      "trainingGlobalRemaining": "Training remaining",
+      "trainingMaxLevel": "Max trainable level: {max}",
       "perksSelected": "perks selected",
+      "destinyPoints": "Destiny points",
       "locked": "Locked",
       "available": "Available",
       "selected": "Selected",
@@ -101,20 +231,29 @@
       "skillReqConflictDismiss": "Dismiss",
       "skillReqConflictSingle": "{perk} requires skill level {required}. Your skill level is now {current}, so it was removed.",
       "skillReqConflictMultiple": "{count} perks were removed because your skill level is now too low.",
-      "skillReqConflictLegend": "Removed (skill too low)"
+      "skillReqConflictLegend": "Removed (skill too low)",
+      "skillLevelOverCapLegend": "Over level cap",
+      "skillLevelOverCapSingle": "{skill} is level {skillLevel}, but the max at your level is {maxAllowed}. Lower the skill or raise your level.",
+      "skillLevelIncreaseOverLimitSingle": "{skill} is level {skillLevel}, which requires player level {required} (you are level {playerLevel}). Raise your level or lower the skill.",
+      "playerLevelPerkConflictLegend": "Requires higher player level",
+      "playerLevelPerkConflictSingle": "{perk} requires player level {required} (you are level {playerLevel}). Raise your level or remove the perk.",
+      "playerLevelPerkConflictMultiple": "{count} selected perks require a higher player level than {playerLevel}.",
+      "buildProblemLegend": "Problem",
+      "skillTreeWarning": "View skill tree warnings"
     },
     "derived-stats": {
-      "title": "Derived Attributes"
-    },
-    "saved-builds": {
-      "title": "Saved Builds",
-      "autoSaveHint": "Changes save automatically in your browser",
-      "newBuild": "New Build",
-      "renameBuild": "Rename build",
-      "deleteBuild": "Delete build",
-      "saveRename": "Save name",
-      "cancelRename": "Cancel rename",
-      "lastSaved": "Last saved"
+      "title": "Character Bonuses",
+      "empty": "No bonuses applied",
+      "attributeAllocation": "Attribute allocation",
+      "derivedFromAttributes": "From attributes",
+      "category.attributes": "Attributes",
+      "category.regen": "Regeneration",
+      "category.resistances": "Resistances",
+      "category.combat": "Combat",
+      "category.utility": "Utility",
+      "category.progression": "Progression",
+      "category.abilities": "Abilities",
+      "category.conditional": "Conditional"
     },
     "build-library": {
       "eyebrow": "Build Library",
@@ -124,7 +263,7 @@
       "activeBadge": "Active",
       "buildCount": "{count} saved builds",
       "noRace": "No race selected",
-      "perkCount": "{count} perks",
+      "playerLevel": "Level {level}",
       "shareCodeTitle": "Share Codes",
       "shareCodeDescription": "Compact codes for sharing a build in chat, forums, or planner links.",
       "activeBuildCode": "Active build",
@@ -144,9 +283,11 @@
       "importedLibrary": "Build library imported.",
       "importEmptyLibrary": "Library file contains no builds.",
       "savedBuildsTitle": "All Builds",
+      "searchBuilds": "Search builds...",
+      "noSearchResults": "No builds match your search.",
       "autoSaveHint": "click to select · drag handle to reorder",
       "dragToReorder": "Drag to reorder",
-      "newBuild": "New Build",
+      "newBuild": "Create Build",
       "renameBuild": "Rename",
       "deleteBuild": "Delete",
       "saveRename": "Save name",

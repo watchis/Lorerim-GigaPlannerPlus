@@ -6,9 +6,7 @@ import {
   PickerListPanel,
 } from "@/components/picker/PickerListItem";
 import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearchInput";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-export interface SingleSelectOption {
+import { ScrollArea } from "@/components/ui/scroll-area";export interface SingleSelectOption {
   id: string;
   name: string;
   isSelected: boolean;
@@ -68,9 +66,8 @@ export function SingleSelectPickerView({
           onChange={setQuery}
           placeholder={searchPlaceholder}
         />
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="space-y-0.5 pr-2">
-            {filteredOptions.length === 0 ? (
+        <ScrollArea className="picker-list-scroll min-h-0 flex-1">
+          <div className="space-y-0.5">            {filteredOptions.length === 0 ? (
               <p className="px-2 py-3 text-center text-xs text-[var(--color-muted)]">
                 {noMatchesLabel}
               </p>
@@ -91,7 +88,6 @@ export function SingleSelectPickerView({
           </div>
         </ScrollArea>
       </PickerListPanel>
-
       <PickerDetailPanel>
         {previewOption ? (
           <>

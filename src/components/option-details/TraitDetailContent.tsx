@@ -1,19 +1,15 @@
-import type { Mechanics, Trait } from "@/data/schemas";
-import { DetailBulletList, DetailSection } from "@/components/option-details/DetailSection";
-import { formatEffectBonus } from "@/lib/formatEffect";
+import type { Trait } from "@/data/schemas";
+import { DetailSection } from "@/components/option-details/DetailSection";
 
 interface TraitDetailContentProps {
   trait: Trait;
-  mechanics: Mechanics;
   labels: {
     bonuses: string;
   };
   hideHeader?: boolean;
 }
 
-export function TraitDetailContent({ trait, mechanics, labels, hideHeader }: TraitDetailContentProps) {
-  const bonusLines = trait.effects.map((effect) => formatEffectBonus(effect, mechanics));
-
+export function TraitDetailContent({ trait, labels, hideHeader }: TraitDetailContentProps) {
   return (
     <div className="space-y-4">
       {!hideHeader && (
@@ -21,16 +17,20 @@ export function TraitDetailContent({ trait, mechanics, labels, hideHeader }: Tra
           <h3 className="font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-accent)]">
             {trait.name}
           </h3>
-          <p className="mt-2 text-xs leading-relaxed text-[var(--color-muted)]">{trait.description}</p>
+          {trait.description && (
+            <p className="mt-2 text-xs leading-relaxed text-[var(--color-muted)]">{trait.description}</p>
+          )}
         </div>
       )}
-      {hideHeader && (
+      {hideHeader && trait.description && (
         <p className="text-sm leading-relaxed text-[var(--color-muted)]">{trait.description}</p>
       )}
 
-      {bonusLines.length > 0 && (
+      {trait.bonus && (
         <DetailSection title={labels.bonuses}>
-          <DetailBulletList items={bonusLines} />
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-border)]/50 bg-[var(--color-surface-elevated)]/35 px-3 py-2">
+            <p className="text-sm leading-relaxed text-[var(--color-foreground)]">{trait.bonus}</p>
+          </div>
         </DetailSection>
       )}
     </div>

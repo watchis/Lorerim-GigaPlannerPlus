@@ -2,7 +2,7 @@
   "columns": [
     {
       "width": "300px",
-      "panels": ["character-setup", "attributes"]
+      "panels": ["character-setup"]
     },
     {
       "width": "1fr",

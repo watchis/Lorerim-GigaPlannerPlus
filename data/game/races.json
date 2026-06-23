@@ -27,273 +27,19 @@
       "effects": []
     },
     {
-      "id": "argonian",
-      "name": "Argonian",
-      "description": "Argonians are the reptilian denizens of Black Marsh. Years of defending their borders have made them experts in stealth and evasion, and their natural abilities make them equally at home in water and on land. They are resistant to diseases and poisons and enjoy raw meat. Their Histskin allows them to quickly heal their wounds.",
+      "id": "bosmer",
+      "name": "Bosmer",
+      "description": "The Bosmer, or Wood Elves, originate from the sacred forest of Valenwood. Their culture is highly carnivorous and even cannibalistic, derived from the Green Pact with the forest, in which they harm no plant. Their dexterity makes them excellent scouts and thieves, and there are no finer archers in all of Tamriel. They have a natural resistance to poison, disease and shock.",
       "bonuses": [
-        "Waterbreathing: Your Argonian lungs can breathe underwater, while you also find it much easier to swim than members of other races. You can breathe underwater, swimming is 20% faster, swimming is 75% less exhausting.",
-        "Claws: Bestial claws are extremely sharp - sharp enough to easily shred through flesh, making them much more lethal than normal hands. Unarmed damage is increased by 20.",
-        "Histskin: Argonians can nautrally regenerate health faster than others, and their metabolism increases the effect of alchemical substances. Regenerate 1 health per second, potions are 10% more effective and last longer.",
-        "Resist Poison and Disease: Your Argonian blood greatly reduces the effect of poison and disease. Poison deals 75% less damage to you, you are 75% less likely to contract diseases.",
-        "Strong Stomach: Your metabolism can digest raw food without food poisoning."
-      ],
-      "startingAttributes": {
-        "health": 140,
-        "magicka": 120,
-        "stamina": 100
-      },
-      "attributeBonus": {
-        "health": 0,
-        "magicka": 0,
-        "stamina": 0
-      },
-      "startingCarryWeight": 200,
-      "speedBonus": 0,
-      "unarmedDamage": 32,
-      "regen": {
-        "health": 0.2,
-        "magicka": 1.1,
-        "stamina": 1.6
-      },
-      "startingSkills": {
-        "smithing": 0,
-        "heavy-armor": 0,
-        "block": 0,
-        "two-handed": 0,
-        "one-handed": 10,
-        "marksman": 0,
-        "evasion": 10,
-        "sneak": 10,
-        "wayfarer": 10,
-        "finesse": 0,
-        "speech": 0,
-        "alchemy": 15,
-        "illusion": 0,
-        "conjuration": 0,
-        "destruction": 0,
-        "restoration": 10,
-        "alteration": 0,
-        "enchanting": 0,
-        "destiny": 1,
-        "traits": 0
-      },
-      "effects": []
-    },
-    {
-      "id": "breton",
-      "name": "Breton",
-      "description": "Bretons, the inhabitants of the province of High Rock, are the human descendants of the Elves and the ancient race of the Nedes. While Bretons are physically weak, they can tap on magicka more than any other human race and they are particularly capable in the school of Conjuration. Their magic resistance blocks one fifth of incoming spell damage and their Dragonskin ability can fully absorb harmful magic by chance.",
-      "bonuses": [
-        "Magic Resistance: Your Breton blood reduces damage taken from all magical sources. Magic deals 15% less damage to you.",
-        "Dragonskin: Bretons can naturally absorb harmful magic by chance. Increases chance to absorb the magicka from hostile spells by 10%."
-      ],
-      "startingAttributes": {
-        "health": 120,
-        "magicka": 140,
-        "stamina": 100
-      },
-      "attributeBonus": {
-        "health": 0,
-        "magicka": 0,
-        "stamina": 0
-      },
-      "startingCarryWeight": 200,
-      "speedBonus": 0,
-      "unarmedDamage": 12,
-      "regen": {
-        "health": 0.15,
-        "magicka": 1.15,
-        "stamina": 1.6
-      },
-      "startingSkills": {
-        "smithing": 0,
-        "heavy-armor": 0,
-        "block": 0,
-        "two-handed": 0,
-        "one-handed": 0,
-        "marksman": 0,
-        "evasion": 0,
-        "sneak": 0,
-        "wayfarer": 0,
-        "finesse": 0,
-        "speech": 10,
-        "alchemy": 10,
-        "illusion": 10,
-        "conjuration": 15,
-        "destruction": 0,
-        "restoration": 10,
-        "alteration": 0,
-        "enchanting": 10,
-        "destiny": 1,
-        "traits": 0
-      },
-      "effects": []
-    },
-    {
-      "id": "dunmer",
-      "name": "Dunmer",
-      "description": "The Dunmer, or Dark Elves, are the ash-skinned, red-eyed, Elven people of Vvardenfell. They combine powerful intellects with strong and agile physiques, producing excellent warriors and evokers. They are extremely resistant to fire, blocking half of incoming fire damage. They're particularly skilled in Destruction and Conjuration magic, and can imbue more power into associated spells.",
-      "bonuses": [
-        "Resist Fire: Tempered in the flames of the Red Mountain and the heat of the Ashlands, your Dunmer blood greatly reduces all fire damage dealt to you. Fire deals 50% less damage to you.",
-        "Ashlander: Dunmer are naturally talented evokers and conjurers. Destruction and Conjuration spells are 10% more powerful and last longer."
-      ],
-      "startingAttributes": {
-        "health": 100,
-        "magicka": 140,
-        "stamina": 120
-      },
-      "attributeBonus": {
-        "health": 0,
-        "magicka": 0,
-        "stamina": 0
-      },
-      "startingCarryWeight": 200,
-      "speedBonus": 0,
-      "unarmedDamage": 13,
-      "regen": {
-        "health": 0.2,
-        "magicka": 1.1,
-        "stamina": 1.6
-      },
-      "startingSkills": {
-        "smithing": 0,
-        "heavy-armor": 0,
-        "block": 0,
-        "two-handed": 0,
-        "one-handed": 10,
-        "marksman": 0,
-        "evasion": 10,
-        "sneak": 10,
-        "wayfarer": 0,
-        "finesse": 0,
-        "speech": 0,
-        "alchemy": 0,
-        "illusion": 10,
-        "conjuration": 10,
-        "destruction": 15,
-        "restoration": 0,
-        "alteration": 0,
-        "enchanting": 0,
-        "destiny": 1,
-        "traits": 0
-      },
-      "effects": []
-    },
-    {
-      "id": "altmer",
-      "name": "Altmer",
-      "description": "The Altmer of Summerset Isle are called 'High' Elves in the Empire, describing both their physical appearance and their snobbish personality. The arcane ability of High Elves surpasses all other races in Tamriel. Their Highborn ability grants them increased magicka and spell power. They are weak in physical combat, however, and their magic affinity makes them more susceptible to elemental damage.",
-      "bonuses": [
-        "Weakness to Elements: High elves are more vulnerable to elements compared to other races. Fire, frost, and shock deal 10% more damage to you.",
-        "Highborn: High elf blood grants great affinity to magicka as well as resistance to diseases. Magicka regenerates 50% faster, spells are 5% more powerful and last longer, you are 50% less likely to contract diseases."
-      ],
-      "startingAttributes": {
-        "health": 100,
-        "magicka": 160,
-        "stamina": 100
-      },
-      "attributeBonus": {
-        "health": 0,
-        "magicka": 0,
-        "stamina": 0
-      },
-      "startingCarryWeight": 200,
-      "speedBonus": 0,
-      "unarmedDamage": 12,
-      "regen": {
-        "health": 0.15,
-        "magicka": 1.2,
-        "stamina": 1.55
-      },
-      "startingSkills": {
-        "smithing": 0,
-        "heavy-armor": 0,
-        "block": 0,
-        "two-handed": 0,
-        "one-handed": 0,
-        "marksman": 0,
-        "evasion": 0,
-        "sneak": 0,
-        "wayfarer": 0,
-        "finesse": 0,
-        "speech": 0,
-        "alchemy": 0,
-        "illusion": 10,
-        "conjuration": 10,
-        "destruction": 10,
-        "restoration": 10,
-        "alteration": 15,
-        "enchanting": 10,
-        "destiny": 1,
-        "traits": 0
-      },
-      "effects": []
-    },
-    {
-      "id": "imperial",
-      "name": "Imperial",
-      "description": "The cosmopolitan citizens of Cyrodiil are descended from the founders of the glorious Empire that has influenced Tamriel's history throughout the eras. Imperials are talented leaders and traders among society, skilled in both magic and combat thanks to martial and academic education of the schools of Cyrodiil. Their leadership can encourage their followers to fight well in combat.",
-      "bonuses": [
-        "Voice of the Emperor: Imperials are talented leaders and traders among society. Speech skill is 15 higher, prices are 15% more favorable, magicka and stamina of nearby allies increase by 25.",
-        "Imperial Diversity: Imperial education involves various martial and academical trainings, producing citizens with variety of skills. Health, magicka, and stamina regenerate 25% faster."
-      ],
-      "startingAttributes": {
-        "health": 120,
-        "magicka": 120,
-        "stamina": 120
-      },
-      "attributeBonus": {
-        "health": 0,
-        "magicka": 0,
-        "stamina": 0
-      },
-      "startingCarryWeight": 200,
-      "speedBonus": 0,
-      "unarmedDamage": 13,
-      "regen": {
-        "health": 0.2,
-        "magicka": 1.1,
-        "stamina": 1.6
-      },
-      "startingSkills": {
-        "smithing": 0,
-        "heavy-armor": 10,
-        "block": 10,
-        "two-handed": 0,
-        "one-handed": 10,
-        "marksman": 0,
-        "evasion": 0,
-        "sneak": 0,
-        "wayfarer": 0,
-        "finesse": 0,
-        "speech": 15,
-        "alchemy": 0,
-        "illusion": 0,
-        "conjuration": 0,
-        "destruction": 10,
-        "restoration": 10,
-        "alteration": 0,
-        "enchanting": 0,
-        "destiny": 1,
-        "traits": 0
-      },
-      "effects": []
-    },
-    {
-      "id": "khajiit",
-      "name": "Khajiit",
-      "description": "The Khajiit are a race of feline humanoids hailing from the province of Elsweyr, well-known as great merchants but also as smugglers and thieves. They are very fast and outrun all other races which, combined with a high stamina reserve, makes them fearsome skirmishers. However, they are seldom gifted with the skill to harness magical forces. All Khajiit can see in the dark at will, eat raw meat, resist the harmful effects of Skooma and their sharp claws are as lethal as knives.",
-      "bonuses": [
-        "Night Eye: Your eyes are exceptionally versatile and can become extremely sensitive to light, allowing a much better sight in dark areas.",
-        "Claws: Bestial claws are extremely sharp - sharp enough to easily shred through flesh, making them much more lethal than normal hands. Unarmed damage is increased by 20.",
-        "Feline Agility: Khajiits are very agile and can fall long heights without taking critical damage. Movement is 10% faster, sneaking is 20% faster, fall damage is reduced by 75%.",
+        "Eye of the Hunt: The Bosmer are naturally skilled in marksmanship, and can aim their bows more precisely. Armor penetration with ranged weapons is increased by 5.",
+        "Resist Poison and Disease: Your Bosmer blood grants you resistance to poison and diseases. Poison deals 25% less damage to you, you are 50% less likely to contract diseases.",
         "Strong Stomach: Your metabolism can digest raw food without food poisoning.",
-        "Fingersmith: Khajiits have keen senses and dexterity, making them much more proficient in thievery. Lockpicking expertise is increased by 2, lockpicks are 20% more durable, pickpocketing is 20% more likely to succeed, you are 20% harder to detect."
+        "Grounded: In harmony with nature and the earth, the Bosmer have honed their bodies to be conduits of elemental potential. +25% shock resist"
       ],
       "startingAttributes": {
         "health": 100,
-        "magicka": 100,
-        "stamina": 160
+        "magicka": 120,
+        "stamina": 140
       },
       "attributeBonus": {
         "health": 0,
@@ -301,23 +47,23 @@
         "stamina": 0
       },
       "startingCarryWeight": 200,
-      "speedBonus": 9,
-      "unarmedDamage": 32,
+      "speedBonus": 0,
+      "unarmedDamage": 9,
       "regen": {
         "health": 0.15,
-        "magicka": 1.05,
-        "stamina": 1.7
+        "magicka": 1.1,
+        "stamina": 1.65
       },
       "startingSkills": {
         "smithing": 0,
         "heavy-armor": 0,
         "block": 0,
         "two-handed": 0,
-        "one-handed": 10,
-        "marksman": 0,
+        "one-handed": 0,
+        "marksman": 15,
         "evasion": 10,
-        "sneak": 15,
-        "wayfarer": 10,
+        "sneak": 10,
+        "wayfarer": 0,
         "finesse": 10,
         "speech": 0,
         "alchemy": 10,
@@ -325,108 +71,7 @@
         "conjuration": 0,
         "destruction": 0,
         "restoration": 0,
-        "alteration": 0,
-        "enchanting": 0,
-        "destiny": 1,
-        "traits": 0
-      },
-      "effects": []
-    },
-    {
-      "id": "nord",
-      "name": "Nord",
-      "description": "Skyrim's Nords are tall and fair, with a culture which values honor, glory, and loyalty to family and community. Nords have come to distrust magic, but excel in physical warfare. They are greatly resistant to frost. Nords also have innate ability to use Shouts, and can unleash immense power through the words of power when mastered.",
-      "bonuses": [
-        "Resist Frost: Your Nord blood halves all taken frost damage. Frost deals 50% less damage.",
-        "Ancient Tongues: Nords have inherent ability to Shout, and can unleash immense power through the Voice. Shouts are 10% more powerful and last longer, Shouts can be used 10% more often.",
-        "Barbaric Strength: Nords are fierce and strong, skilled with all melee weapons. Melee weapons deal 5% more damage."
-      ],
-      "startingAttributes": {
-        "health": 140,
-        "magicka": 100,
-        "stamina": 120
-      },
-      "attributeBonus": {
-        "health": 0,
-        "magicka": 0,
-        "stamina": 0
-      },
-      "startingCarryWeight": 200,
-      "speedBonus": 0,
-      "unarmedDamage": 14,
-      "regen": {
-        "health": 0.25,
-        "magicka": 1,
-        "stamina": 1.65
-      },
-      "startingSkills": {
-        "smithing": 10,
-        "heavy-armor": 10,
-        "block": 10,
-        "two-handed": 15,
-        "one-handed": 10,
-        "marksman": 0,
-        "evasion": 10,
-        "sneak": 0,
-        "wayfarer": 0,
-        "finesse": 0,
-        "speech": 0,
-        "alchemy": 0,
-        "illusion": 0,
-        "conjuration": 0,
-        "destruction": 0,
-        "restoration": 0,
-        "alteration": 0,
-        "enchanting": 0,
-        "destiny": 1,
-        "traits": 0
-      },
-      "effects": []
-    },
-    {
-      "id": "orsimer",
-      "name": "Orsimer",
-      "description": "The Orsimer or 'Pariah Folk', commonly called Orcs, come from Orsinium in the west. Their savage appearance and customs sometimes cause fear, but they have won acceptance for their distinguished service in the Legion. Orcs' superior strength makes them formidable warriors, though use of magic requires extensive training. Their incredible endurance grants them resistance to both magical and physical harm.",
-      "bonuses": [
-        "Bulwark: Orcs have incredible strength and endurance, resistant to all types of damage. Armor rating increases by 150, magic deals 15% less damage to you.",
-        "Strong Stomach: Your metabolism can digest raw food without food poisoning."
-      ],
-      "startingAttributes": {
-        "health": 160,
-        "magicka": 100,
-        "stamina": 100
-      },
-      "attributeBonus": {
-        "health": 0,
-        "magicka": 0,
-        "stamina": 0
-      },
-      "startingCarryWeight": 200,
-      "speedBonus": 0,
-      "unarmedDamage": 14,
-      "regen": {
-        "health": 0.25,
-        "magicka": 1,
-        "stamina": 1.65
-      },
-      "startingSkills": {
-        "smithing": 10,
-        "heavy-armor": 15,
-        "block": 10,
-        "two-handed": 10,
-        "one-handed": 10,
-        "marksman": 0,
-        "evasion": 0,
-        "sneak": 0,
-        "wayfarer": 0,
-        "finesse": 0,
-        "speech": 0,
-        "alchemy": 0,
-        "illusion": 0,
-        "conjuration": 0,
-        "destruction": 10,
-        "restoration": 0,
-        "alteration": 0,
+        "alteration": 10,
         "enchanting": 0,
         "destiny": 1,
         "traits": 0
@@ -438,9 +83,9 @@
       "name": "Redguard",
       "description": "The dark-skinned, wiry-haired Redguards of Hammerfell seem born for battle, though their proud and independent spirits suit free-ranging heroism more. They have a hardy constitution and natural resistance to poison and disease, but tend to shun their magic. They are full of stamina and naturally skilled in melee combat, making them one of the strongest warriors in Tamriel.",
       "bonuses": [
-        "Resist Poison and Disease: Your Redguard blood, tempered in the deserts of Hammerfell, grants you a very strong resistance to poisons and diseases. Poison deals 50% less damage to you, you are 50% less likely to contract diseases.",
-        "Adrenaline Rush: Redguards are granted increased stamina, and can sprint much longer without being exhausted. Stamina regeneration is increased, sprinting costs 1 less stamina per second.",
-        "Martial Prowess: Redguards are naturally skilled in martial arts, and can wield their weapons with great precision. Armor penetration with melee weapons is increased by 5."
+        "Adrenaline Rush: Redguards are granted increased stamina, and can sprint much longer without being exhausted. Stamina regenerations is increased, sprinting costs 1 less stamina per second.",
+        "Martial Prowess: Redguards are naturally skilled in martial arts, and can wield their weapons with great precision. Armor penetration with melee weapons is increased by 5.",
+        "Resist Poison and Disease: Your Redguard blood, tempered in the deserts of Hammerfell, grants you a very strong resistance to poisons and diseases. Poison deals 50% less damage to you, you are 50% less likely to contract diseases."
       ],
       "startingAttributes": {
         "health": 120,
@@ -454,7 +99,7 @@
       },
       "startingCarryWeight": 200,
       "speedBonus": 0,
-      "unarmedDamage": 13,
+      "unarmedDamage": 10,
       "regen": {
         "health": 0.2,
         "magicka": 1,
@@ -485,19 +130,17 @@
       "effects": []
     },
     {
-      "id": "bosmer",
-      "name": "Bosmer",
-      "description": "The Bosmer, or Wood Elves, originate from the sacred forest of Valenwood. Their culture is highly carnivorous and even cannibalistic, derived from the Green Pact with the forest, in which they harm no plant. Their dexterity makes them excellent scouts and thieves, and there are no finer archers in all of Tamriel. They have a natural resistance to poison, disease and shock.",
+      "id": "orsimer",
+      "name": "Orsimer",
+      "description": "The Orsimer or \"Pariah Folk\", commonly called Orcs, come from Orsinium in the west. Their savage appearance and customs sometimes cause fear, but they have won acceptance for their distinguished service in the Legion. Orcs' superior strength makes them formidable warriors, though use of magic requires extensive training. Their incredible endurance grants them resistance to both magical and physical harm.",
       "bonuses": [
-        "Resist Poison and Disease: Your Bosmer blood grants you resistance to poison and diseases. Poison deals 25% less damage to you, you are 50% less likely to contract diseases.",
-        "Grounded: In harmony with nature and the earth, the Bosmer have honed their bodies to be conduits of elemental potential. +25% shock resist",
-        "Eye of the Hunt: The Bosmer are naturally skilled in marksmanship, and can aim their bows more precisely. Armor penetration with ranged weapons is increased by 5.",
+        "Bulwark: Orcs have incredible strength and endurance, resistant to all types of damage. Armor rating increases by 150, magic deals 10% less damage to you.",
         "Strong Stomach: Your metabolism can digest raw food without food poisoning."
       ],
       "startingAttributes": {
-        "health": 100,
-        "magicka": 120,
-        "stamina": 140
+        "health": 160,
+        "magicka": 100,
+        "stamina": 100
       },
       "attributeBonus": {
         "health": 0,
@@ -506,22 +149,126 @@
       },
       "startingCarryWeight": 200,
       "speedBonus": 0,
-      "unarmedDamage": 12,
+      "unarmedDamage": 10,
+      "regen": {
+        "health": 0.25,
+        "magicka": 1,
+        "stamina": 1.65
+      },
+      "startingSkills": {
+        "smithing": 10,
+        "heavy-armor": 15,
+        "block": 10,
+        "two-handed": 10,
+        "one-handed": 10,
+        "marksman": 0,
+        "evasion": 0,
+        "sneak": 0,
+        "wayfarer": 0,
+        "finesse": 0,
+        "speech": 0,
+        "alchemy": 0,
+        "illusion": 0,
+        "conjuration": 0,
+        "destruction": 10,
+        "restoration": 0,
+        "alteration": 0,
+        "enchanting": 0,
+        "destiny": 1,
+        "traits": 0
+      },
+      "effects": []
+    },
+    {
+      "id": "nord",
+      "name": "Nord",
+      "description": "Skyrim's Nords are tall and fair, with a culture which values honor, glory, and loyalty to family and community. Nords have come to distrust magic, but excel in physical warfare. They are greatly resistant to frost. Nords also have innate ability to use Shouts, and can unleash immense power through the words of power when mastered.",
+      "bonuses": [
+        "Ancient Tongues: Nords have inherent ability to Shout, and can unleash immense power through the Voice. Shouts are 10% more powerful and last longer, Shouts can be used 10% more often.",
+        "Barbaric Strength: Nords are fierce and strong, skilled with all melee weapons. Melee weapons deal 5% more damage.",
+        "Resist Frost and Shock: Your Nord blood halves all taken frost damage. Frost deals 50% less damage."
+      ],
+      "startingAttributes": {
+        "health": 140,
+        "magicka": 100,
+        "stamina": 120
+      },
+      "attributeBonus": {
+        "health": 0,
+        "magicka": 0,
+        "stamina": 0
+      },
+      "startingCarryWeight": 200,
+      "speedBonus": 0,
+      "unarmedDamage": 10,
+      "regen": {
+        "health": 0.25,
+        "magicka": 1,
+        "stamina": 1.65
+      },
+      "startingSkills": {
+        "smithing": 10,
+        "heavy-armor": 10,
+        "block": 10,
+        "two-handed": 15,
+        "one-handed": 10,
+        "marksman": 0,
+        "evasion": 10,
+        "sneak": 0,
+        "wayfarer": 0,
+        "finesse": 0,
+        "speech": 0,
+        "alchemy": 0,
+        "illusion": 0,
+        "conjuration": 0,
+        "destruction": 0,
+        "restoration": 0,
+        "alteration": 0,
+        "enchanting": 0,
+        "destiny": 1,
+        "traits": 0
+      },
+      "effects": []
+    },
+    {
+      "id": "khajiit",
+      "name": "Khajiit",
+      "description": "The Khajiit are a race of feline humanoids hailing from the province of Elsweyr, well-known as great merchants but also as smugglers and thieves. They are very fast and outrun all other races which, combined with a high stamina reserve, makes them fearsome skirmishers. However, they are seldom gifted with the skill to harness magical forces. All Khajiit can see in the dark at will, eat raw meat, resist the harmful effects of Skooma and their sharp claws are as lethal as knives.",
+      "bonuses": [
+        "Claws: Bestial claws are extremely sharp - sharp enough to easily shred through flesh, making them much more lethal than normal hands. Unarmed strikes do 5 additional damage.",
+        "Feline Agility: Khajiits are very agile and can fall long heights without taking critical damage. Movement is 10% faster, sneaking is 20% faster, fall damage is reduced by 75%.",
+        "Fingersmith: Khajiits have keen senses and dexterity, making them much more proficient in thievery. Lockpicking expertise is increased by 2, lockpicks are 20% more durable, pickpocketing is 20% more likely to succeed, you are 20% harder to detect.",
+        "Strong Stomach: Your metabolism can digest raw food without food poisoning.",
+        "Night Eye: Your eyes are exceptionally versatile and can become extremely sensitive to light, allowing a much better sight in dark areas."
+      ],
+      "startingAttributes": {
+        "health": 100,
+        "magicka": 100,
+        "stamina": 160
+      },
+      "attributeBonus": {
+        "health": 0,
+        "magicka": 0,
+        "stamina": 0
+      },
+      "startingCarryWeight": 200,
+      "speedBonus": 9,
+      "unarmedDamage": 10,
       "regen": {
         "health": 0.15,
-        "magicka": 1.1,
-        "stamina": 1.65
+        "magicka": 1.05,
+        "stamina": 1.7
       },
       "startingSkills": {
         "smithing": 0,
         "heavy-armor": 0,
         "block": 0,
         "two-handed": 0,
-        "one-handed": 0,
-        "marksman": 15,
+        "one-handed": 10,
+        "marksman": 0,
         "evasion": 10,
-        "sneak": 10,
-        "wayfarer": 0,
+        "sneak": 15,
+        "wayfarer": 10,
         "finesse": 10,
         "speech": 0,
         "alchemy": 10,
@@ -529,7 +276,260 @@
         "conjuration": 0,
         "destruction": 0,
         "restoration": 0,
-        "alteration": 10,
+        "alteration": 0,
+        "enchanting": 0,
+        "destiny": 1,
+        "traits": 0
+      },
+      "effects": []
+    },
+    {
+      "id": "imperial",
+      "name": "Imperial",
+      "description": "The cosmopolitan citizens of Cyrodiil are descended from the founders of the glorious Empire that has influenced Tamriel's history throughout the eras. Imperials are talented leaders and traders among society, skilled in both magic and combat thanks to martial and academic education of the schools of Cyrodiil. Their leadership can encourage their followers to fight well in combat.",
+      "bonuses": [
+        "Imperial Diversity: Imperial education involves various martial and academical trainings, producing citizens with variety of skills. Health, magicka, and stamina regenerate 25% faster.",
+        "Voice of the Emperor: Imperials are talented leaders and traders among society. Speech skill is 15 higher, prices are 15% more favorable, magicka and stamina of nearby allies increase by 25."
+      ],
+      "startingAttributes": {
+        "health": 120,
+        "magicka": 120,
+        "stamina": 120
+      },
+      "attributeBonus": {
+        "health": 0,
+        "magicka": 0,
+        "stamina": 0
+      },
+      "startingCarryWeight": 200,
+      "speedBonus": 0,
+      "unarmedDamage": 9,
+      "regen": {
+        "health": 0.2,
+        "magicka": 1.1,
+        "stamina": 1.6
+      },
+      "startingSkills": {
+        "smithing": 0,
+        "heavy-armor": 10,
+        "block": 10,
+        "two-handed": 0,
+        "one-handed": 10,
+        "marksman": 0,
+        "evasion": 0,
+        "sneak": 0,
+        "wayfarer": 0,
+        "finesse": 0,
+        "speech": 15,
+        "alchemy": 0,
+        "illusion": 0,
+        "conjuration": 0,
+        "destruction": 10,
+        "restoration": 10,
+        "alteration": 0,
+        "enchanting": 0,
+        "destiny": 1,
+        "traits": 0
+      },
+      "effects": []
+    },
+    {
+      "id": "altmer",
+      "name": "Altmer",
+      "description": "The Altmer of Summerset Isle are called \"High\" Elves in the Empire, describing both their physical appearance and their snobbish personality. The arcane ability of High Elves surpasses all other races in Tamriel. Their Highborn ability grants them increased magicka and spell power. They are weak in physical combat, however, but their magic affinity makes them less susceptible to elemental damage.",
+      "bonuses": [
+        "Highborn: High elf blood grants great affinity to magicka. Magicka regenerates 50% faster, spells are 5% more powerful and last longer.",
+        "Weakness to Elements: High elves are more resistant to all elements. Fire, frost, and shock deal 10% less damage to you."
+      ],
+      "startingAttributes": {
+        "health": 100,
+        "magicka": 160,
+        "stamina": 100
+      },
+      "attributeBonus": {
+        "health": 0,
+        "magicka": 0,
+        "stamina": 0
+      },
+      "startingCarryWeight": 200,
+      "speedBonus": 0,
+      "unarmedDamage": 7,
+      "regen": {
+        "health": 0.15,
+        "magicka": 1.2,
+        "stamina": 1.55
+      },
+      "startingSkills": {
+        "smithing": 0,
+        "heavy-armor": 0,
+        "block": 0,
+        "two-handed": 0,
+        "one-handed": 0,
+        "marksman": 0,
+        "evasion": 0,
+        "sneak": 0,
+        "wayfarer": 0,
+        "finesse": 0,
+        "speech": 0,
+        "alchemy": 0,
+        "illusion": 0,
+        "conjuration": 10,
+        "destruction": 10,
+        "restoration": 10,
+        "alteration": 15,
+        "enchanting": 10,
+        "destiny": 1,
+        "traits": 0
+      },
+      "effects": []
+    },
+    {
+      "id": "dunmer",
+      "name": "Dunmer",
+      "description": "The Dunmer, or Dark Elves, are the ash-skinned, red-eyed, Elven people of Vvardenfell. They combine powerful intellects with strong and agile physiques, producing excellent warriors and evokers. They are extremely resistant to fire, blocking half of incoming fire damage. They're particularly skilled in Destruction and Conjuration magic, and can imbue more power into associated spells.",
+      "bonuses": [
+        "Ashlander: Dunmer are naturally talented evokers and conjurers. Destruction and Conjuration spells are 10% more powerful and last longer.",
+        "Resist Fire: Tempered in the flames of the Red Mountain and the heat of the Ashlands, your Dunmer blood greatly reduces all fire damage dealt to you. Fire deals 50% less damage to you."
+      ],
+      "startingAttributes": {
+        "health": 100,
+        "magicka": 140,
+        "stamina": 120
+      },
+      "attributeBonus": {
+        "health": 0,
+        "magicka": 0,
+        "stamina": 0
+      },
+      "startingCarryWeight": 200,
+      "speedBonus": 0,
+      "unarmedDamage": 8,
+      "regen": {
+        "health": 0.2,
+        "magicka": 1.1,
+        "stamina": 1.6
+      },
+      "startingSkills": {
+        "smithing": 0,
+        "heavy-armor": 0,
+        "block": 0,
+        "two-handed": 0,
+        "one-handed": 10,
+        "marksman": 0,
+        "evasion": 10,
+        "sneak": 10,
+        "wayfarer": 0,
+        "finesse": 0,
+        "speech": 0,
+        "alchemy": 0,
+        "illusion": 0,
+        "conjuration": 10,
+        "destruction": 15,
+        "restoration": 0,
+        "alteration": 0,
+        "enchanting": 10,
+        "destiny": 1,
+        "traits": 0
+      },
+      "effects": []
+    },
+    {
+      "id": "breton",
+      "name": "Breton",
+      "description": "Bretons, the inhabitants of the province of High Rock, are the human descendants of the Elves and the ancient race of the Nedes. While Bretons are physically weak, they can tap on magicka more than any other human race and they are particularly capable in the school of Conjuration. Their magic resistance blocks one fifth of incoming spell damage and their Dragonskin ability can fully absorb harmful magic by chance.",
+      "bonuses": [
+        "Dragonskin: Bretons can naturally absorb harmful magic by chance. Increases chance to absorb the magicka from hostile spells by 10%.",
+        "Magic Resistance: Your Breton blood reduces damage taken from all magical sources. Magic deals 15% less damage to you."
+      ],
+      "startingAttributes": {
+        "health": 120,
+        "magicka": 140,
+        "stamina": 100
+      },
+      "attributeBonus": {
+        "health": 0,
+        "magicka": 0,
+        "stamina": 0
+      },
+      "startingCarryWeight": 200,
+      "speedBonus": 0,
+      "unarmedDamage": 8,
+      "regen": {
+        "health": 0.15,
+        "magicka": 1.15,
+        "stamina": 1.6
+      },
+      "startingSkills": {
+        "smithing": 0,
+        "heavy-armor": 0,
+        "block": 0,
+        "two-handed": 0,
+        "one-handed": 0,
+        "marksman": 0,
+        "evasion": 0,
+        "sneak": 0,
+        "wayfarer": 0,
+        "finesse": 0,
+        "speech": 10,
+        "alchemy": 10,
+        "illusion": 0,
+        "conjuration": 15,
+        "destruction": 0,
+        "restoration": 10,
+        "alteration": 0,
+        "enchanting": 10,
+        "destiny": 1,
+        "traits": 0
+      },
+      "effects": []
+    },
+    {
+      "id": "argonian",
+      "name": "Argonian",
+      "description": "Argonians are the reptilian denizens of Black Marsh. Years of defending their borders have made them experts in stealth and evasion, and their natural abilities make them equally at home in water and on land. They are resistant to diseases and poisons and enjoy raw meat. Their Histskin allows them to quickly heal their wounds.",
+      "bonuses": [
+        "Histskin: Argonians can nautrally regenerate health faster than others, and their metabolism increases the effect of alchemical substances. Regenerate 1.5 health per second, potions are 10% more effective and last longer.",
+        "Resist Poison and Disease: Your Argonian blood greatly reduces the effect of poison and disease. Poison deals 75% less damage to you, you are 75% less likely to contract diseases.",
+        "Strong Stomach: Your metabolism can digest raw food without food poisoning.",
+        "Waterbreathing: Your Argonian lungs can breathe underwater, while you also find it much easier to swim than members of other races. You can breathe underwater, swimming is 20% faster, swimming is 75% less exhausting.",
+        "Claws: Bestial claws are extremely sharp - sharp enough to easily shred through flesh, making them much more lethal than normal hands. Unarmed damage is increased by 20."
+      ],
+      "startingAttributes": {
+        "health": 140,
+        "magicka": 120,
+        "stamina": 100
+      },
+      "attributeBonus": {
+        "health": 0,
+        "magicka": 0,
+        "stamina": 0
+      },
+      "startingCarryWeight": 200,
+      "speedBonus": 0,
+      "unarmedDamage": 9,
+      "regen": {
+        "health": 0.2,
+        "magicka": 1.1,
+        "stamina": 1.6
+      },
+      "startingSkills": {
+        "smithing": 0,
+        "heavy-armor": 0,
+        "block": 0,
+        "two-handed": 0,
+        "one-handed": 10,
+        "marksman": 0,
+        "evasion": 10,
+        "sneak": 10,
+        "wayfarer": 10,
+        "finesse": 0,
+        "speech": 0,
+        "alchemy": 15,
+        "illusion": 0,
+        "conjuration": 0,
+        "destruction": 0,
+        "restoration": 10,
+        "alteration": 0,
         "enchanting": 0,
         "destiny": 1,
         "traits": 0

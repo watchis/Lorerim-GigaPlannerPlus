@@ -1,0 +1,73 @@
+{
+  "categories": [
+    { "id": "attributes", "label": "Attributes" },
+    { "id": "regen", "label": "Regeneration" },
+    { "id": "resistances", "label": "Resistances" },
+    { "id": "combat", "label": "Combat" },
+    { "id": "utility", "label": "Utility" },
+    { "id": "progression", "label": "Progression" },
+    { "id": "abilities", "label": "Abilities" }
+  ],
+  "stats": [
+    { "id": "health", "label": "Health", "category": "attributes", "valueKind": "flat" },
+    { "id": "magicka", "label": "Magicka", "category": "attributes", "valueKind": "flat" },
+    { "id": "stamina", "label": "Stamina", "category": "attributes", "valueKind": "flat" },
+
+    { "id": "healthRegen", "label": "Health Regen", "category": "regen", "valueKind": "percent" },
+    { "id": "healthRegenRate", "label": "Health Regen (flat)", "category": "regen", "valueKind": "flat" },
+    { "id": "magickaRegen", "label": "Magicka Regen", "category": "regen", "valueKind": "percent" },
+    { "id": "staminaRegen", "label": "Stamina Regen", "category": "regen", "valueKind": "percent" },
+
+    { "id": "magicResist", "label": "Magic Resist", "category": "resistances", "valueKind": "percent" },
+    { "id": "fireResist", "label": "Fire Resist", "category": "resistances", "valueKind": "percent" },
+    { "id": "frostResist", "label": "Frost Resist", "category": "resistances", "valueKind": "percent" },
+    { "id": "shockResist", "label": "Shock Resist", "category": "resistances", "valueKind": "percent" },
+    { "id": "poisonResist", "label": "Poison Resist", "category": "resistances", "valueKind": "percent" },
+    { "id": "diseaseResist", "label": "Disease Resist", "category": "resistances", "valueKind": "percent" },
+
+    { "id": "oneHandDamage", "label": "One-Hand Damage", "category": "combat", "valueKind": "percent" },
+    { "id": "twoHandDamage", "label": "Two-Hand Damage", "category": "combat", "valueKind": "percent" },
+    { "id": "meleeDamage", "label": "Melee Damage", "category": "combat", "valueKind": "percent" },
+    { "id": "rangedDamage", "label": "Ranged Damage", "category": "combat", "valueKind": "percent" },
+    { "id": "bowDamage", "label": "Bow Damage", "category": "combat", "valueKind": "percent" },
+    { "id": "crossbowDamage", "label": "Crossbow Damage", "category": "combat", "valueKind": "percent" },
+    { "id": "drawSpeed", "label": "Draw Speed", "category": "combat", "valueKind": "percent" },
+    { "id": "reloadSpeed", "label": "Reload Speed", "category": "combat", "valueKind": "percent" },
+    { "id": "criticalHitChance", "label": "Critical Hit Chance", "category": "combat", "valueKind": "percent" },
+    { "id": "damageTaken", "label": "Damage Taken", "category": "combat", "valueKind": "percent" },
+    { "id": "unarmedDamage", "label": "Unarmed Damage", "category": "combat", "valueKind": "flat" },
+    { "id": "spellDamage", "label": "Spell Damage", "category": "combat", "valueKind": "percent" },
+    { "id": "spellCost", "label": "Spell Cost", "category": "combat", "valueKind": "percent" },
+    { "id": "armorRating", "label": "Armor Rating", "category": "combat", "valueKind": "flat" },
+    { "id": "armorPenetrationMelee", "label": "Melee Armor Penetration", "category": "combat", "valueKind": "flat" },
+    { "id": "armorPenetrationRanged", "label": "Ranged Armor Penetration", "category": "combat", "valueKind": "flat" },
+    { "id": "dodgeChance", "label": "Dodge Chance", "category": "combat", "valueKind": "percent" },
+
+    { "id": "carryWeight", "label": "Carry Weight", "category": "utility", "valueKind": "flat" },
+    { "id": "moveSpeed", "label": "Move Speed", "category": "utility", "valueKind": "percent" },
+    { "id": "sneakSpeed", "label": "Sneak Speed", "category": "utility", "valueKind": "percent" },
+    { "id": "swimmingSpeed", "label": "Swimming Speed", "category": "utility", "valueKind": "percent" },
+    { "id": "fallDamageReduction", "label": "Fall Damage Reduction", "category": "utility", "valueKind": "percent" },
+    { "id": "lockpicking", "label": "Lockpicking", "category": "utility", "valueKind": "flat" },
+    { "id": "speech", "label": "Speech", "category": "utility", "valueKind": "flat" },
+    { "id": "detectDifficulty", "label": "Harder to Detect", "category": "utility", "valueKind": "percent" },
+    { "id": "shoutPower", "label": "Shout Power", "category": "utility", "valueKind": "percent" },
+    { "id": "shoutCooldownReduction", "label": "Shout Cooldown Reduction", "category": "utility", "valueKind": "percent" },
+    { "id": "magicAbsorb", "label": "Magic Absorb Chance", "category": "utility", "valueKind": "percent" },
+    { "id": "potionEffectiveness", "label": "Potion Effectiveness", "category": "utility", "valueKind": "percent" },
+    { "id": "priceModifier", "label": "Prices", "category": "utility", "valueKind": "percent" },
+    { "id": "sprintCostReduction", "label": "Sprint Cost Reduction", "category": "utility", "valueKind": "flat" },
+
+    { "id": "skillPointsPerLevel", "label": "Skill Points per Level", "category": "progression", "valueKind": "flat" },
+
+    { "id": "waterbreathing", "label": "Waterbreathing", "category": "abilities", "valueKind": "flag" },
+    { "id": "rawFood", "label": "Raw Food Safe", "category": "abilities", "valueKind": "flag" },
+    { "id": "nightEye", "label": "Night Eye", "category": "abilities", "valueKind": "flag" },
+    { "id": "noMagickaRegen", "label": "No Magicka Regen", "category": "abilities", "valueKind": "flag" },
+    { "id": "noSprintCost", "label": "No Sprint Cost", "category": "abilities", "valueKind": "flag" }
+  ],
+  "raceBindings": {
+    "unarmedDamage": { "field": "unarmedDamage" },
+    "moveSpeed": { "field": "speedBonus" }
+  }
+}

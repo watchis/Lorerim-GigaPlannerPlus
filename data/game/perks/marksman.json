@@ -2,8 +2,8 @@
   "skillId": "marksman",
   "skillName": "Marksman",
   "grid": {
-    "width": 25,
-    "height": 25
+    "width": 17,
+    "height": 30
   },
   "perks": [
     {
@@ -11,158 +11,313 @@
       "name": "Ranged Combat Training",
       "skillReq": 0,
       "position": {
-        "x": 15,
-        "y": 22
+        "x": 16,
+        "y": 28
       },
       "prerequisites": [],
-      "description": "After some training at the shooting range you can deal more damage with ranged weapons. (20% more damage, ammunition grants armor penetration)",
-      "effects": []
-    },
-    {
-      "id": "marksman-ranger",
-      "name": "Ranger",
-      "skillReq": 15,
-      "position": {
-        "x": 11,
-        "y": 19
-      },
-      "prerequisites": [
-        "marksman-ranged-combat-training"
+      "description": "After some training at the shooting range you can deal more damage with ranged weapons. [20% more damage, ammunition grants armor penetration]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 20,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 20,
+          "isPercent": true
+        }
       ],
-      "description": "You improved your footwork when engaging in ranged combat with light weapons. (Able to run with a drawn light bow or crossbow)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-eagle-eye",
       "name": "Eagle Eye",
       "skillReq": 25,
       "position": {
-        "x": 10,
-        "y": 15
+        "x": 6,
+        "y": 22
       },
       "prerequisites": [
         "marksman-ranged-combat-training"
       ],
-      "description": "By concentrating only on your target and holding your breath, you can now aim much more precisely. (Zoom in by holding right mouse button)",
-      "effects": []
+      "description": "By concentrating only on your target and holding your breath, you can now aim much more precisely. [Zoom in by holding right mouse button]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-marksman-s-focus",
       "name": "Marksman's Focus",
       "skillReq": 50,
       "position": {
-        "x": 5,
-        "y": 10
+        "x": 1,
+        "y": 14
       },
       "prerequisites": [
         "marksman-eagle-eye"
       ],
-      "description": "When fully focusing on your target, everything around you seems to slow down remarkably. (Time slows down while zooming, +10% critical hit chance)",
-      "effects": []
-    },
-    {
-      "id": "marksman-rapid-reload",
-      "name": "Rapid Reload",
-      "skillReq": 50,
-      "position": {
-        "x": 5,
-        "y": 7
-      },
-      "prerequisites": [
-        "marksman-eagle-eye"
+      "description": "When fully focusing on your target, everything around you seems to slow down remarkably. [Time slows down while zooming, +25% critical hit chance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "criticalHitChance",
+          "value": 50,
+          "isPercent": true
+        }
       ],
-      "description": "Your have familiarized yourself with the mechanics of your crossbow. (+50% reload speed with heavy crossbows, +100% with light crossbows)",
-      "effects": []
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-quick-shot",
       "name": "Quick Shot",
       "skillReq": 50,
       "position": {
-        "x": 12,
+        "x": 7,
+        "y": 12
+      },
+      "prerequisites": [
+        "marksman-eagle-eye"
+      ],
+      "description": "You have learned to draw and fire in one single movement. [+50% draw speed with heavy bows, +100% with light bows]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "marksman-rapid-reload",
+      "name": "Rapid Reload",
+      "skillReq": 50,
+      "position": {
+        "x": 1,
         "y": 9
       },
       "prerequisites": [
         "marksman-eagle-eye"
       ],
-      "description": "You have learned to draw and fire in one single movement. (+50% draw speed with heavy bows, +100% with light bows)",
-      "effects": []
+      "description": "Your have familiarized yourself with the mechanics of your crossbow. [+50% reload speed with heavy crossbows, +100% with light crossbows]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-power-shot",
       "name": "Power Shot",
-      "skillReq": 75,
+      "skillReq": 50,
       "position": {
-        "x": 6,
-        "y": 5
+        "x": 2,
+        "y": 6
       },
       "prerequisites": [
         "marksman-eagle-eye"
       ],
-      "description": "You have discovered the art of aiming at tendons and joints. (Bows do 100% more poise damage, move forward and hold bash to perform power shot when over 200 stamina)",
-      "effects": []
+      "description": "You have discovered the art of aiming at tendons and joints. [Bows do 100% more poise damage, move forward and hold bash to perform power shot which costs 100 Stamina]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "marksman-stunning-precision",
+      "name": "Stunning Precision",
+      "skillReq": 75,
+      "position": {
+        "x": 7,
+        "y": 0
+      },
+      "prerequisites": [
+        "marksman-penetrating-shot",
+        "marksman-power-shot"
+      ],
+      "description": "Any successful staggering shot will almost always stun the target momentarily. [Staggering hits will also stun the target]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-precise-aim",
       "name": "Precise Aim",
       "skillReq": 20,
       "position": {
-        "x": 18,
-        "y": 17
+        "x": 16,
+        "y": 21
       },
       "prerequisites": [
         "marksman-ranged-combat-training"
       ],
-      "description": "Your aim is now precise enough to target weak spots in the enemy's defenses. (20% more damage)",
-      "effects": []
+      "description": "Your aim is now precise enough to target weak spots in the enemy's defenses. [30% more damage]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 30,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 30,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-piercing-shot",
       "name": "Piercing Shot",
-      "skillReq": 40,
+      "skillReq": 30,
       "position": {
-        "x": 18,
+        "x": 14,
         "y": 11
       },
       "prerequisites": [
         "marksman-precise-aim"
       ],
-      "description": "You've learned how to hit the weakest parts of armor. (+50% armor penetration from ammunition)",
-      "effects": []
+      "description": "You've learned how to hit the weakest parts of armor. [+50% armor penetration from ammunition]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationMelee",
+          "value": 50,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorPenetrationRanged",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-penetrating-shot",
       "name": "Penetrating Shot",
-      "skillReq": 80,
+      "skillReq": 50,
       "position": {
-        "x": 17,
-        "y": 5
+        "x": 10,
+        "y": 1
       },
       "prerequisites": [
         "marksman-piercing-shot"
       ],
-      "description": "You've mastered the technique of hitting weak armor parts. (+50% armor penetration from ammunition)",
-      "effects": []
+      "description": "You've mastered the technique of hitting weak armor parts. [additional +60% armor penetration from ammunition when not sneaking and +10% critical hit chance and damage when sneaking]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "marksman-stunning-precision",
-      "name": "Stunning Precision",
-      "skillReq": 100,
+      "id": "marksman-ranger",
+      "name": "Ranger",
+      "skillReq": 15,
       "position": {
-        "x": 10,
-        "y": 2
+        "x": 8,
+        "y": 25
       },
       "prerequisites": [
-        "marksman-penetrating-shot",
-        "marksman-power-shot"
+        "marksman-ranged-combat-training"
       ],
-      "description": "Any successful staggering shot will almost always stun the target momentarily. (Staggering hits will also stun the target)",
-      "effects": []
+      "description": "You improved your footwork when engaging in ranged combat with light weapons. [Able to run with a drawn light bow or crossbow]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-sniper",
       "name": "Sniper",
       "skillReq": 15,
+      "position": {
+        "x": 6,
+        "y": 27
+      },
+      "prerequisites": [
+        "marksman-ranged-combat-training"
+      ],
+      "description": "You can keep steady aim with heavy ranged weapons, dealing more damage with sneak attacks. [1.2x irresistible sneak attack damage with heavy bow or crossbow and 1.3x extra damage with heavy bows or crossbows]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "marksman-hidden-blade",
+      "name": "Hidden Blade",
+      "skillReq": 20,
+      "position": {
+        "x": 13,
+        "y": 22
+      },
+      "prerequisites": [
+        "marksman-ranged-combat-training"
+      ],
+      "description": "Throwing knives penetrate the flesh, interrupting the target. [25% chance to stagger targets with throwing knives, unlocks secondary dagger abilities when using a bow]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "marksman-sharp-throw",
+      "name": "Sharp Throw",
+      "skillReq": 50,
+      "position": {
+        "x": 5,
+        "y": 9
+      },
+      "prerequisites": [
+        "marksman-eagle-eye"
+      ],
+      "description": "You can throw knives more precisely. [50% more damage with throwing knives]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 50,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 50,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "marksman-hunter",
+      "name": "Hunter",
+      "skillReq": 0,
+      "position": {
+        "x": 0,
+        "y": 29
+      },
+      "prerequisites": [],
+      "description": "You are more adapted to the wildlife, and better understand its inhabitants. [Do 20% more damage to animals and take 10% less damage from animals, +10% poison and disease resistance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "damageTaken",
+          "value": -10,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "marksman-hunter-r2",
+      "name": "Hunter",
+      "skillReq": 0,
+      "position": {
+        "x": 0,
+        "y": 29
+      },
+      "prerequisites": [],
+      "description": "You are more adapted to the wildlife, and better understand its inhabitants. [Do 40% more damage to animals and take 20% less damage from animals, +20% poison and disease resistance]",
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "damageTaken",
+          "value": -20,
+          "isPercent": true
+        }
+      ],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "marksman-bow-strike",
+      "name": "Bow Strike",
+      "skillReq": 25,
       "position": {
         "x": 9,
         "y": 21
@@ -170,122 +325,55 @@
       "prerequisites": [
         "marksman-ranged-combat-training"
       ],
-      "description": "You can keep steady aim with heavy ranged weapons, dealing more damage with sneak attacks. (1.5x irresistible sneak attack damage with heavy bow or crossbow)",
-      "effects": []
-    },
-    {
-      "id": "marksman-bow-strike",
-      "name": "Bow Strike",
-      "skillReq": 25,
-      "position": {
-        "x": 13,
-        "y": 17
-      },
-      "prerequisites": [
-        "marksman-ranged-combat-training"
-      ],
-      "description": "You can use your bow or crossbow as a melee weapon in close combat. (Double damage with bow bash, bow bash staggers targets, 50% less bow bash stamina cost)",
-      "effects": []
-    },
-    {
-      "id": "marksman-knife-expertise",
-      "name": "Knife Expertise",
-      "skillReq": 15,
-      "position": {
-        "x": 15,
-        "y": 17
-      },
-      "prerequisites": [
-        "marksman-ranged-combat-training"
-      ],
-      "description": "Throwing knives penetrate the flesh, interrupting the target. (25% chance to stagger targets with throwing knives)",
-      "effects": []
-    },
-    {
-      "id": "marksman-hunter",
-      "name": "Hunter",
-      "skillReq": 0,
-      "playerLevelReq": 10,
-      "position": {
-        "x": 7,
-        "y": 22
-      },
-      "prerequisites": [],
-      "description": "You are more adapted to the wildlife, and better understand its inhabitants. (Do 20% more damage to animals and take 10% less damage from animals, +10% poison and disease resistance)",
-      "effects": []
-    },
-    {
-      "id": "marksman-hunter-2",
-      "name": "Hunter",
-      "skillReq": 0,
-      "playerLevelReq": 20,
-      "position": {
-        "x": 7,
-        "y": 22
-      },
-      "prerequisites": [
-        "marksman-hunter"
-      ],
-      "description": "You are more adapted to the wildlife, and better understand its inhabitants. (Do 40% more damage to animals and take 20% less damage from animals, +20% poison and disease resistance)",
-      "effects": []
-    },
-    {
-      "id": "marksman-sharp-throw",
-      "name": "Sharp Throw",
-      "skillReq": 50,
-      "position": {
-        "x": 9,
-        "y": 8
-      },
-      "prerequisites": [
-        "marksman-eagle-eye"
-      ],
-      "description": "You can throw knives more precisely. (50% more damage with throwing knives)",
-      "effects": []
+      "description": "You can use your bow or crossbow as a melee weapon in close combat. [Double damage with bow bash, bow bash staggers targets, 50% less bow bash stamina cost]",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-focus-on-the-prey",
       "name": "Focus on the Prey",
       "skillReq": 30,
       "position": {
-        "x": 15,
-        "y": 14
+        "x": 10,
+        "y": 17
       },
       "prerequisites": [
         "marksman-precise-aim"
       ],
       "description": "Cannot be staggered while holding a drawn bow or reloading a crossbow.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-three-crows",
       "name": "Three Crows",
       "skillReq": 75,
       "position": {
-        "x": 15,
-        "y": 9
+        "x": 10,
+        "y": 10
       },
       "prerequisites": [
         "marksman-piercing-shot"
       ],
       "description": "Shooting a target beyond 25 feet three times in rapid succession, leaving less than 2.75 seconds between each hit, deals bonus damage equal to 15% of the target's current Health (max. 150 damage) and knocks the target to the ground.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "marksman-lion-s-arrow",
       "name": "Lion's Arrow",
-      "skillReq": 100,
+      "skillReq": 60,
       "position": {
-        "x": 11,
-        "y": 5
+        "x": 7,
+        "y": 3
       },
-      "prerequisites": [],
-      "prerequisitesAny": [
-        "marksman-power-shot",
-        "marksman-penetrating-shot"
+      "prerequisites": [
+        "marksman-penetrating-shot",
+        "marksman-power-shot"
       ],
-      "description": "Grants the 'Lion's Arrow' power: use it to store the spell you are dual casting. Shooting a fully drawn bow in combat also releases the stored spell in the direction of the crosshair. Only works with spells that affect other targets.",
-      "effects": []
+      "description": "Grants power to store your currently dual-cast spell. Shooting a fully drawn bow releases at a lower strength, scaling with archery skill, toward the crosshair, costing 50 Magicka. Only works with spells that target others.",
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

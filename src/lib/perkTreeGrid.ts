@@ -5,6 +5,34 @@ export interface PerkTreeGrid {
   height: number;
 }
 
+export interface PerkTreeGridBounds extends PerkTreeGrid {
+  origin: GridPoint;
+}
+
+export function getPerkTreeGridBounds(tree: Pick<PerkTree, "perks">): PerkTreeGridBounds {
+  if (tree.perks.length === 0) {
+    return { origin: { x: 0, y: 0 }, width: 1, height: 1 };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const perk of tree.perks) {
+    minX = Math.min(minX, perk.position.x);
+    minY = Math.min(minY, perk.position.y);
+    maxX = Math.max(maxX, perk.position.x);
+    maxY = Math.max(maxY, perk.position.y);
+  }
+
+  return {
+    origin: { x: minX, y: minY },
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  };
+}
+
 export interface GridPoint {
   x: number;
   y: number;
@@ -24,12 +52,12 @@ export interface PerkTreeContentBounds {
 export function expandPerkTreeContentBounds(
   bounds: PerkTreeContentBounds,
   padding: number,
-  grid: PerkTreeGrid,
+  frame: PerkTreeGridBounds,
 ): PerkTreeContentBounds {
-  const x = Math.max(0, bounds.x - padding);
-  const y = Math.max(0, bounds.y - padding);
-  const maxX = Math.min(grid.width, bounds.x + bounds.width + padding);
-  const maxY = Math.min(grid.height, bounds.y + bounds.height + padding);
+  const x = Math.max(frame.origin.x, bounds.x - padding);
+  const y = Math.max(frame.origin.y, bounds.y - padding);
+  const maxX = Math.min(frame.origin.x + frame.width, bounds.x + bounds.width + padding);
+  const maxY = Math.min(frame.origin.y + frame.height, bounds.y + bounds.height + padding);
 
   return {
     x,
@@ -44,8 +72,10 @@ export function getPerkTreeContentBounds(
   nodeExtent = 1,
   extraPadding = 0,
 ): PerkTreeContentBounds {
+  const frame = getPerkTreeGridBounds(tree);
+
   if (tree.perks.length === 0) {
-    return { x: 0, y: 0, width: tree.grid.width, height: tree.grid.height };
+    return { x: frame.origin.x, y: frame.origin.y, width: frame.width, height: frame.height };
   }
 
   let minX = Infinity;
@@ -68,10 +98,10 @@ export function getPerkTreeContentBounds(
     maxY = Math.max(maxY, edge.y1, edge.y2);
   }
 
-  const paddedMinX = Math.max(0, minX - nodeExtent);
-  const paddedMinY = Math.max(0, minY - nodeExtent);
-  const paddedMaxX = Math.min(tree.grid.width, maxX + nodeExtent);
-  const paddedMaxY = Math.min(tree.grid.height, maxY + nodeExtent);
+  const paddedMinX = Math.max(frame.origin.x, minX - nodeExtent);
+  const paddedMinY = Math.max(frame.origin.y, minY - nodeExtent);
+  const paddedMaxX = Math.min(frame.origin.x + frame.width, maxX + nodeExtent);
+  const paddedMaxY = Math.min(frame.origin.y + frame.height, maxY + nodeExtent);
 
   const bounds = {
     x: paddedMinX,
@@ -84,7 +114,7 @@ export function getPerkTreeContentBounds(
     return bounds;
   }
 
-  return expandPerkTreeContentBounds(bounds, extraPadding, tree.grid);
+  return expandPerkTreeContentBounds(bounds, extraPadding, frame);
 }
 
 export function getPerkTreeCompactViewBox(
@@ -122,12 +152,44 @@ export function getPerkPercentPositionInBounds(
   };
 }
 
+export function trimLineEndpoints(
+  from: GridPoint,
+  to: GridPoint,
+  trimStart: number,
+  trimEnd: number,
+): { x1: number; y1: number; x2: number; y2: number } {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy);
+  if (length <= 0) {
+    return { x1: from.x, y1: from.y, x2: to.x, y2: to.y };
+  }
+  if (length <= trimStart + trimEnd) {
+    const midX = (from.x + to.x) / 2;
+    const midY = (from.y + to.y) / 2;
+    return { x1: midX, y1: midY, x2: midX, y2: midY };
+  }
+  const ux = dx / length;
+  const uy = dy / length;
+  return {
+    x1: from.x + ux * trimStart,
+    y1: from.y + uy * trimStart,
+    x2: to.x - ux * trimEnd,
+    y2: to.y - uy * trimEnd,
+  };
+}
+
+export interface ComputePerkTreeEdgesOptions {
+  nodeRadiusByPerkId?: (perkId: string) => number;
+}
+
 export function computePerkTreeEdgesPercentInBounds(
   tree: PerkTree,
   selectedPerkIds: string[],
   bounds: PerkTreeContentBounds,
+  options?: ComputePerkTreeEdgesOptions,
 ): PerkTreeEdge[] {
-  return computePerkTreeEdges(tree, selectedPerkIds).map((edge) => ({
+  return computePerkTreeEdges(tree, selectedPerkIds, options).map((edge) => ({
     ...edge,
     x1: ((edge.x1 - bounds.x) / bounds.width) * 100,
     y1: ((edge.y1 - bounds.y) / bounds.height) * 100,
@@ -202,26 +264,55 @@ export function getPerkStackRank(perks: Perk[], selectedPerkIds: string[]): Perk
   };
 }
 
+/** Next tier after the highest selected rank at this stack position. */
 export function getNextRankInStack(perks: Perk[], selectedPerkIds: string[]): Perk | undefined {
-  return sortPerkStack(perks).find((perk) => !selectedPerkIds.includes(perk.id));
+  if (perks.length <= 1) return undefined;
+
+  const sorted = sortPerkStack(perks);
+  const highestSelectedIndex = sorted.reduce(
+    (maxIndex, perk, index) => (selectedPerkIds.includes(perk.id) ? index : maxIndex),
+    -1,
+  );
+
+  if (highestSelectedIndex < 0 || highestSelectedIndex >= sorted.length - 1) {
+    return undefined;
+  }
+
+  return sorted[highestSelectedIndex + 1];
 }
 
-export function computePerkTreeEdges(tree: PerkTree, selectedPerkIds: string[]): PerkTreeEdge[] {
+export function computePerkTreeEdges(
+  tree: PerkTree,
+  selectedPerkIds: string[],
+  options?: ComputePerkTreeEdgesOptions,
+): PerkTreeEdge[] {
   const lines: PerkTreeEdge[] = [];
+  const nodeRadiusByPerkId = options?.nodeRadiusByPerkId;
 
   for (const perk of tree.perks) {
-    for (const prereqId of perk.prerequisites) {
+    const prereqIds = [...perk.prerequisites, ...(perk.prerequisitesAny ?? [])];
+
+    for (const prereqId of prereqIds) {
       const prereq = tree.perks.find((p) => p.id === prereqId);
       if (!prereq) continue;
       if (sameGridPosition(prereq.position, perk.position)) continue;
 
       const from = getPerkGridCenter(prereq.position);
       const to = getPerkGridCenter(perk.position);
+      const trimmed =
+        nodeRadiusByPerkId != null
+          ? trimLineEndpoints(
+              from,
+              to,
+              nodeRadiusByPerkId(prereqId),
+              nodeRadiusByPerkId(perk.id),
+            )
+          : { x1: from.x, y1: from.y, x2: to.x, y2: to.y };
       lines.push({
-        x1: from.x,
-        y1: from.y,
-        x2: to.x,
-        y2: to.y,
+        x1: trimmed.x1,
+        y1: trimmed.y1,
+        x2: trimmed.x2,
+        y2: trimmed.y2,
         active: selectedPerkIds.includes(prereqId) && selectedPerkIds.includes(perk.id),
       });
     }
@@ -232,6 +323,11 @@ export function computePerkTreeEdges(tree: PerkTree, selectedPerkIds: string[]):
 
 export function getPerkPositionKey(position: GridPoint): string {
   return `${position.x},${position.y}`;
+}
+
+export function parseSvgViewBox(viewBox: string): PerkTreeContentBounds {
+  const [x, y, width, height] = viewBox.split(/\s+/).map(Number);
+  return { x, y, width, height };
 }
 
 /** Perks sharing a grid cell stack; the front perk receives pointer input. */
@@ -285,13 +381,13 @@ export function computeDoubleClickAllocatePerkIdsByPosition(
 }
 
 export function computePerkTreeEdgesPercent(tree: PerkTree, selectedPerkIds: string[]): PerkTreeEdge[] {
-  const { width, height } = tree.grid;
+  const frame = getPerkTreeGridBounds(tree);
 
   return computePerkTreeEdges(tree, selectedPerkIds).map((edge) => ({
     ...edge,
-    x1: (edge.x1 / width) * 100,
-    y1: (edge.y1 / height) * 100,
-    x2: (edge.x2 / width) * 100,
-    y2: (edge.y2 / height) * 100,
+    x1: ((edge.x1 - frame.origin.x) / frame.width) * 100,
+    y1: ((edge.y1 - frame.origin.y) / frame.height) * 100,
+    x2: ((edge.x2 - frame.origin.x) / frame.width) * 100,
+    y2: ((edge.y2 - frame.origin.y) / frame.height) * 100,
   }));
 }

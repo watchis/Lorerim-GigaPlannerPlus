@@ -16,5 +16,6 @@
   "destruction": "destruction.json",
   "restoration": "restoration.json",
   "alteration": "alteration.json",
-  "enchanting": "enchanting.json"
+  "enchanting": "enchanting.json",
+  "destiny": "destiny.json"
 }

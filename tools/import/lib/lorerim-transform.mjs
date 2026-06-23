@@ -1,0 +1,883 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { loadDestinyConfig } from "./destiny-config.mjs";
+import { SKILL_IDS, SKILL_NAMES } from "./skill-constants.mjs";
+import {
+  applyPerkHandTunedOverrides,
+  applyPerkLayoutOverrides,
+  applySmithingBookPerkCosts,
+  createEmptyPerkTrees,
+  loadPerkHandTunedOverrides,
+  loadPerkLayoutOverrides,
+} from "./import-reset.mjs";
+import {
+  getHomeownerTraitDescription,
+  loadTraitTranslations,
+} from "./trait-translations.mjs";
+import { cleanDescription, cleanName, cleanWintersunEffectText, slugify } from "./transform-utils.mjs";
+import { parseBonusEffects, resolveBonusEffects, extractConditionalBonusDetails, mergeEffects } from "./parse-bonus-effects.mjs";
+import { parseTraitBody } from "./parse-trait-body.mjs";
+import { parseRaceData } from "./race-data-parser.mjs";
+import { detectLorerimVersion } from "./lorerim-version.mjs";
+import {
+  collectDisplayedPerkRecords,
+} from "./perk-import-filter.mjs";
+import {
+  appendMissingPerkNodes,
+} from "./append-missing-perks.mjs";
+import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
+
+const DESTINY_SKILL_ID = "destiny";
+const DESTINY_COORD_SCALE = 2;
+
+const PLAYABLE_RACE_EDIDS = new Set([
+  "ArgonianRace",
+  "BretonRace",
+  "DarkElfRace",
+  "HighElfRace",
+  "ImperialRace",
+  "KhajiitRace",
+  "NordRace",
+  "OrcRace",
+  "RedguardRace",
+  "WoodElfRace",
+]);
+
+const SKILL_SEGMENT_TO_ID = new Map([
+  ["Smithing", "smithing"],
+  ["HeavyArmor", "heavy-armor"],
+  ["Heavy_Armor", "heavy-armor"],
+  ["Block", "block"],
+  ["TwoHanded", "two-handed"],
+  ["Two_Handed", "two-handed"],
+  ["OneHanded", "one-handed"],
+  ["One_Handed", "one-handed"],
+  ["Marksman", "marksman"],
+  ["Marksmanship", "marksman"],
+  ["Archery", "marksman"],
+  ["LightArmor", "evasion"],
+  ["Light_Armor", "evasion"],
+  ["Evasion", "evasion"],
+  ["Sneak", "sneak"],
+  ["Pickpocket", "finesse"],
+  ["Lockpicking", "wayfarer"],
+  ["Wayfarer", "wayfarer"],
+  ["Finesse", "finesse"],
+  ["Speech", "speech"],
+  ["Alchemy", "alchemy"],
+  ["Illusion", "illusion"],
+  ["Conjuration", "conjuration"],
+  ["Destruction", "destruction"],
+  ["Restoration", "restoration"],
+  ["Alteration", "alteration"],
+  ["Enchanting", "enchanting"],
+  ["Destiny", "destiny"],
+]);
+
+function normalizePerkName(name) {
+  return cleanName(name).toLowerCase();
+}
+
+function classifyPerkSkill(edid) {
+  if (edid.startsWith("Traits_")) return "traits";
+
+  const body = edid.startsWith("REQ_") ? edid.slice(4) : edid;
+  const segment = body.split("_")[0];
+  return SKILL_SEGMENT_TO_ID.get(segment) ?? null;
+}
+
+function buildPerkLookups(perkRecords, membership) {
+  const treePerkRecords = collectDisplayedPerkRecords(perkRecords, membership);
+  return { treePerkRecords };
+}
+
+function darPerkSuffixName(edid) {
+  const suffix = edid.replace(/^DAR_Perk\d+/, "");
+  if (!suffix) return "";
+  return suffix.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function darPerkDisplayName(record, usedNames) {
+  const fullName = cleanName(record.name);
+  if (fullName) {
+    const key = fullName.toLowerCase();
+    if (!usedNames.has(key)) {
+      usedNames.add(key);
+      return fullName;
+    }
+  }
+
+  const fallback = cleanName(darPerkSuffixName(record.edid));
+  if (fallback) {
+    usedNames.add(fallback.toLowerCase());
+    return fallback;
+  }
+
+  return fullName || record.edid;
+}
+
+function buildDarDisplayNames(darPerks) {
+  const usedNames = new Set();
+  return darPerks.map((record) => darPerkDisplayName(record, usedNames));
+}
+
+function darPerkSortKey(edid) {
+  const match = edid.match(/^DAR_Perk(\d+)/i);
+  return match ? Number.parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
+}
+
+function collectDarPerkRecords(perkRecords) {
+  return perkRecords
+    .filter((record) => record.edid.startsWith("DAR_Perk"))
+    .sort((left, right) => darPerkSortKey(left.edid) - darPerkSortKey(right.edid));
+}
+
+function destinyPerkId(sequence) {
+  return `${DESTINY_SKILL_ID}-${String(sequence).padStart(2, "0")}`;
+}
+
+function normalizeDestinyGrid(perks) {
+  if (perks.length === 0) {
+    return { perks, grid: { width: 1, height: 1 } };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const perk of perks) {
+    minX = Math.min(minX, perk.position.x);
+    minY = Math.min(minY, perk.position.y);
+    maxX = Math.max(maxX, perk.position.x);
+    maxY = Math.max(maxY, perk.position.y);
+  }
+
+  for (const perk of perks) {
+    perk.position = {
+      x: perk.position.x - minX,
+      y: perk.position.y - minY,
+    };
+  }
+
+  return {
+    perks,
+    grid: {
+      width: maxX - minX + 1,
+      height: maxY - minY + 1,
+    },
+  };
+}
+
+function buildDestinyTreeFromConfig(darPerks, configNodes, existingTree) {
+  const enabledNodes = configNodes
+    .filter((node) => node.enabled && node.index > 0)
+    .sort((left, right) => left.index - right.index);
+
+  const existingById = new Map(existingTree.perks.map((perk) => [perk.id, perk]));
+  const displayNames = buildDarDisplayNames(darPerks);
+  const nodeIndexToPerkId = new Map();
+  const perks = [];
+
+  for (const [index, node] of enabledNodes.entries()) {
+    const record = darPerks[index];
+    if (!record) break;
+
+    const sequence = index + 1;
+    const fallbackId = destinyPerkId(sequence);
+    const existing =
+      existingById.get(fallbackId) ??
+      existingTree.perks.find((perk) => perk.id.endsWith(`-${String(sequence).padStart(2, "0")}`));
+    const id = existing?.id ?? fallbackId;
+    const name = displayNames[index] ?? cleanName(record.name || record.edid);
+    const description = cleanDescription(record.description ?? existing?.description ?? "");
+
+    nodeIndexToPerkId.set(node.index, id);
+    perks.push({
+      id,
+      name,
+      skillReq: 0,
+      ...(existing?.costsPerkPoint === false ? { costsPerkPoint: false } : {}),
+      position: {
+        x: Math.round(node.x * DESTINY_COORD_SCALE),
+        y: Math.round(node.y * DESTINY_COORD_SCALE),
+      },
+      prerequisites: [],
+      prerequisitesAny: [],
+      description,
+      effects: existing?.effects?.length ? existing.effects : parseBonusEffects(description),
+    });
+  }
+
+  for (const node of enabledNodes) {
+    const parentId = nodeIndexToPerkId.get(node.index);
+    if (!parentId) continue;
+
+    for (const childIndex of node.links) {
+      const childId = nodeIndexToPerkId.get(childIndex);
+      if (!childId || childId === parentId) continue;
+
+      const childPerk = perks.find((perk) => perk.id === childId);
+      if (childPerk && !childPerk.prerequisitesAny.includes(parentId)) {
+        childPerk.prerequisitesAny.push(parentId);
+      }
+    }
+  }
+
+  const normalized = normalizeDestinyGrid(perks);
+  return {
+    skillId: DESTINY_SKILL_ID,
+    skillName: "Destiny",
+    ...normalized,
+  };
+}
+
+function buildFallbackDestinyTree(darPerks, existingTree) {
+  const existingById = new Map(existingTree.perks.map((perk) => [perk.id, perk]));
+  const displayNames = buildDarDisplayNames(darPerks);
+  const columnWidth = 7;
+  const perks = darPerks.map((record, index) => {
+    const sequence = index + 1;
+    const fallbackId = destinyPerkId(sequence);
+    const existing = existingById.get(fallbackId);
+    const name = displayNames[index] ?? cleanName(record.name || record.edid);
+
+    return {
+      id: existing?.id ?? fallbackId,
+      name,
+      skillReq: 0,
+      ...(existing?.costsPerkPoint === false ? { costsPerkPoint: false } : {}),
+      position: {
+        x: index % columnWidth,
+        y: Math.floor(index / columnWidth),
+      },
+      prerequisites: [],
+      prerequisitesAny: [],
+      description: cleanDescription(record.description ?? existing?.description ?? ""),
+      effects: existing?.effects?.length
+        ? existing.effects
+        : parseBonusEffects(cleanDescription(record.description ?? existing?.description ?? "")),
+    };
+  });
+
+  const normalized = normalizeDestinyGrid(perks);
+  return {
+    skillId: DESTINY_SKILL_ID,
+    skillName: "Destiny",
+    ...normalized,
+  };
+}
+
+function buildDestinyTree(perkRecords, installDir) {
+  const emptyTree = {
+    skillId: DESTINY_SKILL_ID,
+    skillName: "Destiny",
+    grid: { width: 1, height: 1 },
+    perks: [],
+  };
+  const darPerks = collectDarPerkRecords(perkRecords);
+  if (darPerks.length === 0) return emptyTree;
+
+  const configNodes = installDir ? loadDestinyConfig(installDir) : null;
+  if (configNodes?.length) {
+    return buildDestinyTreeFromConfig(darPerks, configNodes, emptyTree);
+  }
+
+  return buildFallbackDestinyTree(darPerks, emptyTree);
+}
+
+export function transformPerkRecords(
+  perkRecords,
+  perksDir,
+  installDir = null,
+  metadataIndex = null,
+  membership = null,
+) {
+  const handTunedOverrides = loadPerkHandTunedOverrides(perksDir);
+  const layoutOverrides = loadPerkLayoutOverrides(perksDir);
+  const { trees, indexEntries } = createEmptyPerkTrees();
+  const { treePerkRecords } = buildPerkLookups(perkRecords, membership);
+
+  trees["destiny.json"] = buildDestinyTree(perkRecords, installDir);
+
+  const addedPerks = appendMissingPerkNodes(
+    trees,
+    treePerkRecords,
+    metadataIndex,
+    membership,
+    perkRecords,
+  );
+  applyPerkHandTunedOverrides(trees, handTunedOverrides);
+  applySmithingBookPerkCosts(trees);
+  const removedPerks = pruneAllPerkTrees(trees, { membership });
+  applyPerkLayoutOverrides(trees, layoutOverrides);
+
+  return { trees, indexEntries, addedPerks, removedPerks };
+}
+
+function traitNameFromEdid(edid) {
+  let name = edid
+    .replace(/^Traits_/, "")
+    .replace(/PerkNeg$/, "")
+    .replace(/Perk$/, "")
+    .replace(/wayof/gi, "way of")
+    .replace(/baneof/gi, "bane of")
+    .replace(/ofthe/gi, "of the")
+    .replace(/([a-z])of([A-Za-z])/gi, "$1 of $2")
+    .replace(/([a-z])([A-Z])/g, "$1 $2");
+
+  return name;
+}
+
+function traitIdFromEdid(edid) {
+  return slugify(traitNameFromEdid(edid));
+}
+
+function buildTraitSpellLookup(spellRecords) {
+  const byEdid = new Map(spellRecords.map((record) => [record.edid, record]));
+  return byEdid;
+}
+
+function findTraitSpell(perkEdid, spellByEdid) {
+  const base = perkEdid.replace(/Perk$/, "");
+  for (const suffix of ["Ab", "Spell", "Ability"]) {
+    const spell = spellByEdid.get(`${base}${suffix}`);
+    if (spell) return spell;
+  }
+  return null;
+}
+
+function resolveTraitText(record, spellRecord, translations, existing) {
+  const id = traitIdFromEdid(record.edid);
+  const name = cleanName(
+    spellRecord?.name || record.name || traitNameFromEdid(record.edid) || existing?.name,
+  );
+
+  const homeownerDescription = getHomeownerTraitDescription(id, translations);
+  if (homeownerDescription) {
+    return {
+      id,
+      name,
+      description: cleanDescription(homeownerDescription),
+      bonus: "",
+    };
+  }
+
+  const rawText = cleanDescription(spellRecord?.description || record.description || "");
+  if (!rawText) {
+    return {
+      id,
+      name,
+      description: existing?.description ?? "",
+      bonus: existing?.bonus ?? "",
+    };
+  }
+
+  const parsed = parseTraitBody(rawText);
+  if (!parsed.bonus && parsed.description === rawText && existing?.bonus) {
+    return {
+      id,
+      name,
+      description: existing.description,
+      bonus: existing.bonus,
+    };
+  }
+
+  return { id, name, ...parsed };
+}
+
+export function transformTraitRecords(perkRecords, installDir = null, spellRecords = []) {
+  const translations = installDir ? loadTraitTranslations(installDir) : new Map();
+  const spellByEdid = buildTraitSpellLookup(spellRecords);
+
+  const espTraits = perkRecords.filter(
+    (record) => record.edid.startsWith("Traits_") && record.edid.endsWith("Perk"),
+  );
+
+  const traits = [];
+
+  for (const record of espTraits) {
+    const { id, name, description, bonus } = resolveTraitText(
+      record,
+      findTraitSpell(record.edid, spellByEdid),
+      translations,
+      null,
+    );
+    const effects = parseBonusEffects(bonus);
+
+    traits.push({
+      id,
+      name,
+      description,
+      bonus,
+      effects,
+      bonusDetails: extractConditionalBonusDetails(bonus, effects),
+    });
+  }
+
+  return { traits };
+}
+
+const RACE_ID_MAP = {
+  ArgonianRace: "argonian",
+  BretonRace: "breton",
+  DarkElfRace: "dunmer",
+  HighElfRace: "altmer",
+  ImperialRace: "imperial",
+  KhajiitRace: "khajiit",
+  NordRace: "nord",
+  OrcRace: "orsimer",
+  RedguardRace: "redguard",
+  WoodElfRace: "bosmer",
+};
+
+const RACE_DISPLAY_NAMES = {
+  DarkElfRace: "Dunmer",
+  HighElfRace: "Altmer",
+  OrcRace: "Orsimer",
+  WoodElfRace: "Bosmer",
+};
+
+const RACE_ABILITY_SEGMENT = {
+  ArgonianRace: "Argonian",
+  BretonRace: "Breton",
+  DarkElfRace: "Dunmer",
+  HighElfRace: "Altmer",
+  ImperialRace: "Imperial",
+  KhajiitRace: "Khajiit",
+  NordRace: "Nord",
+  OrcRace: "Orsimer",
+  RedguardRace: "Redguard",
+  WoodElfRace: "Bosmer",
+};
+
+const SHARED_RACE_ABILITIES = {
+  ArgonianRace: ["All_StrongStomach"],
+  WoodElfRace: ["All_StrongStomach"],
+  KhajiitRace: ["All_StrongStomach", "All_Claws"],
+  OrcRace: ["All_StrongStomach"],
+};
+
+function buildRaceAbilityLookup(spellRecords) {
+  const byKey = new Map();
+
+  for (const record of spellRecords) {
+    if (!record.edid.startsWith("REQ_Ability_Race_")) continue;
+    byKey.set(record.edid.slice("REQ_Ability_Race_".length), record);
+  }
+
+  return byKey;
+}
+
+function raceBonusLabel(record) {
+  const name = cleanName(record.name);
+  const description = cleanWintersunEffectText(record.description);
+  return description ? `${name}: ${description}` : name;
+}
+
+function raceBonusName(bonus) {
+  return bonus.split(":")[0]?.trim().toLowerCase() ?? "";
+}
+
+function mergeRaceBonuses(imported, prior = []) {
+  if (imported.length === 0) return prior;
+
+  const importedNames = new Set(imported.map(raceBonusName));
+  const preserved = prior.filter((bonus) => !importedNames.has(raceBonusName(bonus)));
+  return [...imported, ...preserved];
+}
+
+function collectRaceBonuses(raceEdid, abilityByKey) {
+  const segment = RACE_ABILITY_SEGMENT[raceEdid];
+  if (!segment) return [];
+
+  const bonuses = [];
+
+  for (const [key, record] of abilityByKey) {
+    if (!key.startsWith(`${segment}_`) || key.endsWith("_Buff")) continue;
+    bonuses.push(raceBonusLabel(record));
+  }
+
+  for (const sharedKey of SHARED_RACE_ABILITIES[raceEdid] ?? []) {
+    const record = abilityByKey.get(sharedKey);
+    if (record) bonuses.push(raceBonusLabel(record));
+  }
+
+  return bonuses.sort((left, right) => raceBonusName(left).localeCompare(raceBonusName(right)));
+}
+
+function cleanRaceDescription(description, raceEdid) {
+  let cleaned = cleanDescription(description);
+  if (raceEdid === "OrcRace") {
+    cleaned = cleaned.replace(/\s*Berserk rage[^.]*\./gi, "").trim();
+  }
+  return cleaned;
+}
+
+function findPriorRace(existingById, id, raceEdid) {
+  return (
+    existingById.get(id) ??
+    (raceEdid === "OrcRace" ? existingById.get("orc") : undefined)
+  );
+}
+
+function mergeImportedRaceStats(prior, importedStats) {
+  if (!importedStats) return {};
+
+  return {
+    startingAttributes: importedStats.startingAttributes,
+    startingCarryWeight: importedStats.startingCarryWeight,
+    unarmedDamage: importedStats.unarmedDamage,
+    regen: importedStats.regen,
+    startingSkills: {
+      ...importedStats.startingSkills,
+      destiny: prior?.startingSkills?.destiny ?? 1,
+      traits: prior?.startingSkills?.traits ?? 0,
+    },
+  };
+}
+
+export function transformRaceRecords(
+  raceRecords,
+  spellRecords,
+  racesPath,
+  lorerimRaceRecords = [],
+) {
+  const existing = JSON.parse(readFileSync(racesPath, "utf8"));
+  const existingById = new Map(existing.races.map((race) => [race.id, race]));
+  const abilityByKey = buildRaceAbilityLookup(spellRecords);
+  const lorerimByEdid = new Map(
+    lorerimRaceRecords
+      .filter((record) => PLAYABLE_RACE_EDIDS.has(record.edid))
+      .map((record) => [record.edid, record]),
+  );
+
+  const races = raceRecords
+    .filter((record) => PLAYABLE_RACE_EDIDS.has(record.edid))
+    .map((record) => {
+      const id = RACE_ID_MAP[record.edid];
+      const prior = findPriorRace(existingById, id, record.edid);
+      const source = lorerimByEdid.get(record.edid) ?? record;
+      const importedBonuses = collectRaceBonuses(record.edid, abilityByKey);
+      const bonuses = mergeRaceBonuses(importedBonuses, prior?.bonuses ?? []);
+      const importedStats = mergeImportedRaceStats(prior, parseRaceData(source.data));
+
+      return {
+        ...(prior ?? {
+          id,
+          name: RACE_DISPLAY_NAMES[record.edid] ?? source.name,
+          description: "",
+          bonuses: [],
+          startingAttributes: { health: 0, magicka: 0, stamina: 0 },
+          attributeBonus: { health: 0, magicka: 0, stamina: 0 },
+          startingCarryWeight: 0,
+          speedBonus: 0,
+          unarmedDamage: 0,
+          regen: { health: 0, magicka: 0, stamina: 0 },
+          startingSkills: {},
+          effects: [],
+        }),
+        ...importedStats,
+        id,
+        name: RACE_DISPLAY_NAMES[record.edid] || source.name || prior?.name || id,
+        description: cleanRaceDescription(
+          source.description ?? prior?.description ?? "",
+          record.edid,
+        ),
+        bonuses,
+        effects: [],
+      };
+    });
+
+  const none = existing.races.find((race) => race.id === "none");
+  return { races: none ? [none, ...races] : races };
+}
+
+export function transformManifestFromInstall(existingManifest, installDir) {
+  const detected = detectLorerimVersion(installDir);
+  const version = detected.version ?? existingManifest?.version ?? null;
+
+  return {
+    ...existingManifest,
+    name: "LoreRim",
+    ...(version ? { version } : {}),
+  };
+}
+
+const BIRTHSIGN_NAMES = [
+  "Apprentice",
+  "Atronach",
+  "Lady",
+  "Lord",
+  "Lover",
+  "Mage",
+  "Ritual",
+  "Serpent",
+  "Shadow",
+  "Steed",
+  "Thief",
+  "Tower",
+  "Warrior",
+];
+
+function birthsignIdFromName(name) {
+  return slugify(name);
+}
+
+function cleanBirthsignText(text) {
+  return cleanDescription(String(text ?? ""))
+    .replace(/<([^<>]+)>/g, "$1")
+    .replace(/\s*Accept the sign of the [^.?]+\?\s*$/i, "")
+    .trim();
+}
+
+function parseBirthsignBody(text) {
+  const cleaned = cleanBirthsignText(text);
+  if (!cleaned) return { description: "", bonus: "" };
+
+  const mechanicalStart = cleaned.search(
+    /\.\s+(?:\d+%|Magicka|Magic|Health|Stamina|Movement|Sprinting?|Gain|Armor|Pickpocket|Lockpicking|Soul Gems|Daedric|Standing Stones|You are|Prices|Shouts|Spells|Reflect|Poison|Most|Improved|You receive|You do not|absorb|do not lose)/i,
+  );
+
+  if (mechanicalStart === -1) {
+    return { description: cleaned, bonus: "" };
+  }
+
+  return {
+    description: cleaned.slice(0, mechanicalStart + 1).trim(),
+    bonus: cleaned.slice(mechanicalStart + 2).trim(),
+  };
+}
+
+function parseBirthsignMesg(description) {
+  const sections = String(description ?? "")
+    .split(/\r?\n\r?\n/)
+    .map((section) => cleanBirthsignText(section))
+    .filter(Boolean);
+
+  const group = sections[0] ?? "";
+  const body = sections.slice(1).join(" ");
+  const { description: flavor, bonus } = parseBirthsignBody(body);
+
+  return { group, description: flavor, bonus };
+}
+
+function isBirthsignAbilitySpell(record) {
+  if (!record.edid.startsWith("REQ_Ability_Birthsign_")) return false;
+  const suffix = record.edid.slice("REQ_Ability_Birthsign_".length);
+  return BIRTHSIGN_NAMES.includes(suffix);
+}
+
+function buildBirthsignMesgLookup(mesgRecords) {
+  const byStone = new Map();
+
+  for (const record of mesgRecords) {
+    const match = record.edid.match(/^doom([A-Za-z]+)MSG$/);
+    if (!match || match[1] === "AlreadyHave" || match[1].endsWith("Removed")) continue;
+    if (!BIRTHSIGN_NAMES.includes(match[1])) continue;
+    byStone.set(match[1], record);
+  }
+
+  return byStone;
+}
+
+export function transformStandingStoneRecords(spellRecords, mesgRecords, birthsignsPath) {
+  const existing = JSON.parse(readFileSync(birthsignsPath, "utf8"));
+  const existingEntries = existing.birthsigns ?? existing.standingStones ?? [];
+  const existingById = new Map(existingEntries.map((birthsign) => [birthsign.id, birthsign]));
+  const spellByEdid = new Map(spellRecords.map((record) => [record.edid, record]));
+  const mesgByStone = buildBirthsignMesgLookup(mesgRecords);
+
+  const birthsigns = [];
+
+  for (const stoneName of BIRTHSIGN_NAMES) {
+    const id = birthsignIdFromName(stoneName);
+    const prior = existingById.get(id);
+    const spell = spellByEdid.get(`REQ_Ability_Birthsign_${stoneName}`);
+    const mesg = mesgByStone.get(stoneName);
+
+    const fromMesg = mesg?.description ? parseBirthsignMesg(mesg.description) : null;
+    const fromSpell = spell?.description ? parseBirthsignBody(spell.description) : null;
+
+    const bonus = fromMesg?.bonus || fromSpell?.bonus || prior?.bonus || "";
+    const effects = parseBonusEffects(bonus);
+
+    birthsigns.push({
+      ...(prior ?? {
+        id,
+        name: stoneName,
+        group: "",
+        description: "",
+        bonus: "",
+        effects: [],
+      }),
+      id,
+      name: stoneName,
+      group: fromMesg?.group || prior?.group || "",
+      description: fromMesg?.description || fromSpell?.description || prior?.description || "",
+      bonus,
+      effects,
+      bonusDetails: extractConditionalBonusDetails(bonus, effects),
+    });
+  }
+
+  const none = existingEntries.find((birthsign) => birthsign.id === "none");
+  return { birthsigns: none ? [none, ...birthsigns] : birthsigns };
+}
+
+function blessingIdFromName(spellName) {
+  const match = cleanName(spellName).match(/^Blessing of (.+)$/i);
+  return slugify(match?.[1] ?? spellName);
+}
+
+function blessingNameFromSpell(spellName) {
+  const match = cleanName(spellName).match(/^Blessing of (.+)$/i);
+  return match?.[1] ?? cleanName(spellName);
+}
+
+function parseWorshipMessage(description) {
+  const text = String(description ?? "");
+  const sections = text.split(/\r?\n\r?\n/);
+  const intro = cleanDescription(sections[0] ?? "");
+  let follower = "";
+  let tenets = "";
+
+  for (const section of sections.slice(1)) {
+    if (/^Follower:/i.test(section)) {
+      follower = cleanDescription(section.replace(/^Follower:\s*/i, ""));
+    } else if (/^Tenets:/i.test(section)) {
+      tenets = cleanDescription(section.replace(/^Tenets:\s*/i, ""));
+    }
+  }
+
+  return { intro, follower, tenets };
+}
+
+function parseBlessingRequirement(failMessage) {
+  const text = cleanDescription(failMessage ?? "");
+  if (!text) return { requirement: "None", race: "All" };
+
+  if (/does not accept those who have not served/i.test(text)) {
+    return { requirement: "Must have served this deity", race: "All" };
+  }
+
+  const raceMatch = text.match(/only accepts those of (.+?) blood/i);
+  if (raceMatch) {
+    return {
+      requirement: "Race restricted",
+      race: raceMatch[1].replace(/\s+or\s+/gi, " / ").replace(/\s+and\s+/gi, " / "),
+    };
+  }
+
+  if (/does not accept those who are not of Human blood/i.test(text)) {
+    return { requirement: "Human blood", race: "Human" };
+  }
+
+  return { requirement: text, race: "All" };
+}
+
+function buildMgefLookup(mgefRecords) {
+  const byEdid = new Map(mgefRecords.map((record) => [record.edid, record]));
+  return byEdid;
+}
+
+function findBlessingMgef(byEdid, altarKey, boon) {
+  const exact = byEdid.get(`WSN_${altarKey}_${boon}_Effect_Ab`);
+  if (exact) return exact;
+
+  const prefix = `WSN_${altarKey}_${boon}_Effect_Ab`;
+  for (const [edid, record] of byEdid) {
+    if (edid.startsWith(prefix) && !edid.includes("_old")) {
+      return record;
+    }
+  }
+
+  return null;
+}
+
+function isAltarBlessingSpell(record) {
+  return (
+    record.edid.startsWith("WSN_AltarBlessing_") &&
+    record.edid.endsWith("_Spell") &&
+    !record.edid.includes("Gift")
+  );
+}
+
+function altarKeyFromSpellEdid(edid) {
+  return edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+}
+
+function blessingEffectText(record, magnitude = null) {
+  if (!record) return "";
+  return cleanWintersunEffectText(record.effectDescription || record.description, magnitude);
+}
+
+export function transformDeityRecords(
+  spellRecords,
+  mgefRecords,
+  mesgRecords,
+  deitiesPath,
+  altarMagnitudes = new Map(),
+) {
+  const existing = JSON.parse(readFileSync(deitiesPath, "utf8"));
+  const existingEntries = existing.deities ?? existing.blessings ?? [];
+  const existingById = new Map(existingEntries.map((deity) => [deity.id, deity]));
+  const mgefByEdid = buildMgefLookup(mgefRecords);
+  const mesgByEdid = new Map(mesgRecords.map((record) => [record.edid, record]));
+
+  const deities = [];
+  const seenIds = new Set();
+
+  for (const record of spellRecords.filter(isAltarBlessingSpell)) {
+    const altarKey = altarKeyFromSpellEdid(record.edid);
+    const name = blessingNameFromSpell(record.name);
+    const id = blessingIdFromName(record.name);
+    const prior = existingById.get(id);
+
+    const worship = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}`);
+    const fail = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}_Fail`);
+    const worshipText = parseWorshipMessage(worship?.description);
+
+    const shrineMgef = mgefByEdid.get(`WSN_AltarBlessing_${altarKey}_Effect`);
+    const followerMgef = findBlessingMgef(mgefByEdid, altarKey, "Boon1");
+    const devoteeMgef = findBlessingMgef(mgefByEdid, altarKey, "Boon2");
+    const { requirement, race } = parseBlessingRequirement(fail?.description);
+    const shrineMagnitude = altarMagnitudes.get(altarKey)?.magnitude ?? null;
+
+    const shrine = blessingEffectText(shrineMgef, shrineMagnitude);
+    const follower = blessingEffectText(followerMgef) || worshipText.follower;
+    const devotee = blessingEffectText(devoteeMgef);
+    const resolvedShrine = shrine || prior?.shrine || "-";
+
+    deities.push({
+      ...(prior ?? {
+        id,
+        name,
+        shrine: "-",
+        follower: "-",
+        devotee: "-",
+        tenets: "-",
+        race: "All",
+        starting: "",
+        requirement: "None",
+        effects: [],
+      }),
+      id,
+      name,
+      shrine: resolvedShrine,
+      follower: follower || prior?.follower || "-",
+      devotee: devotee || prior?.devotee || "-",
+      tenets: worshipText.tenets || prior?.tenets || "-",
+      race: race || prior?.race || "All",
+      starting: prior?.starting ?? "",
+      requirement: requirement || prior?.requirement || "None",
+      effects: parseBonusEffects(resolvedShrine),
+    });
+    seenIds.add(id);
+  }
+
+  deities.sort((left, right) => left.name.localeCompare(right.name));
+
+  const none = existingEntries.find((deity) => deity.id === "none");
+  return { deities: none ? [none, ...deities] : deities };
+}

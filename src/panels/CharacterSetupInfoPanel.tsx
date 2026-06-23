@@ -1,25 +1,28 @@
 import type { ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
-import { BlessingDetailContent } from "@/components/option-details/BlessingDetailContent";
+import { DeityDetailContent } from "@/components/option-details/DeityDetailContent";
 import { RaceDetailContent } from "@/components/option-details/RaceDetailContent";
-import { StandingStoneDetailContent } from "@/components/option-details/StandingStoneDetailContent";
+import { BirthsignDetailContent } from "@/components/option-details/BirthsignDetailContent";
 import { TraitDetailContent } from "@/components/option-details/TraitDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { StandingStone } from "@/data/schemas";
-import { getOrderedPerkTrees } from "@/engine/buildEngine";
+import {
+  getAttributePointsPerChoice,
+  getOrderedPerkTrees,
+  getRemainingAttributePoints,
+} from "@/engine/buildEngine";
+import { cn } from "@/lib/utils";
 import { DerivedStatsPanel } from "@/panels/DerivedStatsPanel";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 
-function standingStoneDetails(stone: StandingStone): string[] {
-  if (stone.bonusDetails?.length) return stone.bonusDetails;
-  if (stone.bonus.trim()) return [stone.bonus];
-  return [];
-}
+const ATTRIBUTE_COLORS = {
+  health: "var(--color-health)",
+  magicka: "var(--color-magicka)",
+  stamina: "var(--color-stamina)",
+} as const;
 
 function InfoSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -60,17 +63,20 @@ function SelectedSkillList({ skillIds, skills }: { skillIds: string[]; skills: {
 
 export function CharacterSetupInfoPanel() {
   const labels = usePanelLabels("character-setup");
+  const attributeLabels = usePanelLabels("attributes");
   const skillLabels = usePanelLabels("skill-trees");
   const derivedLabels = usePanelLabels("derived-stats");
   const setMiddleView = useUiStore((s) => s.setMiddleView);
   const setActiveSkillTreeId = useUiStore((s) => s.setActiveSkillTreeId);
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
 
-  if (!gameData) return null;
+  if (!gameData || !computed) return null;
 
   const { game } = gameData;
   const noneLabel = labels.noneSelected ?? "None selected";
+  const attributesRemaining = getRemainingAttributePoints(game, build);
 
   const detailLabels = {
     baseStats: labels.baseStats,
@@ -90,13 +96,13 @@ export function CharacterSetupInfoPanel() {
     build.raceId && build.raceId !== "none"
       ? game.races.find((race) => race.id === build.raceId)
       : null;
-  const selectedStone =
-    build.standingStoneId && build.standingStoneId !== "none"
-      ? game.standingStones.find((stone) => stone.id === build.standingStoneId)
+  const selectedBirthsign =
+    build.birthsignId && build.birthsignId !== "none"
+      ? game.birthsigns.find((birthsign) => birthsign.id === build.birthsignId)
       : null;
-  const selectedBlessing =
-    build.blessingId && build.blessingId !== "none"
-      ? game.blessings.find((blessing) => blessing.id === build.blessingId)
+  const selectedDeity =
+    build.deityId && build.deityId !== "none"
+      ? game.deities.find((deity) => deity.id === build.deityId)
       : null;
   const selectedTraits = build.traitIds
     .map((id) => game.traits.find((trait) => trait.id === id))
@@ -104,22 +110,17 @@ export function CharacterSetupInfoPanel() {
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <CardHeader className="flex-shrink-0 flex-row items-center justify-between gap-3 space-y-0 border-b border-[var(--color-border)]/50 pb-3">
-        <CardTitle className="text-base">{labels.title}</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0"
-          onClick={() => {
+      <WorkspacePanelHeader
+        forward={{
+          label: skillLabels.title,
+          onClick: () => {
             const firstTreeId = getOrderedPerkTrees(gameData.game)[0]?.skillId;
             if (firstTreeId) setActiveSkillTreeId(firstTreeId);
             setMiddleView("skill-trees");
-          }}
-        >
-          {skillLabels.title}
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </CardHeader>
+          },
+        }}
+        title={labels.overviewTitle ?? labels.title}
+      />
       <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
         <ScrollArea className="h-full">
           <div className="space-y-6 p-4">
@@ -139,12 +140,12 @@ export function CharacterSetupInfoPanel() {
               )}
             </InfoSection>
 
-            <InfoSection title={labels.standingStone}>
-              {selectedStone ? (
+            <InfoSection title={labels.birthsign}>
+              {selectedBirthsign ? (
                 <div className="space-y-3">
-                  <SelectionName name={selectedStone.name} />
-                  <StandingStoneDetailContent
-                    stone={{ ...selectedStone, bonusDetails: standingStoneDetails(selectedStone) }}
+                  <SelectionName name={selectedBirthsign.name} />
+                  <BirthsignDetailContent
+                    birthsign={selectedBirthsign}
                     labels={{ bonuses: labels.bonuses }}
                     hideHeader
                   />
@@ -154,12 +155,12 @@ export function CharacterSetupInfoPanel() {
               )}
             </InfoSection>
 
-            <InfoSection title={labels.blessing}>
-              {selectedBlessing ? (
+            <InfoSection title={labels.deity}>
+              {selectedDeity ? (
                 <div className="space-y-3">
-                  <SelectionName name={selectedBlessing.name} />
-                  <BlessingDetailContent
-                    blessing={selectedBlessing}
+                  <SelectionName name={selectedDeity.name} />
+                  <DeityDetailContent
+                    deity={selectedDeity}
                     races={game.races}
                     labels={{
                       races: labels.races,
@@ -176,6 +177,61 @@ export function CharacterSetupInfoPanel() {
               )}
             </InfoSection>
 
+            <InfoSection title={labels.attributes}>
+              <div className="space-y-2">
+                {attributesRemaining !== 0 && (
+                  <p
+                    className={cn(
+                      "text-xs",
+                      attributesRemaining < 0
+                        ? "text-[var(--color-error)]"
+                        : "text-[var(--color-muted)]",
+                    )}
+                  >
+                    {attributeLabels.remaining}: {attributesRemaining}
+                  </p>
+                )}
+                <div className="divide-y divide-[var(--color-border)]/50 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/35">
+                  {(["health", "magicka", "stamina"] as const).map((key) => {
+                    const choices = build.attributeBonus[key];
+                    const bonus = choices * getAttributePointsPerChoice(game, key);
+                    const color = ATTRIBUTE_COLORS[key];
+
+                    return (
+                      <div key={key} className="relative flex items-center gap-2 px-2.5 py-2">
+                        <div
+                          className="absolute inset-y-2 left-0 w-0.5 rounded-full"
+                          style={{ backgroundColor: color }}
+                          aria-hidden
+                        />
+                        <div className="min-w-0 flex-1 pl-2">
+                          <div
+                            className="text-[11px] font-semibold leading-none"
+                            style={{ color }}
+                          >
+                            {attributeLabels[key]}
+                          </div>
+                          {choices > 0 ? (
+                            <div className="mt-1 text-[10px] tabular-nums text-[var(--color-muted)]">
+                              +{bonus}
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-[10px] text-[var(--color-muted)]/70">—</div>
+                          )}
+                        </div>
+                        <span
+                          className="font-mono text-base font-semibold tabular-nums leading-none"
+                          style={{ color }}
+                        >
+                          {computed.attributes[key]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </InfoSection>
+
             <InfoSection title={labels.traits}>
               {selectedTraits.length > 0 ? (
                 <div className="space-y-5">
@@ -184,7 +240,6 @@ export function CharacterSetupInfoPanel() {
                       <SelectionName name={trait.name} />
                       <TraitDetailContent
                         trait={trait}
-                        mechanics={game.mechanics}
                         labels={{ bonuses: labels.bonuses }}
                         hideHeader
                       />
