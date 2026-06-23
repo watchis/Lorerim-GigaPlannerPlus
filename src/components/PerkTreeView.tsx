@@ -462,7 +462,10 @@ function PerkTreeView({
             y2={`${edge.y2}%`}
             stroke={edge.active ? "var(--color-accent)" : "var(--color-border)"}
             strokeWidth={edge.active ? 1.25 : 1.5}
-            strokeOpacity={edge.active ? 0.85 : 0.45}
+            strokeOpacity={
+              edge.active ? 0.85 : edge.kind === "any" ? 0.55 : 0.45
+            }
+            strokeDasharray={edge.kind === "any" ? "4 3" : undefined}
             strokeLinecap="round"
           />
         ))}

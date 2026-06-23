@@ -213,6 +213,7 @@ export function PerkTreeMiniView({
                   stroke="var(--color-perk-available)"
                   strokeWidth={COMPACT_EDGE_STROKE}
                   strokeOpacity={COMPACT_INACTIVE_EDGE_OPACITY}
+                  strokeDasharray={edge.kind === "any" ? "4 3" : undefined}
                   strokeLinecap="round"
                 />
               ))}
@@ -228,6 +229,7 @@ export function PerkTreeMiniView({
                   stroke="var(--color-accent)"
                   strokeWidth={COMPACT_EDGE_STROKE_ACTIVE}
                   strokeOpacity={COMPACT_ACTIVE_EDGE_OPACITY}
+                  strokeDasharray={edge.kind === "any" ? "4 3" : undefined}
                   strokeLinecap="round"
                 />
               ))}
@@ -305,7 +307,8 @@ export function PerkTreeMiniView({
                 y2={edge.y2}
                 stroke={edge.active ? "var(--color-accent)" : "var(--color-border)"}
                 strokeWidth={edge.active ? 0.15 : 0.1}
-                strokeOpacity={edge.active ? 0.85 : 0.35}
+                strokeOpacity={edge.active ? 0.85 : edge.kind === "any" ? 0.45 : 0.35}
+                strokeDasharray={edge.kind === "any" ? "4 3" : undefined}
                 strokeLinecap="round"
               />
             ))}

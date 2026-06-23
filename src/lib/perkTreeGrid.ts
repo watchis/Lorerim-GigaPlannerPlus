@@ -198,11 +198,14 @@ export function computePerkTreeEdgesPercentInBounds(
   }));
 }
 
+export type PerkPrerequisiteKind = "all" | "any";
+
 export interface PerkTreeEdge {
   x1: number;
   y1: number;
   x2: number;
   y2: number;
+  kind: PerkPrerequisiteKind;
   active: boolean;
 }
 
@@ -290,9 +293,12 @@ export function computePerkTreeEdges(
   const nodeRadiusByPerkId = options?.nodeRadiusByPerkId;
 
   for (const perk of tree.perks) {
-    const prereqIds = [...perk.prerequisites, ...(perk.prerequisitesAny ?? [])];
+    const prereqEntries: Array<{ id: string; kind: PerkPrerequisiteKind }> = [
+      ...perk.prerequisites.map((id) => ({ id, kind: "all" as const })),
+      ...(perk.prerequisitesAny ?? []).map((id) => ({ id, kind: "any" as const })),
+    ];
 
-    for (const prereqId of prereqIds) {
+    for (const { id: prereqId, kind } of prereqEntries) {
       const prereq = tree.perks.find((p) => p.id === prereqId);
       if (!prereq) continue;
       if (sameGridPosition(prereq.position, perk.position)) continue;
@@ -313,6 +319,7 @@ export function computePerkTreeEdges(
         y1: trimmed.y1,
         x2: trimmed.x2,
         y2: trimmed.y2,
+        kind,
         active: selectedPerkIds.includes(prereqId) && selectedPerkIds.includes(perk.id),
       });
     }
