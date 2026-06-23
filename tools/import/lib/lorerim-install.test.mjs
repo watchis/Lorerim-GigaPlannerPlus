@@ -45,7 +45,10 @@ assert.deepEqual(enabledMods, ["LoreRim - xEdit64 Output", "Ordinator - Perks of
 
 const pluginIndex = buildPluginSourceIndex(installDir, enabledMods);
 const ordinator = resolvePluginFile(pluginIndex, "Ordinator - Perks of Skyrim.esp");
-assert.ok(ordinator?.path.endsWith("LoreRim - xEdit64 Output\\Ordinator - Perks of Skyrim.esp"));
+assert.equal(
+  ordinator?.path,
+  join(modsDir, "LoreRim - xEdit64 Output", "Ordinator - Perks of Skyrim.esp"),
+);
 assert.equal(ordinator?.modName, "LoreRim - xEdit64 Output");
 
 const plugins = resolvePluginPaths(
