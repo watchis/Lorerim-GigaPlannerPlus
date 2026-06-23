@@ -1,8 +1,27 @@
-# Updating planner data
+# LoreRim data import
 
-Scripts in this folder regenerate `data/game/` from a local LoreRim MO2 install.
+Scripts in this folder regenerate [`data/game/`](../data/game/) from a local LoreRim MO2 install.
 
-**Not deployed:** like `tools/data-editor/`, this folder is dev-only. GitHub Pages publishes `dist/` from the main Vite build, which does not include `tools/import/`.
+**Not deployed:** like [`tools/data-editor/`](../data-editor/), this folder is dev-only. GitHub Pages publishes `dist/` from the main Vite build, which does not include `tools/import/`.
+
+**Related docs:** [root `README.md`](../../README.md) · [`data/README.md`](../../data/README.md) · [`tools/data-editor/README.md`](../data-editor/README.md) · [`src/README.md`](../../src/README.md)
+
+---
+
+## Contents
+
+| Section | Jump to |
+|---------|---------|
+| Quick start | [below](#quick-start) |
+| What `import:lorerim` does | [below](#what-importlorerim-does) |
+| CLI options & runtime | [below](#cli-options) |
+| Merge behavior | [below](#merge-behavior) |
+| Script layout | [below](#script-layout) |
+| Debug probes | [below](#debug-inspect-a-single-plugin) |
+| After updating | [below](#after-updating) |
+| Tests | [below](#tests) |
+
+---
 
 ## Quick start
 
@@ -172,4 +191,15 @@ When adding parsers or merge logic, add or extend tests in the same folder.
 
 ## Data model
 
-Skill levels, perk points, and skill points are separate systems. See `.cursor/rules/giga-planner-data-model.mdc` when editing economy or perk fields by hand.
+Skill levels, perk points, and skill points are separate systems. See [`.cursor/rules/giga-planner-data-model.mdc`](../../.cursor/rules/giga-planner-data-model.mdc) and [`data/README.md`](../../data/README.md) when editing economy or perk fields by hand.
+
+---
+
+## Related docs
+
+| Doc | Contents |
+|-----|----------|
+| [root `README.md`](../../README.md) | Project overview and common tasks |
+| [`data/README.md`](../../data/README.md) | JSON file reference and what import preserves |
+| [`tools/data-editor/README.md`](../data-editor/README.md) | Perk layout editing after import |
+| [`src/README.md`](../../src/README.md) | App architecture and loader |

@@ -1,8 +1,23 @@
 # GigaPlanner data
 
-All game content and most UI copy for the planner lives here as JSON. The app loads these files at build time, validates them with Zod schemas in `src/data/schemas/index.ts`, and never hardcodes LoreRim numbers in TypeScript.
+All game content and most UI copy for the planner lives here as JSON. The app loads these files at build time, validates them with Zod schemas in [`src/data/schemas/index.ts`](../src/data/schemas/index.ts), and never hardcodes LoreRim numbers in TypeScript.
 
-This document explains how the data is organized, how the three progression systems relate, and how to edit files safely.
+**Related docs:** [root `README.md`](../README.md) · [`src/README.md`](../src/README.md) · [`tools/import/README.md`](../tools/import/README.md) · [`tools/data-editor/README.md`](../tools/data-editor/README.md)
+
+---
+
+## Contents
+
+| Section | Jump to |
+|---------|---------|
+| Folder layout | [below](#folder-layout) |
+| Three progression systems | [below](#three-separate-progression-systems) |
+| How data is loaded | [below](#how-data-is-loaded) |
+| Ways to edit | [below](#ways-to-edit) |
+| Game files reference | [below](#game-files-reference) |
+| UI files reference | [below](#ui-files-reference) |
+| Consistency checklist | [below](#cross-file-consistency-checklist) |
+| Common mistakes | [below](#common-mistakes) |
 
 ---
 
@@ -367,9 +382,12 @@ TypeScript types (`Perk`, `Race`, `Effect`, etc.) are inferred from those schema
 
 ## Related docs
 
-- [tools/import/README.md](../tools/import/README.md) — LoreRim import pipeline
-- [tools/data-editor/README.md](../tools/data-editor/README.md) — visual JSON editor
-- [src/README.md](../src/README.md) — app source layout and tests
-- [.cursor/rules/giga-planner-data-model.mdc](../.cursor/rules/giga-planner-data-model.mdc) — agent/editor rules for economy and perks
-- [src/data/loader.ts](../src/data/loader.ts) — load order and merges
-- [src/data/schemas/index.ts](../src/data/schemas/index.ts) — validation rules
+| Doc | Contents |
+|-----|----------|
+| [root `README.md`](../README.md) | Project overview, quick start, deployment |
+| [`tools/import/README.md`](../tools/import/README.md) | LoreRim import pipeline |
+| [`tools/data-editor/README.md`](../tools/data-editor/README.md) | Visual JSON editor |
+| [`src/README.md`](../src/README.md) | App source layout and tests |
+| [`.cursor/rules/giga-planner-data-model.mdc`](../.cursor/rules/giga-planner-data-model.mdc) | Agent/editor rules for economy and perks |
+| [`src/data/loader.ts`](../src/data/loader.ts) | Load order and merges |
+| [`src/data/schemas/index.ts`](../src/data/schemas/index.ts) | Validation rules |

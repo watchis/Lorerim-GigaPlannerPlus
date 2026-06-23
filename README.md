@@ -1,90 +1,77 @@
+<div align="center">
+
 # Lorerim GigaPlanner Plus
 
-A data-driven character build planner for the [LoreRim](https://www.lorerim.com/) Skyrim modpack.
+**Plan your LoreRim character from level 1 to endgame — perks, skills, destiny, and live combat stats in one place.**
 
-## Features
+[![Live planner](https://img.shields.io/badge/Open_planner-GitHub_Pages-2563eb?style=for-the-badge)](https://watchis.github.io/Lorerim-GigaPlannerPlus/)
 
-- **JSON-driven game data** — races, standing stones, deities, traits, skills, and perk trees live in `data/game/`
-- **JSON-driven UI** — theme, layout, and labels in `data/ui/` control look and feel without code changes
-- **Interactive perk trees** — click perks with prerequisite and skill requirement validation
-- **Live derived stats** — Health/Magicka/Stamina drive computed combat attributes
-- **Shareable build codes** — encode/decode builds for URL sharing and clipboard copy
-- **Auto-save** — build state persists in localStorage
-- **Multiple saved builds** — create, rename, delete, and switch between character builds (stored locally in your browser)
+A free build planner for [LoreRim](https://www.lorerim.com/) players. No install, no account — open the site and start planning.
 
-## Development
+[Open the planner](https://watchis.github.io/Lorerim-GigaPlannerPlus/) · [Report an issue](https://github.com/watchis/Lorerim-GigaPlannerPlus/issues)
 
-```bash
-npm install
-npm run dev
-```
+</div>
 
-### Testing
+---
 
-```bash
-npm test              # app (Vitest) + import tooling (Node test runner)
-npm run test:app      # src/ unit tests only
-npm run test:import   # tools/import/lib/ tests only
-npm run test:watch    # Vitest watch mode
-npm run lint
-```
+## Getting started
 
-Pull requests run **`npm test`** via [`.github/workflows/test.yml`](.github/workflows/test.yml). See [`.github/README.md`](.github/README.md) for CI details.
+1. **[Open the planner](https://watchis.github.io/Lorerim-GigaPlannerPlus/)** in your browser.
+2. **Set up your character** — race, birthsign, deity, traits, major/minor skills, and attribute choices.
+3. **Spend your points** — pick perks, raise skill levels, plan training and destiny as you level up.
+4. **Save and revisit** — your work auto-saves in the browser. Come back anytime on the same device.
 
-Coverage highlights:
+---
 
-- **App** — build engine economy, perk selection, build codec round-trip, perk grid stacks, data loader validation against bundled JSON
-- **Import** — trait parsing, perk layout, MO2 install helpers, bonus effect rules (see `tools/import/README.md`)
+## What you can plan
 
-### Local data editor (not deployed)
+| | |
+|---|---|
+| **Character setup** | Every starting choice with live validation against LoreRim rules and race bonuses. |
+| **Full perk trees** | Every skill tree with prerequisites, skill gates, player level requirements, and multi-rank perks. |
+| **Destiny & training** | Destiny points and skill training alongside perk points and tiered skill-point costs. |
+| **Build variants** | Snapshots at key levels so you can map your leveling path without losing your main plan. |
+| **Live combat stats** | Health, magicka, stamina, and tracked bonuses update as you change setup and perks. |
+| **Share & backup** | Compact build codes, planner links, and `.gpp` backup files. |
 
-A self-contained dev tool in `tools/data-editor/` for editing JSON under `data/`:
+---
 
-```bash
-npm run dev:editor
-```
+## Sharing builds
 
-Opens at `http://localhost:5174/`. This is separate from the main app and is **not** included in the GitHub Pages build.
+From **My Builds** or the planner summary panel you can:
 
-## Build
+- **Copy a build code** — a short string you can paste to a friend or forum post.
+- **Copy a planner link** — opens the planner with your build already loaded.
+- **Export a `.gpp` file** — a backup you can import later from the builds page.
+- **Import a code or file** — paste a share code or drop a `.gpp` file to load someone else's build.
 
-```bash
-npm run build
-npm run preview
-```
+Builds are stored **locally in your browser**. Clearing site data or switching browsers will remove saved builds unless you exported a code or backup file.
 
-## Deployment
+---
 
-Pushes to `main` deploy to GitHub Pages via `.github/workflows/deploy.yml`.
+## Tips
 
-Live site: `https://watchis.github.io/Lorerim-GigaPlannerPlus/`
+- Use the **level bar** at the top of the planner to change player level and see what unlocks.
+- **Variants** let you record how your build should look at milestone levels (e.g. level 20, 50, endgame).
+- Hover or click perks in the tree to see requirements before you spend points.
+- If a perk is greyed out, check skill level, prerequisite perks, or player level gates.
 
+---
 
-## Updating game data
+## Questions or problems?
 
-See **[tools/import/README.md](tools/import/README.md)** for importing perks, races, and traits from a local LoreRim install (`npm run import:lorerim -- --install <path>`).
+Something wrong with perk data, a broken share code, or a UI bug? [Open an issue](https://github.com/watchis/Lorerim-GigaPlannerPlus/issues) on GitHub.
 
-## Project layout
+---
 
-```
-data/
-  game/           # LoreRim mechanics and content
-  ui/             # Theme, layout, and label strings
-tools/
-  data-editor/    # Local JSON editor (dev only, not deployed)
-  import/         # LoreRim data import (dev only, not deployed)
-src/
-  data/           # Zod schemas and loader
-  engine/         # Stat computation and build codec
-  panels/         # Layout-driven UI panels
-```
+## For contributors
 
-See also [`src/README.md`](src/README.md) for application architecture and testing conventions.
+This project is open source ([MIT](LICENSE)). Developer documentation lives elsewhere so this page stays focused on players:
 
-To add a new perk tree manually, create `data/game/perks/<skill>.json` and register it in `data/game/perks/index.json`.
-
-To change the UI theme, edit `data/ui/theme.json`. To rearrange panels, edit `data/ui/layout.json`.
-
-## Data model notes
-
-Skill levels, perk points, and skill points are three separate systems. See `.cursor/rules/giga-planner-data-model.mdc` for conventions when editing economy or perk data.
+| Doc | Contents |
+|-----|----------|
+| [`src/README.md`](src/README.md) | App architecture, npm scripts, and tests |
+| [`data/README.md`](data/README.md) | Game data files and progression systems |
+| [`tools/import/README.md`](tools/import/README.md) | Refresh perk data from a local LoreRim install |
+| [`tools/data-editor/README.md`](tools/data-editor/README.md) | Local JSON editor for game data |
+| [`.github/CI.md`](.github/CI.md) | CI, Dependabot, and GitHub Pages deployment |
