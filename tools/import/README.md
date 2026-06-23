@@ -23,8 +23,8 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 | Game source | Planner output |
 |-------------|----------------|
 | Requiem `REQ_*`, LoreRim `Feat_Perk_*` / `LoreRimTrapper_*` / `BOOB_*`, Ordinator `ORD_*`, and Wayfarer `FURY_Perk_*` / `BBWayfarer*` records | `data/game/perks/*.json` (text updates; layout preserved; stale perks removed) |
-| Subclasses of Skyrim `DAR_Perk*` + `CustomSkill.destiny.config.txt` | `data/game/perks/destiny.json` (built when empty) |
-| Biggie Traits (`Traits_*` perks + `Traits_*Ab` spells) | `data/game/traits.json` |
+| Subclasses of Skyrim `DAR_Perk*` + `CustomSkill.destiny.config.txt` | `data/game/perks/destiny.json` (layout preserved from previous JSON; config used for membership/links) |
+| Biggie Traits `Traits_AbilityList` (FLST + FLM patches) trait ability spells | `data/game/traits.json` |
 | Playable races | `data/game/races.json` |
 | Big Tweaks `REQ_Ability_Birthsign_*` + `doom*MSG` | `data/game/birthsigns.json` |
 | Wintersun altar deity MGEF descriptions + worship tenets | `data/game/deities.json` |
@@ -40,7 +40,9 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 
 ### Runtime
 
-A full LoreRim load order is ~3,500 plugins. Expect the scan to take **a few minutes**.
+A full LoreRim load order is ~3,500 plugins. The importer reads each plugin **once** (PERK, AVIF, SPEL, RACE, MESG, QUST, Wintersun MGEF, altar blessings, and trait FormList data in a single pass) with parallel I/O across up to 8 plugins at a time. Expect the scan to take **about one minute** on a fast SSD (previously several minutes with repeated full scans).
+
+Set `IMPORT_PLUGIN_CONCURRENCY` to tune parallel plugin reads (default `8`).
 
 ### Modpack version
 
@@ -63,10 +65,10 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 |----------------------|----------------------------|
 | All perk tree nodes (membership, names, descriptions, prerequisites, `skillReq`) | `costsPerkPoint: false` per perk name (hand-tuned free nodes); Smithing book-unlock perks (description mentions reading/studying) are set free automatically |
 | Default layout for newly added perks (GigaPlanner coords or prerequisite graph) | Perk `position` and `grid` per skill tree (matched by skill + perk name; multi-rank stacks share one cell) |
-| All traits from `Traits_*` plugin records | — |
+| All traits from `Traits_AbilityList` (base FormList + FLM additions) | — |
 | Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA` | `race-effects.json`, race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | Birthsign `effects` when already hand-tuned (non-empty) |
-| Deity names, shrine/follower/devotee/tenets text | Deity `effects`, `starting` |
+| Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | Deity `effects` |
 | `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
 
 When `effects` is empty, the importer parses the `bonus` text with rule-based patterns in `lib/parse-bonus-effects.mjs` (percent modifiers, attribute flat bonuses, common weapon/resist phrases). Conditional or narrative-only bonuses may stay empty until rules are extended.
@@ -114,7 +116,8 @@ tools/import/
     formid.mjs             # TES4 master list + plugin-local form ID → global identity
     giga-planner-layout.mjs # GigaPlanner-inspired perk positioning during import
     giga-planner-layout.json # static legacy layout coordinates
-    esp-reader.mjs         # Skyrim plugin record parser
+    plugin-io.mjs          # shared plugin visit/read helpers + concurrent mapper
+    esp-reader.mjs         # Skyrim plugin record parser (single-pass batch scan)
     import-reset.mjs       # empty perk shells, hand-tuned overrides, layout preservation, stale file cleanup
     lorerim-transform.mjs  # plugin records → planner JSON
     destiny-config.mjs     # Subclasses of Skyrim destiny tree layout parser
@@ -141,7 +144,19 @@ node tools/import/probe-plugin-sources.mjs "D:/path/to/Lorerim"
 1. Review the git diff under `data/game/`
 2. Confirm `manifest.json` → `version` matches your LoreRim install (auto-detected from Wabbajack)
 3. Run `npm run build` to validate schemas
-3. Spot-check perk trees and trait/race pickers in the dev UI
+4. Run `npm run test:import` (or `npm test`) — unit tests for parsers and merge helpers in `lib/`
+5. Spot-check perk trees and trait/race pickers in the dev UI
+
+## Tests
+
+Import helpers have co-located `*.test.mjs` files under `lib/`. They use Node's built-in test runner (assert-based scripts discovered by `node --test`).
+
+```bash
+npm run test:import   # from repo root
+node --test tools/import/lib/parse-trait-body.test.mjs   # single file
+```
+
+When adding parsers or merge logic, add or extend tests in the same folder.
 
 ## Data model
 

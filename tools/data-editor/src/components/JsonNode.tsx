@@ -1,6 +1,9 @@
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Minus, Plus, Trash2 } from "lucide-react";
+import { getCuratedArrayKind, curatedArrayLabel } from "@/lib/curatedArrayEntries";
 import { cn } from "@/lib/utils";
+import { CreateGameEntryModal } from "./CreateGameEntryModal";
+import { useEditorFilePath } from "./EditorFileContext";
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import { matchesTreeSearch, normalizeTreeSearchQuery } from "@/lib/treeSearch";
 import { useTreeSearch } from "./TreeSearchContext";
@@ -578,6 +581,10 @@ function ArrayEditor({
   keyName?: string;
   keySuggestionsForRename?: string[];
 }) {
+  const filePath = useEditorFilePath();
+  const curatedKind =
+    filePath && sectionLabel ? getCuratedArrayKind(filePath, sectionLabel) : null;
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const searchQuery = useTreeSearch();
   const allObjects = value.every(
     (item) => valueType(item) === "object" && item !== null && !Array.isArray(item),
@@ -601,39 +608,54 @@ function ArrayEditor({
   };
 
   const addItem = () => {
+    if (curatedKind) {
+      setCreateModalOpen(true);
+      return;
+    }
     onChange([...value, allObjects ? {} : ""]);
+  };
+
+  const handleCreateEntry = (entry: Record<string, unknown>) => {
+    onChange([...value, entry as JsonValue]);
+    setCreateModalOpen(false);
   };
 
   const itemCardDepth = sectionLabel ? cardDepth + 1 : cardDepth === 0 ? 1 : cardDepth + 1;
 
   const items = (
-    <div className={cn(allObjects && visibleItems.length > 0 ? "space-y-2" : "space-y-0.5")}>
-      {visibleItems.map(({ item, index }) => (
-        <ArrayItem
-          key={index}
-          item={item}
-          index={index}
-          depth={depth}
-          cardDepth={itemCardDepth}
-          keySuggestions={keySuggestions}
-          onChange={(next) => updateItem(index, next)}
-          onRemove={() => removeItem(index)}
+    <>
+      <div className={cn(allObjects && visibleItems.length > 0 ? "space-y-2" : "space-y-0.5")}>
+        {visibleItems.map(({ item, index }) => (
+          <ArrayItem
+            key={index}
+            item={item}
+            index={index}
+            depth={depth}
+            cardDepth={itemCardDepth}
+            keySuggestions={keySuggestions}
+            onChange={(next) => updateItem(index, next)}
+            onRemove={() => removeItem(index)}
+          />
+        ))}
+        {normalizeTreeSearchQuery(searchQuery) && visibleItems.length === 0 ? (
+          <p className="px-1 py-2 text-xs text-[var(--color-muted)]">No matching items.</p>
+        ) : null}
+        {!normalizeTreeSearchQuery(searchQuery) ? (
+          <button type="button" onClick={addItem} className={addButtonClass}>
+            <Plus className="size-3" />
+            {curatedKind ? `Add ${curatedArrayLabel(curatedKind)}` : "Add item"}
+          </button>
+        ) : null}
+      </div>
+      {createModalOpen && curatedKind ? (
+        <CreateGameEntryModal
+          kind={curatedKind}
+          existingItems={value}
+          onClose={() => setCreateModalOpen(false)}
+          onCreate={handleCreateEntry}
         />
-      ))}
-      {normalizeTreeSearchQuery(searchQuery) && visibleItems.length === 0 ? (
-        <p className="px-1 py-2 text-xs text-[var(--color-muted)]">No matching items.</p>
       ) : null}
-      {!normalizeTreeSearchQuery(searchQuery) ? (
-      <button
-        type="button"
-        onClick={addItem}
-        className={addButtonClass}
-      >
-        <Plus className="size-3" />
-        Add item
-      </button>
-      ) : null}
-    </div>
+    </>
   );
 
   if (!sectionLabel) {

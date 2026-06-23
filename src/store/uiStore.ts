@@ -33,6 +33,7 @@ interface UiStore {
   middleView: MiddleWorkspaceView;
   activeSkillTreeId: string | null;
   skillWorkspaceMode: SkillWorkspaceMode;
+  showPerkSkillRequirements: boolean;
   setSetupPicker: (picker: SetupPicker | null) => void;
   toggleSetupPicker: (picker: SetupPicker) => void;
   openCharacterOptions: () => void;
@@ -43,6 +44,7 @@ interface UiStore {
   setMiddleView: (view: MiddleWorkspaceView) => void;
   setActiveSkillTreeId: (skillId: string) => void;
   setSkillWorkspaceMode: (mode: SkillWorkspaceMode) => void;
+  setShowPerkSkillRequirements: (show: boolean) => void;
 }
 
 export const useUiStore = create<UiStore>((set, get) => ({
@@ -52,6 +54,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
   middleView: "character-info",
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
+  showPerkSkillRequirements: true,
   setSetupPicker: (picker) =>
     set({ setupPicker: picker, characterOptionsOpen: false, variantsManagerOpen: false }),
   toggleSetupPicker: (picker) => {
@@ -111,4 +114,5 @@ export const useUiStore = create<UiStore>((set, get) => ({
     }),
   setActiveSkillTreeId: (skillId) => set({ activeSkillTreeId: skillId }),
   setSkillWorkspaceMode: (mode) => set({ skillWorkspaceMode: mode }),
+  setShowPerkSkillRequirements: (show) => set({ showPerkSkillRequirements: show }),
 }));

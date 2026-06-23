@@ -22,6 +22,8 @@ Then open `http://localhost:5174/`.
 - Link and unlink prerequisite relationships in layout view (`prerequisites` / `prerequisitesAny`)
 - Save changes directly to disk via a Vite dev-server API
 
+After saving game data, run `npm run build` and `npm test` from the repo root to validate schemas and loader integration.
+
 ## Structure
 
 ```
@@ -31,3 +33,9 @@ tools/data-editor/
   vite-plugin.ts      # Dev-only file read/write API
   src/                # Editor React app (no imports from src/)
 ```
+
+## Related docs
+
+- [data/README.md](../../data/README.md) — JSON file reference and editing workflows
+- [tools/import/README.md](../import/README.md) — refreshing text from a LoreRim install
+- [src/README.md](../../src/README.md) — main app architecture

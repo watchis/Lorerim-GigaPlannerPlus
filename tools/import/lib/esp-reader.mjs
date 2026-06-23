@@ -1,28 +1,23 @@
 import * as tesData from "@fcrick/tes-data";
 import { open } from "node:fs/promises";
+import { parseAvifRecord } from "./avif-perk-tree.mjs";
+import { formatCount } from "./import-progress.mjs";
 import { parsePerkRecordMetadata } from "./perk-record-parser.mjs";
 import { parseMasters, resolveFormIdentity } from "./formid.mjs";
 import { raceDataSkillScore } from "./race-data-parser.mjs";
+import { getRecordBufferAsync, mapConcurrent, visitAsync } from "./plugin-io.mjs";
+import {
+  TRAITS_ABILITY_LIST_EDID,
+  readFormIdsFromBuffer,
+} from "./trait-ability-list.mjs";
 
-function getRecordBufferAsync(file, offset) {
-  return new Promise((resolve, reject) => {
-    tesData.getRecordBuffer(file, offset, (err, buffer) => (err ? reject(err) : resolve(buffer)));
-  });
-}
-
-function visitAsync(file) {
-  const offsets = [];
-  return new Promise((resolve, reject) => {
-    tesData.visit(file, {
-      visitOffset(offset, type) {
-        offsets.push([offset, type]);
-      },
-      done() {
-        resolve(offsets);
-      },
-    });
-  });
-}
+const IMPORT_RECORD_TYPES = ["PERK", "SPEL", "RACE", "MESG", "QUST"];
+const LORERIM_RACE_PLUGIN_PATTERN = /LoreRim - NPCs and Races/i;
+const WINTERSUN_PLUGIN_PATTERN = /Wintersun/i;
+const DEFAULT_PLUGIN_CONCURRENCY =
+  Number(process.env.IMPORT_PLUGIN_CONCURRENCY) > 0
+    ? Number(process.env.IMPORT_PLUGIN_CONCURRENCY)
+    : 8;
 
 function getSubrecord(record, type) {
   return record.subRecords?.find((sub) => sub.type === type)?.value;
@@ -131,8 +126,214 @@ function altarKeyFromSpellEdid(edid) {
   return edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
 }
 
-export async function collectAltarBlessingMagnitudes(plugins) {
+function collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName) {
+  const altarKey = altarKeyFromSpellEdid(edid);
+  if (!altarKey) return null;
+
+  const effectMagnitudes = readEfitMagnitudes(buffer).filter((value) => value > 0);
+  if (effectMagnitudes.length === 0) return null;
+
+  return {
+    altarKey,
+    magnitude: effectMagnitudes[0],
+    plugin: pluginName,
+  };
+}
+
+function wantedTypesForPlugin(pluginName) {
+  const wanted = new Set([...IMPORT_RECORD_TYPES, "AVIF", "FLST"]);
+  if (WINTERSUN_PLUGIN_PATTERN.test(pluginName)) wanted.add("MGEF");
+  return wanted;
+}
+
+async function readPluginImportPayload({ pluginName, path }) {
+  const ownerPluginLower = (pluginName || path.split(/[/\\]/).pop() || "").toLowerCase();
+  const wanted = wantedTypesForPlugin(pluginName);
+  const isLorerimRacePlugin = LORERIM_RACE_PLUGIN_PATTERN.test(pluginName);
+
+  const fh = await open(path, "r");
+  const offsets = await visitAsync(fh.fd);
+  const masters = await readPluginMasters(fh.fd, offsets);
+
+  const records = [];
+  const avifRecords = [];
+  let traitsFormListFormIds = null;
+  const altarBlessings = [];
+  const lorerimRaceRecords = [];
+
+  for (const [offset, type] of offsets) {
+    if (!wanted.has(type)) continue;
+
+    try {
+      const buffer = await getRecordBufferAsync(fh.fd, offset);
+
+      if (type === "AVIF") {
+        const parsed = parseAvifRecord(buffer, ownerPluginLower, masters);
+        if (parsed) avifRecords.push(parsed);
+        continue;
+      }
+
+      if (type === "FLST") {
+        const record = tesData.getRecord(buffer);
+        if (record.compressed) continue;
+        const edid = getSubrecord(record, "EDID");
+        if (edid === TRAITS_ABILITY_LIST_EDID) {
+          traitsFormListFormIds = readFormIdsFromBuffer(buffer);
+        }
+        continue;
+      }
+
+      const parsed = parseRecord(buffer, ownerPluginLower, masters);
+      if (!parsed) continue;
+
+      if (type === "SPEL") {
+        const altarBlessing = collectAltarBlessingFromSpellBuffer(buffer, parsed.edid, pluginName);
+        if (altarBlessing) altarBlessings.push(altarBlessing);
+      }
+
+      records.push(parsed);
+      if (isLorerimRacePlugin && type === "RACE") {
+        lorerimRaceRecords.push({ ...parsed, plugin: pluginName });
+      }
+    } catch {
+      // Skip malformed or unsupported records instead of failing the whole import.
+    }
+  }
+
+  await fh.close();
+
+  return {
+    pluginName,
+    path,
+    masters,
+    records,
+    avifRecords,
+    traitsFormListFormIds,
+    altarBlessings,
+    lorerimRaceRecords,
+  };
+}
+
+function mergePluginPayload(
+  mergedByType,
+  avifTrees,
+  altarMagnitudes,
+  lorerimRaceByEdid,
+  traitsFormList,
+  mastersByPath,
+  payload,
+) {
+  const { pluginName, path, masters, records, avifRecords, traitsFormListFormIds, altarBlessings, lorerimRaceRecords } =
+    payload;
+
+  mastersByPath.set(path, masters);
+
+  for (const record of records) {
+    const key = `${record.type}:${record.edid}`;
+    const next = { ...record, plugin: pluginName };
+    const bucket = mergedByType[record.type];
+    const existing = bucket.get(key);
+    bucket.set(key, existing ? mergeCollectedRecord(existing, next) : next);
+  }
+
+  for (const tree of avifRecords) {
+    avifTrees.set(tree.skillId, tree);
+  }
+
+  for (const blessing of altarBlessings) {
+    altarMagnitudes.set(blessing.altarKey, {
+      magnitude: blessing.magnitude,
+      plugin: blessing.plugin,
+    });
+  }
+
+  for (const record of lorerimRaceRecords) {
+    const existing = lorerimRaceByEdid.get(record.edid);
+    lorerimRaceByEdid.set(record.edid, existing ? mergeCollectedRecord(existing, record) : record);
+  }
+
+  if (traitsFormListFormIds != null) {
+    traitsFormList.formIds = traitsFormListFormIds;
+    traitsFormList.sourcePlugin = { pluginName, path };
+  }
+}
+
+function createEmptyMergeBuckets() {
+  return {
+    PERK: new Map(),
+    SPEL: new Map(),
+    RACE: new Map(),
+    MESG: new Map(),
+    QUST: new Map(),
+    MGEF: new Map(),
+  };
+}
+
+/**
+ * Single-pass plugin scan for the main import: PERK, AVIF, SPEL, RACE, MESG, QUST,
+ * Wintersun MGEF, altar blessing magnitudes, Traits_AbilityList, and LoreRim race DATA.
+ */
+export async function collectImportPluginData(plugins, progress = null, options = {}) {
+  const concurrency = options.concurrency ?? DEFAULT_PLUGIN_CONCURRENCY;
+  const mergedByType = createEmptyMergeBuckets();
+  const avifTrees = new Map();
+  const altarMagnitudes = new Map();
+  const lorerimRaceByEdid = new Map();
+  const traitsFormList = { formIds: null, sourcePlugin: null };
+  const mastersByPath = new Map();
+
+  const scan = progress?.pluginScan?.("Scanning plugin records", plugins.length);
+  const pluginPayloads = await mapConcurrent(plugins, concurrency, readPluginImportPayload);
+
+  let recordCount = 0;
+  for (const payload of pluginPayloads) {
+    mergePluginPayload(
+      mergedByType,
+      avifTrees,
+      altarMagnitudes,
+      lorerimRaceByEdid,
+      traitsFormList,
+      mastersByPath,
+      payload,
+    );
+    recordCount += payload.records.length;
+    scan?.tick(
+      payload.pluginName,
+      recordCount > 0 ? `${formatCount(recordCount)} records` : "",
+    );
+  }
+
+  const wintersunPluginNames = new Set(
+    plugins.filter((plugin) => WINTERSUN_PLUGIN_PATTERN.test(plugin.pluginName)).map((plugin) => plugin.pluginName),
+  );
+
+  scan?.finish(
+    `${formatCount(mergedByType.PERK.size)} PERK, ` +
+      `${formatCount(avifTrees.size)} AVIF trees, ` +
+      `${formatCount(mergedByType.SPEL.size)} SPEL`,
+  );
+
+  return {
+    perkRecords: [...mergedByType.PERK.values()],
+    avifTrees,
+    spellRecords: [...mergedByType.SPEL.values()],
+    raceRecords: [...mergedByType.RACE.values()],
+    mesgRecords: [...mergedByType.MESG.values()],
+    questRecords: [...mergedByType.QUST.values()],
+    wintersunMgefRecords: [...mergedByType.MGEF.values()],
+    wintersunMesgRecords: [...mergedByType.MESG.values()].filter((record) =>
+      wintersunPluginNames.has(record.plugin),
+    ),
+    altarMagnitudes,
+    lorerimRaceRecords: [...lorerimRaceByEdid.values()],
+    traitsFormList,
+    mastersByPath,
+  };
+}
+
+export async function collectAltarBlessingMagnitudes(plugins, progress = null) {
   const magnitudes = new Map();
+  const scan = progress?.pluginScan?.("Wintersun altar blessings", plugins.length);
 
   for (const { pluginName, path } of plugins) {
     const fh = await open(path, "r");
@@ -147,15 +348,12 @@ export async function collectAltarBlessingMagnitudes(plugins) {
         if (record.compressed) continue;
 
         const edid = getSubrecord(record, "EDID");
-        const altarKey = altarKeyFromSpellEdid(edid);
-        if (!altarKey) continue;
+        const blessing = collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName);
+        if (!blessing) continue;
 
-        const effectMagnitudes = readEfitMagnitudes(buffer).filter((value) => value > 0);
-        if (effectMagnitudes.length === 0) continue;
-
-        magnitudes.set(altarKey, {
-          magnitude: effectMagnitudes[0],
-          plugin: pluginName,
+        magnitudes.set(blessing.altarKey, {
+          magnitude: blessing.magnitude,
+          plugin: blessing.plugin,
         });
       } catch {
         // Skip malformed records.
@@ -163,14 +361,16 @@ export async function collectAltarBlessingMagnitudes(plugins) {
     }
 
     await fh.close();
+    scan?.tick(pluginName);
   }
 
+  scan?.finish(`${formatCount(magnitudes.size)} altar keys`);
   return magnitudes;
 }
 
 export async function readPluginRecords(pluginPath, recordTypes, pluginName = "") {
   const wanted = new Set(recordTypes);
-  const needsMasters = wanted.has("PERK");
+  const needsMasters = wanted.has("PERK") || wanted.has("AVIF");
   const ownerPluginLower = (pluginName || pluginPath.split(/[/\\]/).pop() || "").toLowerCase();
   const fh = await open(pluginPath, "r");
   const offsets = await visitAsync(fh.fd);
@@ -181,6 +381,11 @@ export async function readPluginRecords(pluginPath, recordTypes, pluginName = ""
     if (!wanted.has(type)) continue;
     try {
       const buffer = await getRecordBufferAsync(fh.fd, offset);
+      if (type === "AVIF") {
+        const parsed = parseAvifRecord(buffer, ownerPluginLower, masters);
+        if (parsed) records.push(parsed);
+        continue;
+      }
       const parsed = parseRecord(buffer, ownerPluginLower, masters);
       if (parsed) records.push(parsed);
     } catch {
@@ -192,8 +397,14 @@ export async function readPluginRecords(pluginPath, recordTypes, pluginName = ""
   return records;
 }
 
-export async function collectRecordsFromPlugins(plugins, recordTypes) {
+function formatRecordTypeLabel(recordTypes) {
+  return recordTypes.join("/");
+}
+
+export async function collectRecordsFromPlugins(plugins, recordTypes, progress = null) {
   const merged = new Map();
+  const label = formatRecordTypeLabel(recordTypes);
+  const scan = progress?.pluginScan?.(`Scanning ${label}`, plugins.length);
 
   for (const { pluginName, path } of plugins) {
     const records = await readPluginRecords(path, recordTypes, pluginName);
@@ -203,7 +414,9 @@ export async function collectRecordsFromPlugins(plugins, recordTypes) {
       const existing = merged.get(key);
       merged.set(key, existing ? mergeCollectedRecord(existing, next) : next);
     }
+    scan?.tick(pluginName, records.length > 0 ? `${records.length} in plugin` : "");
   }
 
+  scan?.finish(`${formatCount(merged.size)} unique ${label} records`);
   return [...merged.values()];
 }

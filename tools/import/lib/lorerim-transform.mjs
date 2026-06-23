@@ -10,13 +10,10 @@ import {
   loadPerkHandTunedOverrides,
   loadPerkLayoutOverrides,
 } from "./import-reset.mjs";
-import {
-  getHomeownerTraitDescription,
-  loadTraitTranslations,
-} from "./trait-translations.mjs";
+import { parseTraitBody } from "./parse-trait-body.mjs";
+import { collectTraitAbilitySpells } from "./trait-ability-list.mjs";
 import { cleanDescription, cleanName, cleanWintersunEffectText, slugify } from "./transform-utils.mjs";
 import { parseBonusEffects, resolveBonusEffects, extractConditionalBonusDetails, mergeEffects } from "./parse-bonus-effects.mjs";
-import { parseTraitBody } from "./parse-trait-body.mjs";
 import { parseRaceData } from "./race-data-parser.mjs";
 import { detectLorerimVersion } from "./lorerim-version.mjs";
 import {
@@ -26,6 +23,7 @@ import {
   appendMissingPerkNodes,
 } from "./append-missing-perks.mjs";
 import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
+import { resolveDeityEligibility } from "./deity-eligibility.mjs";
 
 const DESTINY_SKILL_ID = "destiny";
 const DESTINY_COORD_SCALE = 2;
@@ -315,94 +313,40 @@ export function transformPerkRecords(
   return { trees, indexEntries, addedPerks, removedPerks };
 }
 
-function traitNameFromEdid(edid) {
-  let name = edid
-    .replace(/^Traits_/, "")
-    .replace(/PerkNeg$/, "")
-    .replace(/Perk$/, "")
-    .replace(/wayof/gi, "way of")
-    .replace(/baneof/gi, "bane of")
-    .replace(/ofthe/gi, "of the")
-    .replace(/([a-z])of([A-Za-z])/gi, "$1 of $2")
-    .replace(/([a-z])([A-Z])/g, "$1 $2");
-
-  return name;
-}
-
-function traitIdFromEdid(edid) {
-  return slugify(traitNameFromEdid(edid));
-}
-
-function buildTraitSpellLookup(spellRecords) {
-  const byEdid = new Map(spellRecords.map((record) => [record.edid, record]));
-  return byEdid;
-}
-
-function findTraitSpell(perkEdid, spellByEdid) {
-  const base = perkEdid.replace(/Perk$/, "");
-  for (const suffix of ["Ab", "Spell", "Ability"]) {
-    const spell = spellByEdid.get(`${base}${suffix}`);
-    if (spell) return spell;
-  }
-  return null;
-}
-
-function resolveTraitText(record, spellRecord, translations, existing) {
-  const id = traitIdFromEdid(record.edid);
-  const name = cleanName(
-    spellRecord?.name || record.name || traitNameFromEdid(record.edid) || existing?.name,
-  );
-
-  const homeownerDescription = getHomeownerTraitDescription(id, translations);
-  if (homeownerDescription) {
-    return {
-      id,
-      name,
-      description: cleanDescription(homeownerDescription),
-      bonus: "",
-    };
-  }
-
-  const rawText = cleanDescription(spellRecord?.description || record.description || "");
+function resolveTraitText(spellRecord) {
+  const name = cleanName(spellRecord.name);
+  const id = slugify(name);
+  const rawText = cleanDescription(spellRecord.description || "");
   if (!rawText) {
-    return {
-      id,
-      name,
-      description: existing?.description ?? "",
-      bonus: existing?.bonus ?? "",
-    };
+    return { id, name, description: "", bonus: "" };
   }
 
   const parsed = parseTraitBody(rawText);
-  if (!parsed.bonus && parsed.description === rawText && existing?.bonus) {
-    return {
-      id,
-      name,
-      description: existing.description,
-      bonus: existing.bonus,
-    };
-  }
-
   return { id, name, ...parsed };
 }
 
-export function transformTraitRecords(perkRecords, installDir = null, spellRecords = []) {
-  const translations = installDir ? loadTraitTranslations(installDir) : new Map();
-  const spellByEdid = buildTraitSpellLookup(spellRecords);
-
-  const espTraits = perkRecords.filter(
-    (record) => record.edid.startsWith("Traits_") && record.edid.endsWith("Perk"),
-  );
+export async function transformTraitRecords(spellRecords, install = null, plugins = [], scanContext = {}) {
+  const traitSpells =
+    install && plugins.length > 0
+      ? await collectTraitAbilitySpells(
+          plugins,
+          install.installDir,
+          install.enabledMods,
+          spellRecords,
+          {
+            traitsFormList: scanContext.traitsFormList,
+            mastersByPath: scanContext.mastersByPath,
+          },
+        )
+      : spellRecords.filter(
+          (record) =>
+            /^(Traits_|LoreTraits_|LoreRim_)\w+Ab$/i.test(record.edid) && record.name,
+        );
 
   const traits = [];
 
-  for (const record of espTraits) {
-    const { id, name, description, bonus } = resolveTraitText(
-      record,
-      findTraitSpell(record.edid, spellByEdid),
-      translations,
-      null,
-    );
+  for (const spell of traitSpells) {
+    const { id, name, description, bonus } = resolveTraitText(spell);
     const effects = parseBonusEffects(bonus);
 
     traits.push({
@@ -415,6 +359,7 @@ export function transformTraitRecords(perkRecords, installDir = null, spellRecor
     });
   }
 
+  traits.sort((left, right) => left.name.localeCompare(right.name));
   return { traits };
 }
 
@@ -818,6 +763,7 @@ export function transformDeityRecords(
   mesgRecords,
   deitiesPath,
   altarMagnitudes = new Map(),
+  deityEligibility = new Map(),
 ) {
   const existing = JSON.parse(readFileSync(deitiesPath, "utf8"));
   const existingEntries = existing.deities ?? existing.blessings ?? [];
@@ -841,13 +787,14 @@ export function transformDeityRecords(
     const shrineMgef = mgefByEdid.get(`WSN_AltarBlessing_${altarKey}_Effect`);
     const followerMgef = findBlessingMgef(mgefByEdid, altarKey, "Boon1");
     const devoteeMgef = findBlessingMgef(mgefByEdid, altarKey, "Boon2");
-    const { requirement, race } = parseBlessingRequirement(fail?.description);
+    const { requirement } = parseBlessingRequirement(fail?.description);
     const shrineMagnitude = altarMagnitudes.get(altarKey)?.magnitude ?? null;
 
     const shrine = blessingEffectText(shrineMgef, shrineMagnitude);
     const follower = blessingEffectText(followerMgef) || worshipText.follower;
     const devotee = blessingEffectText(devoteeMgef);
     const resolvedShrine = shrine || prior?.shrine || "-";
+    const eligibility = resolveDeityEligibility(id, name, deityEligibility);
 
     deities.push({
       ...(prior ?? {
@@ -860,6 +807,7 @@ export function transformDeityRecords(
         race: "All",
         starting: "",
         requirement: "None",
+        shrineLocations: [],
         effects: [],
       }),
       id,
@@ -868,9 +816,10 @@ export function transformDeityRecords(
       follower: follower || prior?.follower || "-",
       devotee: devotee || prior?.devotee || "-",
       tenets: worshipText.tenets || prior?.tenets || "-",
-      race: race || prior?.race || "All",
-      starting: prior?.starting ?? "",
-      requirement: requirement || prior?.requirement || "None",
+      race: eligibility.race || prior?.race || "All",
+      starting: eligibility.starting || prior?.starting || "",
+      requirement: eligibility.requirement || requirement || prior?.requirement || "None",
+      shrineLocations: eligibility.shrineLocations ?? prior?.shrineLocations ?? [],
       effects: parseBonusEffects(resolvedShrine),
     });
     seenIds.add(id);

@@ -322,20 +322,8 @@
       "prerequisites": [
         "one-handed-penetrating-strikes"
       ],
-      "description": "You've learned the basics of using 1 handed swords, spears, javelins, rapiers and katanas. [+5% armor penetration, +11% critical hit chance]",
+      "description": "You've learned the basics of using 1 handed swords, spears, javelins, rapiers and katanas. [Attacks reduce target's melee damage by 11% for 10 seconds, +11% critical hit chance]",
       "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationMelee",
-          "value": 5,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationRanged",
-          "value": 5,
-          "isPercent": true
-        },
         {
           "type": "derivedStat",
           "stat": "criticalHitChance",
@@ -354,20 +342,8 @@
         "y": 20
       },
       "prerequisites": [],
-      "description": "You've acquired the advanced techniques of using 1 handed swords and spears. [+10% armor penetration, +22% critical hit chance]",
+      "description": "You've acquired the advanced techniques of using 1 handed swords and spears. [Attacks reduce target's melee damage by 22% for 10 seconds, +22% critical hit chance]",
       "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationMelee",
-          "value": 10,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationRanged",
-          "value": 10,
-          "isPercent": true
-        },
         {
           "type": "derivedStat",
           "stat": "criticalHitChance",
@@ -386,20 +362,8 @@
         "y": 20
       },
       "prerequisites": [],
-      "description": "You've become a master of using 1 handed swords and spears. [+15% armor penetration, +33% critical hit chance]",
+      "description": "You've become a master of using 1 handed swords and spears. [Attacks reduce target's melee damage by 33% for 10 seconds, +33% critical hit chance]",
       "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationMelee",
-          "value": 15,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationRanged",
-          "value": 15,
-          "isPercent": true
-        },
         {
           "type": "derivedStat",
           "stat": "criticalHitChance",

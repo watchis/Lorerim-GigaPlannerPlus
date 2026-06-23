@@ -91,6 +91,7 @@
     "trainingOverBudgetAlert": "You have {used} trained skill levels but only {earned} are allowed at level {playerLevel}. Lower skills or raise your level to {required}.",
     "overBudget": "over budget by {count}",
     "perkOverBudgetAlert": "You have spent {count} more perk point(s) than earned at level {playerLevel}. Raise your level or remove perks.",
+    "destinyOverBudgetAlert": "You have spent {count} more destiny point(s) than earned at level {playerLevel}. Raise your level or remove destiny perks.",
     "skillOverBudgetAlert": "You have spent {count} more skill point(s) than earned at level {playerLevel}. Lower skills or raise your level.",
     "playerLevelSkillCapSingle": "{skill} is level {skillLevel}, but the max at level {playerLevel} is {maxAllowed}. Lower the skill or raise your level.",
     "playerLevelSkillCapMultiple": "{count} skills exceed the max allowed at level {playerLevel}. Lower those skills or raise your level.",
@@ -103,7 +104,9 @@
     "playerLevelAttributeOverBudgetMultiple": "{count} attribute choices exceed what's allowed at level {playerLevel}. Remove choices or raise your level.",
     "buildIssuesAlert": "Your build has issues at level {playerLevel}. Hover for details.",
     "setToMinimumLevel": "Set to minimum level",
-    "setToMinimumLevelInfo": "Set player level to the lowest level that supports your current perks, skills, attribute choices, and point spending."
+    "setToMinimumLevelInfo": "Set player level to the lowest level that supports your current perks, skills, attribute choices, and point spending.",
+    "ensurePlayerLevel": "Raise to required level",
+    "ensurePlayerLevelInfo": "Raise player level to satisfy skill caps, training, skill gain limits, and perk level requirements."
   },
   "panels": {
     "character-setup": {
@@ -146,6 +149,7 @@
       "devoteeBonus": "Devotee",
       "races": "Races",
       "startingRaces": "Starting races",
+      "shrineLocations": "Shrine locations",
       "destiny": "Destiny",
       "openDestinyTree": "Click to open perk tree",
       "openOptions": "Character options"
@@ -225,21 +229,25 @@
       "locked": "Locked",
       "available": "Available",
       "selected": "Selected",
+      "partialSelected": "Partial rank",
       "perkRank": "Rank",
       "nextRank": "Next rank",
       "upgradeAvailable": "Click to upgrade",
       "skillReqConflictDismiss": "Dismiss",
-      "skillReqConflictSingle": "{perk} requires skill level {required}. Your skill level is now {current}, so it was removed.",
-      "skillReqConflictMultiple": "{count} perks were removed because your skill level is now too low.",
-      "skillReqConflictLegend": "Removed (skill too low)",
+      "skillReqConflictSingle": "{perk} requires skill level {required} (your skill is {current}). Raise the skill or remove the perk.",
+      "skillReqConflictMultiple": "{count} selected perks require a higher skill level than you have. Raise the skill or remove perks.",
+      "skillReqConflictLegend": "Skill level too low",
       "skillLevelOverCapLegend": "Over level cap",
       "skillLevelOverCapSingle": "{skill} is level {skillLevel}, but the max at your level is {maxAllowed}. Lower the skill or raise your level.",
       "skillLevelIncreaseOverLimitSingle": "{skill} is level {skillLevel}, which requires player level {required} (you are level {playerLevel}). Raise your level or lower the skill.",
       "playerLevelPerkConflictLegend": "Requires higher player level",
       "playerLevelPerkConflictSingle": "{perk} requires player level {required} (you are level {playerLevel}). Raise your level or remove the perk.",
       "playerLevelPerkConflictMultiple": "{count} selected perks require a higher player level than {playerLevel}.",
+      "destinyOverBudgetSingle": "{perk} exceeds your destiny point budget at level {playerLevel}. Raise your level or remove the perk.",
+      "destinyOverBudgetMultiple": "{count} selected destiny perks exceed your destiny point budget at level {playerLevel}. Raise your level or remove perks.",
       "buildProblemLegend": "Problem",
-      "skillTreeWarning": "View skill tree warnings"
+      "skillTreeWarning": "View skill tree warnings",
+      "showSkillRequirements": "Skill requirements"
     },
     "derived-stats": {
       "title": "Character Bonuses",

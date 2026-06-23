@@ -15,6 +15,8 @@ import {
   getBuildPlayerLevelWarnings,
   getMaxAllowedSkillLevel,
   getMaxSkillLevel,
+  getRemainingDestinyPerkPoints,
+  getSelectedPerksBelowSkillRequirement,
   getSkillFloor,
   getSkillLevelFromTraining,
   getStoredSkillLevel,
@@ -84,6 +86,11 @@ function PerkLegend({
         "border border-[var(--color-perk-selected)] bg-[var(--color-perk-selected)]/30",
     },
     {
+      label: labels.partialSelected,
+      className:
+        "border border-[var(--color-perk-partial)] bg-[var(--color-perk-partial)]/30",
+    },
+    {
       label: labels.available,
       className:
         "border border-[var(--color-perk-available)] bg-[var(--color-surface-elevated)]",
@@ -117,13 +124,14 @@ export function SkillTreePanel() {
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillWorkspaceMode = useUiStore((s) => s.skillWorkspaceMode);
   const setSkillWorkspaceMode = useUiStore((s) => s.setSkillWorkspaceMode);
+  const showPerkSkillRequirements = useUiStore((s) => s.showPerkSkillRequirements);
+  const setShowPerkSkillRequirements = useUiStore((s) => s.setShowPerkSkillRequirements);
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const computed = useBuildStore((s) => s.computed);
   const setSkillLevel = useBuildStore((s) => s.setSkillLevel);
   const resetSkillPerks = useBuildStore((s) => s.resetSkillPerks);
   const resetSkillTraining = useBuildStore((s) => s.resetSkillTraining);
-  const skillReqConflict = useBuildStore((s) => s.skillReqConflict);
 
   if (!gameData || !computed) return null;
 
@@ -134,19 +142,11 @@ export function SkillTreePanel() {
   if (!activeTree) return null;
   const isDestinyTree = activeTree.skillId === "destiny";
 
-  const droppedOnActiveTree =
-    skillReqConflict?.droppedPerks.filter((perk) =>
-      activeTree.perks.some((treePerk) => treePerk.id === perk.id),
-    ) ?? [];
-
-  const activeConflict =
-    !isDestinyTree && droppedOnActiveTree.length > 0
-      ? {
-          skillId: activeTree.skillId,
-          skillLevel: getStoredSkillLevel(gameData.game, build, activeTree.skillId),
-          droppedPerks: droppedOnActiveTree,
-        }
-      : null;
+  const skillReqConflictsOnTree = getSelectedPerksBelowSkillRequirement(
+    gameData.game,
+    build,
+  ).filter((perk) => perk.skillId === activeTree.skillId);
+  const hasSkillReqConflict = !isDestinyTree && skillReqConflictsOnTree.length > 0;
 
   const floor = isDestinyTree ? 0 : getSkillFloor(gameData.game, build, activeTree.skillId);
   const skillLevelCap = isDestinyTree ? 0 : getMaxSkillLevel(gameData.game);
@@ -158,10 +158,8 @@ export function SkillTreePanel() {
     ? 0
     : getSkillLevelFromTraining(gameData.game, build, activeTree.skillId);
   const isTrainingMode = !isDestinyTree && skillWorkspaceMode === "training";
-  const { perks: overLevelPerks, skillIncreases } = getBuildPlayerLevelWarnings(
-    gameData.game,
-    build,
-  );
+  const { perks: overLevelPerks, skillIncreases, destinyPerksOverBudget } =
+    getBuildPlayerLevelWarnings(gameData.game, build);
   const skillIncreaseConflict = skillIncreases.find(
     (skill) => skill.skillId === activeTree.skillId,
   );
@@ -173,21 +171,27 @@ export function SkillTreePanel() {
   const playerLevelPerksOnTree = overLevelPerks.filter(
     (perk) => perk.skillId === activeTree.skillId,
   );
-  const invalidPerkIdsOnTree = playerLevelPerksOnTree.map((perk) => perk.id);
+  const destinyOverBudgetOnTree = isDestinyTree ? destinyPerksOverBudget : [];
+  const invalidPerkIdsOnTree = [
+    ...playerLevelPerksOnTree.map((perk) => perk.id),
+    ...destinyOverBudgetOnTree.map((perk) => perk.id),
+  ];
   const hasPlayerLevelPerkConflict = playerLevelPerksOnTree.length > 0;
+  const hasDestinyOverBudgetConflict = destinyOverBudgetOnTree.length > 0;
+  const destinyOverBudget = isDestinyTree && getRemainingDestinyPerkPoints(gameData.game, build) < 0;
   const selectedCount = activeTree.perks.filter((perk) =>
     build.selectedPerkIds.includes(perk.id),
   ).length;
 
-  const conflictMessage = activeConflict
-    ? activeConflict.droppedPerks.length === 1
+  const conflictMessage = hasSkillReqConflict
+    ? skillReqConflictsOnTree.length === 1
       ? formatLabel(labels.skillReqConflictSingle, {
-          perk: activeConflict.droppedPerks[0].name,
-          required: activeConflict.droppedPerks[0].skillReq,
-          current: activeConflict.skillLevel,
+          perk: skillReqConflictsOnTree[0].name,
+          required: skillReqConflictsOnTree[0].skillReq,
+          current: level,
         })
       : formatLabel(labels.skillReqConflictMultiple, {
-          count: activeConflict.droppedPerks.length,
+          count: skillReqConflictsOnTree.length,
         })
     : null;
   const playerLevelPerkMessage = hasPlayerLevelPerkConflict
@@ -199,6 +203,17 @@ export function SkillTreePanel() {
         })
       : formatLabel(labels.playerLevelPerkConflictMultiple, {
           count: playerLevelPerksOnTree.length,
+          playerLevel: build.playerLevel,
+        })
+    : null;
+  const destinyOverBudgetMessage = hasDestinyOverBudgetConflict
+    ? destinyOverBudgetOnTree.length === 1
+      ? formatLabel(labels.destinyOverBudgetSingle, {
+          perk: destinyOverBudgetOnTree[0].name,
+          playerLevel: build.playerLevel,
+        })
+      : formatLabel(labels.destinyOverBudgetMultiple, {
+          count: destinyOverBudgetOnTree.length,
           playerLevel: build.playerLevel,
         })
     : null;
@@ -222,6 +237,7 @@ export function SkillTreePanel() {
     ...(overCapMessage ? [overCapMessage] : []),
     ...(overIncreaseLimitMessage ? [overIncreaseLimitMessage] : []),
     ...(playerLevelPerkMessage ? [playerLevelPerkMessage] : []),
+    ...(destinyOverBudgetMessage ? [destinyOverBudgetMessage] : []),
     ...(conflictMessage ? [conflictMessage] : []),
   ];
   const hasTreeProblem = warningMessages.length > 0;
@@ -292,11 +308,16 @@ export function SkillTreePanel() {
               <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
                 {labels.destinyPoints ?? "Destiny points"}
               </span>
-              <span className="text-xs text-[var(--color-muted)]">
-                <span className="tabular-nums">
-                  {computeDestinyPerkPointsSpent(gameData.game, build)}/
-                  {getEarnedDestinyPerkPoints(gameData.game, build)}
-                </span>
+              <span
+                className={cn(
+                  "text-xs tabular-nums",
+                  destinyOverBudget
+                    ? "font-medium text-[var(--color-error)]"
+                    : "text-[var(--color-muted)]",
+                )}
+              >
+                {computeDestinyPerkPointsSpent(gameData.game, build)}/
+                {getEarnedDestinyPerkPoints(gameData.game, build)}
               </span>
             </div>
           ) : (
@@ -361,8 +382,19 @@ export function SkillTreePanel() {
         </div>
 
         {!isTrainingMode && (
-          <div className="mt-3">
+          <div className="mt-3 flex items-center justify-between gap-3">
             <PerkLegend labels={labels} hasProblem={hasTreeProblem} />
+            {!isDestinyTree && (
+              <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 text-[11px] text-[var(--color-muted)]">
+                <input
+                  type="checkbox"
+                  checked={showPerkSkillRequirements}
+                  onChange={(event) => setShowPerkSkillRequirements(event.target.checked)}
+                  className="h-3.5 w-3.5 shrink-0 accent-[var(--color-accent)]"
+                />
+                {labels.showSkillRequirements}
+              </label>
+            )}
           </div>
         )}
       </div>
@@ -380,8 +412,9 @@ export function SkillTreePanel() {
             fit
             tree={activeTree}
             labels={labels}
-            conflictPerkIds={activeConflict?.droppedPerks.map((perk) => perk.id) ?? []}
+            conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}
             playerLevelConflictPerkIds={invalidPerkIdsOnTree}
+            showSkillRequirements={showPerkSkillRequirements}
           />
         )}
       </CardContent>

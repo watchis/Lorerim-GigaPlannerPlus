@@ -105,8 +105,9 @@ Files import **does not** touch: `mechanics.json`, `stats.json`, `skills.json`, 
 
 1. Review the git diff.
 2. Run `npm run build` — TypeScript compile + schema validation via the loader.
-3. Run `npm run dev` and spot-check perk trees, race/trait pickers, and derived stats.
-4. Bump `manifest.json` → `version` when syncing to a new LoreRim release (shown in the UI). `import:lorerim` sets this automatically from your install's Wabbajack list.
+3. Run `npm test` — includes `src/data/loader.test.ts`, which validates bundled JSON against Zod schemas.
+4. Run `npm run dev` and spot-check perk trees, race/trait pickers, and derived stats.
+5. Bump `manifest.json` → `version` when syncing to a new LoreRim release (shown in the UI). `import:lorerim` sets this automatically from your install's Wabbajack list.
 
 ---
 
@@ -368,6 +369,7 @@ TypeScript types (`Perk`, `Race`, `Effect`, etc.) are inferred from those schema
 
 - [tools/import/README.md](../tools/import/README.md) — LoreRim import pipeline
 - [tools/data-editor/README.md](../tools/data-editor/README.md) — visual JSON editor
+- [src/README.md](../src/README.md) — app source layout and tests
 - [.cursor/rules/giga-planner-data-model.mdc](../.cursor/rules/giga-planner-data-model.mdc) — agent/editor rules for economy and perks
 - [src/data/loader.ts](../src/data/loader.ts) — load order and merges
 - [src/data/schemas/index.ts](../src/data/schemas/index.ts) — validation rules

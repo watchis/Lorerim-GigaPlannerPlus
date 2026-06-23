@@ -21,6 +21,11 @@ function formatRaceField(value: string | undefined, races: Race[]): string {
   return value;
 }
 
+function formatStartingRaces(value: string | undefined, races: Race[]): string {
+  const formatted = formatRaceField(value, races);
+  return formatted || "None";
+}
+
 interface DeityDetailContentProps {
   deity: Deity;
   races: Race[];
@@ -30,6 +35,7 @@ interface DeityDetailContentProps {
     follower: string;
     devotee: string;
     startingRaces: string;
+    shrineLocations: string;
   };
   hideHeader?: boolean;
 }
@@ -38,11 +44,14 @@ export function DeityDetailContent({ deity, races, labels, hideHeader }: DeityDe
   if (deity.id === "none") return null;
 
   const compatibleRaces = formatRaceField(deity.race, races);
-  const startingRaces = formatRaceField(deity.starting, races);
+  const startingRaces = formatStartingRaces(deity.starting, races);
+  const shrineLocationText =
+    deity.shrineLocations.length > 0 ? deity.shrineLocations.join("\n") : "";
 
   const rows = [
     { label: labels.races, value: compatibleRaces },
     { label: labels.startingRaces, value: startingRaces },
+    { label: labels.shrineLocations, value: shrineLocationText },
     { label: labels.shrine, value: deity.shrine },
     { label: labels.follower, value: deity.follower },
     { label: labels.devotee, value: deity.devotee },
@@ -65,7 +74,9 @@ export function DeityDetailContent({ deity, races, labels, hideHeader }: DeityDe
             <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-accent-muted)]">
               {row.label}
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-[var(--color-foreground)]">{row.value}</p>
+            <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-[var(--color-foreground)]">
+              {row.value}
+            </p>
           </div>
         ))}
       </div>

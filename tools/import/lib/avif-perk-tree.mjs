@@ -1,9 +1,11 @@
 import * as tesData from "@fcrick/tes-data";
 import { open } from "node:fs/promises";
 import { SKILL_IDS, SKILL_NAMES } from "./skill-constants.mjs";
+import { formatCount } from "./import-progress.mjs";
 import { cleanName } from "./transform-utils.mjs";
 import { scanSubrecords } from "./perk-record-parser.mjs";
 import { parseMasters, resolveFormIdentity } from "./formid.mjs";
+import { getRecordBufferAsync, visitAsync } from "./plugin-io.mjs";
 
 const AVIF_SKILL_ALIASES = new Map([
   ["mysticism", "illusion"],
@@ -15,26 +17,6 @@ const AVIF_SKILL_ALIASES = new Map([
   ["twohanded", "two-handed"],
   ["heavyarmor", "heavy-armor"],
 ]);
-
-function getRecordBufferAsync(file, offset) {
-  return new Promise((resolve, reject) => {
-    tesData.getRecordBuffer(file, offset, (err, buffer) => (err ? reject(err) : resolve(buffer)));
-  });
-}
-
-function visitAsync(file) {
-  const offsets = [];
-  return new Promise((resolve, reject) => {
-    tesData.visit(file, {
-      visitOffset(offset, type) {
-        offsets.push([offset, type]);
-      },
-      done() {
-        resolve(offsets);
-      },
-    });
-  });
-}
 
 function readU32(data) {
   const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
@@ -128,8 +110,24 @@ async function readAvifMasters(fd, offsets) {
   }
 }
 
-export async function collectAvifPerkTrees(plugins) {
+export function parseAvifRecord(buffer, ownerPluginLower, masters) {
+  const record = tesData.getRecord(buffer);
+  if (record.compressed) return null;
+
+  const edid = record.subRecords?.find((sub) => sub.type === "EDID")?.value;
+  const fullName = record.subRecords?.find((sub) => sub.type === "FULL")?.value ?? "";
+  const skillId = skillIdFromAvif(edid, fullName);
+  if (!skillId) return null;
+
+  const sections = parseAvifPerkSections(buffer, ownerPluginLower, masters);
+  if (sections.length === 0) return null;
+
+  return { skillId, avifEdid: edid, sections };
+}
+
+export async function collectAvifPerkTrees(plugins, progress = null) {
   const trees = new Map();
+  const scan = progress?.pluginScan?.("Scanning AVIF perk trees", plugins.length);
 
   for (const { pluginName, path } of plugins) {
     const ownerPluginLower = (pluginName || path.split(/[/\\]/).pop() || "").toLowerCase();
@@ -142,30 +140,20 @@ export async function collectAvifPerkTrees(plugins) {
 
       try {
         const buffer = await getRecordBufferAsync(fh.fd, offset);
-        const record = tesData.getRecord(buffer);
-        if (record.compressed) continue;
+        const parsed = parseAvifRecord(buffer, ownerPluginLower, masters);
+        if (!parsed) continue;
 
-        const edid = record.subRecords?.find((sub) => sub.type === "EDID")?.value;
-        const fullName = record.subRecords?.find((sub) => sub.type === "FULL")?.value ?? "";
-        const skillId = skillIdFromAvif(edid, fullName);
-        if (!skillId) continue;
-
-        const sections = parseAvifPerkSections(buffer, ownerPluginLower, masters);
-        if (sections.length === 0) continue;
-
-        trees.set(skillId, {
-          skillId,
-          avifEdid: edid,
-          sections,
-        });
+        trees.set(parsed.skillId, parsed);
       } catch {
         // Skip malformed records.
       }
     }
 
     await fh.close();
+    scan?.tick(pluginName, trees.size > 0 ? `${trees.size} skills` : "");
   }
 
+  scan?.finish(`${formatCount(trees.size)} skill trees`);
   return trees;
 }
 

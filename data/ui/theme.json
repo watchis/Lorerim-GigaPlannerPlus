@@ -14,6 +14,7 @@
     "stamina": "#3d6b4f",
     "perkAvailable": "#6d8499",
     "perkSelected": "#c9a227",
+    "perkPartial": "#4eb3f5",
     "perkLocked": "#2a2e38",
     "perkPrereq": "#5a6278"
   },

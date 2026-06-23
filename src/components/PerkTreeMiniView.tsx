@@ -5,9 +5,11 @@ import {
   computePerkTreeEdges,
   getPerkGridCenter,
   getPerkPositionKey,
+  getPerkStackRank,
   getPerkTreeCompactViewBox,
   getPerkTreeGridBounds,
   getVisiblePerksForTree,
+  groupPerksByPosition,
 } from "@/lib/perkTreeGrid";
 import { useBuildStore } from "@/store/buildStore";
 
@@ -24,6 +26,7 @@ const COMPACT_NODE_STROKE_HIGHLIGHT = 0.22;
 const COMPACT_EDGE_STROKE = 0.2;
 const COMPACT_EDGE_STROKE_ACTIVE = 0.25;
 const COMPACT_SELECTED_FILL = "color-mix(in srgb, var(--color-perk-selected) 90%, #fff0c8)";
+const COMPACT_PARTIAL_FILL = "color-mix(in srgb, var(--color-perk-partial) 90%, #d8f4ff)";
 const COMPACT_CONFLICT_FILL = "color-mix(in srgb, var(--color-error) 88%, #ffd4dc)";
 const COMPACT_UNSELECTED_FILL = "var(--color-perk-available)";
 
@@ -142,6 +145,19 @@ export function PerkTreeMiniView({
     [tree, selectedPerkIds],
   );
 
+  const stacksByPosition = useMemo(() => groupPerksByPosition(tree), [tree]);
+
+  const partialRankPositionKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const [positionKey, stack] of stacksByPosition) {
+      const stackRank = getPerkStackRank(stack, selectedPerkIds);
+      if (stackRank && stackRank.current > 0 && stackRank.current < stackRank.total) {
+        keys.add(positionKey);
+      }
+    }
+    return keys;
+  }, [stacksByPosition, selectedPerkIds]);
+
   const viewBox = useMemo(() => {
     if (!compact) {
       return `${origin.x} ${origin.y} ${width} ${height}`;
@@ -238,6 +254,7 @@ export function PerkTreeMiniView({
               .map((perk) => {
                 const center = getPerkGridCenter(perk.position);
                 const isConflict = conflictPositionKeys.has(getPerkPositionKey(perk.position));
+                const isPartialRank = partialRankPositionKeys.has(getPerkPositionKey(perk.position));
 
                 if (isConflict) {
                   return (
@@ -251,21 +268,25 @@ export function PerkTreeMiniView({
                   );
                 }
 
+                const highlightColor = isPartialRank
+                  ? "var(--color-perk-partial)"
+                  : "var(--color-accent)";
+
                 return (
                   <g key={perk.id} filter={`url(#${glowFilterId})`}>
                     <circle
                       cx={center.x}
                       cy={center.y}
                       r={nodeRadius + COMPACT_NODE_HALO_PAD}
-                      fill="var(--color-accent)"
+                      fill={highlightColor}
                       fillOpacity={COMPACT_HIGHLIGHT_HALO_OPACITY}
                     />
                     <circle
                       cx={center.x}
                       cy={center.y}
                       r={nodeRadius}
-                      fill={COMPACT_SELECTED_FILL}
-                      stroke="var(--color-accent)"
+                      fill={isPartialRank ? COMPACT_PARTIAL_FILL : COMPACT_SELECTED_FILL}
+                      stroke={highlightColor}
                       strokeWidth={COMPACT_NODE_STROKE_HIGHLIGHT}
                       strokeOpacity={1}
                     />
@@ -291,6 +312,8 @@ export function PerkTreeMiniView({
             {visiblePerks.map((perk) => {
               const isSelected = selectedPerkIds.includes(perk.id);
               const isConflict = conflictPositionKeys.has(getPerkPositionKey(perk.position));
+              const isPartialRank =
+                isSelected && partialRankPositionKeys.has(getPerkPositionKey(perk.position));
               const center = getPerkGridCenter(perk.position);
 
               return (
@@ -320,16 +343,20 @@ export function PerkTreeMiniView({
                     fill={
                       isConflict
                         ? "var(--color-error)"
-                        : isSelected
-                          ? "var(--color-perk-selected)"
-                          : "var(--color-surface-elevated)"
+                        : isPartialRank
+                          ? "var(--color-perk-partial)"
+                          : isSelected
+                            ? "var(--color-perk-selected)"
+                            : "var(--color-surface-elevated)"
                     }
                     stroke={
                       isConflict
                         ? "var(--color-error-muted)"
-                        : isSelected
-                          ? "var(--color-foreground)"
-                          : "var(--color-border)"
+                        : isPartialRank
+                          ? "var(--color-perk-partial)"
+                          : isSelected
+                            ? "var(--color-foreground)"
+                            : "var(--color-border)"
                     }
                     strokeWidth={isConflict ? 0.14 : 0.1}
                     strokeOpacity={1}

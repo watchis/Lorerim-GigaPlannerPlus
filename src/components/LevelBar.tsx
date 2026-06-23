@@ -1,10 +1,13 @@
-import { AlertCircle, ChevronsDown, Info, Minus, Plus } from "lucide-react";
+import { AlertCircle, ChevronsDown, ChevronsUp, Info, Minus, Plus } from "lucide-react";
+import type { ReactNode } from "react";
 import { NumericLevelInput } from "@/components/NumericLevelInput";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, CursorTooltip } from "@/components/ui/tooltip";
 import {
   getBuildPlayerLevelWarnings,
+  ensurePlayerLevelForBuild,
   getMinimumPlayerLevelForBuild,
+  getRemainingDestinyPerkPoints,
   type BuildPlayerLevelWarnings,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
@@ -146,6 +149,42 @@ function PointsInfoTooltip({ text }: { text: string }) {
   );
 }
 
+function LevelStepperTooltipButton({
+  label,
+  info,
+  onClick,
+  disabled,
+  children,
+}: {
+  label: string;
+  info: string;
+  onClick: () => void;
+  disabled: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={onClick}
+            disabled={disabled}
+            aria-label={label}
+          >
+            {children}
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="max-w-xs">
+        {info}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function LevelBar() {
   const { labels } = useThemeConfig();
   const barLabels = labels["level-bar"];
@@ -153,11 +192,13 @@ export function LevelBar() {
   const build = useBuildStore((s) => s.build);
   const computed = useBuildStore((s) => s.computed);
   const setPlayerLevel = useBuildStore((s) => s.setPlayerLevel);
+  const ensurePlayerLevel = useBuildStore((s) => s.ensurePlayerLevel);
 
   if (!gameData || !computed) return null;
 
   const { baseLevel, maxPlayerLevel, initialPerkPoints } = gameData.game.mechanics.leveling;
   const minimumPlayerLevel = getMinimumPlayerLevelForBuild(gameData.game, build);
+  const ensuredPlayerLevel = ensurePlayerLevelForBuild(gameData.game, build).playerLevel;
   const perkPointsInfo = formatLabel(barLabels.perkPointsInfo, {
     initial: initialPerkPoints,
     perLevel: computed.perkPointsPerLevel,
@@ -172,14 +213,25 @@ export function LevelBar() {
   });
   const skillOverBudget = computed.skillPointsRemaining < 0;
   const perkOverBudget = computed.perkPointsRemaining < 0;
+  const destinyOverBudget = getRemainingDestinyPerkPoints(gameData.game, build) < 0;
   const trainingOverBudget = computed.trainingLevelsRemaining < 0;
   const skillOverBy = skillOverBudget ? Math.abs(computed.skillPointsRemaining) : 0;
   const perkOverBy = perkOverBudget ? Math.abs(computed.perkPointsRemaining) : 0;
+  const destinyOverBy = destinyOverBudget
+    ? Math.abs(getRemainingDestinyPerkPoints(gameData.game, build))
+    : 0;
   const warnings = getBuildPlayerLevelWarnings(gameData.game, build);
 
   const perkOverBudgetMessage = perkOverBudget
     ? formatLabel(barLabels.perkOverBudgetAlert, {
         count: perkOverBy,
+        playerLevel: build.playerLevel,
+      })
+    : null;
+
+  const destinyOverBudgetMessage = destinyOverBudget
+    ? formatLabel(barLabels.destinyOverBudgetAlert, {
+        count: destinyOverBy,
         playerLevel: build.playerLevel,
       })
     : null;
@@ -202,6 +254,7 @@ export function LevelBar() {
 
   const alertMessages = [
     ...(perkOverBudgetMessage ? [perkOverBudgetMessage] : []),
+    ...(destinyOverBudgetMessage ? [destinyOverBudgetMessage] : []),
     ...(skillOverBudgetMessage ? [skillOverBudgetMessage] : []),
     ...(trainingOverBudgetMessage ? [trainingOverBudgetMessage] : []),
     ...formatPlayerLevelWarningMessages(barLabels, warnings, build.playerLevel),
@@ -244,23 +297,22 @@ export function LevelBar() {
               <Plus className="h-3.5 w-3.5" />
             </Button>
           </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => setPlayerLevel(minimumPlayerLevel)}
-                disabled={build.playerLevel <= minimumPlayerLevel}
-                aria-label={barLabels.setToMinimumLevel}
-              >
-                <ChevronsDown className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-xs">
-              {barLabels.setToMinimumLevelInfo}
-            </TooltipContent>
-          </Tooltip>
+          <LevelStepperTooltipButton
+            label={barLabels.ensurePlayerLevel}
+            info={barLabels.ensurePlayerLevelInfo}
+            onClick={ensurePlayerLevel}
+            disabled={build.playerLevel >= ensuredPlayerLevel}
+          >
+            <ChevronsUp className="h-3.5 w-3.5" />
+          </LevelStepperTooltipButton>
+          <LevelStepperTooltipButton
+            label={barLabels.setToMinimumLevel}
+            info={barLabels.setToMinimumLevelInfo}
+            onClick={() => setPlayerLevel(minimumPlayerLevel)}
+            disabled={build.playerLevel <= minimumPlayerLevel}
+          >
+            <ChevronsDown className="h-3.5 w-3.5" />
+          </LevelStepperTooltipButton>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">

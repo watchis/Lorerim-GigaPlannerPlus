@@ -73,6 +73,7 @@ interface PerkNodeProps {
   perk: Perk;
   position: { x: number; y: number };
   requirements: { skillReq: number | null; playerLevelReq: number | null };
+  badgeRequirements: { skillReq: number | null; playerLevelReq: number | null };
   takeTargetId: string;
   stackRank: { current: number; total: number } | null;
   nextRank: Perk | undefined;
@@ -88,12 +89,14 @@ interface PerkNodeProps {
   onForceTake: (perkId: string) => boolean;
   onRemove: (perkId: string) => void;
   labels: Record<string, string>;
+  showSkillRequirements: boolean;
 }
 
 function PerkNode({
   perk,
   position,
   requirements,
+  badgeRequirements,
   takeTargetId,
   stackRank,
   nextRank,
@@ -109,6 +112,7 @@ function PerkNode({
   onForceTake,
   onRemove,
   labels,
+  showSkillRequirements,
 }: PerkNodeProps) {
   const handleForceAllocate = () => {
     if (!isInteractive || tookPerkWithLastClickRef.current) return false;
@@ -144,13 +148,20 @@ function PerkNode({
     handleForceAllocate();
   };
 
+  const isPartialRank =
+    isSelected && stackRank !== null && stackRank.current < stackRank.total;
+
   const labelFontPx = Math.max(8, Math.round(nodeDiameterPx * 0.30));
   const circleClassName = cn(
     "flex shrink-0 items-center justify-center rounded-full border-2 font-semibold leading-none transition-all",
     isConflict &&
       "border-[var(--color-error)] bg-[var(--color-error)]/30 text-[var(--color-foreground)] shadow-[var(--shadow-error-glow)] ring-[3px] ring-[var(--color-error)]/90 ring-offset-2 ring-offset-[var(--color-background)] animate-pulse",
     !isConflict &&
+      isPartialRank &&
+      "border-[var(--color-perk-partial)] bg-[var(--color-perk-partial)]/30 text-[var(--color-perk-partial)] shadow-[0_0_12px_rgba(78,179,245,0.4)]",
+    !isConflict &&
       isSelected &&
+      !isPartialRank &&
       "border-[var(--color-perk-selected)] bg-[var(--color-perk-selected)]/30 text-[var(--color-perk-selected)] shadow-[0_0_12px_rgba(212,175,55,0.35)]",
     !isConflict &&
       !isSelected &&
@@ -167,14 +178,18 @@ function PerkNode({
       "border-[var(--color-perk-locked)] bg-[var(--color-surface)]/80 text-[var(--color-muted)] opacity-55 group-hover:opacity-80",
   );
 
-  const requirementLabel = formatPerkNodeRequirementLabel(requirements);
+  const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements);
   const requirementBadgeClassName = cn(
     "whitespace-nowrap rounded border px-1 py-px text-[10px] font-semibold tabular-nums leading-none shadow-[0_1px_4px_rgba(0,0,0,0.45)]",
     "border-[var(--color-border)] bg-[var(--color-surface)]",
     isConflict &&
       "border-[var(--color-error)] bg-[var(--color-error)]/20 text-[var(--color-error)]",
     !isConflict &&
+      isPartialRank &&
+      "border-[var(--color-perk-partial)]/60 text-[var(--color-perk-partial)]",
+    !isConflict &&
       isSelected &&
+      !isPartialRank &&
       "border-[var(--color-perk-selected)]/60 text-[var(--color-perk-selected)]",
     !isConflict &&
       !isSelected &&
@@ -221,7 +236,7 @@ function PerkNode({
           <p className="text-xs font-medium text-[var(--color-accent-muted)]">
             {labels.nextRank}
           </p>
-          {requirements.skillReq !== null && (
+          {nextRank.skillReq > 0 && (
             <p className="mt-1 text-xs text-[var(--color-muted)]">
               {labels.skillReq}: {nextRank.skillReq}
             </p>
@@ -268,9 +283,9 @@ function PerkNode({
         >
           <span className="leading-none">{perkAbbreviation(perk.name)}</span>
         </span>
-        {(requirementLabel || stackRank) && (
+        {(showSkillRequirements && requirementLabel) || stackRank ? (
           <div className="absolute left-1/2 top-full mt-0.5 flex -translate-x-1/2 flex-col items-center gap-0.5">
-            {requirementLabel && (
+            {showSkillRequirements && requirementLabel && (
               <span className={requirementBadgeClassName}>{requirementLabel}</span>
             )}
             {stackRank && (
@@ -279,7 +294,7 @@ function PerkNode({
               </span>
             )}
           </div>
-        )}
+        ) : null}
       </button>
     </CursorTooltip>
   );
@@ -290,6 +305,7 @@ interface PerkTreeViewProps {
   labels: Record<string, string>;
   conflictPerkIds?: string[];
   playerLevelConflictPerkIds?: string[];
+  showSkillRequirements?: boolean;
   /** Scale the tree to fit and center within the parent area. */
   fit?: boolean;
   className?: string;
@@ -338,6 +354,7 @@ function PerkTreeView({
   labels,
   conflictPerkIds = [],
   playerLevelConflictPerkIds = [],
+  showSkillRequirements = true,
   fit = false,
   className,
 }: PerkTreeViewProps) {
@@ -444,7 +461,7 @@ function PerkTreeView({
             x2={`${edge.x2}%`}
             y2={`${edge.y2}%`}
             stroke={edge.active ? "var(--color-accent)" : "var(--color-border)"}
-            strokeWidth={edge.active ? 2.5 : 1.5}
+            strokeWidth={edge.active ? 1.25 : 1.5}
             strokeOpacity={edge.active ? 0.85 : 0.45}
             strokeLinecap="round"
           />
@@ -462,11 +479,17 @@ function PerkTreeView({
           playerLevelConflictPositionKeys.has(positionKey);
         const takeTargetId = resolvePerkTakeTarget(stack, build.selectedPerkIds);
         const takeTargetPerk = stack.find((candidate) => candidate.id === takeTargetId) ?? perk;
+        const tooltipPerk = isSelected ? perk : takeTargetPerk;
+        const badgePerk = nextRank ?? takeTargetPerk;
 
-        const baseRequirements = getPerkNodeRequirements(takeTargetPerk);
+        const tooltipRequirements = getPerkNodeRequirements(tooltipPerk);
+        const badgeRequirements = getPerkNodeRequirements(badgePerk);
         const requirements = isDestinyTree
-          ? { ...baseRequirements, skillReq: null }
-          : baseRequirements;
+          ? { ...tooltipRequirements, skillReq: null }
+          : tooltipRequirements;
+        const nodeBadgeRequirements = isDestinyTree
+          ? { ...badgeRequirements, skillReq: null }
+          : badgeRequirements;
 
         const meetsPerkReq = isDestinyTree
           ? !takeTargetPerk.costsPerkPoint || destinyRemaining >= 1
@@ -487,6 +510,7 @@ function PerkTreeView({
             perk={perk}
             position={getPerkPercentPositionInBounds(perk.position, bounds)}
             requirements={requirements}
+            badgeRequirements={nodeBadgeRequirements}
             takeTargetId={takeTargetId}
             stackRank={stackRank}
             nextRank={nextRank}
@@ -502,6 +526,7 @@ function PerkTreeView({
             onForceTake={allocatePerk}
             onRemove={removePerk}
             labels={labels}
+            showSkillRequirements={showSkillRequirements}
           />
         );
       })}

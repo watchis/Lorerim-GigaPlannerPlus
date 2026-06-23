@@ -85,7 +85,7 @@ export function loadPerkLayoutOverrides(perksDir) {
   }
 
   for (const filename of readdirSync(perksDir)) {
-    if (!filename.endsWith(".json") || filename === "index.json" || filename === "destiny.json") {
+    if (!filename.endsWith(".json") || filename === "index.json") {
       continue;
     }
 
@@ -121,8 +121,6 @@ export function applyPerkLayoutOverrides(trees, layoutOverrides) {
   if (positionsBySkill.size === 0) return;
 
   for (const [filename, tree] of Object.entries(trees)) {
-    if (filename === "destiny.json") continue;
-
     const positions = positionsBySkill.get(tree.skillId);
     if (!positions) continue;
 

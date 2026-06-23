@@ -126,11 +126,42 @@ assert.deepEqual(blockPerks[2].position, { x: 8, y: 22 });
 assert.deepEqual(blockPerks[3].position, { x: 3, y: 3 }, "unsaved perks keep computed layout");
 assert.ok(layoutTrees["block.json"].grid.width >= 40);
 
+writeFileSync(
+  join(perksDir, "destiny.json"),
+  JSON.stringify({
+    skillId: "destiny",
+    grid: { width: 43, height: 19 },
+    perks: [
+      { id: "destiny-01", name: "Destiny", position: { x: 21, y: 18 } },
+      { id: "destiny-02", name: "Focus", position: { x: 15, y: 15 } },
+    ],
+  }),
+);
+
+const destinyLayoutOverrides = loadPerkLayoutOverrides(perksDir);
+assert.ok(destinyLayoutOverrides.positionsBySkill.get("destiny")?.has("destiny"));
+assert.deepEqual(destinyLayoutOverrides.grids.get("destiny"), { width: 43, height: 19 });
+
+const destinyTrees = {
+  "destiny.json": {
+    skillId: "destiny",
+    grid: { width: 10, height: 10 },
+    perks: [
+      { id: "destiny-01", name: "Destiny", position: { x: 0, y: 0 } },
+      { id: "destiny-02", name: "Focus", position: { x: 1, y: 1 } },
+    ],
+  },
+};
+applyPerkLayoutOverrides(destinyTrees, destinyLayoutOverrides);
+assert.deepEqual(destinyTrees["destiny.json"].perks[0].position, { x: 21, y: 18 });
+assert.deepEqual(destinyTrees["destiny.json"].perks[1].position, { x: 15, y: 15 });
+assert.ok(destinyTrees["destiny.json"].grid.width >= 43);
+
 mkdirSync(join(perksDir, "nested"), { recursive: true });
 writeFileSync(join(perksDir, "orphan.json"), "{}");
 writeFileSync(join(perksDir, "smithing.json"), readFileSync(join(perksDir, "smithing.json")));
 
-const removed = removeStalePerkFiles(perksDir, ["smithing.json", "block.json"]);
+const removed = removeStalePerkFiles(perksDir, ["smithing.json", "block.json", "destiny.json"]);
 assert.deepEqual(removed, ["orphan.json"]);
 assert.ok(!existsSync(join(perksDir, "orphan.json")));
 

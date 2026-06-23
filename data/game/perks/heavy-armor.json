@@ -82,7 +82,7 @@
       "prerequisites": [
         "heavy-armor-combat-meditation"
       ],
-      "description": "You have mastered spellcasting while wearing heavy armor. [No spell cost penalty for casting Master spells and 10% stronger and longer lasting spells while wearing heavy armor]",
+      "description": "You have mastered spellcasting while wearing heavy armor. [No spell cost penalty for casting Master spells and 15% stronger and longer lasting spells, scrolsl and enchantments while wearing heavy armor]",
       "effects": [],
       "prerequisitesAny": []
     },
@@ -260,7 +260,7 @@
       "prerequisites": [
         "heavy-armor-relentless-onslaught"
       ],
-      "description": "You take half damage from falling if wearing all Heavy Armor.",
+      "description": "You take no damage from falling if wearing all Heavy Armor.",
       "effects": [],
       "prerequisitesAny": []
     },

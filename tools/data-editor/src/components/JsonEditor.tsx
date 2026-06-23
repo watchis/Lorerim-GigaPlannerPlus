@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Code, ListTree, Move, RotateCcw, Save, Search, X } from "lucide-react";
 import { saveFile } from "../api";
+import { EditorFileProvider } from "./EditorFileContext";
 import { JsonNode } from "./JsonNode";
 import { JsonRawEditor } from "./JsonRawEditor";
 import { PerkTreeLayoutEditor } from "./PerkTreeLayoutEditor";
@@ -241,6 +242,7 @@ export function JsonEditor({
               Switch to Raw mode to fix JSON syntax, or revert changes.
             </p>
           ) : (
+            <EditorFileProvider path={path}>
             <TreeSearchProvider query={searchQuery}>
               <div className="sticky top-0 z-10 mb-3 flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1.5 shadow-[var(--shadow-panel)]">
                 <Search className="size-3.5 shrink-0 text-[var(--color-muted)]" />
@@ -264,6 +266,7 @@ export function JsonEditor({
               </div>
               <JsonNode value={treeValue} onChange={updateTreeValue} keySuggestions={keySuggestions} />
             </TreeSearchProvider>
+            </EditorFileProvider>
           )}
         </CardContent>
       </Card>

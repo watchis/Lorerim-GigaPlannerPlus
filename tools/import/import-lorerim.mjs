@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { collectAltarBlessingMagnitudes, collectRecordsFromPlugins } from "./lib/esp-reader.mjs";
-import { collectAvifPerkTrees, buildIdentityToPerkName } from "./lib/avif-perk-tree.mjs";
+import { collectImportPluginData } from "./lib/esp-reader.mjs";
+import { buildIdentityToPerkName } from "./lib/avif-perk-tree.mjs";
 import { buildAvifMembershipIndex } from "./lib/avif-perk-membership.mjs";
 import { buildPerkMetadataIndex } from "./lib/perk-tree-metadata.mjs";
 import { discoverInstall, summarizePluginSources } from "./lib/lorerim-install.mjs";
@@ -16,6 +16,8 @@ import {
 } from "./lib/lorerim-transform.mjs";
 import { loadJsonIfExists } from "./lib/transform-utils.mjs";
 import { removeStalePerkFiles } from "./lib/import-reset.mjs";
+import { createImportReporter, formatCount } from "./lib/import-progress.mjs";
+import { buildDeityEligibilityIndex } from "./lib/deity-eligibility.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..", "..");
@@ -95,29 +97,60 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
       ? install.plugins.slice(0, options.pluginLimit)
       : install.plugins;
 
-  console.log(`LoreRim install: ${install.installDir}`);
+  const progress = createImportReporter();
+  progress.banner([
+    "LoreRim → GigaPlanner import",
+    options.dryRun ? "(dry run — no files will be written)" : "",
+  ].filter(Boolean));
+
+  console.log(`Install: ${install.installDir}`);
   console.log(`MO2 profile: ${install.profile}`);
-  console.log(`Plugins to scan: ${plugins.length}`);
+  console.log(`Plugins to scan: ${formatCount(plugins.length)}`);
   const pluginSources = summarizePluginSources(plugins);
   const fromXEdit = plugins.filter((plugin) => plugin.modName === "LoreRim - xEdit64 Output").length;
   console.log(`Plugins from LoreRim - xEdit64 Output: ${fromXEdit}`);
+  if (pluginSources.length > 0) {
+    const topSources = pluginSources
+      .slice(0, 5)
+      .map(({ modName, count }) => `${modName} (${formatCount(count)})`)
+      .join(", ");
+    console.log(`Top plugin sources: ${topSources}`);
+  }
 
-  const perkRecords = await collectRecordsFromPlugins(plugins, ["PERK"]);
-  const avifTrees = await collectAvifPerkTrees(plugins);
+  progress.phase("Scanning plugin records", 1, 4);
+  const {
+    perkRecords,
+    avifTrees,
+    spellRecords,
+    raceRecords,
+    mesgRecords,
+    questRecords,
+    wintersunMgefRecords,
+    wintersunMesgRecords,
+    altarMagnitudes,
+    lorerimRaceRecords,
+    traitsFormList,
+    mastersByPath,
+  } = await collectImportPluginData(plugins, progress);
+  progress.step("Building perk metadata index…");
   const avifMembership = buildAvifMembershipIndex(
     avifTrees,
     buildIdentityToPerkName(perkRecords),
   );
   const perkMetadataIndex = buildPerkMetadataIndex(perkRecords, avifTrees, avifMembership);
-  const spellRecords = await collectRecordsFromPlugins(plugins, ["SPEL"]);
-  const raceRecords = await collectRecordsFromPlugins(plugins, ["RACE"]);
-  const mesgRecords = await collectRecordsFromPlugins(plugins, ["MESG"]);
+  progress.step(
+    `Perk metadata ready — ${formatCount(perkRecords.length)} PERK records, ` +
+      `${formatCount(avifMembership.allDisplayedIdentities.size)} AVIF-displayed perks`,
+  );
 
   const wintersunPlugins = plugins.filter((plugin) => /Wintersun/i.test(plugin.pluginName));
-  const wintersunMgefRecords = await collectRecordsFromPlugins(wintersunPlugins, ["MGEF"]);
-  const wintersunMesgRecords = await collectRecordsFromPlugins(wintersunPlugins, ["MESG"]);
-  const altarMagnitudes = await collectAltarBlessingMagnitudes(plugins);
+  progress.step(
+    `Wintersun plugins: ${formatCount(wintersunPlugins.length)} ` +
+      `(MGEF/MESG from combined scan)`,
+  );
 
+  progress.phase("Transforming game data", 2, 4);
+  progress.step("Building perk trees…");
   const { trees, indexEntries, addedPerks, removedPerks } = transformPerkRecords(
     perkRecords,
     perksDir,
@@ -125,33 +158,63 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     perkMetadataIndex,
     avifMembership,
   );
-  const traits = transformTraitRecords(
-    perkRecords,
-    install.installDir,
-    spellRecords,
+  const importedPerks = Object.values(trees).reduce((sum, tree) => sum + tree.perks.length, 0);
+  progress.step(
+    `Perk trees — ${formatCount(Object.keys(trees).length)} trees, ` +
+      `${formatCount(importedPerks)} perks` +
+      (addedPerks.length > 0 ? ` (+${formatCount(addedPerks.length)} new)` : "") +
+      (removedPerks.length > 0
+        ? ` (−${formatCount(removedPerks.reduce((sum, entry) => sum + entry.count, 0))} removed)`
+        : ""),
   );
-  const lorerimRacePlugins = plugins.filter((plugin) =>
-    /LoreRim - NPCs and Races/i.test(plugin.pluginName),
+
+  progress.step("Parsing traits…");
+  const traits = await transformTraitRecords(spellRecords, install, plugins, {
+    traitsFormList,
+    mastersByPath,
+  });
+  progress.step(`Traits — ${formatCount(traits.traits.length)} entries`);
+
+  progress.step(
+    `Races — merging ${formatCount(raceRecords.length)} RACE records` +
+      (lorerimRaceRecords.length > 0
+        ? ` with ${formatCount(lorerimRaceRecords.length)} LoreRim race overrides`
+        : ""),
   );
-  const lorerimRaceRecords = await collectRecordsFromPlugins(lorerimRacePlugins, ["RACE"]);
   const races = transformRaceRecords(
     raceRecords,
     spellRecords,
     join(dataDir, "races.json"),
     lorerimRaceRecords,
   );
+  progress.step(`Races — ${formatCount(races.races.length)} playable races`);
+
+  progress.step("Birthsigns…");
   const birthsigns = transformStandingStoneRecords(
     spellRecords,
     mesgRecords,
     join(dataDir, "birthsigns.json"),
   );
+  progress.step(`Birthsigns — ${formatCount(birthsigns.birthsigns.length)} entries`);
+
+  progress.step("Deities…");
+  const deityEligibility = await buildDeityEligibilityIndex({
+    wintersunPlugins,
+    mesgRecords: wintersunMesgRecords,
+    questRecords,
+    spellRecords,
+  });
   const deities = transformDeityRecords(
     spellRecords,
     wintersunMgefRecords,
     wintersunMesgRecords,
     join(dataDir, "deities.json"),
     altarMagnitudes,
+    deityEligibility,
   );
+  progress.step(`Deities — ${formatCount(deities.deities.length)} entries`);
+
+  progress.phase("Resolving modpack version", 3, 4);
   const existingManifest = loadJsonIfExists(join(dataDir, "manifest.json"));
   const manifest = transformManifestFromInstall(existingManifest, install.installDir);
   const versionInfo = manifest.version
@@ -159,12 +222,12 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     : {};
 
   if (manifest.version && manifest.version !== existingManifest?.version) {
-    console.log(
+    progress.step(
       `Modpack version: ${manifest.version}` +
         (existingManifest?.version ? ` (was ${existingManifest.version})` : ""),
     );
   } else if (manifest.version) {
-    console.log(`Modpack version: ${manifest.version}`);
+    progress.step(`Modpack version: ${manifest.version}`);
   } else {
     console.warn("Warning: could not detect LoreRim modpack version; manifest version unchanged.");
   }
@@ -191,28 +254,37 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   };
 
   if (options.dryRun) {
-    console.log("Dry run complete:");
+    progress.phase("Dry run complete", 4, 4);
+    console.log(`Finished in ${progress.elapsed()} (no files written).`);
     console.log(JSON.stringify(summary, null, 2));
     return { ok: true, dryRun: true, summary };
   }
 
-  writeJson(join(perksDir, "index.json"), indexEntries);
-  writeJson(join(dataDir, "traits.json"), traits);
-  writeJson(join(dataDir, "races.json"), races);
-  writeJson(join(dataDir, "birthsigns.json"), birthsigns);
-  writeJson(join(dataDir, "deities.json"), deities);
-  writeJson(join(dataDir, "manifest.json"), manifest);
+  progress.phase("Writing planner JSON", 4, 4);
+  const filesToWrite = [
+    ["perks/index.json", indexEntries],
+    ["traits.json", traits],
+    ["races.json", races],
+    ["birthsigns.json", birthsigns],
+    ["deities.json", deities],
+    ["manifest.json", manifest],
+    ...Object.entries(trees).map(([filename, tree]) => [`perks/${filename}`, tree]),
+  ];
 
-  for (const [filename, tree] of Object.entries(trees)) {
-    writeJson(join(perksDir, filename), tree);
+  for (const [relativePath, payload] of filesToWrite) {
+    const filePath = relativePath.startsWith("perks/")
+      ? join(perksDir, relativePath.slice("perks/".length))
+      : join(dataDir, relativePath);
+    writeJson(filePath, payload);
+    progress.step(`Wrote ${relativePath}`);
   }
 
   const removedPerkFiles = removeStalePerkFiles(perksDir, Object.keys(trees));
   if (removedPerkFiles.length > 0) {
-    console.log(`Removed stale perk files: ${removedPerkFiles.join(", ")}`);
+    progress.step(`Removed stale perk files: ${removedPerkFiles.join(", ")}`);
   }
 
-  console.log("Import complete:");
+  console.log(`\nImport complete in ${progress.elapsed()}:`);
   console.log(JSON.stringify(summary, null, 2));
 
   return { ok: true, summary };

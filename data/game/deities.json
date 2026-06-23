@@ -19,10 +19,17 @@
       "follower": "Attacks, spells, scrolls, shouts and enchantments are up to 30% better against dragons. Able to craft a powerful amulet by using amulets of the Eight Divines.",
       "devotee": "Praying to Akatosh resets the cooldown of your most recently used shout and power. Craft a powerful amulet with 5 of each of the nine divines amulets.",
       "tenets": "Fulfill your destiny by saving Tamriel. Raise your character level. Absorb dragon souls. Never openly break the laws of Skyrim.",
-      "race": "Human",
-      "starting": "Breton / Imperial / Khajiit / Nord",
-      "requirement": "Human blood",
-      "effects": []
+      "race": "All",
+      "starting": "Breton / Khajiit / Nord / Imperial",
+      "requirement": "None",
+      "effects": [],
+      "shrineLocations": [
+        "North of Frostfruit Inn in Rorikstead",
+        "Northeast of Twilight Sepulcher",
+        "Northeast of the Atronach Stone",
+        "Fort Sungard, southeast of Rorikstead",
+        "Skyborn Altar"
+      ]
     },
     {
       "id": "arkay",
@@ -32,7 +39,7 @@
       "devotee": "Revive with full Health upon taking fatal damage. Must pray to use this ability again. Attribute fortifying spells are up to 20% stronger.",
       "tenets": "Slay the undead and their summoners. Perform Arkay's Rites. Never openly break the laws of Skyrim. Never summon the undead or become one of them.",
       "race": "All",
-      "starting": "",
+      "starting": "Breton / Nord / Bosmer / Imperial",
       "requirement": "None",
       "effects": [
         {
@@ -40,6 +47,12 @@
           "stat": "health",
           "value": 30
         }
+      ],
+      "shrineLocations": [
+        "Wayward Pass",
+        "Northeast of Windhelm, south of Snow Veil Sanctum",
+        "Hall of the Dead of Markarth, Whiterun, Riften, Solitude, Windhelm",
+        "Gravekeeper's quarters in Falkreath"
       ]
     },
     {
@@ -49,10 +62,16 @@
       "follower": "Deal up to 20% more damage to vampires and take up to 20% less damage from vampires. Auriel's bow uses up to 80% less charge.",
       "devotee": "Sun spells and bows are up to 20% stronger. Wearing Elven, Glass or Ancient Falmer armor set increases Glass and Elven damage by up to 20%.",
       "tenets": "Fulfill your destiny by saving Tamriel. Master all skills. Become my Champion at my sacred Chantry. High Elves are most deserving of my favor.",
-      "race": "High Elven, Wood Elven / Breton",
-      "starting": "",
+      "race": "Altmer / Bosmer / Breton",
+      "starting": "Altmer / Bosmer",
       "requirement": "Race restricted",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Temple of the Ancestors, south of Morvunskar",
+        "Darkfall Cave",
+        "Inner Sanctum",
+        "Wilderness northeast of White Ridge Barrow (Solstheim)."
+      ]
     },
     {
       "id": "azura",
@@ -61,10 +80,15 @@
       "follower": "Foes within mag feet can absorb spells and suffer up to 20% reduced magic resistance, chameleon and blind spells are up to 25% cheaper",
       "devotee": "Activate a target below 30% - 60% health (based on favor) to paralyze them with 1 Health. Soul trapping spells cost up to 40% less to cast.",
       "tenets": "Trap souls in my name. Explore new locations. Pray only at twilight, preferably outside. Dark Elves and those skilled in Illusion are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Khajiit / Dunmer / Anyone who has completed \"The Dark Star\"",
+      "starting": "Khajiit / Dunmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Raven Rock Temple",
+        "Wilderness north of Talking Stone Camp",
+        "Shrine of Azura"
+      ]
     },
     {
       "id": "baan-dar",
@@ -73,10 +97,13 @@
       "follower": "Pickpocketing and selling to fences is up to 50% better. Alchemical powders deal up to 30% more damage and oils gain 2 extra uses.",
       "devotee": "Pray to ignite skooma in people's inventory within 250 feet doing massive damage. Throwing knives do up to 50% more damage. Skooma no longer can kill you.",
       "tenets": "Pick locks and pockets successfully. Khajiit and those skilled in Archery are most deserving of my favor.",
-      "race": "All",
+      "race": "Khajiit / Bosmer",
       "starting": "",
-      "requirement": "Baan Dar does not accept those who are not of Khajiit or Wood Elven blood.",
-      "effects": []
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness northeast of the Apprentice Stone"
+      ]
     },
     {
       "id": "boethiah",
@@ -85,10 +112,14 @@
       "follower": "Your attacks deal up to 30% more damage when fighting only one opponent.",
       "devotee": "During prayer, you may invoke superior Daedric Invisibility for 90 seconds. If broken by a sneak attack, it deals 25% more damage.",
       "tenets": "Murder the innocent. Slay people who stand in your way. Strike unseen with sneak attacks. Dark Elves are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Dunmer / Anyone who has completed \"Boethiah's Calling\"",
+      "starting": "Dunmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Raven Rock Temple",
+        "Sacellum of Boethiah"
+      ]
     },
     {
       "id": "clavicus-vile",
@@ -97,10 +128,13 @@
       "follower": "Conjuration spells and effects are up to 20% stronger. Pray to make a Pact to gain favor with Clavicus Vile.",
       "devotee": "Pray to make a Wish, permanently gaining an additional perk point. Most teleporting and traversal spells are up to 50% cheaper to cast.",
       "tenets": "Pray to accept a Pact and complete it as written within the allotted time. Never break or ignore my Pacts.",
-      "race": "All",
+      "race": "Dunmer / Anyone who has completed \"A Daedra's Best Friend\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Haemar\"s Shame"
+      ]
     },
     {
       "id": "dibella",
@@ -110,7 +144,7 @@
       "devotee": "Activate a person in combat to make them unequip their items and follow you for 90 seconds. Illusion spells are up to 15% stronger or longer lasting, twice that for charm, rally and command spells.",
       "tenets": "Persuade others. Receive the blessing of Lover's Comfort. Find a new Sybil for my Temple. Pray only in the nude. Never openly break the laws of Skyrim.",
       "race": "All",
-      "starting": "",
+      "starting": "Breton / Nord / Imperial",
       "requirement": "None",
       "effects": [
         {
@@ -119,6 +153,15 @@
           "value": 20,
           "isPercent": true
         }
+      ],
+      "shrineLocations": [
+        "South of Old Hroldan Inn",
+        "Temple of Dibella in Markarth",
+        "Broken Tower Redoubt",
+        "Morvunskar",
+        "South of Dawnstar",
+        "Shack near Abandoned Prison",
+        "Haelga's Bunkhouse in Riften"
       ]
     },
     {
@@ -128,10 +171,13 @@
       "follower": "One Handed raises damage blocked, Block raises armor rating and Heavy Armor raises attack damage. 15% at 100 of the corresponding skill level. These bonuses are doubled in an Oblivion Realm.",
       "devotee": "Transfer armor of enemies within mag feet by up to 200. Doubled against daedra. Bonus to frost and shock resist when wearing Ebony Armor.",
       "tenets": "Slay daedra. Defeat epic foes. Complete miscellaneous quests for the people of Skyrim. Those skilled in Block are most deserving of my favor.",
-      "race": "All",
+      "race": "Breton / Dunmer",
       "starting": "",
-      "requirement": "Ebonarm does not accept those who are not of Breton or Dark Elven blood.",
-      "effects": []
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness north of the Reach Stormcloak Camp"
+      ]
     },
     {
       "id": "hermaeus-mora",
@@ -140,10 +186,15 @@
       "follower": "Find Eldritch Pages on corpses. Similar Eldritch Pages can be bound at a tanning rack to create Eldritch Tomes that improve magic and shouts.",
       "devotee": "Pray to permanently raise a skill of your choice by one level. Entropic spells are up to 20% stronger based on favor.",
       "tenets": "Read Eldritch Pages and bind them into Eldritch Tomes. Read books that teach new skills. Become my Champion at the Summit of Apocrypha.",
-      "race": "All",
+      "race": "Bosmer / Anyone who has completed \"Discerning the Transmundane\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Waking Dreams Chapter I",
+        "Sea of Ghosts, west of Septimus Severus' Outpost",
+        "Location: Black Book - Waking Dreams"
+      ]
     },
     {
       "id": "hircine",
@@ -152,10 +203,15 @@
       "follower": "Deal up to 60% more attack damage to living targets with down to 50% or less Health.",
       "devotee": "Pray to invoke a Hunt within 500 feet, revealing the living and exposing them to Bitter Mercy. Werebeasts can now deal up to 30% more damage to undead under half health.",
       "tenets": "Slay the living in open combat, especially those stronger than you. Live as a werewolf. Pray in the wild. Those skilled in Light Armor are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Bosmer / Anyone who has completed \"Ill Met By Moonlight\"",
+      "starting": "Bosmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Glenmoril Coven",
+        "Snowclad Ruins",
+        "Wilderness north of Gjukar's Monument"
+      ]
     },
     {
       "id": "jephre",
@@ -165,9 +221,13 @@
       "devotee": "Health and stamina quickly restores outdoors and out of combat. Deal up to 20% more damage when unarmored. Praying to Jephre brings clear weather.",
       "tenets": "Explore new locations. Read the stories of others. Hunt animals. Wood Elves are most deserving of my favor.",
       "race": "All",
-      "starting": "",
+      "starting": "Altmer / Bosmer",
       "requirement": "None",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Temple of the Ancestors, south of Morvunskar",
+        "Wilderness south of Fort Greymoor."
+      ]
     },
     {
       "id": "julianos",
@@ -177,7 +237,7 @@
       "devotee": "Spells have up to 25% more magnitude.",
       "tenets": "Master the skills of the Mage. Strive to raise your Magicka. Never openly break the laws of Skyrim.",
       "race": "All",
-      "starting": "",
+      "starting": "Imperial",
       "requirement": "None",
       "effects": [
         {
@@ -185,6 +245,12 @@
           "stat": "magicka",
           "value": 30
         }
+      ],
+      "shrineLocations": [
+        "Fellglow Keep",
+        "North of Shearpoint",
+        "Harmugstahl",
+        "Fort Amol"
       ]
     },
     {
@@ -196,8 +262,11 @@
       "tenets": "Activate my Obelisks of Order. Clear dungeons of evil. Slay daedra. Never serve Sheogorath. Those skilled in Heavy Armor are most deserving of my favor.",
       "race": "All",
       "starting": "",
-      "requirement": "None",
-      "effects": []
+      "requirement": "Jyggalag does not accept those who dared serve Sheogorath.",
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness next to North Shriekwind Bastion on a cliff"
+      ]
     },
     {
       "id": "kynareth",
@@ -207,7 +276,7 @@
       "devotee": "Pray to summon a Sabre Cat mount. Friendly creatures and spirit summons are healed. Gain 10% critical hit chance with bows and dagger while not sneaking.",
       "tenets": "Explore new locations. Strive to raise your Stamina. Receive the Voice of the Sky. Pray only outdoors. Never openly break the laws of Skyrim.",
       "race": "All",
-      "starting": "",
+      "starting": "Khajiit / Nord / Imperial",
       "requirement": "None",
       "effects": [
         {
@@ -215,6 +284,14 @@
           "stat": "stamina",
           "value": 30
         }
+      ],
+      "shrineLocations": [
+        "Temple of Kynareth in Whiterun",
+        "Fort Sungard Shrine",
+        "Southwest of Morthal",
+        "Wreck Of The Brinehammer",
+        "Crystaldrift Cave",
+        "Solstheim, north of the Earth Stone"
       ]
     },
     {
@@ -224,10 +301,13 @@
       "follower": "All melee attacks ignore up to 30% of an opponent's armor.",
       "devotee": "During prayer, you may spend 5% favor to gain up to 50% melee damage against targets at full hp for 60 minutes or 10 battles.",
       "tenets": "Bring the Civil War to a conclusion. Make and improve weapons. Master the skills of the Warrior.",
-      "race": "All",
-      "starting": "",
-      "requirement": "Leki does not accept those who are not of Redguard blood.",
-      "effects": []
+      "race": "Redguard",
+      "starting": "Redguard",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Hillcrown Yokudan Shrine, southwest of Rorikstead"
+      ]
     },
     {
       "id": "magnus",
@@ -237,9 +317,13 @@
       "devotee": "Potions and ingredients restore up to 50% more magicka. When under the effects of a magicka potion, soul gems provide up to 50% more charge.",
       "tenets": "Practice magic successfully while praying. Safeguard the Eye of Magnus. Create enchanted items.",
       "race": "All",
-      "starting": "",
+      "starting": "Breton / Altmer / Bosmer",
       "requirement": "None",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Temple of the Ancestors, south of Morvunskar",
+        "Wilderness north of Bard's Leap Summit"
+      ]
     },
     {
       "id": "malacath",
@@ -248,10 +332,13 @@
       "follower": "Your power attacks are up to 15% stronger and cost up to 15% less stamina.",
       "devotee": "When an enemy dies within mag feet, their killer is healed based on the amount of overkill damage dealt (scaling with favor with Malacath).",
       "tenets": "Defeat epic foes. Improve weapons and armor. Never commit a crime against the strongholds. Orcs and those skilled in Smithing are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Orsimer / Dunmer / Nord / Anyone who has completed \"The Cursed Tribe\"",
+      "starting": "Orsimer / Dunmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Fallowstone Cave"
+      ]
     },
     {
       "id": "mannimarco",
@@ -263,7 +350,11 @@
       "race": "All",
       "starting": "",
       "requirement": "None",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness southwest of Witchmist Grove",
+        "Sai"
+      ]
     },
     {
       "id": "mara",
@@ -273,7 +364,7 @@
       "devotee": "Living allies within mag feet are healed up to 20 points of magicka and health per second. Take 25% less physical damage when your hands are lowered.",
       "tenets": "Be married. Own one or more houses. Be generous to beggars and children. Receive the blessing of Lover's Comfort. Never openly break the laws of Skyrim.",
       "race": "All",
-      "starting": "Breton / Imperial / Nord / Bosmer",
+      "starting": "Breton / Nord / Bosmer / Imperial",
       "requirement": "None",
       "effects": [
         {
@@ -282,6 +373,12 @@
           "value": -10,
           "isPercent": true
         }
+      ],
+      "shrineLocations": [
+        "Nightcaller Temple",
+        "Temple of Mara in Riften",
+        "Northwest of Old Hroldan",
+        "Near the western border of the Pale and Whiterun"
       ]
     },
     {
@@ -291,10 +388,13 @@
       "follower": "Drain magicka when praying. Stop praying at 20% or less to gain more favor and Burning Path activations. Craft potions of immolation using potions of magicka restore at the cooking pot.",
       "devotee": "Nearby foes burn for up to 40 damage and explode on death. Pray to recharge. Nearby friendly Daedra have their attributes healed.",
       "tenets": "Slay people who stand in your way. Defile the shrines of my enemies. Those skilled in Destruction are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Khajiit / Dunmer / Anyone who has completed \"Pieces of the Past\"",
+      "starting": "Khajiit / Dunmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Shrine of Mehrunes Dagon"
+      ]
     },
     {
       "id": "mephala",
@@ -303,10 +403,15 @@
       "follower": "Sneak attacks deal up to 20% more damage from behind when not wearing heavy armor.",
       "devotee": "During prayer, seize control of the nearest person within 75 feet to fight for you. Follower ability buffed to up to 30% sneak damage.",
       "tenets": "Poison your weapons. Strike unseen with sneak attacks. Intimidate the weak. Dark Elves are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Khajiit / Dunmer / Anyone who has completed \"The Whispering Door\"",
+      "starting": "Khajiit / Dunmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Raven Rock Temple",
+        "Morthal Swamps",
+        "New Gnesis Club in Windhelm"
+      ]
     },
     {
       "id": "meridia",
@@ -315,10 +420,13 @@
       "follower": "Fire, Turning and Sun spells are up to 20% better. Physical attacks are up to 30% better against undead..",
       "devotee": "Activate an undead opponent in combat to call down a solar strike to deal massive damage to undead in a wide area.",
       "tenets": "Slay the undead. Never summon the undead or become one of them. High Elves and those skilled in Restoration are most deserving of my favor.",
-      "race": "All",
+      "race": "Altmer / Anyone who has completed \"The Break of Dawn\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Statue to Meridia"
+      ]
     },
     {
       "id": "molag-bal",
@@ -327,10 +435,13 @@
       "follower": "Absorbs up to 10 Magicka and Stamina per second from nearby enemies in combat.",
       "devotee": "Activate a hostile below level 50 in combat to banish them to Coldharbour. Pray to request the items. Blood magic is up to 20% stronger.",
       "tenets": "Slay people who stand in your way. Trap souls in my name. Live as a vampire and never seek a cure. Those skilled in Destruction are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Dunmer / Anyone who has completed \"The House of Horrors\"",
+      "starting": "Dunmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Volkihar Keep"
+      ]
     },
     {
       "id": "morwha",
@@ -339,10 +450,13 @@
       "follower": "Meditation restores up to 200 Health for you and allies out of combat. Some enemies can drop milk or honey. This can be used to create a curative potion.",
       "devotee": "Praying to Morwha blesses you with enchanted fruit that restores or fortifies an attribute. These fruits can be further improved using milk and honey.",
       "tenets": "Be married. Receive the blessing of Lover's Comfort. Harvest the fruits of nature. Eat as much food as you want.",
-      "race": "All",
-      "starting": "",
-      "requirement": "Morwha does not accept those who are not of Redguard blood.",
-      "effects": []
+      "race": "Redguard",
+      "starting": "Redguard",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Hillcrown Yokudan Shrine, southwest of Rorikstead"
+      ]
     },
     {
       "id": "namira",
@@ -351,10 +465,14 @@
       "follower": "Reduces Poison Resist of all within mag feet by up to 40%. Grants strong stomach and strange meat on kills.",
       "devotee": "Poisoning a person or putting a Human Heart, Flesh or Strange Meat into their inventory attracts insects, reducing armor by up to 20 and dealing up to 40 disease damage.",
       "tenets": "Murder the innocent. Poison your weapons. Eat the corpses of the dead with my Ring. Be generous to beggars.",
-      "race": "All",
+      "race": "Dunmer / everyone who completed \"The Taste of Death\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Reachcliff Cave",
+        "Namira's Shrine (named cave in the wilderness about 700 feet east of Ragnvald)"
+      ]
     },
     {
       "id": "nocturnal",
@@ -363,7 +481,7 @@
       "follower": "Praying clears non-violent crime bounties up to up to 5000 gold. Shadow spells are up to 30% better and 50% at night.",
       "devotee": "During the night, you are much less likely to be detected and are more proficient with picking pockets. During prayer, you may astrally observe the nearest person within 300 feet.",
       "tenets": "Pickpocket Mysterious Coinpurses. Pick locks successfully. Pray only at night, preferably in darkness. Those skilled in Sneak are most deserving of my favor.",
-      "race": "All",
+      "race": "Dunmer / everyone who completed \"Darkness Returns\"",
       "starting": "",
       "requirement": "Must have served this deity",
       "effects": [
@@ -373,6 +491,9 @@
           "value": 10,
           "isPercent": true
         }
+      ],
+      "shrineLocations": [
+        "Thieves' Guild Headquarters"
       ]
     },
     {
@@ -382,10 +503,13 @@
       "follower": "Poison spells are up to 20% stronger or longer lasting. Pray for Peryite's Gifts to gain favor.",
       "devotee": "Activate a living opponent in combat to inflict all of Peryite's Gifts you have on the target, plus 20 disease damage per second for each gift. Pray to recharge.",
       "tenets": "Catch as many diseases as you can. Accept my Gifts of pestilence. Pray only while diseased. Never accept a cure for your afflictions.",
-      "race": "All",
+      "race": "diseased / everyone who completed \"The Only Cure\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Shrine to Peryite"
+      ]
     },
     {
       "id": "phynaster",
@@ -394,10 +518,14 @@
       "follower": "Take up to 20% less damage based on favor, immunity to stagger and 50% attribute regeneration while standing still.",
       "devotee": "During prayer, you may teleport back to the last location where you prayed. Gain to 25% absorb chance and 100% poison and disease resist while not moving.",
       "tenets": "Explore new locations. Find the standing stones of Skyrim. Harvest the fruits of nature. Bretons are most deserving of my favor.",
-      "race": "High Elven, Wood Elven / Breton",
-      "starting": "",
+      "race": "Altmer / Bosmer / Breton",
+      "starting": "Breton / Altmer",
       "requirement": "Race restricted",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Temple of the Ancestors, south of Morvunskar",
+        "Wilderness east of Nilheim"
+      ]
     },
     {
       "id": "rajhin",
@@ -406,10 +534,13 @@
       "follower": "Chance to find a large amount of additional gold in containers. Most sneak or thieving related potions and spells last up to twice as long.",
       "devotee": "Pray to Rajhin to break a pickable lock within 20 feet. No fall damage if not wearing heavy armor and chance to gain valuable loot on slain enemies while tresspassing.",
       "tenets": "Explore new locations. Bribe people as needed. Pick locks successfully. Those skilled in Lockpicking are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
-      "requirement": "Rajhin does not accept those who are not of Khajiit blood.",
-      "effects": []
+      "race": "Khajiit",
+      "starting": "Khajiit",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness south of Valtheim Towers"
+      ]
     },
     {
       "id": "sai",
@@ -421,7 +552,8 @@
       "race": "All",
       "starting": "",
       "requirement": "None",
-      "effects": []
+      "effects": [],
+      "shrineLocations": []
     },
     {
       "id": "sanguine",
@@ -430,10 +562,13 @@
       "follower": "Regeneration is increaesed by 100% while alcohol, skooma or any other harmful alchemy effects are active. Alcohol is up to 100% stronger based on favor with Sanguine.",
       "devotee": "Can pray in combat, forcing the 5 nearest hostile people to dance for 20 seconds. Dancing targets take up to 20% more damage.",
       "tenets": "Make mischief and commit misdemeanors and crimes worthy of a bounty. Indulge in mead, wine and ale. Find your own way out of jail.",
-      "race": "All",
+      "race": "Dunmer / everyone who completed \"A Night to Remember\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness south of Shor's Stone"
+      ]
     },
     {
       "id": "satakal",
@@ -442,10 +577,13 @@
       "follower": "Shrine blessings from any other gods are up to 75% more effective and last longer.",
       "devotee": "Pray to become reborn as a different person, moving points between your attributes.",
       "tenets": "Fulfill your destiny by saving Tamriel. Strive to raise your Health. Absorb dragon souls.",
-      "race": "All",
-      "starting": "",
-      "requirement": "Satakal does not accept those who are not of Redguard blood.",
-      "effects": []
+      "race": "Redguard",
+      "starting": "Redguard",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Hillcrown Yokudan Shrine, southwest of Rorikstead"
+      ]
     },
     {
       "id": "sheogorath",
@@ -454,10 +592,14 @@
       "follower": "Praying grants a random Touch of Madness. High favor with Sheogorath yields more beneficial effects.",
       "devotee": "Receive a Touch of Madness whenever you enter combat. All skills level 25 or below are 20% better.",
       "tenets": "Pray often and receive Sheogorath's Touch of Madness. Never disrespect cheese.",
-      "race": "All",
-      "starting": "",
+      "race": "Khajiit / Dunmer / Anyone who has completed \"The Mind of Madness\"",
+      "starting": "Khajiit / Dunmer",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness north of Widow's Watch Ruins",
+        "Blue Palace (Pelagius Wing)"
+      ]
     },
     {
       "id": "shor",
@@ -466,10 +608,13 @@
       "follower": "Take almost no poise damage, deal up to 15% more and take up to 15% less physical damage against non-humans or animals.",
       "devotee": "When in combat with a mighty foe, Shor sends a Shield-Thane to assist. Pray to recharge. Elemental resistance increased by 15%.",
       "tenets": "Fulfill your destiny by saving Tamriel. Master the skills of the Warrior. Slay elves. Defeat epic foes.",
-      "race": "Human",
-      "starting": "",
+      "race": "Breton / Imperial / Nord / Redguard",
+      "starting": "Nord",
       "requirement": "Human blood",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness east of Snow Veil Sanctum"
+      ]
     },
     {
       "id": "sithis",
@@ -478,10 +623,14 @@
       "follower": "Up to 25% harder to detect by those within 30 feet. Chance to find Human Hearts on people you kill.",
       "devotee": "While sneaking, activate a door to briefly turn it into a Void portal. Targets within 60 feet who are not detecting you are pulled in and killed.",
       "tenets": "Murder the innocent. Pray while sacrificing a Human Heart or Human Flesh. Send your victims to the Void. Argonians are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
+      "race": "Argonian / Bosmer / Anyone who has completed \"Innocence Lost\"",
+      "starting": "Argonian",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Falkreath Sanctuary",
+        "Dawnstar Sanctuary"
+      ]
     },
     {
       "id": "st-alessia",
@@ -490,7 +639,7 @@
       "follower": "Pray for a Divine blessing of your choice. Divine blessings are up to 100% better. Take up to 20% less damage from humans.",
       "devotee": "While under the effects of a Divine blessing, can talk to most non-hostile humans to make them a friend and potential follower.",
       "tenets": "Have a follower at your side. Slay elves. Receive the blessing of a Divine.",
-      "race": "Human",
+      "race": "Breton / Imperial / Nord / Redguard",
       "starting": "",
       "requirement": "Human blood",
       "effects": [
@@ -500,6 +649,11 @@
           "value": 10,
           "isPercent": true
         }
+      ],
+      "shrineLocations": [
+        "Wilderness southeast of Eastmarch Imperial Camp",
+        "The Daedric Princes",
+        "Azura"
       ]
     },
     {
@@ -510,7 +664,7 @@
       "devotee": "During prayer, you may spend 10% favor to gain up to 40% improved attack, defense and healing for 120 seconds or 3 battles.",
       "tenets": "Clear dungeons of evil. Slay daedra and the undead. Complete side quests. Never openly break the laws of Skyrim. Never practice the foul summoning arts.",
       "race": "All",
-      "starting": "",
+      "starting": "Breton / Nord / Altmer / Bosmer / Imperial",
       "requirement": "None",
       "effects": [
         {
@@ -519,6 +673,12 @@
           "value": -15,
           "isPercent": true
         }
+      ],
+      "shrineLocations": [
+        "South of Swindler's Den",
+        "Fort Greenwall",
+        "Stendarr's Beacon",
+        "Hall of the Vigilant"
       ]
     },
     {
@@ -528,10 +688,14 @@
       "follower": "You are more likely to find spell tomes, staves and scrolls on enemies you kill. Arcane spells are up to 20% stronger based on favor.",
       "devotee": "All spells cost up to 20% less to cast.",
       "tenets": "Acquire knowledge by reading books. Study a wide variety of spells. High Elves are most deserving of my favor.",
-      "race": "High Elven, Wood Elven / Breton",
-      "starting": "",
+      "race": "Altmer / Bosmer / Breton",
+      "starting": "Altmer",
       "requirement": "Race restricted",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Temple of the Ancestors, south of Morvunskar",
+        "Wilderness southeast of Dawnstar"
+      ]
     },
     {
       "id": "tall-papa",
@@ -540,10 +704,13 @@
       "follower": "Bound weapons deal up to 20% more base damage and bound armor provides 30% more armor rating.",
       "devotee": "On death, become ethereal for a time period based on favor. If combat ends while ethereal, brings you back to life 10% favor. Pray to reset. Ghosts deal up to 50% less damage to you.",
       "tenets": "Touch the Fractures scattered around Skyrim. Create enchanted items. Those skilled in Enchanting are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
-      "requirement": "Tall Papa does not accept those who are not of Redguard blood.",
-      "effects": []
+      "race": "Redguard",
+      "starting": "Redguard",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Hillcrown Yokudan Shrine, southwest of Rorikstead"
+      ]
     },
     {
       "id": "talos",
@@ -552,10 +719,27 @@
       "follower": "Attacks and shouts against playable races, Snow Elves and Falmer are increased by up to 20%.",
       "devotee": "Your remaining shout cooldown is halved whenever an enemy dies within mag feet.",
       "tenets": "Bring the Civil War to a conclusion. Learn the dragon tongue. Absorb dragon souls. Slay elves and the Thalmor. Never openly break the laws of Skyrim.",
-      "race": "Human",
-      "starting": "Imperial / Nord",
-      "requirement": "Human blood",
-      "effects": []
+      "race": "All",
+      "starting": "Nord / Imperial",
+      "requirement": "None",
+      "effects": [],
+      "shrineLocations": [
+        "Temple of Talos in Windhelm",
+        "Island north of Saarthal",
+        "Valley west of Saarthal",
+        "Island northwest of Winterhold",
+        "West of Windhelm Stables",
+        "Riften",
+        "Weynon Stones",
+        "Whiterun",
+        "Shrine of Talos in Markarth",
+        "Fellglow Keep",
+        "East of Whiterun",
+        "Southwest of Windhelm",
+        "Southwest of Froki's Shack",
+        "Northeast of Pinewatch",
+        "Fort Sungard"
+      ]
     },
     {
       "id": "the-all-maker",
@@ -564,10 +748,13 @@
       "follower": "Bonuses from The All Maker Stones are doubled. Gain up to 10% weapon damage while having an unused All Maker Stone Power.",
       "devotee": "After using an All-Maker Stone power, pray to the All-Maker to have it restored to you.",
       "tenets": "Cleanse the All-Maker Stones. Hunt animals. Explore new locations. Pray only outdoors. Nords are most deserving of my favor.",
-      "race": "Human",
+      "race": "Breton / Imperial / Nord / Redguard",
       "starting": "",
       "requirement": "Human blood",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "The All-Maker Stones (if cleansed)"
+      ]
     },
     {
       "id": "the-hist",
@@ -576,10 +763,13 @@
       "follower": "Pray to gain up and to 50 point bonus to all attributes for up to 1000 seconds. Up to 100 when under the influence of Sleeping Tree Sap.",
       "devotee": "Absorb up to 40% stamina and magicka from nearby dead creatures and people. Sleeping tree sap lasts up to 20 times longer and is up to 100% stronger..",
       "tenets": "Explore new locations. Slay daedra. Pray only outdoors. Never summon a daedra.",
-      "race": "All",
-      "starting": "",
-      "requirement": "The Hist does not accept those who are not of Argonian blood.",
-      "effects": []
+      "race": "Argonian",
+      "starting": "Argonian",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Location: The Sleeping Tree"
+      ]
     },
     {
       "id": "the-hoonding",
@@ -588,10 +778,14 @@
       "follower": "Staggering an opponent reduces armor by up to 300 points for 60 seconds.",
       "devotee": "The Hoonding gives you 25% chance to take no poise damage, take 25% less physical damage when not staggered, 25% more when staggered and deal 25% more weapon damage to staggered enemies.",
       "tenets": "Slay your foes in open combat, especially those stronger than you. Those skilled in One-Handed are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
-      "requirement": "The HoonDing does not accept those who are not of Redguard blood.",
-      "effects": []
+      "race": "Redguard",
+      "starting": "Redguard",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Hillcrown Yokudan Shrine, southwest of Rorikstead",
+        "Other Dieties"
+      ]
     },
     {
       "id": "the-magna-ge",
@@ -603,7 +797,10 @@
       "race": "All",
       "starting": "",
       "requirement": "None",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness northeast of Bleak Falls Barrow"
+      ]
     },
     {
       "id": "the-old-ways",
@@ -612,10 +809,14 @@
       "follower": "Pray while sacrificing 100 gold worth of gemstones to assume the powers of an animal god. Deal & up to 15% more or less damage when wearing full Forsworn, Fur, Leather or Hide.",
       "devotee": "Able to assume the powers of the Dragon. per hour. Frost spells are up to 20% stronger based on favor.",
       "tenets": "Slay people who stand in your way. Absorb dragon souls. Assume our powers through prayer. Nords are most deserving of our favor.",
-      "race": "All",
+      "race": "Breton / Nord",
       "starting": "",
       "requirement": "The animal gods do not accept those who are not of Nord or Breton blood.",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Bromjunaar Sanctuary (in the past)",
+        "WEBSITE BY UNCGAMING & WHISPERDEALERGoogle SitesReport abusePage detailsPage updated Google SitesReport abuseDOCS_timing['cov']=new Date().getTime();"
+      ]
     },
     {
       "id": "the-riddle-thar",
@@ -624,9 +825,9 @@
       "follower": "Gain bonuses based on day of the week ranging from attribute boosts, attribute regeneration and resistances.",
       "devotee": "During prayer, an ancient Mane will grant a blessing they believe to be appropriate. Double bonus from day cycles.",
       "tenets": "Master the skills of the Warrior, Thief and Mage. Strive to raise your Health, Magicka and Stamina. Each is as important as the others. Pray only at night.",
-      "race": "All",
-      "starting": "",
-      "requirement": "The Riddle'Thar does not accept those who are not of Khajiit blood.",
+      "race": "Khajiit",
+      "starting": "Khajiit",
+      "requirement": "Race restricted",
       "effects": [
         {
           "type": "derivedStat",
@@ -634,6 +835,11 @@
           "value": 20,
           "isPercent": false
         }
+      ],
+      "shrineLocations": [
+        "Wilderness south of Saarthal",
+        "The Tribunal",
+        "Almalexia"
       ]
     },
     {
@@ -643,10 +849,14 @@
       "follower": "Gain 20% attack damage if health is above 90% and 20% if stamina is above 90%.",
       "devotee": "When praying, you may become ethereal and invulnerable until your next attack.",
       "tenets": "Slay humans. Defeat epic foes. Never accept Boethiah's blessing or serve her. Those skilled in Two-Handed are most deserving of my favor.",
-      "race": "High Elven, Wood Elven / Orcish",
-      "starting": "",
+      "race": "Altmer / Bosmer / Orsimer",
+      "starting": "Orsimer / Altmer",
       "requirement": "Race restricted",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Temple of the Ancestors, south of Morvunskar",
+        "Wilderness northeast of Mistwatch"
+      ]
     },
     {
       "id": "vaermina",
@@ -655,10 +865,13 @@
       "follower": "Mind affecting illusion spells work on targets up to 20 levels higher and cost up to 50% less magicka while out of combat.",
       "devotee": "Activate a sleeping person to summon an illusion to accompany you for ten hours. Illusion spells are up to 10% stronger when not rested.",
       "tenets": "Witness the death of those under your mind affecting spells. Kill people in their sleep. Sleep to pray. Those skilled in Illusion are most deserving of my favor.",
-      "race": "All",
+      "race": "Dunmer / everyone who completed \"Waking Nightmare\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Nightcaller Temple"
+      ]
     },
     {
       "id": "xarxes",
@@ -667,10 +880,14 @@
       "follower": "2 additional skill point from skill books. Scrolls scale based on enchanting skill 20% at level 100 enchanting.",
       "devotee": "Pray to ascend in a trance, revealing all characters in a very large radius. Scrolls scale based on you magic skill level of the scroll type 20% at 100 skill level.",
       "tenets": "Explore new locations. Read the stories of others. Study a wide variety of spells. Bretons are most deserving of my favor.",
-      "race": "High Elven, Wood Elven / Breton",
-      "starting": "",
+      "race": "Altmer / Bosmer / Breton",
+      "starting": "Breton / Altmer / Bosmer",
       "requirement": "Race restricted",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Temple of the Ancestors, south of Morvunskar",
+        "Wilderness south of Treva's Watch"
+      ]
     },
     {
       "id": "z-en",
@@ -679,10 +896,14 @@
       "follower": "Alchemy is up to 15% more effective. Gain 1 extra potion crafted.",
       "devotee": "Pray to open and trade with an unlimited extradimensional storage space which has 5000 gold. Gain 2 more poison doses before needing to re-apply the poison.",
       "tenets": "Bribe people as needed. Harvest the fruits of nature. Eat as much food as you want. Those skilled in Speech are most deserving of my favor.",
-      "race": "All",
-      "starting": "",
-      "requirement": "Z'en does not accept those who are not of Wood Elven blood.",
-      "effects": []
+      "race": "Bosmer",
+      "starting": "Bosmer",
+      "requirement": "Race restricted",
+      "effects": [],
+      "shrineLocations": [
+        "Wilderness east of Dragon Bridge",
+        "The Yokudan Pantheon"
+      ]
     },
     {
       "id": "zenithar",
@@ -692,9 +913,16 @@
       "devotee": "Pray to Zenithar to buy and sell items directly. Gain a very difficult crafting recipe. This recipe allows you to create perk potions at the Aetherium Forge.",
       "tenets": "Invest in stores and merchants. Seek out skill training. Make weapons and armor. Never openly break the laws of Skyrim.",
       "race": "All",
-      "starting": "",
+      "starting": "Breton / Nord / Imperial",
       "requirement": "None",
-      "effects": []
+      "effects": [],
+      "shrineLocations": [
+        "Northwest of Four Skull Lookout",
+        "East of Gjukar's Monument",
+        "Northeast of Riften Stables",
+        "Inside Whiterun, to the left of the Bannered Mare",
+        "Elven Ancestors"
+      ]
     }
   ]
 }

@@ -279,12 +279,12 @@
       "prerequisites": [
         "two-handed-barbaric-might"
       ],
-      "description": "You've acquired the advanced techniques of using greatswords and pikes. [Attacks reduce target's melee damage by 11% for 10 seconds, +5% critical hit chance]",
+      "description": "You've acquired the advanced techniques of using greatswords and pikes. [Attacks reduce target's melee damage by 11% for 10 seconds, +11% critical hit chance]",
       "effects": [
         {
           "type": "derivedStat",
           "stat": "criticalHitChance",
-          "value": 10,
+          "value": 22,
           "isPercent": true
         }
       ],
@@ -299,12 +299,12 @@
         "y": 20
       },
       "prerequisites": [],
-      "description": "You've acquired the advanced techniques of using greatswords and pikes. [Attacks reduce target's melee damage by 22% for 10 seconds, +10% critical hit chance]",
+      "description": "You've acquired the advanced techniques of using greatswords and pikes. [Attacks reduce target's melee damage by 22% for 10 seconds, +22% critical hit chance]",
       "effects": [
         {
           "type": "derivedStat",
           "stat": "criticalHitChance",
-          "value": 20,
+          "value": 44,
           "isPercent": true
         }
       ],
@@ -319,12 +319,12 @@
         "y": 20
       },
       "prerequisites": [],
-      "description": "You've become a master of using greatswords and pikes. [Attacks reduce target's melee damage by 33% for 10 seconds, +15% critical hit chance]",
+      "description": "You've become a master of using greatswords and pikes. [Attacks reduce target's melee damage by 33% for 10 seconds, +33% critical hit chance]",
       "effects": [
         {
           "type": "derivedStat",
           "stat": "criticalHitChance",
-          "value": 30,
+          "value": 66,
           "isPercent": true
         }
       ],
@@ -421,15 +421,8 @@
       "prerequisites": [
         "two-handed-barbaric-might"
       ],
-      "description": "You've learned the basics of quarterstaff combat. [Power attacks cost 10% less stamina, +7% critical hit chance]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "criticalHitChance",
-          "value": 14,
-          "isPercent": true
-        }
-      ],
+      "description": "You've learned the basics of quarterstaff combat. [Power attacks cost 20% less stamina, +10% damage when not power attacking]",
+      "effects": [],
       "prerequisitesAny": []
     },
     {
@@ -441,15 +434,8 @@
         "y": 21
       },
       "prerequisites": [],
-      "description": "You've acquired the advanced techniques of quarterstaff combat. [Power attacks cost 20% less stamina, +14% critical hit chance]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "criticalHitChance",
-          "value": 28,
-          "isPercent": true
-        }
-      ],
+      "description": "You've acquired the advanced techniques of quarterstaff combat. [Power attacks cost 40% less stamina, +20% damage when not power attacking",
+      "effects": [],
       "prerequisitesAny": []
     },
     {
@@ -461,15 +447,8 @@
         "y": 21
       },
       "prerequisites": [],
-      "description": "You've become a master of quarterstaff combat. [Power attacks cost 30% less stamina, +21% critical hit chance]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "criticalHitChance",
-          "value": 42,
-          "isPercent": true
-        }
-      ],
+      "description": "You've become a master of quarterstaff combat. [Power attacks cost 60% less stamina, +30% damage when not power attacking]",
+      "effects": [],
       "prerequisitesAny": []
     },
     {

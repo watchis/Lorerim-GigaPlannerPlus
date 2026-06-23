@@ -8,6 +8,10 @@
     "dev:editor": "vite --config tools/data-editor/vite.config.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "npm run test:app && npm run test:import",
+    "test:app": "vitest run",
+    "test:import": "node --test tools/import/lib/",
+    "test:watch": "vitest",
     "preview": "vite preview",
     "import:lorerim": "node tools/import/import-lorerim.mjs",
     "import:perks": "node tools/import/sync-perk-trees.mjs",
@@ -37,8 +41,8 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
-    "@fcrick/tes-data": "^0.0.1",
     "@eslint/js": "^9.30.1",
+    "@fcrick/tes-data": "^0.0.1",
     "@tailwindcss/vite": "^4.1.11",
     "@types/node": "^24.0.12",
     "@types/react": "^19.1.8",
@@ -51,6 +55,7 @@
     "tailwindcss": "^4.1.11",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
   }
 }

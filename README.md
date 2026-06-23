@@ -19,6 +19,23 @@ npm install
 npm run dev
 ```
 
+### Testing
+
+```bash
+npm test              # app (Vitest) + import tooling (Node test runner)
+npm run test:app      # src/ unit tests only
+npm run test:import   # tools/import/lib/ tests only
+npm run test:watch    # Vitest watch mode
+npm run lint
+```
+
+Pull requests run **`npm test`** via [`.github/workflows/test.yml`](.github/workflows/test.yml). See [`.github/README.md`](.github/README.md) for CI details.
+
+Coverage highlights:
+
+- **App** — build engine economy, perk selection, build codec round-trip, perk grid stacks, data loader validation against bundled JSON
+- **Import** — trait parsing, perk layout, MO2 install helpers, bonus effect rules (see `tools/import/README.md`)
+
 ### Local data editor (not deployed)
 
 A self-contained dev tool in `tools/data-editor/` for editing JSON under `data/`:
@@ -61,6 +78,8 @@ src/
   engine/         # Stat computation and build codec
   panels/         # Layout-driven UI panels
 ```
+
+See also [`src/README.md`](src/README.md) for application architecture and testing conventions.
 
 To add a new perk tree manually, create `data/game/perks/<skill>.json` and register it in `data/game/perks/index.json`.
 

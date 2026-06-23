@@ -44,13 +44,13 @@
         "x": 28,
         "y": 8
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "smithing-dwarven-smithing",
+        "smithing-advanced-light-armors"
+      ],
       "description": "Orcish equipment is hard to craft, but you've got what it takes. By studying The Almanac of Orcish Blacksmithing, you can craft and improve it easily and most efficiently.",
       "effects": [],
-      "prerequisitesAny": [
-        "smithing-advanced-light-armors",
-        "smithing-dwarven-smithing"
-      ],
+      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {
@@ -61,13 +61,13 @@
         "x": 34,
         "y": 2
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "smithing-orcish-smithing",
+        "smithing-elven-smithing"
+      ],
       "description": "Ebony weapons and armor - some even fail at heating the metal. But not you. Now that you've studied the related schematics, you can craft and improve ebony equipment with ease.",
       "effects": [],
-      "prerequisitesAny": [
-        "smithing-elven-smithing",
-        "smithing-orcish-smithing"
-      ],
+      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {
@@ -78,13 +78,13 @@
         "x": 17,
         "y": 4
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "smithing-glass-smithing",
+        "smithing-ebony-smithing"
+      ],
       "description": "The creation of daedric weapons and armor is a secret few mortals know - still, you managed to acquire this knowledge by reading Daedric Craftsmanship...",
       "effects": [],
-      "prerequisitesAny": [
-        "smithing-ebony-smithing",
-        "smithing-glass-smithing"
-      ],
+      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {
@@ -95,13 +95,13 @@
         "x": 17,
         "y": 0
       },
-      "prerequisites": [],
-      "description": "The scales and bones of dragons are probably the hardest material to work with, but you've mastered even this art since you studied The Compendium of Dragonic Armor.",
-      "effects": [],
-      "prerequisitesAny": [
+      "prerequisites": [
         "smithing-glass-smithing",
         "smithing-ebony-smithing"
       ],
+      "description": "The scales and bones of dragons are probably the hardest material to work with, but you've mastered even this art since you studied The Compendium of Dragonic Armor.",
+      "effects": [],
+      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {
@@ -113,12 +113,12 @@
         "y": 23
       },
       "prerequisites": [
-        "smithing-craftsmanship"
+        "smithing-craftsmanship",
+        "smithing-tailoring-polishing"
       ],
       "description": "You've gained quite some finesse, allowing you to craft plate armor and fine jewelry. You have also found a way to melt and crush certain gems into alchemically usable dust.",
       "effects": [],
-      "prerequisitesAny": [],
-      "costsPerkPoint": true
+      "prerequisitesAny": []
     },
     {
       "id": "smithing-legendary-blacksmithing",
@@ -176,13 +176,13 @@
         "x": 6,
         "y": 8
       },
-      "prerequisites": [],
-      "description": "You've gained enough finesse to create and improve Elven armor and weapons by studying the book \"About Elven Craftsmanship\"",
-      "effects": [],
-      "prerequisitesAny": [
+      "prerequisites": [
         "smithing-dwarven-smithing",
         "smithing-advanced-light-armors"
       ],
+      "description": "You've gained enough finesse to create and improve Elven armor and weapons by studying the book \"About Elven Craftsmanship\"",
+      "effects": [],
+      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {
@@ -193,13 +193,13 @@
         "x": 0,
         "y": 2
       },
-      "prerequisites": [],
-      "description": "Crafting and improving Glass equipment is not for the unskilled, but having studied An Introduction to Malachite, you aren't one of them any more.",
-      "effects": [],
-      "prerequisitesAny": [
+      "prerequisites": [
         "smithing-orcish-smithing",
         "smithing-elven-smithing"
       ],
+      "description": "Crafting and improving Glass equipment is not for the unskilled, but having studied An Introduction to Malachite, you aren't one of them any more.",
+      "effects": [],
+      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {

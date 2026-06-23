@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   getBuildPlayerLevelWarnings,
   getOrderedPerkTrees,
+  getSelectedPerksBelowSkillRequirement,
   getStoredSkillLevel,
   isAllocatableSkill,
   isSkillOverPlayerLevelCap,
@@ -37,6 +38,7 @@ export function SkillTreesSidebarPanel() {
     gameData.game,
     build,
   );
+  const skillReqConflicts = getSelectedPerksBelowSkillRequirement(gameData.game, build);
   const skillIncreaseConflictIds = new Set(skillIncreases.map((skill) => skill.skillId));
 
   return (
@@ -60,9 +62,14 @@ export function SkillTreesSidebarPanel() {
             const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
             const skillLevel = getStoredSkillLevel(gameData.game, build, tree.skillId);
             const isOverCap = isSkillOverPlayerLevelCap(gameData.game, build, tree.skillId);
-            const conflictPerkIds = overLevelPerks
-              .filter((perk) => perk.skillId === tree.skillId)
-              .map((perk) => perk.id);
+            const conflictPerkIds = [
+              ...overLevelPerks
+                .filter((perk) => perk.skillId === tree.skillId)
+                .map((perk) => perk.id),
+              ...skillReqConflicts
+                .filter((perk) => perk.skillId === tree.skillId)
+                .map((perk) => perk.id),
+            ];
             const hasPerkLevelConflict = conflictPerkIds.length > 0;
             const hasSkillIncreaseConflict = skillIncreaseConflictIds.has(tree.skillId);
             const hasProblem = isOverCap || hasPerkLevelConflict || hasSkillIncreaseConflict;

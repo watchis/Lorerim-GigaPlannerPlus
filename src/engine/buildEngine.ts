@@ -76,12 +76,7 @@ export interface SkillReqConflictPerk {
   id: string;
   name: string;
   skillReq: number;
-}
-
-export interface SkillReqConflict {
   skillId: string;
-  skillLevel: number;
-  droppedPerks: SkillReqConflictPerk[];
 }
 
 export interface PlayerLevelSkillCap {
@@ -111,11 +106,17 @@ export interface PlayerLevelConflictPerk {
   skillId: string;
 }
 
+export interface DestinyPerkBudgetConflict {
+  id: string;
+  name: string;
+}
+
 export interface BuildPlayerLevelWarnings {
   skills: PlayerLevelSkillCap[];
   skillIncreases: PlayerLevelSkillIncreaseConflict[];
   training: TrainingBudgetConflict | null;
   perks: PlayerLevelConflictPerk[];
+  destinyPerksOverBudget: DestinyPerkBudgetConflict[];
   attributeChoicesOverBy: number;
 }
 
@@ -583,33 +584,39 @@ export function getRemainingDestinyPerkPoints(game: GameData, state: BuildState)
   return getEarnedDestinyPerkPoints(game, state) - computeDestinyPerkPointsSpent(game, state);
 }
 
+function getSelectedDestinyCostingPerkIds(
+  game: GameData,
+  selectedPerkIds: string[],
+): string[] {
+  return selectedPerkIds.filter((perkId) => {
+    const perk = getPerkById(game, perkId);
+    if (!perk) return false;
+    const skillId = getPerkSkillId(game, perk.id);
+    return skillId === DESTINY_SKILL_ID && perk.costsPerkPoint;
+  });
+}
+
+/** Selected destiny perks that exceed the earned destiny point budget at the current player level. */
+export function getDestinyPerksOverPointBudget(
+  game: GameData,
+  state: BuildState,
+): Perk[] {
+  const earned = getEarnedDestinyPerkPoints(game, state);
+  const overBudgetIds = getSelectedDestinyCostingPerkIds(game, state.selectedPerkIds).slice(earned);
+  return overBudgetIds.flatMap((perkId) => {
+    const perk = getPerkById(game, perkId);
+    return perk ? [perk] : [];
+  });
+}
+
 export function filterDestinyPerksByDestinyPointBudget(
   game: GameData,
   state: BuildState,
   selectedPerkIds: string[],
 ): string[] {
   const earned = getEarnedDestinyPerkPoints(game, state);
+  const costingIds = getSelectedDestinyCostingPerkIds(game, selectedPerkIds);
 
-  const costingIds: string[] = selectedPerkIds.filter((perkId) => {
-    const perk = getPerkById(game, perkId);
-    if (!perk) return false;
-    const skillId = getPerkSkillId(game, perk.id);
-    return skillId === DESTINY_SKILL_ID && perk.costsPerkPoint;
-  });
-
-  if (costingIds.length <= earned) return selectedPerkIds;
-
-  const dropSet = new Set(costingIds.slice(earned));
-  return selectedPerkIds.filter((perkId) => !dropSet.has(perkId));
-}
-
-export function filterPerksByPerkPointBudget(
-  game: GameData,
-  state: BuildState,
-  selectedPerkIds: string[],
-): string[] {
-  const earned = getEarnedPerkPoints(game, state);
-  const costingIds = selectedPerkIds.filter((perkId) => perkCostsPerkPoint(game, perkId));
   if (costingIds.length <= earned) return selectedPerkIds;
 
   const dropSet = new Set(costingIds.slice(earned));
@@ -941,22 +948,6 @@ export function getSkillLevelForPerkChecks(
   return getStoredSkillLevel(game, state, skillId);
 }
 
-export function filterPerksBySkillLevels(
-  game: GameData,
-  state: BuildState,
-  selectedPerkIds: string[],
-  options?: BuildReconcileOptions,
-): string[] {
-  return selectedPerkIds.filter((perkId) => {
-    const perk = getPerkById(game, perkId);
-    if (!perk) return false;
-    const skillId = getPerkSkillId(game, perkId);
-    if (!skillId) return false;
-    if (skillId === DESTINY_SKILL_ID) return true; // Destiny unlocks are governed by destiny points, not destiny skill level.
-    return getSkillLevelForPerkChecks(game, state, skillId, options) >= perk.skillReq;
-  });
-}
-
 export function filterPerksByPlayerLevel(
   game: GameData,
   state: BuildState,
@@ -970,49 +961,24 @@ export function filterPerksByPlayerLevel(
   });
 }
 
-/** Perks removed because the reconciled build no longer meets their skill requirement. */
-export function getPerksDroppedBelowSkillRequirement(
+/** Selected perks whose skill requirement exceeds the current skill level. */
+export function getSelectedPerksBelowSkillRequirement(
   game: GameData,
-  previousBuild: BuildState,
-  nextBuild: BuildState,
-): Perk[] {
-  const removedIds = previousBuild.selectedPerkIds.filter(
-    (id) => !nextBuild.selectedPerkIds.includes(id),
-  );
-
-  return removedIds.flatMap((perkId) => {
+  state: BuildState,
+  options?: BuildReconcileOptions,
+): SkillReqConflictPerk[] {
+  return state.selectedPerkIds.flatMap((perkId) => {
     const perk = getPerkById(game, perkId);
     if (!perk) return [];
 
     const skillId = getPerkSkillId(game, perkId);
-    if (!skillId) return [];
-    if (skillId === DESTINY_SKILL_ID) return [];
+    if (!skillId || skillId === DESTINY_SKILL_ID) return [];
 
-    const skillLevel = getStoredSkillLevel(game, nextBuild, skillId);
-    return skillLevel < perk.skillReq ? [perk] : [];
+    const skillLevel = getSkillLevelForPerkChecks(game, state, skillId, options);
+    if (skillLevel >= perk.skillReq) return [];
+
+    return [{ id: perk.id, name: perk.name, skillReq: perk.skillReq, skillId }];
   });
-}
-
-export function createSkillReqConflict(
-  game: GameData,
-  nextBuild: BuildState,
-  droppedPerks: Perk[],
-): SkillReqConflict | null {
-  if (droppedPerks.length === 0) return null;
-
-  const skillId = getPerkSkillId(game, droppedPerks[0].id);
-  if (!skillId) return null;
-  if (skillId === DESTINY_SKILL_ID) return null;
-
-  return {
-    skillId,
-    skillLevel: getStoredSkillLevel(game, nextBuild, skillId),
-    droppedPerks: droppedPerks.map((perk) => ({
-      id: perk.id,
-      name: perk.name,
-      skillReq: perk.skillReq,
-    })),
-  };
 }
 
 /** Selected perks whose player level requirement exceeds the given player level. */
@@ -1182,6 +1148,10 @@ export function getBuildPlayerLevelWarnings(
       0,
       getUsedAttributeChoices(state) - getEarnedAttributeChoices(game, state),
     ),
+    destinyPerksOverBudget: getDestinyPerksOverPointBudget(game, state).map((perk) => ({
+      id: perk.id,
+      name: perk.name,
+    })),
   };
 }
 
@@ -1200,16 +1170,10 @@ export function normalizeBuildSkillLevels(
   }
 
   const nextBuild = normalizeSkillTraining(game, { ...build, skillLevels }, options);
-  let selectedPerkIds = filterPerksBySkillLevels(game, nextBuild, build.selectedPerkIds, options);
-
-  if (!options?.ignorePerkPointCap) {
-    selectedPerkIds = filterDestinyPerksByDestinyPointBudget(game, nextBuild, selectedPerkIds);
-    selectedPerkIds = filterPerksByPerkPointBudget(game, nextBuild, selectedPerkIds);
-  }
 
   return {
     ...nextBuild,
-    selectedPerkIds,
+    selectedPerkIds: build.selectedPerkIds,
   };
 }
 
@@ -1386,6 +1350,39 @@ const FORCE_ALLOCATE_OPTIONS: BuildReconcileOptions = {
   ensureMinimumPlayerLevel: true,
 };
 
+function getRequiredPlayerLevelForSkillLevel(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+  skillLevel: number,
+): number {
+  const {
+    baseLevel,
+    maxSkillAbovePlayerLevel,
+    playerLevelSkillBaseline,
+    skillLevelIncreasesPerPlayerLevel,
+  } = game.mechanics.leveling;
+
+  let required = baseLevel;
+  required = Math.max(required, skillLevel - maxSkillAbovePlayerLevel);
+
+  if (skillLevelIncreasesPerPlayerLevel > 0) {
+    const increase = getSkillIncreaseAboveBaseline(
+      game,
+      state,
+      skillId,
+      skillLevel,
+      playerLevelSkillBaseline,
+    );
+    required = Math.max(
+      required,
+      baseLevel + Math.ceil(increase / skillLevelIncreasesPerPlayerLevel),
+    );
+  }
+
+  return clampPlayerLevel(game, required);
+}
+
 function allocatePerkAfterRequirements(
   game: GameData,
   build: BuildState,
@@ -1428,16 +1425,19 @@ function allocatePerkAfterRequirements(
 
   if (!canForceSelectPerk(game, next, perkId)) return null;
 
-  return ensurePlayerLevelForBuild(
+  const { baseLevel } = game.mechanics.leveling;
+  const requiredPlayerLevel = clampPlayerLevel(
     game,
-    reconcileBuild(
-      game,
-      {
-        ...next,
-        selectedPerkIds: [...next.selectedPerkIds, perkId],
-      },
-      FORCE_ALLOCATE_OPTIONS,
-    ),
+    Math.max(next.playerLevel, perk.playerLevelReq ?? baseLevel),
+  );
+
+  return reconcileBuild(
+    game,
+    {
+      ...next,
+      playerLevel: requiredPlayerLevel,
+      selectedPerkIds: [...next.selectedPerkIds, perkId],
+    },
     FORCE_ALLOCATE_OPTIONS,
   );
 }
@@ -1471,9 +1471,20 @@ function ensureSkillLevelForAllocation(
     return build;
   }
 
-  const next = ensurePlayerLevelForBuild(
+  const requiredPlayerLevel = getRequiredPlayerLevelForSkillLevel(
     game,
-    applySkillLevelChange(game, build, skillId, desiredLevel, FORCE_ALLOCATE_OPTIONS),
+    build,
+    skillId,
+    desiredLevel,
+  );
+
+  const next = reconcileBuild(
+    game,
+    {
+      ...build,
+      playerLevel: Math.max(build.playerLevel, requiredPlayerLevel),
+      skillLevels: { ...build.skillLevels, [skillId]: desiredLevel },
+    },
     FORCE_ALLOCATE_OPTIONS,
   );
 
@@ -1625,6 +1636,32 @@ export function tryTakePerk(game: GameData, build: BuildState, perkId: string): 
   });
 }
 
+function addSelectedDependentsInStack(
+  game: GameData,
+  selected: ReadonlySet<string>,
+  dependents: Set<string>,
+  queue: string[],
+  perkId: string,
+): void {
+  const perk = getPerkById(game, perkId);
+  if (!perk) {
+    if (selected.has(perkId) && !dependents.has(perkId)) {
+      dependents.add(perkId);
+      queue.push(perkId);
+    }
+    return;
+  }
+
+  const tree = getPerkTreeForPerk(game, perkId);
+  const stack = tree ? getPerkStackAtPosition(tree, perk) : [perk];
+
+  for (const tier of stack) {
+    if (!selected.has(tier.id) || dependents.has(tier.id)) continue;
+    dependents.add(tier.id);
+    queue.push(tier.id);
+  }
+}
+
 function collectSelectedDependents(
   game: GameData,
   rootId: string,
@@ -1635,6 +1672,7 @@ function collectSelectedDependents(
 
   while (queue.length > 0) {
     const current = queue.shift()!;
+
     for (const id of selected) {
       if (id === rootId || dependents.has(id)) continue;
 
@@ -1646,8 +1684,7 @@ function collectSelectedDependents(
         (perk.prerequisitesAny?.includes(current) ?? false);
 
       if (dependsOnCurrent) {
-        dependents.add(id);
-        queue.push(id);
+        addSelectedDependentsInStack(game, selected, dependents, queue, id);
       }
     }
   }

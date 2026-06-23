@@ -23,10 +23,16 @@ export function DestinyTreeSection() {
   if (!tree) return null;
 
   const isActive = skillTreeOpen && activeSkillTreeId === DESTINY_SKILL_ID;
-  const { perks: overLevelPerks } = getBuildPlayerLevelWarnings(gameData.game, build);
-  const conflictPerkIds = overLevelPerks
-    .filter((perk) => perk.skillId === DESTINY_SKILL_ID)
-    .map((perk) => perk.id);
+  const { perks: overLevelPerks, destinyPerksOverBudget } = getBuildPlayerLevelWarnings(
+    gameData.game,
+    build,
+  );
+  const conflictPerkIds = [
+    ...overLevelPerks
+      .filter((perk) => perk.skillId === DESTINY_SKILL_ID)
+      .map((perk) => perk.id),
+    ...destinyPerksOverBudget.map((perk) => perk.id),
+  ];
   const hasPerkLevelConflict = conflictPerkIds.length > 0;
   const hasProblem = hasPerkLevelConflict;
 

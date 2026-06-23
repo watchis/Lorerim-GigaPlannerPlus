@@ -266,6 +266,7 @@ export const deitySchema = z.object({
   race: z.string(),
   starting: z.string(),
   requirement: z.string(),
+  shrineLocations: z.array(z.string()).default([]),
   effects: z.array(effectSchema),
 });
 
@@ -429,6 +430,7 @@ export const labelsSchema = z.object({
     trainingOverBudgetAlert: z.string(),
     overBudget: z.string(),
     perkOverBudgetAlert: z.string(),
+    destinyOverBudgetAlert: z.string(),
     skillOverBudgetAlert: z.string(),
     playerLevelSkillCapSingle: z.string(),
     playerLevelSkillCapMultiple: z.string(),
@@ -442,6 +444,8 @@ export const labelsSchema = z.object({
     buildIssuesAlert: z.string(),
     setToMinimumLevel: z.string(),
     setToMinimumLevelInfo: z.string(),
+    ensurePlayerLevel: z.string(),
+    ensurePlayerLevelInfo: z.string(),
   }),
   panels: z.record(z.string(), z.record(z.string(), z.string())),
   errors: z.record(z.string(), z.string()),

@@ -205,6 +205,7 @@ export function SetupPickerPanel() {
               follower: labels.followerBonus,
               devotee: labels.devoteeBonus,
               startingRaces: labels.startingRaces,
+              shrineLocations: labels.shrineLocations,
             }}
             hideHeader
           />
