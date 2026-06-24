@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   applyPerkMetadata,
   buildPerkMetadataIndex,
+  filterSpuriousPrerequisites,
   perkMetadataKey,
   resolvePrerequisiteId,
 } from "./perk-tree-metadata.mjs";
@@ -52,6 +53,140 @@ const enriched = applyPerkMetadata(
 assert.equal(enriched.skillReq, 100);
 assert.deepEqual(enriched.prerequisites, ["destruction-consume-life"]);
 assert.deepEqual(enriched.position, { x: 2, y: 24 });
+
+const multiParentTree = {
+  skillId: "smithing",
+  perks: [
+    { id: "smithing-a", name: "Advanced Light Armors", skillReq: 30, position: { x: 0, y: 0 } },
+    { id: "smithing-b", name: "Dwarven Smithing", skillReq: 30, position: { x: 1, y: 0 } },
+    {
+      id: "smithing-c",
+      name: "Orcish Smithing",
+      skillReq: 50,
+      position: { x: 2, y: 0 },
+      prerequisites: [],
+      prerequisitesAny: [],
+    },
+  ],
+};
+
+const multiParentMetadata = new Map([
+  [
+    perkMetadataKey("smithing", "Orcish Smithing"),
+    {
+      skillReq: 50,
+      prerequisiteNames: ["Advanced Light Armors", "Dwarven Smithing"],
+      position: null,
+    },
+  ],
+]);
+
+const orPrereqs = applyPerkMetadata(
+  multiParentTree.perks[2],
+  multiParentTree,
+  multiParentMetadata,
+);
+assert.deepEqual(orPrereqs.prerequisites, []);
+assert.deepEqual(orPrereqs.prerequisitesAny, ["smithing-a", "smithing-b"]);
+
+const restorationTree = {
+  skillId: "restoration",
+  perks: [
+    { id: "restoration-novice", name: "Novice Restoration", skillReq: 0, position: { x: 0, y: 0 } },
+    {
+      id: "restoration-apprentice",
+      name: "Apprentice Restoration",
+      skillReq: 25,
+      position: { x: 1, y: 0 },
+      prerequisites: [],
+      prerequisitesAny: [],
+    },
+    {
+      id: "restoration-mental-acuity",
+      name: "Mental Acuity",
+      skillReq: 25,
+      position: { x: 2, y: 0 },
+      prerequisites: [],
+      prerequisitesAny: [],
+    },
+  ],
+};
+
+assert.deepEqual(
+  filterSpuriousPrerequisites(restorationTree, 25, [
+    "Novice Restoration",
+    "Mental Acuity",
+  ]),
+  ["Novice Restoration"],
+);
+
+assert.deepEqual(
+  filterSpuriousPrerequisites(restorationTree, 25, ["Apprentice Restoration"]),
+  ["Apprentice Restoration"],
+  "same-tier single prerequisite is kept for branch perks like Mental Acuity",
+);
+
+const restorationIndex = buildPerkMetadataIndex(
+  [
+    {
+      name: "Novice Restoration",
+      perkMeta: {
+        formIdentity: "req|novice",
+        skillReq: 0,
+        prerequisiteIdentities: [],
+      },
+    },
+    {
+      name: "Apprentice Restoration",
+      perkMeta: {
+        formIdentity: "req|apprentice",
+        skillReq: 25,
+        prerequisiteIdentities: ["req|novice"],
+      },
+    },
+    {
+      name: "Mental Acuity",
+      perkMeta: {
+        formIdentity: "req|mental",
+        skillReq: 25,
+        prerequisiteIdentities: ["req|apprentice"],
+      },
+    },
+  ],
+  new Map([
+    [
+      "restoration",
+      {
+        sections: [
+          { identity: "req|novice", inam: 1, cnam: [2] },
+          { identity: "req|apprentice", inam: 2, cnam: [3] },
+          { identity: "req|mental", inam: 3, cnam: [2] },
+        ],
+      },
+    ],
+  ]),
+  {
+    skillByIdentity: new Map([
+      ["req|novice", "restoration"],
+      ["req|apprentice", "restoration"],
+      ["req|mental", "restoration"],
+    ]),
+  },
+);
+
+assert.deepEqual(
+  restorationIndex.get(perkMetadataKey("restoration", "Apprentice Restoration"))
+    ?.prerequisiteNames,
+  ["Novice Restoration"],
+);
+
+const apprenticeFromPlugins = applyPerkMetadata(
+  restorationTree.perks[1],
+  restorationTree,
+  restorationIndex,
+);
+assert.deepEqual(apprenticeFromPlugins.prerequisites, ["restoration-novice"]);
+assert.deepEqual(apprenticeFromPlugins.prerequisitesAny, []);
 
 const fromRecords = buildPerkMetadataIndex(
   [

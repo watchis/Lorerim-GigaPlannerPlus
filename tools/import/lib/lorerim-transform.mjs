@@ -3,10 +3,13 @@ import { join } from "node:path";
 import { loadDestinyConfig } from "./destiny-config.mjs";
 import { SKILL_IDS, SKILL_NAMES } from "./skill-constants.mjs";
 import {
+  applyPerkGraphSnapshots,
   applyPerkHandTunedOverrides,
   applyPerkLayoutOverrides,
   applySmithingBookPerkCosts,
   createEmptyPerkTrees,
+  loadExistingPerkTree,
+  loadPerkGraphSnapshots,
   loadPerkHandTunedOverrides,
   loadPerkLayoutOverrides,
 } from "./import-reset.mjs";
@@ -266,22 +269,16 @@ function buildFallbackDestinyTree(darPerks, existingTree) {
   };
 }
 
-function buildDestinyTree(perkRecords, installDir) {
-  const emptyTree = {
-    skillId: DESTINY_SKILL_ID,
-    skillName: "Destiny",
-    grid: { width: 1, height: 1 },
-    perks: [],
-  };
+function buildDestinyTree(perkRecords, installDir, existingTree) {
   const darPerks = collectDarPerkRecords(perkRecords);
-  if (darPerks.length === 0) return emptyTree;
+  if (darPerks.length === 0) return existingTree;
 
   const configNodes = installDir ? loadDestinyConfig(installDir) : null;
   if (configNodes?.length) {
-    return buildDestinyTreeFromConfig(darPerks, configNodes, emptyTree);
+    return buildDestinyTreeFromConfig(darPerks, configNodes, existingTree);
   }
 
-  return buildFallbackDestinyTree(darPerks, emptyTree);
+  return buildFallbackDestinyTree(darPerks, existingTree);
 }
 
 export function transformPerkRecords(
@@ -293,10 +290,18 @@ export function transformPerkRecords(
 ) {
   const handTunedOverrides = loadPerkHandTunedOverrides(perksDir);
   const layoutOverrides = loadPerkLayoutOverrides(perksDir);
+  const graphSnapshots = loadPerkGraphSnapshots(perksDir);
   const { trees, indexEntries } = createEmptyPerkTrees();
   const { treePerkRecords } = buildPerkLookups(perkRecords, membership);
 
-  trees["destiny.json"] = buildDestinyTree(perkRecords, installDir);
+  const existingDestiny =
+    loadExistingPerkTree(perksDir, "destiny.json") ?? {
+      skillId: DESTINY_SKILL_ID,
+      skillName: "Destiny",
+      grid: { width: 1, height: 1 },
+      perks: [],
+    };
+  trees["destiny.json"] = buildDestinyTree(perkRecords, installDir, existingDestiny);
 
   const addedPerks = appendMissingPerkNodes(
     trees,
@@ -309,6 +314,7 @@ export function transformPerkRecords(
   applySmithingBookPerkCosts(trees);
   const removedPerks = pruneAllPerkTrees(trees, { membership });
   applyPerkLayoutOverrides(trees, layoutOverrides);
+  applyPerkGraphSnapshots(trees, graphSnapshots);
 
   return { trees, indexEntries, addedPerks, removedPerks };
 }

@@ -3,13 +3,15 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
+  applyPerkGraphSnapshots,
   applyPerkHandTunedOverrides,
+  applyPerkLayoutOverrides,
   applySmithingBookPerkCosts,
   createEmptyPerkTrees,
   isSmithingBookUnlockedPerk,
+  loadPerkGraphSnapshots,
   loadPerkHandTunedOverrides,
   loadPerkLayoutOverrides,
-  applyPerkLayoutOverrides,
   removeStalePerkFiles,
 } from "./import-reset.mjs";
 
@@ -156,6 +158,77 @@ applyPerkLayoutOverrides(destinyTrees, destinyLayoutOverrides);
 assert.deepEqual(destinyTrees["destiny.json"].perks[0].position, { x: 21, y: 18 });
 assert.deepEqual(destinyTrees["destiny.json"].perks[1].position, { x: 15, y: 15 });
 assert.ok(destinyTrees["destiny.json"].grid.width >= 43);
+
+writeFileSync(
+  join(perksDir, "smithing.json"),
+  JSON.stringify({
+    skillId: "smithing",
+    perks: [
+      {
+        id: "smithing-orcish-smithing",
+        name: "Orcish Smithing",
+        skillReq: 50,
+        position: { x: 0, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: ["smithing-light", "smithing-dwarven"],
+      },
+      {
+        id: "smithing-light",
+        name: "Advanced Light Armors",
+        skillReq: 30,
+        position: { x: 1, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: [],
+      },
+      {
+        id: "smithing-dwarven",
+        name: "Dwarven Smithing",
+        skillReq: 30,
+        position: { x: 2, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: [],
+      },
+    ],
+  }),
+);
+
+const graphSnapshots = loadPerkGraphSnapshots(perksDir);
+const graphTrees = {
+  "smithing.json": {
+    skillId: "smithing",
+    perks: [
+      {
+        id: "smithing-generated-orcish",
+        name: "Orcish Smithing",
+        skillReq: 50,
+        position: { x: 0, y: 0 },
+        prerequisites: ["smithing-generated-light", "smithing-generated-dwarven"],
+        prerequisitesAny: [],
+      },
+      {
+        id: "smithing-generated-light",
+        name: "Advanced Light Armors",
+        skillReq: 30,
+        position: { x: 1, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: [],
+      },
+      {
+        id: "smithing-generated-dwarven",
+        name: "Dwarven Smithing",
+        skillReq: 30,
+        position: { x: 2, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: [],
+      },
+    ],
+  },
+};
+applyPerkGraphSnapshots(graphTrees, graphSnapshots);
+const orcish = graphTrees["smithing.json"].perks[0];
+assert.equal(orcish.id, "smithing-orcish-smithing");
+assert.deepEqual(orcish.prerequisites, []);
+assert.deepEqual(orcish.prerequisitesAny, ["smithing-light", "smithing-dwarven"]);
 
 mkdirSync(join(perksDir, "nested"), { recursive: true });
 writeFileSync(join(perksDir, "orphan.json"), "{}");

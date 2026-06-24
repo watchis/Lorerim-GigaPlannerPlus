@@ -83,7 +83,8 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | Updated from plugins | Preserved from existing JSON |
 |----------------------|----------------------------|
 | All perk tree nodes (membership, names, descriptions, prerequisites, `skillReq`) | `costsPerkPoint: false` per perk name (hand-tuned free nodes); Smithing book-unlock perks (description mentions reading/studying) are set free automatically |
-| Default layout for newly added perks (GigaPlanner coords or prerequisite graph) | Perk `position` and `grid` per skill tree (matched by skill + perk name; multi-rank stacks share one cell) |
+| Default layout for newly added perks (curated coords from `data/game/perks` via `giga-planner-layout.json`, or prerequisite graph) | Perk `position` and `grid` per skill tree (matched by skill + perk name; multi-rank stacks share one cell) |
+| Multiple AVIF parents for one perk → `prerequisitesAny` (OR) | Stable perk `id`, `prerequisites` / `prerequisitesAny` wiring, explicit `costsPerkPoint: true`, and hand-tuned `effects` (matched by skill + name + `skillReq`) |
 | All traits from `Traits_AbilityList` (base FormList + FLM additions) | — |
 | Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA` | `race-effects.json`, race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
@@ -97,9 +98,9 @@ Perk **membership** comes from `AVIF`. Each `AVIF` `PNAM` perk reference and eac
 Perk metadata enrichment uses plugin `PERK` conditions and `AVIF` links:
 
 - **Skill requirement** — `REQ_*` Editor IDs with `_025_` / `_050_` / `_075_` / `_100_` tiers, else top-level `PERK` conditions (`GetBaseActorValue >= N`). A multi-rank perk's base rank keeps its own record skill requirement (the by-name metadata can't distinguish ranks).
-- **Prerequisites** — `GetIsID` perk checks on top-level `PERK` conditions, merged with parent links from the final `AVIF` perk tree for that skill. Self-referential prerequisites (a higher rank's `GetIsID` on its own lower rank) are dropped.
+- **Prerequisites** — `GetIsID` perk checks on top-level `PERK` conditions when present; otherwise parent links from the final `AVIF` perk tree for that skill. AVIF links are not merged on top of `GetIsID` results. When multiple prerequisites remain, same-tier siblings from AVIF layout noise are dropped in favor of lower `skillReq` gates (e.g. Apprentice Restoration keeps Novice only, not Mental Acuity). Self-referential prerequisites (a higher rank's `GetIsID` on its own lower rank) are dropped.
 - **Multi-rank perks** — the game shows one `AVIF` node per perk but tracks ranks via the `PERK` `NNAM` (Next Perk) chain. The importer follows that chain and emits one node per rank, all sharing the base node's grid cell, with each rank's own skill requirement (the engine orders a stack by ascending `skillReq`). Higher ranks carry no prerequisites — the stack mechanism gates them. `DATA.numRanks` is ignored because repurposed vanilla forms (e.g. Stealth) leave it stale.
-- **Position** — legacy [GigaPlanner](https://multidyls.github.io/GigaPlanner/) coordinates (vendored in `lib/giga-planner-layout.json`) when perk names match and no saved position exists; otherwise a prerequisite-depth layout with the same spacing conventions. Ranks of the same perk are laid out as one unit so they stay co-located. **Saved positions from the existing `data/game/perks/*.json` are restored after import** so manual layout edits survive rebuilds. Destiny keeps its config-based layout.
+- **Position** — curated coordinates from `data/game/perks` (vendored in `lib/giga-planner-layout.json`; regenerate with `node tools/import/sync-giga-planner-layout.mjs`) when perk names match and no saved position exists; otherwise a prerequisite-depth layout with the same spacing conventions. Ranks of the same perk are laid out as one unit so they stay co-located. **Saved positions from the existing `data/game/perks/*.json` are restored after import** so manual layout edits survive rebuilds. Destiny keeps its config-based layout, with ids and effects preserved from the previous `destiny.json` when present.
 
 After metadata enrichment, **unanchored perks are removed** from each tree: nodes with no skill requirement, no prerequisites, no player-level requirement, not referenced as a prerequisite by any other perk, and **not** in that skill's merged `AVIF` tree. Starter nodes (e.g. Novice Destruction) are kept when other perks depend on them; leaf perks shown in `AVIF` (e.g. Gourmet, Metamagic) are kept even when they have no skill gate in plugin data.
 
@@ -126,7 +127,7 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 tools/import/
   import-lorerim.mjs       # LoreRim MO2 install → data/game/
   probe-esp.mjs            # debug: inspect PERK/RACE records in one plugin
-  generate-giga-planner-layout.mjs # regenerate lib/giga-planner-layout.json from legacy perk data
+  sync-giga-planner-layout.mjs # regenerate lib/giga-planner-layout.json from data/game/perks
   lib/
     append-missing-perks.mjs # supplemental perk nodes + metadata application
     avif-perk-tree.mjs     # AVIF perk tree parser (player-visible layout)

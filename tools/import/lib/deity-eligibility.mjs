@@ -462,6 +462,7 @@ export function normalizeGuideText(content) {
     .replace(/<\/h2>/gi, "\n")
     .replace(/<\/h1>/gi, "\n")
     .replace(/<[^>]+>/g, "")
+    .replace(/[<>]/g, "")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, "&")

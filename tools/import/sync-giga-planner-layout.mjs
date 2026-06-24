@@ -1,70 +1,46 @@
 /**
- * Rebuild tools/import/lib/giga-planner-layout.json from a live GigaPlanner export.
+ * Rebuild tools/import/lib/giga-planner-layout.json from curated planner perk trees.
  *
- * Export source: browser CDP extract saved as giga-planner-live-perks.json
- * (see README in tools/import/).
+ * Uses `data/game/perks/*.json` as the source of truth for fallback layout
+ * coordinates when the importer places perks that have no saved position yet.
  *
  * Usage:
  *   node tools/import/sync-giga-planner-layout.mjs
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { canonicalPerkName } from "./lib/perk-import-filter.mjs";
-import { SKILL_IDS } from "./lib/skill-constants.mjs";
-import { gigaPercentToGrid, GIGA_LAYOUT_GRID } from "./lib/giga-planner-layout-constants.mjs";
+import { GIGA_LAYOUT_GRID } from "./lib/giga-planner-layout-constants.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const livePath = join(__dirname, "lib", "giga-planner-live-perks.json");
+const perksDir = join(__dirname, "..", "..", "data", "game", "perks");
 const outputPath = join(__dirname, "lib", "giga-planner-layout.json");
 
-/** LoreRim perks absent from multidyls GigaPlanner v4.0.31 — placed by prerequisite branch. */
-const LORE_RIM_ONLY_POSITIONS = {
-  "alteration:geomancer": { x: 16, y: 40 },
-  "alteration:philosopher's stone": { x: 7, y: 42 },
-  "block:surprise attack": { x: 6, y: 13 },
-  "block:strike the jugular": { x: 6, y: 8 },
-  "block:master of all": { x: 6, y: 4 },
-  "destruction:rune mastery": { x: 5, y: 24 },
-  "destruction:blood glutton": { x: 1, y: 15 },
-  "destruction:eldritch artist": { x: 3, y: 12 },
-  "destruction:disciple of the mystics": { x: 4, y: 9 },
-  "marksman:hidden blade": { x: 6, y: 35 },
-  "one-handed:piercing strike": { x: 15, y: 17 },
-  "one-handed:deathbringer": { x: 18, y: 3 },
-  "restoration:mental acuity": { x: 17, y: 28 },
-  "restoration:masterly wards": { x: 15, y: 10 },
-  "restoration:venomaster": { x: 7, y: 6 },
-  "restoration:heliomaster": { x: 5, y: 8 },
-  "restoration:greater vitality": { x: 1, y: 12 },
-  "sneak:shadow opportunist": { x: 9, y: 10 },
-  "two-handed:longweapon focus": { x: 8, y: 29 },
-  "wayfarer:animal taming": { x: 2, y: 40 },
-  "wayfarer:animal riding": { x: 2, y: 31 },
-  "wayfarer:beastmaster": { x: 2, y: 22 },
-};
-
-const livePerks = JSON.parse(readFileSync(livePath, "utf8"));
 const positions = {};
 
-for (const perk of livePerks) {
-  const skillId = SKILL_IDS[perk.skill];
-  if (!skillId || skillId === "traits" || skillId === "destiny") continue;
+for (const filename of readdirSync(perksDir).filter(
+  (entry) => entry.endsWith(".json") && entry !== "index.json",
+)) {
+  const tree = JSON.parse(readFileSync(join(perksDir, filename), "utf8"));
+  if (!tree.skillId || tree.skillId === "destiny" || tree.skillId === "traits") continue;
 
-  const canonical = canonicalPerkName(perk.name.replace(/<br>/gi, " "));
-  if (!canonical) continue;
+  const seen = new Set();
+  for (const perk of tree.perks ?? []) {
+    const canonical = canonicalPerkName(perk.name);
+    if (!canonical || perk.position == null) continue;
 
-  positions[`${skillId}:${canonical}`] = gigaPercentToGrid(perk.xPos, perk.yPos);
-}
+    const key = `${tree.skillId}:${canonical}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
 
-for (const [key, position] of Object.entries(LORE_RIM_ONLY_POSITIONS)) {
-  positions[key] = position;
+    positions[key] = { x: perk.position.x, y: perk.position.y };
+  }
 }
 
 const document = {
-  version: 2,
-  source:
-    "multidyls.github.io/GigaPlanner v4.0.31 (live export) + LoreRim-only perk branches",
+  version: 3,
+  source: "data/game/perks (curated planner layout)",
   grid: GIGA_LAYOUT_GRID,
   positions,
 };
@@ -78,7 +54,6 @@ console.log(
       output: outputPath,
       skills: skillCount,
       positions: Object.keys(positions).length,
-      loreRimOnly: Object.keys(LORE_RIM_ONLY_POSITIONS).length,
     },
     null,
     2,

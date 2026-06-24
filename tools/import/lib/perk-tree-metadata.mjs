@@ -37,10 +37,18 @@ export function buildPerkMetadataIndex(perkRecords, avifTrees, membership = null
       .map((id) => identityToName.get(id))
       .filter(Boolean);
 
+    const existing = byKey.get(key);
+    const mergedPrerequisiteNames = uniqueNames([
+      ...(existing?.prerequisiteNames ?? []),
+      ...prerequisiteNames,
+    ]);
+
     byKey.set(key, {
-      skillReq: record.perkMeta.skillReq ?? null,
-      prerequisiteNames: uniqueNames(prerequisiteNames),
-      position: null,
+      skillReq: record.perkMeta.skillReq ?? existing?.skillReq ?? null,
+      prerequisiteNames: mergedPrerequisiteNames,
+      hasPerkRecordPrerequisites:
+        (existing?.hasPerkRecordPrerequisites ?? false) || prerequisiteNames.length > 0,
+      position: existing?.position ?? null,
     });
   }
 
@@ -51,15 +59,21 @@ export function buildPerkMetadataIndex(perkRecords, avifTrees, membership = null
       const existing = byKey.get(key) ?? {
         skillReq: null,
         prerequisiteNames: [],
+        hasPerkRecordPrerequisites: false,
         position: null,
       };
+
+      const avifPrerequisiteNames = existing.hasPerkRecordPrerequisites
+        ? []
+        : (section.prerequisiteNames ?? []);
 
       byKey.set(key, {
         skillReq: existing.skillReq,
         prerequisiteNames: uniqueNames([
           ...existing.prerequisiteNames,
-          ...(section.prerequisiteNames ?? []),
+          ...avifPrerequisiteNames,
         ]),
+        hasPerkRecordPrerequisites: existing.hasPerkRecordPrerequisites,
         position:
           section.x != null && section.y != null
             ? { x: section.x, y: section.y }
@@ -102,6 +116,27 @@ export function resolvePrerequisiteIds(tree, prerequisiteNames, childSkillReq) {
   return ids;
 }
 
+/**
+ * AVIF trees sometimes link same-tier siblings as parents. When multiple prerequisites
+ * remain, keep only those strictly below the child's skill gate (e.g. Novice for Apprentice).
+ */
+export function filterSpuriousPrerequisites(tree, childSkillReq, prerequisiteNames) {
+  if (prerequisiteNames.length <= 1) return prerequisiteNames;
+
+  const resolved = prerequisiteNames.map((name) => {
+    const id = resolvePrerequisiteId(tree, name, childSkillReq);
+    const perk = tree.perks.find((candidate) => candidate.id === id);
+    return { name, skillReq: perk?.skillReq ?? null };
+  });
+
+  const strictlyLower = resolved.filter((entry) => (entry.skillReq ?? 0) < childSkillReq);
+  if (strictlyLower.length > 0) {
+    return strictlyLower.map((entry) => entry.name);
+  }
+
+  return prerequisiteNames;
+}
+
 const DEFAULT_CAPSTONE_Y_OFFSET = 6;
 
 export function inferPositionFromPrerequisites(tree, prerequisiteIds) {
@@ -136,8 +171,12 @@ export function applyPerkMetadata(perk, tree, metadataIndex) {
   if (isHigherTier) return perk;
 
   const ownCanonical = canonicalPerkName(perk.name);
-  const prerequisiteNames = metadata.prerequisiteNames.filter(
-    (name) => canonicalPerkName(name) !== ownCanonical,
+  const prerequisiteNames = filterSpuriousPrerequisites(
+    tree,
+    perk.skillReq ?? metadata.skillReq ?? 0,
+    metadata.prerequisiteNames.filter(
+      (name) => canonicalPerkName(name) !== ownCanonical,
+    ),
   );
 
   // A stack's base rank keeps its own record skillReq; the by-name metadata can't distinguish ranks.
@@ -148,19 +187,34 @@ export function applyPerkMetadata(perk, tree, metadataIndex) {
   if (!needsSkillReq && !needsPrerequisites) return perk;
 
   const skillReq = needsSkillReq ? metadata.skillReq : perk.skillReq;
-  const prerequisites = needsPrerequisites
+  const resolvedPrerequisites = needsPrerequisites
     ? resolvePrerequisiteIds(tree, prerequisiteNames, skillReq)
-    : perk.prerequisites;
+    : [];
 
+  let prerequisites = perk.prerequisites ?? [];
+  let prerequisitesAny = perk.prerequisitesAny ?? [];
+
+  if (needsPrerequisites) {
+    if (prerequisiteNames.length > 1) {
+      prerequisites = [];
+      prerequisitesAny = resolvedPrerequisites;
+    } else {
+      prerequisites = resolvedPrerequisites;
+      prerequisitesAny = [];
+    }
+  }
+
+  const layoutPrereqs = prerequisites.length > 0 ? prerequisites : prerequisitesAny;
   let position = perk.position;
-  if (needsPrerequisites && prerequisites.length > 0) {
-    position = inferPositionFromPrerequisites(tree, prerequisites) ?? position;
+  if (needsPrerequisites && layoutPrereqs.length > 0) {
+    position = inferPositionFromPrerequisites(tree, layoutPrereqs) ?? position;
   }
 
   return {
     ...perk,
     skillReq,
     prerequisites,
+    prerequisitesAny,
     position,
   };
 }

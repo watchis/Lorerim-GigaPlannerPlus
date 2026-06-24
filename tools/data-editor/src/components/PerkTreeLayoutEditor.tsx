@@ -43,7 +43,10 @@ function isFiniteInt(value: unknown): value is number {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "");
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/[<>]/g, "");
 }
 
 function asStringArray(value: unknown): string[] {

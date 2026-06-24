@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { canonicalPerkName } from "./perk-import-filter.mjs";
+import { canonicalPerkName, removeDanglingPrerequisites } from "./perk-import-filter.mjs";
 import { repositionOutOfGridPerks, resizeGridToFit } from "./append-missing-perks.mjs";
 import { SKILL_IDS, SKILL_NAMES } from "./skill-constants.mjs";
 
@@ -138,6 +138,122 @@ export function applyPerkLayoutOverrides(trees, layoutOverrides) {
 
     tree.grid = resizeGridToFit(tree.perks, tree.grid ?? { width: 25, height: 25 });
     repositionOutOfGridPerks(tree);
+  }
+}
+
+export function perkGraphKey(perk) {
+  return `${canonicalPerkName(perk.name)}:${perk.skillReq ?? 0}`;
+}
+
+export function loadExistingPerkTree(perksDir, filename) {
+  const path = join(perksDir, filename);
+  if (!existsSync(path)) return null;
+
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+/** Preserve stable ids and prerequisite graphs from curated planner JSON across rebuilds. */
+export function loadPerkGraphSnapshots(perksDir) {
+  const snapshots = new Map();
+  if (!existsSync(perksDir)) return snapshots;
+
+  for (const filename of readdirSync(perksDir)) {
+    if (!filename.endsWith(".json") || filename === "index.json") continue;
+
+    const tree = JSON.parse(readFileSync(join(perksDir, filename), "utf8"));
+    if (!tree.skillId) continue;
+
+    const byGraphKey = new Map();
+    const idToGraphKey = new Map();
+
+    for (const perk of tree.perks ?? []) {
+      const key = perkGraphKey(perk);
+      if (!byGraphKey.has(key)) {
+        byGraphKey.set(key, {
+          id: perk.id,
+          prerequisites: [...(perk.prerequisites ?? [])],
+          prerequisitesAny: [...(perk.prerequisitesAny ?? [])],
+          ...(perk.costsPerkPoint === true ? { costsPerkPoint: true } : {}),
+          ...(perk.effects?.length ? { effects: [...perk.effects] } : {}),
+        });
+      }
+      idToGraphKey.set(perk.id, key);
+    }
+
+    if (byGraphKey.size > 0) {
+      snapshots.set(tree.skillId, { byGraphKey, idToGraphKey });
+    }
+  }
+
+  return snapshots;
+}
+
+function remapPrerequisiteIds(savedIds, idToGraphKey, graphKeyToId) {
+  const remapped = [];
+  const seen = new Set();
+
+  for (const savedId of savedIds) {
+    const graphKey = idToGraphKey.get(savedId);
+    if (!graphKey) continue;
+    const currentId = graphKeyToId.get(graphKey);
+    if (!currentId || seen.has(currentId)) continue;
+    seen.add(currentId);
+    remapped.push(currentId);
+  }
+
+  return remapped;
+}
+
+export function applyPerkGraphSnapshots(trees, snapshots) {
+  if (!snapshots || snapshots.size === 0) return;
+
+  for (const tree of Object.values(trees)) {
+    const snapshot = snapshots.get(tree.skillId);
+    if (!snapshot) continue;
+
+    const graphKeyToId = new Map();
+
+    for (const perk of tree.perks) {
+      const key = perkGraphKey(perk);
+      const saved = snapshot.byGraphKey.get(key);
+      if (!saved) {
+        graphKeyToId.set(key, perk.id);
+        continue;
+      }
+
+      perk.id = saved.id;
+      graphKeyToId.set(key, saved.id);
+
+      if (saved.costsPerkPoint === true) {
+        perk.costsPerkPoint = true;
+      }
+      if (saved.effects?.length) {
+        perk.effects = saved.effects;
+      }
+    }
+
+    for (const perk of tree.perks) {
+      const key = perkGraphKey(perk);
+      const saved = snapshot.byGraphKey.get(key);
+      if (!saved) continue;
+
+      perk.prerequisites = remapPrerequisiteIds(
+        saved.prerequisites,
+        snapshot.idToGraphKey,
+        graphKeyToId,
+      );
+      perk.prerequisitesAny = remapPrerequisiteIds(
+        saved.prerequisitesAny,
+        snapshot.idToGraphKey,
+        graphKeyToId,
+      );
+    }
+
+    tree.perks = removeDanglingPrerequisites(tree.perks);
   }
 }
 

@@ -52,6 +52,6 @@ const layoutPath = join(dirname(fileURLToPath(import.meta.url)), "giga-planner-l
 const layout = JSON.parse(readFileSync(layoutPath, "utf8"));
 assert.equal(layout.grid.width, GIGA_LAYOUT_GRID.width);
 assert.equal(layout.grid.height, GIGA_LAYOUT_GRID.height);
-assert.deepEqual(layout.positions["block:elemental protection"], { x: 3, y: 13 });
+assert.deepEqual(layout.positions["block:elemental protection"], { x: 3, y: 8 });
 
 console.log("giga-planner-layout.test.mjs: ok");
