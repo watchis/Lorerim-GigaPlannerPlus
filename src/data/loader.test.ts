@@ -24,6 +24,30 @@ describe("loadAppData", () => {
     expect(shoutFocus?.playerLevelReq).toBe(10);
   });
 
+  it("loads smithing book perks with OR prerequisites", () => {
+    const data = loadAppData();
+    const smithing = data.game.perkTrees.smithing;
+    expect(smithing).toBeDefined();
+
+    const bookPerkIds = [
+      "smithing-dwarven-smithing",
+      "smithing-advanced-light-armors",
+      "smithing-orcish-smithing",
+      "smithing-elven-smithing",
+      "smithing-glass-smithing",
+      "smithing-ebony-smithing",
+      "smithing-daedric-smithing",
+      "smithing-draconic-blacksmithing",
+    ];
+
+    for (const perkId of bookPerkIds) {
+      const perk = smithing!.perks.find((candidate) => candidate.id === perkId);
+      expect(perk, perkId).toBeDefined();
+      expect(perk!.prerequisites, perkId).toEqual([]);
+      expect(perk!.prerequisitesAny?.length, perkId).toBeGreaterThan(0);
+    }
+  });
+
   it("merges race-effects sidecar onto parsed race bonuses", () => {
     const data = loadAppData();
     const { races: rawRaces } = racesSchema.parse(racesJson);
