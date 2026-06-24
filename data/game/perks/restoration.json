@@ -14,12 +14,11 @@
         "x": 17,
         "y": 33
       },
-      "prerequisites": [
-        "restoration-empowered-restoration"
-      ],
+      "prerequisites": [],
       "description": "You've taught yourself a few Novice level spells and learned how to cast them with decreased effort while your newfound knowledge also allows you to augment all Restoration spells.",
       "effects": [],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true
     },
     {
       "id": "restoration-apprentice-restoration",
@@ -30,12 +29,12 @@
         "y": 24
       },
       "prerequisites": [
-        "restoration-novice-restoration",
-        "restoration-mental-acuity"
+        "restoration-novice-restoration"
       ],
       "description": "By pursuing your apprenticeship in Restoration, you've gained knowledge of Apprentice level spells which you now augment while casting them with less effort.",
       "effects": [],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true
     },
     {
       "id": "restoration-adept-restoration",
@@ -155,7 +154,8 @@
       ],
       "description": "Dual casting a Restoration spell overcharges the effects into an even more powerful version.",
       "effects": [],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true
     },
     {
       "id": "restoration-mental-acuity",

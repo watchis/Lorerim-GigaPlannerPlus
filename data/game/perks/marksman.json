@@ -292,7 +292,9 @@
           "isPercent": true
         }
       ],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true,
+      "playerLevelReq": 10
     },
     {
       "id": "marksman-hunter-r2",
@@ -312,7 +314,9 @@
           "isPercent": true
         }
       ],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true,
+      "playerLevelReq": 20
     },
     {
       "id": "marksman-bow-strike",

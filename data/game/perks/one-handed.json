@@ -41,8 +41,7 @@
         "y": 22
       },
       "prerequisites": [
-        "one-handed-weapon-mastery",
-        "one-handed-short-blade-focus"
+        "one-handed-weapon-mastery"
       ],
       "description": "Your power attacks with one-handed weapons or fists are now devastating enough to penetrate enemy armor and less exhausting. [-30% power attack stamina cost, +30% armor penetration]",
       "effects": [
@@ -65,7 +64,8 @@
           "isPercent": true
         }
       ],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true
     },
     {
       "id": "one-handed-powerful-strike",

@@ -69,6 +69,34 @@ function perkAbbreviation(name: string): string {
   return (letters.slice(0, 2) || "?").toUpperCase();
 }
 
+function renderNextRankSection(nextRank: Perk, labels: Record<string, string>) {
+  const nextRankRequirements = getPerkNodeRequirements(nextRank);
+  return (
+    <div className="mt-2 border-t border-[var(--color-border)]/60 pt-2">
+      <p className="text-xs font-medium text-[var(--color-accent-muted)]">
+        {labels.nextRank}
+      </p>
+      {nextRankRequirements.skillReq !== null && (
+        <p className="mt-1 text-xs text-[var(--color-muted)]">
+          {labels.skillReq}: {nextRankRequirements.skillReq}
+        </p>
+      )}
+      {nextRankRequirements.playerLevelReq !== null && (
+        <p
+          className={cn(
+            "text-xs",
+            nextRankRequirements.skillReq !== null ? "mt-0.5" : "mt-1",
+            "text-[var(--color-muted)]",
+          )}
+        >
+          {labels.playerLevelReq}: {nextRankRequirements.playerLevelReq}
+        </p>
+      )}
+      <p className="mt-1 text-xs leading-relaxed">{nextRank.description}</p>
+    </div>
+  );
+}
+
 interface PerkNodeProps {
   perk: Perk;
   position: { x: number; y: number };
@@ -231,19 +259,7 @@ function PerkNode({
         </p>
       )}
       <p className="mt-2 text-xs leading-relaxed">{perk.description}</p>
-      {nextRank && isSelected && (
-        <div className="mt-2 border-t border-[var(--color-border)]/60 pt-2">
-          <p className="text-xs font-medium text-[var(--color-accent-muted)]">
-            {labels.nextRank}
-          </p>
-          {nextRank.skillReq > 0 && (
-            <p className="mt-1 text-xs text-[var(--color-muted)]">
-              {labels.skillReq}: {nextRank.skillReq}
-            </p>
-          )}
-          <p className="mt-1 text-xs leading-relaxed">{nextRank.description}</p>
-        </div>
-      )}
+      {nextRank && isSelected && renderNextRankSection(nextRank, labels)}
       <p className="mt-2 text-xs font-medium text-[var(--color-muted)]">
         {isConflict
           ? labels.buildProblemLegend
@@ -494,15 +510,21 @@ function PerkTreeView({
           ? { ...badgeRequirements, skillReq: null }
           : badgeRequirements;
 
-        const meetsPerkReq = isDestinyTree
-          ? !takeTargetPerk.costsPerkPoint || destinyRemaining >= 1
-          : (() => {
-              const skillId = getPerkSkillId(gameData.game, takeTargetPerk.id);
-              const skillLevel = skillId ? getStoredSkillLevel(gameData.game, build, skillId) : 0;
-              if (skillLevel < takeTargetPerk.skillReq) return false;
-              if (!takeTargetPerk.costsPerkPoint) return true;
-              return perkPointsRemaining >= 1;
-            })();
+        const meetsPlayerLevelReq =
+          takeTargetPerk.playerLevelReq == null ||
+          build.playerLevel >= takeTargetPerk.playerLevelReq;
+
+        const meetsPerkReq =
+          meetsPlayerLevelReq &&
+          (isDestinyTree
+            ? !takeTargetPerk.costsPerkPoint || destinyRemaining >= 1
+            : (() => {
+                const skillId = getPerkSkillId(gameData.game, takeTargetPerk.id);
+                const skillLevel = skillId ? getStoredSkillLevel(gameData.game, build, skillId) : 0;
+                if (skillLevel < takeTargetPerk.skillReq) return false;
+                if (!takeTargetPerk.costsPerkPoint) return true;
+                return perkPointsRemaining >= 1;
+              })());
 
         const isAvailable = !isSelected && prereqsMet && meetsPerkReq;
         const isLocked = !isSelected && (!prereqsMet || !meetsPerkReq);

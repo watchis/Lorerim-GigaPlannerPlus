@@ -41,6 +41,7 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.1.2",
     "@eslint/js": "^10.0.1",
     "@fcrick/tes-data": "^0.0.1",
     "@tailwindcss/vite": "^4.1.11",

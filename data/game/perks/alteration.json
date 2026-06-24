@@ -323,7 +323,8 @@
           "isPercent": true
         }
       ],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true
     },
     {
       "id": "alteration-unskilled-spellcasting-r2",
@@ -343,7 +344,9 @@
           "isPercent": true
         }
       ],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true,
+      "playerLevelReq": 10
     },
     {
       "id": "alteration-unskilled-spellcasting-r3",
@@ -363,7 +366,9 @@
           "isPercent": true
         }
       ],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true,
+      "playerLevelReq": 20
     },
     {
       "id": "alteration-metamagic",
