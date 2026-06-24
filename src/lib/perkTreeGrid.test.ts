@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Perk, PerkTree } from "@/data/schemas";
 import {
+  computePerkTreeEdges,
   getFrontPerkIdAtPosition,
   getNextRankInStack,
   getPerkStackRank,
@@ -68,5 +69,29 @@ describe("perkTreeGrid", () => {
 
   it("parses SVG view boxes", () => {
     expect(parseSvgViewBox("0 0 100 50")).toEqual({ x: 0, y: 0, width: 100, height: 50 });
+  });
+
+  it("marks OR prerequisite edges separately from AND edges", () => {
+    const tree: Pick<PerkTree, "perks"> = {
+      perks: [
+        { ...makePerk("root", 0), position: { x: 0, y: 0 } },
+        {
+          ...makePerk("and-child", 10),
+          position: { x: 2, y: 0 },
+          prerequisites: ["root"],
+        },
+        {
+          ...makePerk("or-child", 10),
+          position: { x: 0, y: 2 },
+          prerequisites: [],
+          prerequisitesAny: ["root"],
+        },
+      ],
+    };
+
+    const edges = computePerkTreeEdges(tree as PerkTree, []);
+    expect(edges).toHaveLength(2);
+    expect(edges.find((edge) => edge.kind === "all")).toBeDefined();
+    expect(edges.find((edge) => edge.kind === "any")).toBeDefined();
   });
 });

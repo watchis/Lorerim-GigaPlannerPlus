@@ -28,12 +28,12 @@
         "x": 28,
         "y": 15
       },
-      "prerequisites": [
-        "smithing-craftsmanship"
-      ],
+      "prerequisites": [],
       "description": "You've read The Art of Dwarven Blacksmithing and acquired the secret knowledge of how to create and improve Dwarven equipment efficiently.",
       "effects": [],
-      "prerequisitesAny": [],
+      "prerequisitesAny": [
+        "smithing-craftsmanship"
+      ],
       "costsPerkPoint": false
     },
     {
@@ -44,13 +44,13 @@
         "x": 28,
         "y": 8
       },
-      "prerequisites": [
-        "smithing-dwarven-smithing",
-        "smithing-advanced-light-armors"
-      ],
+      "prerequisites": [],
       "description": "Orcish equipment is hard to craft, but you've got what it takes. By studying The Almanac of Orcish Blacksmithing, you can craft and improve it easily and most efficiently.",
       "effects": [],
-      "prerequisitesAny": [],
+      "prerequisitesAny": [
+        "smithing-advanced-light-armors",
+        "smithing-dwarven-smithing"
+      ],
       "costsPerkPoint": false
     },
     {
@@ -61,13 +61,13 @@
         "x": 34,
         "y": 2
       },
-      "prerequisites": [
-        "smithing-orcish-smithing",
-        "smithing-elven-smithing"
-      ],
+      "prerequisites": [],
       "description": "Ebony weapons and armor - some even fail at heating the metal. But not you. Now that you've studied the related schematics, you can craft and improve ebony equipment with ease.",
       "effects": [],
-      "prerequisitesAny": [],
+      "prerequisitesAny": [
+        "smithing-elven-smithing",
+        "smithing-orcish-smithing"
+      ],
       "costsPerkPoint": false
     },
     {
@@ -78,13 +78,13 @@
         "x": 17,
         "y": 4
       },
-      "prerequisites": [
-        "smithing-glass-smithing",
-        "smithing-ebony-smithing"
-      ],
+      "prerequisites": [],
       "description": "The creation of daedric weapons and armor is a secret few mortals know - still, you managed to acquire this knowledge by reading Daedric Craftsmanship...",
       "effects": [],
-      "prerequisitesAny": [],
+      "prerequisitesAny": [
+        "smithing-ebony-smithing",
+        "smithing-glass-smithing"
+      ],
       "costsPerkPoint": false
     },
     {
@@ -95,13 +95,13 @@
         "x": 17,
         "y": 0
       },
-      "prerequisites": [
-        "smithing-glass-smithing",
-        "smithing-ebony-smithing"
-      ],
+      "prerequisites": [],
       "description": "The scales and bones of dragons are probably the hardest material to work with, but you've mastered even this art since you studied The Compendium of Dragonic Armor.",
       "effects": [],
-      "prerequisitesAny": [],
+      "prerequisitesAny": [
+        "smithing-ebony-smithing",
+        "smithing-glass-smithing"
+      ],
       "costsPerkPoint": false
     },
     {
@@ -113,12 +113,12 @@
         "y": 23
       },
       "prerequisites": [
-        "smithing-craftsmanship",
-        "smithing-tailoring-polishing"
+        "smithing-craftsmanship"
       ],
       "description": "You've gained quite some finesse, allowing you to craft plate armor and fine jewelry. You have also found a way to melt and crush certain gems into alchemically usable dust.",
       "effects": [],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true
     },
     {
       "id": "smithing-legendary-blacksmithing",
@@ -160,12 +160,12 @@
         "x": 6,
         "y": 15
       },
-      "prerequisites": [
-        "smithing-craftsmanship"
-      ],
+      "prerequisites": [],
       "description": "You've been read An Introduction to Scale Armors, allowing you to craft and efficiently improve scale armor.",
       "effects": [],
-      "prerequisitesAny": [],
+      "prerequisitesAny": [
+        "smithing-craftsmanship"
+      ],
       "costsPerkPoint": false
     },
     {
@@ -176,13 +176,13 @@
         "x": 6,
         "y": 8
       },
-      "prerequisites": [
+      "prerequisites": [],
+      "description": "You've gained enough finesse to create and improve Elven armor and weapons by studying the book \"About Elven Craftsmanship\"",
+      "effects": [],
+      "prerequisitesAny": [
         "smithing-dwarven-smithing",
         "smithing-advanced-light-armors"
       ],
-      "description": "You've gained enough finesse to create and improve Elven armor and weapons by studying the book \"About Elven Craftsmanship\"",
-      "effects": [],
-      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {
@@ -193,13 +193,13 @@
         "x": 0,
         "y": 2
       },
-      "prerequisites": [
+      "prerequisites": [],
+      "description": "Crafting and improving Glass equipment is not for the unskilled, but having studied An Introduction to Malachite, you aren't one of them any more.",
+      "effects": [],
+      "prerequisitesAny": [
         "smithing-orcish-smithing",
         "smithing-elven-smithing"
       ],
-      "description": "Crafting and improving Glass equipment is not for the unskilled, but having studied An Introduction to Malachite, you aren't one of them any more.",
-      "effects": [],
-      "prerequisitesAny": [],
       "costsPerkPoint": false
     },
     {
@@ -231,7 +231,8 @@
       ],
       "description": "You may choose an item type: One-Handed, Two-Handed, Light Armor, Heavy Armor or Archery. Items of the chosen type can be improved 10% better at a grindstone or workbench.",
       "effects": [],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "costsPerkPoint": true
     },
     {
       "id": "smithing-iron-lore",
