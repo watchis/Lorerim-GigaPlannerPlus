@@ -112,4 +112,37 @@ describe("buildEngine perk selection", () => {
 
     expect(getRemainingPerkPoints(game, state)).toBe(2);
   });
+
+  it("treats smithing book perks as OR prerequisites", () => {
+    const orcish = getPerkById(game, "smithing-orcish-smithing");
+    expect(orcish).toBeDefined();
+    expect(orcish!.prerequisites).toEqual([]);
+    expect(orcish!.prerequisitesAny).toEqual([
+      "smithing-advanced-light-armors",
+      "smithing-dwarven-smithing",
+    ]);
+
+    const heavyPath = createTestBuildState({
+      playerLevel: 20,
+      selectedPerkIds: ["smithing-craftsmanship", "smithing-dwarven-smithing"],
+      skillLevels: { smithing: 50 },
+    });
+    const lightPath = createTestBuildState({
+      playerLevel: 20,
+      selectedPerkIds: ["smithing-craftsmanship", "smithing-advanced-light-armors"],
+      skillLevels: { smithing: 50 },
+    });
+    const neitherBranch = createTestBuildState({
+      playerLevel: 20,
+      selectedPerkIds: ["smithing-craftsmanship"],
+      skillLevels: { smithing: 50 },
+    });
+
+    expect(arePrerequisitesMet(game, heavyPath, orcish!)).toBe(true);
+    expect(arePrerequisitesMet(game, lightPath, orcish!)).toBe(true);
+    expect(arePrerequisitesMet(game, neitherBranch, orcish!)).toBe(false);
+    expect(canSelectPerk(game, heavyPath, "smithing-orcish-smithing")).toBe(true);
+    expect(canSelectPerk(game, lightPath, "smithing-orcish-smithing")).toBe(true);
+    expect(canSelectPerk(game, neitherBranch, "smithing-orcish-smithing")).toBe(false);
+  });
 });

@@ -305,7 +305,7 @@ export function PerkTreeMiniView({
                 y2={edge.y2}
                 stroke={edge.active ? "var(--color-accent)" : "var(--color-border)"}
                 strokeWidth={edge.active ? 0.15 : 0.1}
-                strokeOpacity={edge.active ? 0.85 : 0.35}
+                strokeOpacity={edge.active ? 0.85 : edge.kind === "any" ? 0.45 : 0.35}
                 strokeLinecap="round"
               />
             ))}
