@@ -233,14 +233,7 @@
       },
       "prerequisites": [],
       "description": "Alcohol pumps you up, boosting your strength and stamina. [Removes negative alcohol effects, regenerate 2 stamina per second and do 10% more damage with melee attacks while tipsy]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "meleeDamage",
-          "value": 10,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {
@@ -253,14 +246,7 @@
       },
       "prerequisites": [],
       "description": "Alcohol pumps you up, boosting your strength and stamina. [Removes Alcohol Blur, regenerate 3 stamina per second and do 20% more damage with melee attacks while drunk]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "meleeDamage",
-          "value": 20,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {

@@ -284,14 +284,7 @@
       },
       "prerequisites": [],
       "description": "You are more adapted to the wildlife, and better understand its inhabitants. [Do 20% more damage to animals and take 10% less damage from animals, +10% poison and disease resistance]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "damageTaken",
-          "value": -10,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": [],
       "costsPerkPoint": true,
       "playerLevelReq": 10
@@ -306,14 +299,7 @@
       },
       "prerequisites": [],
       "description": "You are more adapted to the wildlife, and better understand its inhabitants. [Do 40% more damage to animals and take 20% less damage from animals, +20% poison and disease resistance]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "damageTaken",
-          "value": -20,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": [],
       "costsPerkPoint": true,
       "playerLevelReq": 20

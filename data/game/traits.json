@@ -77,6 +77,7 @@
       ],
       "bonusDetails": [
         "For each piece of armor or clothing you wear.",
+        "You lose 40 from each attribute (up to a maximum loss of -160 with four pieces equipped).",
         "You gain +1 to health, magicka, and stamina per level for each empty armor slot (head, chest, hands, and feet)."
       ]
     },
@@ -129,11 +130,17 @@
       "name": "Blighted Fists",
       "description": "Your afflictions fuel your fury!",
       "bonus": "Your unarmed attacks deal +10 unresistable disease damage per disease, and the effect of diseases on you is reduced by 50%. Your disease resistance is reduced by 200%.",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "diseaseResist",
+          "value": -200,
+          "isPercent": true
+        }
+      ],
       "bonusDetails": [
         "Your unarmed attacks deal +10 unresistable disease damage per disease.",
-        "The effect of diseases on you is reduced by 50%.",
-        "Your disease resistance is reduced by 200%."
+        "The effect of diseases on you is reduced by 50%."
       ]
     },
     {
@@ -158,9 +165,26 @@
       "name": "Blood Warrior",
       "description": "",
       "bonus": "You take 50% more physical damage and have 100% weakness to Poison. However you start with +50 health and gain +5 health per level.",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "poisonResist",
+          "value": -100,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "damageTaken",
+          "value": 50,
+          "isPercent": true
+        },
+        {
+          "type": "attribute",
+          "stat": "health",
+          "value": 50
+        }
+      ],
       "bonusDetails": [
-        "You take 50% more physical damage and have 100% weakness to Poison.",
         "You start with +50 health and gain +5 health per level."
       ]
     },
@@ -372,15 +396,11 @@
       "name": "Focused Combat",
       "description": "",
       "bonus": "Pick onehanded, Twohanded or Marksman. Deal 10% more & take 10% less damage with this weapon type. However, you deal 10% less and take 10% more damage with the other two.",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "damageTaken",
-          "value": 0,
-          "isPercent": true
-        }
-      ],
-      "bonusDetails": []
+      "effects": [],
+      "bonusDetails": [
+        "Deal 10% more & take 10% less damage with this weapon type.",
+        "You deal 10% less and take 10% more damage with the other two."
+      ]
     },
     {
       "id": "focused-magic",
@@ -544,19 +564,13 @@
       "effects": [
         {
           "type": "derivedStat",
-          "stat": "damageTaken",
-          "value": -50,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
           "stat": "moveSpeed",
           "value": -15,
           "isPercent": true
         }
       ],
       "bonusDetails": [
-        "Getting hit with an arrow restores 20 stamina."
+        "You take 50% less damage from enemy arrows and bolts."
       ]
     },
     {
@@ -601,7 +615,6 @@
       "bonusDetails": [
         "When not wearing any clothes or armor sneak attacks deal 2.5 times more damage and can sneak 25% better, and are 100% immune to disease.",
         "Eating fish when it's raw and wriggling triggers a powerful effect that lasts 10 minutes.",
-        "Armor provides no protection.",
         "Weapons with a weight above 10 will deal no damage."
       ]
     },
@@ -684,21 +697,9 @@
       "name": "Phalanx",
       "description": "",
       "bonus": "You deal 15% more damage with spears, javelins, pikes, and halberds. However, you take 50% more damage when hit from behind. Also gives you a unique pike.",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "meleeDamage",
-          "value": 15,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "rangedDamage",
-          "value": 15,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "bonusDetails": [
+        "You deal 15% more damage with spears, javelins, pikes, and halberds.",
         "You take 50% more damage when hit from behind."
       ]
     },
@@ -718,9 +719,25 @@
       "name": "Quester",
       "description": "",
       "bonus": "Start with 50 less Health, Magicka and Stamina. Gain 2 of each per 1 quest completed, up to a maximum of +200 at 300 quests completed.",
-      "effects": [],
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "health",
+          "value": -50
+        },
+        {
+          "type": "attribute",
+          "stat": "magicka",
+          "value": -50
+        },
+        {
+          "type": "attribute",
+          "stat": "stamina",
+          "value": -50
+        }
+      ],
       "bonusDetails": [
-        "Start with 50 less Health, Magicka and Stamina.",
+        "Gain 2 of each per 1 quest completed.",
         "Up to a maximum of +200 at 300 quests completed."
       ]
     },
@@ -740,11 +757,16 @@
       "name": "Self-Taught",
       "description": "",
       "bonus": "For every 5 book or notes read, gain 1 point of Magicka, for up to 300 Magicka at 1500 read. However, you start with 100 less Magicka.",
-      "effects": [],
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "magicka",
+          "value": -100
+        }
+      ],
       "bonusDetails": [
-        "Gain 1 point of Magicka.",
-        "For up to 300 Magicka at 1500 read.",
-        "You start with 100 less Magicka."
+        "For every 5 book or notes read.",
+        "For up to 300 Magicka at 1500 read."
       ]
     },
     {
@@ -786,6 +808,7 @@
         }
       ],
       "bonusDetails": [
+        "For every 1 unspent dragon souls.",
         "This draconic strength rejects the curse of beast or blood: werewolves and vampires cannot harness its power."
       ]
     },
@@ -868,14 +891,22 @@
       "name": "Swimmer",
       "description": "You prefer life on the water.",
       "bonus": "You swim 10% faster, can breath underwater and regenerate health, stamina and magicka by a flat 1 per second when wet. On land when dry, you suffer 50% less health, stamina and magicka regeneration.",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "swimmingSpeed",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "flag",
+          "stat": "waterbreathing"
+        }
+      ],
       "bonusDetails": [
-        "You swim 10% faster.",
-        "Can breath underwater and regenerate health.",
-        "Stamina and magicka by a flat 1 per second when wet.",
+        "Can breath underwater and regenerate health, stamina and magicka by a flat 1 per second when wet.",
         "On land when dry.",
-        "You suffer 50% less health.",
-        "Stamina and magicka regeneration."
+        "You suffer 50% less health, stamina and magicka regeneration."
       ]
     },
     {
@@ -883,10 +914,27 @@
       "name": "The True Apprentice",
       "description": "",
       "bonus": "All spells cost 60% less but are 40% weaker or last 40% shorter.",
-      "effects": [],
-      "bonusDetails": [
-        "All spells cost 60% less but are 40% weaker or last 40% shorter."
-      ]
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -60,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "spellDamage",
+          "value": -40,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "spellDuration",
+          "value": -40,
+          "isPercent": true
+        }
+      ],
+      "bonusDetails": []
     },
     {
       "id": "touch-of-the-arcane",
@@ -931,9 +979,20 @@
       "name": "Wanderer",
       "description": "",
       "bonus": "Start with 50 less stamina and -50% stamina regeneration rate. Gain 1 stamina and 1% stamina regeneration for every 2 locations discovered, up to a maximum of +200 stamina and +200% regeneration at 400 locations.",
-      "effects": [],
+      "effects": [
+        {
+          "type": "attribute",
+          "stat": "stamina",
+          "value": -50
+        },
+        {
+          "type": "derivedStat",
+          "stat": "staminaRegen",
+          "value": -50,
+          "isPercent": true
+        }
+      ],
       "bonusDetails": [
-        "Start with 50 less stamina and -50% stamina regeneration rate.",
         "Gain 1 stamina and 1% stamina regeneration for every 2 locations discovered.",
         "Up to a maximum of +200 stamina and +200% regeneration at 400 locations."
       ]

@@ -50,6 +50,10 @@
           "stat": "magicAbsorb",
           "value": 25,
           "isPercent": true
+        },
+        {
+          "type": "flag",
+          "stat": "noMagickaRegen"
         }
       ],
       "bonusDetails": [
@@ -256,7 +260,6 @@
       ],
       "bonusDetails": [
         "Movement is 10 percent faster and 20 percent when sprinting.",
-        "Restore 1 stamina per second.",
         "Most slow effects don't affect you."
       ]
     },

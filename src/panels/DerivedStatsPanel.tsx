@@ -1,6 +1,8 @@
+import { useSearchParams } from "react-router-dom";
 import { DetailStatRow } from "@/components/option-details/DetailSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CursorTooltip } from "@/components/ui/tooltip";
+import { isConditionalBonusesEnabled } from "@/lib/features";
 import {
   formatBonusSourceValue,
   formatTrackedStatValue,
@@ -102,6 +104,7 @@ function ConditionalBonusRow({ text, source }: { text: string; source: string })
 }
 
 export function DerivedStatsPanel({ embedded = false }: DerivedStatsPanelProps) {
+  const [searchParams] = useSearchParams();
   const labels = usePanelLabels("derived-stats");
   const characterOptionLabels = usePanelLabels("character-options");
   const gameData = useBuildStore((s) => s.gameData);
@@ -114,7 +117,9 @@ export function DerivedStatsPanel({ embedded = false }: DerivedStatsPanelProps) 
     gameData.game.stats.categories.map((category) => [category.id, category.label]),
   );
   const groupedBonuses = groupByCategory(computed.appliedBonuses);
-  const conditionalBonuses = computed.conditionalBonuses;
+  const conditionalBonuses = isConditionalBonusesEnabled(searchParams)
+    ? computed.conditionalBonuses
+    : [];
 
   const bonusRows =
     groupedBonuses.length > 0 || conditionalBonuses.length > 0 ? (

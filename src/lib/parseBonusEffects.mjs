@@ -122,7 +122,7 @@ function isAllyOnlyMatch(text, match) {
 }
 
 const COMMA_PROTECT =
-  /health,\s*magicka(?:,\s*and\s+stamina)?|no health,\s*magicka(?:\s+or\s+stamina)?|fire,\s*frost\s+and\s+shock|head,\s*chest,\s*hands,\s*and\s+feet|bows,\s*crossbows/gi;
+  /health,\s*magicka(?:,\s*and\s+stamina)?|health,\s*stamina\s+and\s+magicka|no health,\s*magicka(?:\s+or\s+stamina)?|fire,\s*frost\s+and\s+shock|spears,\s*javelins,\s*pikes,?\s+and\s+halberds|head,\s*chest,\s*hands,\s*and\s+feet|bows,\s*crossbows/gi;
 
 /**
  * @param {string} clause
@@ -160,10 +160,10 @@ function splitCommaClauses(clause) {
 }
 
 const CONDITIONAL_MARKERS =
-  /\b(?:when|if|while|unless|without wearing|not wearing|without proficiency|below|above|less than|more than|per level|each piece|for each|stackable|otherwise|the opposite|outdoors|in combat|crouched|standing up|friendly toward|cannot read skill books|cannot |can only|only benefit|only restore|those born under|sunny|snowy|rainy|weather|at less than|at more than|against four|against three|wearing an|while wearing|under the effects|when not under|when hit|when below|when above|in sunny|in the rain|in snowy|lose potency|enhanced during|excel in|weaken under|made of iron|made of|other beings|undead|daedra|werewolves|playable races|summon|thrall|resurrect|hostile shouts|non-hostile|every 5 levels|perk point|birthsigns? bonuses|divine amulet|gloves|gauntlets|armor slot|empty armor|raw and wriggling|eating fish|eating skeever|craft skooma|blessings|standing stones|soul gems|use scrolls and staves|dwemer armor|dwemer weapons|fishing rods|mudcrab|slaughterfish|spriggans|druidic|lifebloom|axes and|fire and|naturally regenerate|moonshadow|serpent's curse|don't affect you|do not adversely|fighting alone|not wearing|is active|are active|out of combat|pickpocketing)\b/i;
+  /\b(?:when|if|while|unless|without wearing|not wearing|without proficiency|below|above|less than|more than|per level|per \d+|each piece|for each|for every|up to|stackable|otherwise|the opposite|outdoors|in combat|crouched|standing up|friendly toward|cannot read skill books|cannot |can only|only benefit|only restore|those born under|sunny|snowy|rainy|weather|at less than|at more than|against four|against three|wearing an|while wearing|under the effects|when not under|when hit|when below|when above|in sunny|in the rain|in snowy|lose potency|enhanced during|excel in|weaken under|made of iron|made of|other beings|undead|daedra|werewolves|playable races|summon|thrall|resurrect|hostile shouts|non-hostile|every 5 levels|perk point|birthsigns? bonuses|divine amulet|gloves|gauntlets|armor slot|empty armor|raw and wriggling|eating fish|eating skeever|craft skooma|blessings|standing stones|soul gems|use scrolls and staves|dwemer armor|dwemer weapons|fishing rods|mudcrab|slaughterfish|spriggans|druidic|lifebloom|axes and|fire and|naturally regenerate|moonshadow|serpent's curse|don't affect you|do not adversely|fighting alone|not wearing|is active|are active|out of combat|pickpocketing)\b/i;
 
 const MECHANICAL_MARKERS =
-  /\d+%|\+\d+|\bdamage\b|\bstronger\b|\bweaker\b|\bfaster\b|\bslower\b|\bresist\b|\bregen\b|\bcarry\b|\bmagicka\b|\bhealth\b|\bstamina\b|\bspells?\b|\bweapon\b|\barmor\b|\bshout\b/i;
+  /\d+%|\+\d+|-\d+|\d+(?:\.\d+)?x|\d+(?:\.\d+)?\s*(?:\/s|per\s+second)|\*\s*your\s+level|\bper\s+level\b|\bhalf\s+damage\b|\bdouble\s+damage\b|\bno\s+(?:health|magicka|stamina)\b|\bcannot\b|\bcan only\b|\bperk point\b|\bskill point\b|\bpower\b|\bspell\b|\bshout\b/i;
 
 /**
  * @param {string} clause
@@ -201,6 +201,13 @@ function extractParseSources(text) {
 function segmentBonusText(text) {
   const cleaned = String(text ?? "").trim();
   if (!cleaned) return [];
+  if (
+    /all\s+spells?\s+cost\s+\d+%\s+less\s+but\s+are\s+\d+%\s+weaker\s+or\s+last\s+\d+%\s+shorter/i.test(
+      cleaned,
+    )
+  ) {
+    return [{ text: cleaned, sign: 1 }];
+  }
 
   const match = cleaned.match(/\b(?:however|but)\b[,:]?\s+/i);
   if (!match || match.index == null) {
@@ -236,7 +243,85 @@ function percentValueFromPhrase(phrase, match) {
  */
 function hasConditionalTail(text, match) {
   const after = text.slice(match.index + match[0].length);
-  return /\b(?:when|while)\b/i.test(after);
+  return /\b(?:when|while|if|against|from|with|wearing|below|above|under|during|outdoors|indoors|per|for each)\b/i.test(after);
+}
+
+/**
+ * Some records combine an unconditional starting penalty/bonus with a scaling
+ * conditional clause. Preserve the unconditional portion instead of dropping
+ * the whole sentence as conditional.
+ *
+ * @param {string} rawText
+ * @returns {Effect[]}
+ */
+function parseUnconditionalEffectsFromConditionalText(rawText) {
+  const text = rawText.replace(/\s+/g, " ").trim();
+  if (/^\s*(?:when|if|while|for each)\b/i.test(text)) return [];
+
+  /** @type {Effect[]} */
+  const effects = [];
+
+  for (const match of text.matchAll(/start\s+with\s+\+?(\d+)\s+health,\s+magicka,\s+and\s+stamina/gi)) {
+    const value = Number(match[1]);
+    effects.push(attribute("health", value));
+    effects.push(attribute("magicka", value));
+    effects.push(attribute("stamina", value));
+  }
+
+  for (const match of text.matchAll(/start\s+with\s+(\d+)\s+less\s+health,\s*magicka\s+and\s+stamina/gi)) {
+    const value = -Number(match[1]);
+    effects.push(attribute("health", value));
+    effects.push(attribute("magicka", value));
+    effects.push(attribute("stamina", value));
+  }
+
+  for (const match of text.matchAll(/start\s+with\s+(\d+)\s+less\s+stamina\s+and\s+-(\d+)%\s+stamina\s+regeneration/gi)) {
+    effects.push(attribute("stamina", -Number(match[1])));
+    effects.push(derived("staminaRegen", -Number(match[2])));
+  }
+
+  for (const match of text.matchAll(/(?:you\s+)?start\s+with\s+\+?(\d+)\s+health\b/gi)) {
+    const before = text.slice(Math.max(0, match.index - 20), match.index);
+    if (/health,\s*magicka,\s*and\s*stamina/i.test(before)) continue;
+    effects.push(attribute("health", Number(match[1])));
+  }
+
+  for (const match of text.matchAll(/you\s+take\s+(\d+)%\s+more\s+physical\s+damage\s+and\s+have\s+(\d+)%\s+weakness\s+to\s+poison/gi)) {
+    effects.push(derived("damageTaken", Number(match[1])));
+    effects.push(derived("poisonResist", -Number(match[2])));
+  }
+
+  for (const match of text.matchAll(/all\s+spells?\s+cost\s+(\d+)%\s+less\s+but\s+are\s+(\d+)%\s+weaker\s+or\s+last\s+(\d+)%\s+shorter/gi)) {
+    effects.push(derived("spellCost", -Number(match[1])));
+    effects.push(derived("spellDamage", -Number(match[2])));
+    effects.push(derived("spellDuration", -Number(match[3])));
+  }
+
+  for (const match of text.matchAll(/(?:can\s+)?breath(?:e)?\s+underwater/gi)) {
+    effects.push(flag("waterbreathing"));
+  }
+
+  for (const match of text.matchAll(/you\s+swim\s+(\d+)%\s+faster/gi)) {
+    effects.push(derived("swimmingSpeed", Number(match[1])));
+  }
+
+  for (const match of text.matchAll(/movement\s+is\s+(\d+)\s*percent\s+faster/gi)) {
+    effects.push(derived("moveSpeed", Number(match[1])));
+  }
+
+  for (const match of text.matchAll(/move\s+(\d+)%\s+faster\s+when\s+sneaking/gi)) {
+    effects.push(derived("sneakSpeed", Number(match[1])));
+  }
+
+  for (const match of text.matchAll(/your\s+disease\s+resistance\s+is\s+reduced\s+by\s+(\d+)%/gi)) {
+    effects.push(derived("diseaseResist", -Number(match[1])));
+  }
+
+  for (const match of text.matchAll(/you\s+cannot\s+naturally\s+regenerate\s+magicka/gi)) {
+    effects.push(flag("noMagickaRegen"));
+  }
+
+  return effects;
 }
 
 /**
@@ -282,7 +367,10 @@ function parseSegmentClause(clause, fullText) {
 
   const commaParts = splitCommaClauses(remaining);
   if (commaParts.length === 1 && isConditionalClause(remaining)) {
-    return effects;
+    return [
+      ...effects,
+      ...parseUnconditionalEffectsFromConditionalText(remaining),
+    ];
   }
   const textsToParse =
     commaParts.length > 1 ? commaParts : [remaining.replace(/\.$/, "")];
@@ -290,6 +378,9 @@ function parseSegmentClause(clause, fullText) {
     ...effects,
     ...textsToParse.flatMap((part) => {
       if (/^\s*(?:when|if|while)\b/i.test(part) || isAllyOnlyPhrase(part)) return [];
+      if (isConditionalClause(part)) {
+        return parseUnconditionalEffectsFromConditionalText(part);
+      }
       return parseRulesOnText(part, fullText);
     }),
   ];
@@ -360,6 +451,22 @@ function parseRulesOnText(rawText, fullText = rawText) {
       pattern: /spells?\s+are\s+(\d+)%\s+cheaper/gi,
       apply(match) {
         effects.push(derived("spellCost", -Number(match[1])));
+      },
+    },
+    {
+      pattern: /(?<!all\s)(?:[a-z-]+\s+)?spells?\s+cost\s+(\d+)%\s+less\s+to\s+cast/gi,
+      apply(match) {
+        if (hasConditionalTail(text, match)) return;
+        effects.push(derived("spellCost", -Number(match[1])));
+      },
+    },
+    {
+      pattern:
+        /all\s+spells?\s+cost\s+(\d+)%\s+less\s+but\s+are\s+(\d+)%\s+weaker\s+or\s+last\s+(\d+)%\s+shorter/gi,
+      apply(match) {
+        effects.push(derived("spellCost", -Number(match[1])));
+        effects.push(derived("spellDamage", -Number(match[2])));
+        effects.push(derived("spellDuration", -Number(match[3])));
       },
     },
     {
@@ -459,6 +566,20 @@ function parseRulesOnText(rawText, fullText = rawText) {
       },
     },
     {
+      pattern: /resist\s+(\d+)%\s+of\s+(magic|fire|frost|shock|poison)(?:\s+damage)?/gi,
+      apply(match) {
+        const kind = match[2].toLowerCase();
+        const stat = kind === "magic" ? "magicResist" : `${kind}Resist`;
+        effects.push(derived(stat, Number(match[1])));
+      },
+    },
+    {
+      pattern: /increases?\s+(fire|frost|shock|poison|disease)\s+resistance\s+by\s+(\d+)%/gi,
+      apply(match) {
+        effects.push(derived(`${match[1].toLowerCase()}Resist`, Number(match[2])));
+      },
+    },
+    {
       pattern: /(\d+)%\s+(more|less)\s+vulnerable\s+to\s+(fire|frost|shock|poison)\s+damage/gi,
       apply(match) {
         const resistStat = `${match[3].toLowerCase()}Resist`;
@@ -480,8 +601,23 @@ function parseRulesOnText(rawText, fullText = rawText) {
       },
     },
     {
+      pattern: /have\s+(?:a\s+)?(\d+)%\s+weakness\s+to\s+(fire|frost|shock|poison|disease)/gi,
+      apply(match) {
+        const resistStat = `${match[2].toLowerCase()}Resist`;
+        effects.push(derived(resistStat, -Number(match[1])));
+      },
+    },
+    {
+      pattern: /your\s+(fire|frost|shock|poison|disease)\s+resistance\s+is\s+reduced\s+by\s+(\d+)%/gi,
+      apply(match) {
+        const resistStat = `${match[1].toLowerCase()}Resist`;
+        effects.push(derived(resistStat, -Number(match[2])));
+      },
+    },
+    {
       pattern: /(?:you\s+)?take\s+(\d+)%\s+(more|less)\s+damage/gi,
       apply(match) {
+        if (hasConditionalTail(text, match)) return;
         const value = percentValueFromPhrase(match[0], match);
         effects.push(derived("damageTaken", value));
       },
@@ -489,6 +625,7 @@ function parseRulesOnText(rawText, fullText = rawText) {
     {
       pattern: /you\s+deal\s+(\d+)%\s+(more|less)\s+damage/gi,
       apply(match) {
+        if (hasConditionalTail(text, match)) return;
         const value = percentValueFromPhrase(match[0], match);
         effects.push(derived("meleeDamage", value));
         effects.push(derived("rangedDamage", value));
@@ -498,6 +635,23 @@ function parseRulesOnText(rawText, fullText = rawText) {
       pattern: /you\s+move\s+(\d+)%\s+(faster|slower)/gi,
       apply(match) {
         effects.push(derived("moveSpeed", percentValueFromPhrase(match[0], match)));
+      },
+    },
+    {
+      pattern: /you\s+are\s+(\d+)%\s+more\s+effective\s+with\s+(one-handed|two-handed|missile)\s+weapons/gi,
+      apply(match) {
+        const value = Number(match[1]);
+        const weapon = match[2].toLowerCase();
+        if (weapon === "one-handed") {
+          effects.push(derived("oneHandDamage", value));
+          return;
+        }
+        if (weapon === "two-handed") {
+          effects.push(derived("twoHandDamage", value));
+          return;
+        }
+        effects.push(derived("bowDamage", value));
+        effects.push(derived("crossbowDamage", value));
       },
     },
     {
@@ -658,6 +812,28 @@ function parseRulesOnText(rawText, fullText = rawText) {
       },
     },
     {
+      pattern: /start\s+with\s+(\d+)\s+less\s+health,\s*magicka\s+and\s+stamina/gi,
+      apply(match) {
+        const value = -Number(match[1]);
+        effects.push(attribute("health", value));
+        effects.push(attribute("magicka", value));
+        effects.push(attribute("stamina", value));
+      },
+    },
+    {
+      pattern: /(?:you\s+)?start\s+with\s+(\d+)\s+less\s+magicka/gi,
+      apply(match) {
+        effects.push(attribute("magicka", -Number(match[1])));
+      },
+    },
+    {
+      pattern: /start\s+with\s+(\d+)\s+less\s+stamina\s+and\s+-(\d+)%\s+stamina\s+regeneration/gi,
+      apply(match) {
+        effects.push(attribute("stamina", -Number(match[1])));
+        effects.push(derived("staminaRegen", -Number(match[2])));
+      },
+    },
+    {
       pattern: /all\s+weapons\s+deal\s+(\d+)%\s+more\s+damage/gi,
       apply(match) {
         const value = Number(match[1]);
@@ -765,6 +941,22 @@ function parseRulesOnText(rawText, fullText = rawText) {
       },
     },
     {
+      pattern: /regenerate\s+(health|magicka|stamina)\s+(\d+)%\s+faster/gi,
+      apply(match) {
+        if (hasConditionalTail(text, match)) return;
+        const stat = `${match[1].toLowerCase()}Regen`;
+        effects.push(derived(stat, Number(match[2])));
+      },
+    },
+    {
+      pattern: /you\s+regenerate\s+(health|magicka|stamina)\s+(\d+)%\s+faster/gi,
+      apply(match) {
+        if (hasConditionalTail(text, match)) return;
+        const stat = `${match[1].toLowerCase()}Regen`;
+        effects.push(derived(stat, Number(match[2])));
+      },
+    },
+    {
       pattern: /absorb\s+chance\s+increased\s+by\s+(\d+)%/gi,
       apply(match) {
         effects.push(derived("magicAbsorb", Number(match[1])));
@@ -860,6 +1052,7 @@ function parseRulesOnText(rawText, fullText = rawText) {
       pattern:
         /your\s+(health|magicka|stamina)\s+regeneration\s+is\s+increased\s+by\s+(\d+)%/gi,
       apply(match) {
+        if (hasConditionalTail(text, match)) return;
         const regenStat =
           match[1].toLowerCase() === "health"
             ? "healthRegen"
@@ -872,9 +1065,26 @@ function parseRulesOnText(rawText, fullText = rawText) {
     {
       pattern: /you\s+deal\s+(\d+)%\s+more\s+weapon\s+damage/gi,
       apply(match) {
+        if (hasConditionalTail(text, match)) return;
         const value = Number(match[1]);
         effects.push(derived("meleeDamage", value));
         effects.push(derived("rangedDamage", value));
+      },
+    },
+    {
+      pattern: /(\d+)%\s+more\s+melee\s+damage/gi,
+      apply(match) {
+        if (hasConditionalTail(text, match)) return;
+        effects.push(derived("meleeDamage", Number(match[1])));
+      },
+    },
+    {
+      pattern: /weapon\s+damage\s+and\s+armor\s+rating\s+is\s+increased\s+by\s+(\d+)%/gi,
+      apply(match) {
+        const value = Number(match[1]);
+        effects.push(derived("meleeDamage", value));
+        effects.push(derived("rangedDamage", value));
+        effects.push(derived("armorRating", value));
       },
     },
     {
@@ -950,12 +1160,6 @@ function parseRulesOnText(rawText, fullText = rawText) {
       },
     },
     {
-      pattern: /restoration\s+spells?\s+cost\s+(\d+)%\s+less(?:\s+to\s+cast)?/gi,
-      apply(match) {
-        effects.push(derived("spellCost", -Number(match[1])));
-      },
-    },
-    {
       pattern: /staves?\s+and\s+scrolls?\s+are\s+(\d+)%\s+more\s+powerful/gi,
       apply(match) {
         effects.push(derived("spellDamage", Number(match[1])));
@@ -1026,6 +1230,13 @@ function parseRulesOnText(rawText, fullText = rawText) {
     {
       pattern: /armor\s+rating\s+increases?\s+by\s+(\d+)/gi,
       apply(match) {
+        effects.push(derived("armorRating", Number(match[1]), false));
+      },
+    },
+    {
+      pattern: /(?:your\s+)?armor\s+rating\s+is\s+increased\s+by\s+(\d+)(?!\d)(?!\s*%)/gi,
+      apply(match) {
+        if (hasConditionalTail(text, match)) return;
         effects.push(derived("armorRating", Number(match[1]), false));
       },
     },
@@ -1124,6 +1335,18 @@ function parseRulesOnText(rawText, fullText = rawText) {
       },
     },
     {
+      pattern: /(?:can\s+)?breath\s+underwater/gi,
+      apply() {
+        effects.push(flag("waterbreathing"));
+      },
+    },
+    {
+      pattern: /you\s+swim\s+(\d+)%\s+faster/gi,
+      apply(match) {
+        effects.push(derived("swimmingSpeed", Number(match[1])));
+      },
+    },
+    {
       pattern: /swimming\s+is\s+(\d+)%\s+faster/gi,
       apply(match) {
         effects.push(derived("swimmingSpeed", Number(match[1])));
@@ -1210,6 +1433,13 @@ function parseRulesOnText(rawText, fullText = rawText) {
       },
     },
     {
+      pattern: /take\s+(\d+)%\s+more\s+physical\s+damage/gi,
+      apply(match) {
+        if (hasConditionalTail(text, match)) return;
+        effects.push(derived("damageTaken", Number(match[1])));
+      },
+    },
+    {
       pattern: /ignore\s+(\d+)%\s+of\s+(?:the\s+)?armor\s+rating/gi,
       apply(match) {
         const value = Number(match[1]);
@@ -1230,6 +1460,12 @@ function parseRulesOnText(rawText, fullText = rawText) {
         if (hasConditionalTail(text, match)) return;
         effects.push(attribute("health", Number(match[1])));
         effects.push(derived("healthRegenRate", Number(match[2]), false));
+      },
+    },
+    {
+      pattern: /(?:you\s+)?have\s+(?:a\s+)?(\d+)%\s+chance\s+to\s+absorb\s+the\s+magicka\s+from\s+incoming\s+spells/gi,
+      apply(match) {
+        effects.push(derived("magicAbsorb", Number(match[1])));
       },
     },
     {

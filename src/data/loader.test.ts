@@ -4,7 +4,6 @@ import raceEffectsJson from "../../data/game/race-effects.json";
 import racesJson from "../../data/game/races.json";
 import { loadAppData } from "@/data/loader";
 import { raceEffectsSchema, racesSchema } from "@/data/schemas";
-import { enrichRaceEffects } from "@/lib/enrichGameData";
 import { mergeEffects } from "@/lib/resolveOptionEffects";
 
 describe("loadAppData", () => {
@@ -65,7 +64,7 @@ describe("loadAppData", () => {
     }
   });
 
-  it("merges race-effects sidecar onto parsed race bonuses", () => {
+  it("merges race-effects sidecar onto race nodes", () => {
     const data = loadAppData();
     const { races: rawRaces } = racesSchema.parse(racesJson);
     const raceEffects = raceEffectsSchema.parse(raceEffectsJson);
@@ -75,7 +74,7 @@ describe("loadAppData", () => {
     expect(bosmerRaw).toBeDefined();
     expect(bosmer).toBeDefined();
     expect(bosmer?.effects).toEqual(
-      mergeEffects(enrichRaceEffects(bosmerRaw!), raceEffects.bosmer ?? []),
+      mergeEffects(bosmerRaw!.effects, raceEffects.bosmer ?? []),
     );
   });
 

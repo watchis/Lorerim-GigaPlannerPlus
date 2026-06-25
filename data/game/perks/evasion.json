@@ -38,14 +38,7 @@
         "evasion-agility"
       ],
       "description": "Up to 12% more power attack and ranged weapon damage when wearing no heavy armor. 25% more armor rating when wearing a low-tier light chestpiece (fur, hide, leather, etc) and no heavy armor.",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "armorRating",
-          "value": 25,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {
@@ -108,12 +101,6 @@
       ],
       "description": "Your light armor and clothes have become your second skin. [Up to +10% movement speed when wearing no heavy armor: head, chest, hands, feet, -25% armor weight penalty]",
       "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "moveSpeed",
-          "value": 10,
-          "isPercent": true
-        },
         {
           "type": "derivedStat",
           "stat": "sprintCostReduction",
@@ -198,24 +185,6 @@
           "type": "derivedStat",
           "stat": "dodgeChance",
           "value": 20,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationMelee",
-          "value": 10,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "armorPenetrationRanged",
-          "value": 10,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "moveSpeed",
-          "value": 5,
           "isPercent": true
         }
       ],

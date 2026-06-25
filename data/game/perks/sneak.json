@@ -149,14 +149,7 @@
         "sneak-stealth"
       ],
       "description": "You can suppress the noise cast by your spell and deliver stronger effect to unwary targets. [Spells and enchantments are silent when cast out of combat, spells are 10% more powerful on targets while undetected]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "spellDamage",
-          "value": 10,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {
@@ -169,14 +162,7 @@
       },
       "prerequisites": [],
       "description": "You can suppress the noise cast by your spell and deliver stronger effect to unwary targets. [Spells and enchantments are silent when cast out of combat, spells are 30% more powerful on targets while undetected]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "spellDamage",
-          "value": 30,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {
@@ -189,14 +175,7 @@
       },
       "prerequisites": [],
       "description": "You can suppress the noise cast by your spell and deliver stronger effect to unwary targets. [Spells and enchantments are silent when cast out of combat, spells are 50% more powerful on targets while undetected]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "spellDamage",
-          "value": 50,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {

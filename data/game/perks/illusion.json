@@ -287,14 +287,7 @@
         "illusion-shadow-shaping"
       ],
       "description": "Shadow illusion spells are improved with additional effects. Shadow summons last longer. [Improved effect for shadow spells, 4x duration for shadow summon spells]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "spellDuration",
-          "value": 300,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {

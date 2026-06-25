@@ -38,7 +38,6 @@ import {
   enrichBirthsign,
   enrichDeity,
   enrichPerk,
-  enrichRaceEffects,
   enrichTrait,
 } from "@/lib/enrichGameData";
 import { mergeEffects } from "@/lib/resolveOptionEffects";
@@ -71,7 +70,7 @@ export function loadAppData(): AppData {
   const raceEffects = parse(raceEffectsSchema, raceEffectsJson, "race-effects.json");
   const races = rawRaces.map((race) => ({
     ...race,
-    effects: mergeEffects(enrichRaceEffects(race), raceEffects[race.id] ?? []),
+    effects: mergeEffects(race.effects, raceEffects[race.id] ?? []),
   }));
   const { birthsigns: rawBirthsigns } = parse(birthsignsSchema, birthsignsJson, "birthsigns.json");
   const birthsigns = rawBirthsigns.map(enrichBirthsign);

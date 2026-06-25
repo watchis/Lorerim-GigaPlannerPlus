@@ -341,14 +341,7 @@
         "destiny-11"
       ],
       "description": "You take 10% less damage while power attacking, drawing a bow, or blocking.",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "damageTaken",
-          "value": -10,
-          "isPercent": true
-        }
-      ]
+      "effects": []
     },
     {
       "id": "destiny-19",
@@ -363,7 +356,14 @@
         "destiny-12"
       ],
       "description": "You regenerate stamina 100% faster.",
-      "effects": []
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "staminaRegen",
+          "value": 200,
+          "isPercent": true
+        }
+      ]
     },
     {
       "id": "destiny-20",
@@ -436,7 +436,14 @@
         "destiny-15"
       ],
       "description": "Your Armor Rating is increased by 100.",
-      "effects": []
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 100,
+          "isPercent": false
+        }
+      ]
     },
     {
       "id": "destiny-24",
@@ -467,7 +474,14 @@
         "destiny-16"
       ],
       "description": "You have a 10% chance to absorb the Magicka from incoming spells.",
-      "effects": []
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicAbsorb",
+          "value": 10,
+          "isPercent": true
+        }
+      ]
     },
     {
       "id": "destiny-26",
@@ -778,7 +792,26 @@
         "destiny-29"
       ],
       "description": "Your tempering ability, weapon damage and Armor Rating is increased by 10%.",
-      "effects": []
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "rangedDamage",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "armorRating",
+          "value": 10,
+          "isPercent": true
+        }
+      ]
     },
     {
       "id": "destiny-45",

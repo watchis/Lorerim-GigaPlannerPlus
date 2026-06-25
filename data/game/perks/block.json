@@ -368,12 +368,6 @@
           "stat": "meleeDamage",
           "value": 40,
           "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "damageTaken",
-          "value": -20,
-          "isPercent": true
         }
       ],
       "prerequisitesAny": []

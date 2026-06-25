@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { BugReportButton } from "@/components/BugReportButton";
 import { LevelBar } from "@/components/LevelBar";
 import { LayoutRenderer } from "@/layout/LayoutRenderer";
 import { decodeBuildPackage, getBuildFromUrl } from "@/engine/buildCodec";
@@ -22,9 +23,10 @@ export function PlannerPage() {
   if (!layout) return null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
       <LevelBar />
       <LayoutRenderer layout={layout} />
+      <BugReportButton />
     </div>
   );
 }

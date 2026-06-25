@@ -121,14 +121,7 @@
         "restoration-improved-turning"
       ],
       "description": "You've learned the art of weaving mystical energies into your spells, making all of them more effective against the undead and Daedra. [1.1x spell magnitude, 1.2x spell duration on undead and daedra]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "spellDuration",
-          "value": 20,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {

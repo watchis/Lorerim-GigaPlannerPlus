@@ -16,7 +16,14 @@
       },
       "prerequisites": [],
       "description": "Your improved fighting techniques allow you to swing one-handed weapons or fists with less effort and deal more damage. [20% more melee damage]",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
       "prerequisitesAny": []
     },
     {
@@ -29,7 +36,14 @@
       },
       "prerequisites": [],
       "description": "Your improved fighting techniques increase your damage dealt with one-handed weapons or fists greatly. [40% more melee damage]",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "meleeDamage",
+          "value": 40,
+          "isPercent": true
+        }
+      ],
       "prerequisitesAny": []
     },
     {
@@ -649,14 +663,7 @@
         "one-handed-unarmed-defense"
       ],
       "description": "While unarmed, you can maneuver more freely and resist physical force. [+5% movement speed for each hand empty, +50 mass when both hands are empty]",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "moveSpeed",
-          "value": 5,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "prerequisitesAny": []
     },
     {

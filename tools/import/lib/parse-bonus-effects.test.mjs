@@ -163,6 +163,7 @@ assertEffects(
   [
     { type: "attribute", stat: "magicka", value: 300 },
     { type: "derivedStat", stat: "magicAbsorb", value: 25, isPercent: true },
+    { type: "flag", stat: "noMagickaRegen" },
   ],
 );
 
@@ -378,6 +379,94 @@ assertEffects(
     "Nearby allies deal 15% more physical damage and have 15% magic resistance during combat. Prices are 10% better.",
   ),
   [{ type: "derivedStat", stat: "priceModifier", value: 10, isPercent: true }],
+);
+
+assertEffects(parseBonusEffects("Resist 10% of magic."), [
+  { type: "derivedStat", stat: "magicResist", value: 10, isPercent: true },
+]);
+
+assertEffects(parseBonusEffects("Conjuration spells cost 10% less to cast."), [
+  { type: "derivedStat", stat: "spellCost", value: -10, isPercent: true },
+]);
+
+assertEffects(parseBonusEffects("Regenerate Stamina 25% faster."), [
+  { type: "derivedStat", stat: "staminaRegen", value: 25, isPercent: true },
+]);
+
+assertEffects(parseBonusEffects("Increases Shock Resistance by 15%."), [
+  { type: "derivedStat", stat: "shockResist", value: 15, isPercent: true },
+]);
+
+assertEffects(parseBonusEffects("You are 10% more effective with missile weapons."), [
+  { type: "derivedStat", stat: "bowDamage", value: 10, isPercent: true },
+  { type: "derivedStat", stat: "crossbowDamage", value: 10, isPercent: true },
+]);
+
+assertEffects(parseBonusEffects("Your Armor Rating is increased by 100."), [
+  { type: "derivedStat", stat: "armorRating", value: 100, isPercent: false },
+]);
+
+assertEffects(parseBonusEffects("You have a 10% chance to absorb the Magicka from incoming spells."), [
+  { type: "derivedStat", stat: "magicAbsorb", value: 10, isPercent: true },
+]);
+
+assertEffects(parseBonusEffects("Your tempering ability, weapon damage and Armor Rating is increased by 10%."), [
+  { type: "derivedStat", stat: "meleeDamage", value: 10, isPercent: true },
+  { type: "derivedStat", stat: "rangedDamage", value: 10, isPercent: true },
+  { type: "derivedStat", stat: "armorRating", value: 10, isPercent: true },
+]);
+
+assertEffects(parseBonusEffects("You take 10% less damage while power attacking, drawing a bow, or blocking."), []);
+
+assertEffects(parseBonusEffects("[20% more melee damage]"), [
+  { type: "derivedStat", stat: "meleeDamage", value: 20, isPercent: true },
+]);
+
+assertEffects(
+  parseBonusEffects(
+    "You take 50% more physical damage and have 100% weakness to Poison. However you start with +50 health and gain +5 health per level.",
+  ),
+  [
+    { type: "derivedStat", stat: "poisonResist", value: -100, isPercent: true },
+    { type: "derivedStat", stat: "damageTaken", value: 50, isPercent: true },
+    { type: "attribute", stat: "health", value: 50 },
+  ],
+);
+
+assertEffects(parseBonusEffects("All spells cost 60% less but are 40% weaker or last 40% shorter."), [
+  { type: "derivedStat", stat: "spellCost", value: -60, isPercent: true },
+  { type: "derivedStat", stat: "spellDamage", value: -40, isPercent: true },
+  { type: "derivedStat", stat: "spellDuration", value: -40, isPercent: true },
+]);
+
+assertEffects(
+  parseBonusEffects(
+    "You swim 10% faster, can breath underwater and regenerate health, stamina and magicka by a flat 1 per second when wet.",
+  ),
+  [
+    { type: "derivedStat", stat: "swimmingSpeed", value: 10, isPercent: true },
+    { type: "flag", stat: "waterbreathing" },
+  ],
+);
+
+assertEffects(parseBonusEffects("Start with 50 less Health, Magicka and Stamina."), [
+  { type: "attribute", stat: "health", value: -50 },
+  { type: "attribute", stat: "magicka", value: -50 },
+  { type: "attribute", stat: "stamina", value: -50 },
+]);
+
+assertEffects(parseBonusEffects("However, you start with 100 less Magicka."), [
+  { type: "attribute", stat: "magicka", value: -100 },
+]);
+
+assert.deepEqual(
+  extractConditionalBonusDetails(
+    "For every 5 book or notes read, gain 1 point of Magicka, for up to 300 Magicka at 1500 read. However, you start with 100 less Magicka.",
+    parseBonusEffects(
+      "For every 5 book or notes read, gain 1 point of Magicka, for up to 300 Magicka at 1500 read. However, you start with 100 less Magicka.",
+    ),
+  ),
+  ["For every 5 book or notes read.", "For up to 300 Magicka at 1500 read."],
 );
 
 console.log("parse-bonus-effects: ok");

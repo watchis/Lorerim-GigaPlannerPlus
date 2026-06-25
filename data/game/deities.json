@@ -65,7 +65,20 @@
       "race": "Altmer / Bosmer / Breton",
       "starting": "Altmer / Bosmer",
       "requirement": "Race restricted",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "bowDamage",
+          "value": 10,
+          "isPercent": true
+        },
+        {
+          "type": "derivedStat",
+          "stat": "crossbowDamage",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Temple of the Ancestors, south of Morvunskar",
         "Darkfall Cave",
@@ -83,7 +96,14 @@
       "race": "Khajiit / Dunmer / Anyone who has completed \"The Dark Star\"",
       "starting": "Khajiit / Dunmer",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magicResist",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Raven Rock Temple",
         "Wilderness north of Talking Stone Camp",
@@ -115,7 +135,14 @@
       "race": "Dunmer / Anyone who has completed \"Boethiah's Calling\"",
       "starting": "Dunmer",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "oneHandDamage",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Raven Rock Temple",
         "Sacellum of Boethiah"
@@ -131,7 +158,14 @@
       "race": "Dunmer / Anyone who has completed \"A Daedra's Best Friend\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Haemar\"s Shame"
       ]
@@ -206,7 +240,14 @@
       "race": "Bosmer / Anyone who has completed \"Ill Met By Moonlight\"",
       "starting": "Bosmer",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "staminaRegen",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Glenmoril Coven",
         "Snowclad Ruins",
@@ -319,7 +360,14 @@
       "race": "All",
       "starting": "Breton / Altmer / Bosmer",
       "requirement": "None",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "shockResist",
+          "value": 15,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Temple of the Ancestors, south of Morvunskar",
         "Wilderness north of Bard's Leap Summit"
@@ -438,7 +486,14 @@
       "race": "Dunmer / Anyone who has completed \"The House of Horrors\"",
       "starting": "Dunmer",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Volkihar Keep"
       ]
@@ -468,7 +523,14 @@
       "race": "Dunmer / everyone who completed \"The Taste of Death\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "diseaseResist",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Reachcliff Cave",
         "Namira's Shrine (named cave in the wilderness about 700 feet east of Ragnvald)"
@@ -506,7 +568,14 @@
       "race": "diseased / everyone who completed \"The Only Cure\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "poisonResist",
+          "value": 20,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Shrine to Peryite"
       ]
@@ -521,7 +590,14 @@
       "race": "Altmer / Bosmer / Breton",
       "starting": "Breton / Altmer",
       "requirement": "Race restricted",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "frostResist",
+          "value": 15,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Temple of the Ancestors, south of Morvunskar",
         "Wilderness east of Nilheim"
@@ -580,7 +656,14 @@
       "race": "Redguard",
       "starting": "Redguard",
       "requirement": "Race restricted",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "healthRegen",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Hillcrown Yokudan Shrine, southwest of Rorikstead"
       ]
@@ -691,7 +774,14 @@
       "race": "Altmer / Bosmer / Breton",
       "starting": "Altmer",
       "requirement": "Race restricted",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "magickaRegen",
+          "value": 25,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Temple of the Ancestors, south of Morvunskar",
         "Wilderness southeast of Dawnstar"
@@ -766,7 +856,14 @@
       "race": "Argonian",
       "starting": "Argonian",
       "requirement": "Race restricted",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "fireResist",
+          "value": 100,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Location: The Sleeping Tree"
       ]
@@ -852,7 +949,14 @@
       "race": "Altmer / Bosmer / Orsimer",
       "starting": "Orsimer / Altmer",
       "requirement": "Race restricted",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "twoHandDamage",
+          "value": 10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Temple of the Ancestors, south of Morvunskar",
         "Wilderness northeast of Mistwatch"
@@ -868,7 +972,14 @@
       "race": "Dunmer / everyone who completed \"Waking Nightmare\"",
       "starting": "",
       "requirement": "Must have served this deity",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Nightcaller Temple"
       ]
@@ -899,7 +1010,14 @@
       "race": "Bosmer",
       "starting": "Bosmer",
       "requirement": "Race restricted",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "spellCost",
+          "value": -10,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "Wilderness east of Dragon Bridge",
         "The Yokudan Pantheon"
