@@ -11,7 +11,7 @@ export function BugReportButton() {
         <Button
           variant="outline"
           size="icon"
-          className="fixed bottom-4 right-4 z-30 h-9 w-9 rounded-full border-[var(--color-border)] bg-[var(--color-surface)]/90 shadow-[var(--shadow-panel)] backdrop-blur-sm hover:bg-[var(--color-surface-elevated)]"
+          className="fixed bottom-4 right-4 z-30 h-12 w-12 rounded-full border-[var(--color-border)] bg-[var(--color-surface)]/90 shadow-[var(--shadow-panel)] backdrop-blur-sm hover:bg-[var(--color-surface-elevated)]"
           asChild
         >
           <a
@@ -20,7 +20,7 @@ export function BugReportButton() {
             rel="noopener noreferrer"
             aria-label="Found a bug? Report it here."
           >
-            <Bug className="h-4 w-4" aria-hidden />
+            <Bug className="h-6 w-6" aria-hidden />
           </a>
         </Button>
       </TooltipTrigger>

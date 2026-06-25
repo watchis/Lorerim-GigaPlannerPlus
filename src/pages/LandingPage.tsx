@@ -18,6 +18,7 @@ import { useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import type { SavedBuild } from "@/store/savedBuilds";
 import { normalizeSavedBuild } from "@/store/savedBuilds";
+import { BugReportButton } from "@/components/BugReportButton";
 
 const featureIcons = [Sparkles, Trees, Compass, GitBranch, Activity, Share2] as const;
 
@@ -275,6 +276,7 @@ export function LandingPage() {
           </a>
         </Button>
       </footer>
+      <BugReportButton />
     </div>
   );
 }

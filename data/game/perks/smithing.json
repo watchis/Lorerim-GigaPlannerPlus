@@ -118,7 +118,7 @@
       "description": "You've gained quite some finesse, allowing you to craft plate armor and fine jewelry. You have also found a way to melt and crush certain gems into alchemically usable dust.",
       "effects": [],
       "prerequisitesAny": [],
-      "costsPerkPoint": true
+      "costsPerkPoint": false
     },
     {
       "id": "smithing-legendary-blacksmithing",

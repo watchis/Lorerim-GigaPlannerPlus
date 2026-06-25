@@ -47,6 +47,7 @@ import {
   normalizeSavedBuild,
   updateSavedBuildInList,
 } from "@/store/savedBuilds";
+import { BugReportButton } from "@/components/BugReportButton";
 
 function formatUpdatedAt(timestamp: number): string {
   return new Date(timestamp).toLocaleString(undefined, {
@@ -921,6 +922,7 @@ export function BuildsPage() {
           />
         </aside>
       </div>
+      <BugReportButton />
     </div>
   );
 }
