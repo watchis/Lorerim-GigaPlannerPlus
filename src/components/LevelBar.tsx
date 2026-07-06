@@ -1,5 +1,6 @@
-import { AlertCircle, ChevronsDown, ChevronsUp, Info, Minus, Plus, Wallet } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AlertCircle, ChevronsDown, ChevronsUp, Minus, Plus, Wallet } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { NumericLevelInput } from "@/components/NumericLevelInput";
 import { Button } from "@/components/ui/button";
 import {
@@ -149,6 +150,7 @@ function BudgetStatRow({
   spent,
   info,
   overBudget,
+  showInfoText = false,
 }: {
   label: string;
   remaining: number;
@@ -156,17 +158,18 @@ function BudgetStatRow({
   spent: number;
   info: string;
   overBudget: boolean;
+  showInfoText?: boolean;
 }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0 space-y-1">
-        <div className="flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
-          <span>{label}</span>
-          <InfoTooltipButton text={info} iconClassName="h-3 w-3" />
-        </div>
+        <p className="text-xs text-[var(--color-muted)]">{label}</p>
         <p className="text-[11px] text-[var(--color-muted)]">
           {spent} {spentLabel}
         </p>
+        {showInfoText && (
+          <p className="text-[10px] leading-snug text-[var(--color-muted)]/90">{info}</p>
+        )}
       </div>
       <span className={remainingCountClassName(overBudget)}>{remaining}</span>
     </div>
@@ -193,14 +196,49 @@ function MobileBudgetDropdown({
   trainingOverBudget: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(
+    null,
+  );
   const hasIssue = perkOverBudget || skillOverBudget || trainingOverBudget;
+
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) {
+      setMenuPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      if (!triggerRef.current) return;
+      const rect = triggerRef.current.getBoundingClientRect();
+      const width = Math.min(288, window.innerWidth - 16);
+      const left = Math.min(
+        Math.max(8, rect.right - width),
+        window.innerWidth - width - 8,
+      );
+      setMenuPosition({
+        top: rect.bottom + 6,
+        left,
+        width,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (menuRef.current?.contains(event.target as Node)) return;
+      const target = event.target as Node;
+      if (triggerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
       setOpen(false);
     };
 
@@ -208,59 +246,71 @@ function MobileBudgetDropdown({
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [open]);
 
+  const menu =
+    open && menuPosition
+      ? createPortal(
+          <div
+            ref={menuRef}
+            role="dialog"
+            aria-label={barLabels.budgetSummaryTitle ?? "Build budget"}
+            className="fixed z-[90] space-y-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-3 shadow-[var(--shadow-panel)]"
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+              width: menuPosition.width,
+            }}
+          >
+            <BudgetStatRow
+              label={barLabels.perkPointsRemaining}
+              remaining={computed.perkPointsRemaining}
+              spentLabel={barLabels.perkPointsSpent}
+              spent={computed.perkPointsSpent}
+              info={perkPointsInfo}
+              overBudget={perkOverBudget}
+              showInfoText
+            />
+            <BudgetStatRow
+              label={barLabels.trainingLevelsRemaining}
+              remaining={computed.trainingLevelsRemaining}
+              spentLabel={barLabels.trainingLevelsSpent}
+              spent={computed.trainingLevelsUsed}
+              info={trainingLevelsInfo}
+              overBudget={trainingOverBudget}
+              showInfoText
+            />
+            <BudgetStatRow
+              label={barLabels.skillPointsRemaining}
+              remaining={computed.skillPointsRemaining}
+              spentLabel={barLabels.skillPointsSpent}
+              spent={computed.skillPointsSpent}
+              info={skillPointsInfo}
+              overBudget={skillOverBudget}
+              showInfoText
+            />
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <div ref={menuRef} className="relative md:hidden">
+    <div className="md:hidden">
       <Button
+        ref={triggerRef}
         type="button"
         variant="outline"
-        size="sm"
+        size="icon"
         className={cn(
-          "h-8 gap-1.5 border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 px-2.5 text-xs",
+          "h-9 w-9 border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50",
           hasIssue && "border-[var(--color-error)]/50 text-[var(--color-error)]",
         )}
         aria-expanded={open}
         aria-haspopup="dialog"
+        aria-label={barLabels.budgetSummaryTitle ?? "Build budget"}
         onClick={() => setOpen((value) => !value)}
       >
-        <Wallet className="h-3.5 w-3.5 shrink-0" />
-        <span className="tabular-nums">
-          {computed.perkPointsRemaining}/{computed.skillPointsRemaining}
-        </span>
-        <Info className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
+        <Wallet className="h-4 w-4" />
       </Button>
-
-      {open && (
-        <div
-          role="dialog"
-          aria-label={barLabels.budgetSummaryTitle ?? "Build budget"}
-          className="absolute right-0 top-[calc(100%+0.375rem)] z-40 w-[min(18rem,calc(100vw-2rem))] space-y-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-3 shadow-[var(--shadow-panel)]"
-        >
-          <BudgetStatRow
-            label={barLabels.perkPointsRemaining}
-            remaining={computed.perkPointsRemaining}
-            spentLabel={barLabels.perkPointsSpent}
-            spent={computed.perkPointsSpent}
-            info={perkPointsInfo}
-            overBudget={perkOverBudget}
-          />
-          <BudgetStatRow
-            label={barLabels.trainingLevelsRemaining}
-            remaining={computed.trainingLevelsRemaining}
-            spentLabel={barLabels.trainingLevelsSpent}
-            spent={computed.trainingLevelsUsed}
-            info={trainingLevelsInfo}
-            overBudget={trainingOverBudget}
-          />
-          <BudgetStatRow
-            label={barLabels.skillPointsRemaining}
-            remaining={computed.skillPointsRemaining}
-            spentLabel={barLabels.skillPointsSpent}
-            spent={computed.skillPointsSpent}
-            info={skillPointsInfo}
-            overBudget={skillOverBudget}
-          />
-        </div>
-      )}
+      {menu}
     </div>
   );
 }

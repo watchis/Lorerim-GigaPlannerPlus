@@ -7,6 +7,7 @@ import {
   type MutableRefObject,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { Minus, Plus, RotateCcw } from "lucide-react";
 import {
   arePrerequisitesMet,
   computeDestinyPerkPointsSpent,
@@ -15,6 +16,7 @@ import {
   getStoredSkillLevel,
 } from "@/engine/buildEngine";
 import type { Perk, PerkTree } from "@/data/schemas";
+import { Button } from "@/components/ui/button";
 import { CursorTooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -41,6 +43,9 @@ const GRID_UNIT_PX = 26;
 const FIT_REGION_INSET_RATIO = 0.9;
 /** Minimum grid unit when panning a tree on narrow viewports. */
 const SCROLLABLE_GRID_UNIT_PX = 30;
+const MIN_TREE_ZOOM = 0.75;
+const MAX_TREE_ZOOM = 2.5;
+const TREE_ZOOM_STEP = 0.25;
 const DESTINY_SKILL_ID = "destiny";
 const BASE_NODE_DIAMETER_PX = 32;
 const NODE_DIAMETER_GRID_RATIO = BASE_NODE_DIAMETER_PX / GRID_UNIT_PX;
@@ -451,6 +456,17 @@ function useFitContainSize(aspect: number, enabled: boolean) {
   return { areaRef, size };
 }
 
+function getTouchDistance(touches: { length: number; 0?: Touch; 1?: Touch }): number {
+  if (touches.length < 2 || !touches[0] || !touches[1]) return 0;
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.hypot(dx, dy);
+}
+
+function clampTreeZoom(value: number): number {
+  return Math.min(MAX_TREE_ZOOM, Math.max(MIN_TREE_ZOOM, value));
+}
+
 function PerkTreeView({
   tree,
   labels,
@@ -468,6 +484,8 @@ function PerkTreeView({
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
   const tookPerkWithLastClickRef = useRef(false);
+  const [zoom, setZoom] = useState(1);
+  const pinchStateRef = useRef<{ distance: number; zoom: number } | null>(null);
 
   const isDestinyTree = tree.skillId === DESTINY_SKILL_ID;
 
@@ -483,7 +501,7 @@ function PerkTreeView({
   const aspect = bounds.width / bounds.height;
   const useFitLayout = fit && !scrollable;
   const { areaRef, size: fitSize } = useFitContainSize(aspect, useFitLayout);
-  const scrollGridUnitPx = scrollable ? SCROLLABLE_GRID_UNIT_PX : GRID_UNIT_PX;
+  const scrollGridUnitPx = scrollable ? SCROLLABLE_GRID_UNIT_PX * zoom : GRID_UNIT_PX;
   const scrollSize = scrollable
     ? { width: bounds.width * scrollGridUnitPx, height: bounds.height * scrollGridUnitPx }
     : null;
@@ -497,7 +515,7 @@ function PerkTreeView({
       return { gridUnitPx, nodeDiameterPx };
     }
     return getTreeLayoutMetrics(bounds, useFitLayout, fitSize);
-  }, [bounds, useFitLayout, fitSize, scrollable, scrollSize, scrollGridUnitPx]);
+  }, [bounds, useFitLayout, fitSize, scrollable, scrollSize, scrollGridUnitPx, zoom]);
   const nodeRadiusGrid = nodeDiameterPx / (2 * gridUnitPx);
 
   const edges = useMemo(
@@ -659,16 +677,86 @@ function PerkTreeView({
   );
 
   if (scrollable && scrollSize) {
+    const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+      if (event.touches.length === 2) {
+        pinchStateRef.current = {
+          distance: getTouchDistance(event.touches),
+          zoom,
+        };
+      }
+    };
+
+    const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+      if (event.touches.length !== 2 || !pinchStateRef.current) return;
+      const distance = getTouchDistance(event.touches);
+      if (!distance || !pinchStateRef.current.distance) return;
+      const nextZoom = clampTreeZoom(
+        pinchStateRef.current.zoom * (distance / pinchStateRef.current.distance),
+      );
+      setZoom(nextZoom);
+    };
+
+    const handleTouchEnd = () => {
+      pinchStateRef.current = null;
+    };
+
     return (
-      <div
-        ref={areaRef}
-        className={cn("h-full min-h-0 w-full overflow-auto overscroll-contain", className)}
-      >
+      <div className={cn("relative h-full min-h-0 w-full", className)}>
+        <div className="pointer-events-none absolute right-2 top-2 z-20 flex items-center gap-1">
+          <div className="pointer-events-auto flex items-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--color-border)]/80 bg-[var(--color-surface)]/95 p-0.5 shadow-[var(--shadow-panel)] backdrop-blur-sm">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label="Zoom out"
+              disabled={zoom <= MIN_TREE_ZOOM}
+              onClick={() => setZoom((value) => clampTreeZoom(value - TREE_ZOOM_STEP))}
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <span className="min-w-[2.75rem] text-center text-[10px] font-medium tabular-nums text-[var(--color-muted)]">
+              {Math.round(zoom * 100)}%
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label="Zoom in"
+              disabled={zoom >= MAX_TREE_ZOOM}
+              onClick={() => setZoom((value) => clampTreeZoom(value + TREE_ZOOM_STEP))}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label="Reset zoom"
+              disabled={zoom === 1}
+              onClick={() => setZoom(1)}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+
         <div
-          className="relative mx-auto shrink-0 p-4"
-          style={{ width: scrollSize.width, height: scrollSize.height }}
+          ref={areaRef}
+          className="h-full min-h-0 w-full touch-pan-x touch-pan-y overflow-auto overscroll-contain"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
         >
-          {treeCanvas}
+          <div
+            className="relative mx-auto shrink-0 p-4"
+            style={{ width: scrollSize.width, height: scrollSize.height }}
+          >
+            {treeCanvas}
+          </div>
         </div>
       </div>
     );

@@ -223,7 +223,7 @@ function ActiveBuildCodeBlock({
             : "border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 hover:border-[var(--color-accent-muted)]",
         )}
       >
-        <code className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-[var(--color-accent)]">
+        <code className="min-w-0 flex-1 break-all font-mono text-xs text-[var(--color-accent)] sm:break-normal sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap">
           {code}
         </code>
         {copiedAction === "code" ? (
@@ -312,8 +312,8 @@ function TransferSidebar({
   const fileFeedback = importFeedback?.context === "file" ? importFeedback : null;
 
   return (
-    <div className="space-y-3">
-      <Card>
+    <div className="min-w-0 space-y-3">
+      <Card className="min-w-0 overflow-hidden">
         <PanelHeader
           icon={Link2}
           title={labels.shareCodeTitle}
@@ -348,7 +348,7 @@ function TransferSidebar({
                 )}
               />
               <div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -372,7 +372,7 @@ function TransferSidebar({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <PanelHeader
           icon={Archive}
           title={labels.backupTitle}
@@ -834,7 +834,7 @@ export function BuildsPage() {
         </Button>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6 lg:overflow-hidden">
+      <div className="flex flex-col gap-3 lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6 lg:overflow-hidden">
         <div className="grid h-10 shrink-0 grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5 lg:hidden">
           <button
             type="button"
@@ -864,18 +864,19 @@ export function BuildsPage() {
 
         <section
           className={cn(
-            "flex min-h-0 min-w-0 flex-col gap-3 lg:h-full lg:overflow-hidden",
+            "flex min-w-0 flex-col gap-3",
             mobileTab !== "builds" && "hidden lg:flex",
+            "lg:min-h-0 lg:h-full lg:overflow-hidden",
           )}
         >
-          <div className="flex shrink-0 items-center justify-between gap-3">
-            <h2 className="font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-accent)]">
+          <div className="flex shrink-0 items-center justify-end gap-3 lg:justify-between">
+            <h2 className="hidden font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-accent)] lg:block">
               {labels.savedBuildsTitle}
             </h2>
             <Button
               variant="outline"
               size="sm"
-              className="h-7 shrink-0 gap-1.5 px-2.5 text-xs border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 hover:border-[var(--color-accent-muted)] hover:bg-[var(--color-surface-elevated)]"
+              className="h-8 shrink-0 gap-1.5 px-2.5 text-xs border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 hover:border-[var(--color-accent-muted)] hover:bg-[var(--color-surface-elevated)]"
               onClick={() => createSavedBuildSlot()}
             >
               <Plus className="h-3 w-3 text-[var(--color-accent)]" />
@@ -889,7 +890,7 @@ export function BuildsPage() {
             placeholder={labels.searchBuilds}
           />
 
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:max-h-none">
+          <div className="overflow-y-auto lg:min-h-0 lg:flex-1 lg:pr-1">
             {visibleBuilds.length === 0 ? (
               <p className="px-1 py-6 text-center text-sm text-[var(--color-muted)]">
                 {labels.noSearchResults}
@@ -927,7 +928,12 @@ export function BuildsPage() {
           </div>
         </section>
 
-        <aside className={cn("shrink-0", mobileTab !== "transfer" && "hidden lg:block")}>
+        <aside
+          className={cn(
+            "min-w-0 shrink-0",
+            mobileTab !== "transfer" && "hidden lg:block",
+          )}
+        >
           <TransferSidebar
             labels={labels}
             activeBuildName={activeBuild?.name}
