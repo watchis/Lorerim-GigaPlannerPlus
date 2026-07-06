@@ -47,7 +47,6 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 | Playable races | `data/game/races.json` |
 | Big Tweaks `REQ_Ability_Birthsign_*` + `doom*MSG` | `data/game/birthsigns.json` |
 | Wintersun altar deity MGEF descriptions + worship tenets | `data/game/deities.json` |
-| [LoreRim 5.0 Faith Effects](https://docs.google.com/spreadsheets/d/1ZbhJkIHqEoVKzVtASmupizGPFuDUG84_) spreadsheet | deity shrine / follower / devotee text in `deities.json` |
 
 ### CLI options
 
@@ -89,7 +88,7 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | All traits from `Traits_AbilityList` (base FormList + FLM additions) | — |
 | Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA` | `race-effects.json`, race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
-| Deity names, tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | LoreRim 5.0 Faith Effects sheet for shrine / follower / devotee text |
+| Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
 | `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
 
 When `effects` is empty, the importer parses the `bonus` text with rule-based patterns in `lib/parse-bonus-effects.mjs` (percent modifiers, attribute flat bonuses, common weapon/resist phrases). Conditional or narrative-only bonuses may stay empty until rules are extended.
@@ -134,7 +133,7 @@ tools/import/
     avif-perk-tree.mjs     # AVIF perk tree parser (player-visible layout)
     avif-perk-membership.mjs # AVIF membership index + planner diff helpers
     deity-eligibility.mjs  # Wintersun deity follow rules from plugins + guide
-    deity-faith-effects.mjs # LoreRim 5.0 faith effects spreadsheet parser
+    deity-faith-from-plugins.mjs # Wintersun MGEF + worship MESG faith effect extraction
     destiny-config.mjs     # Subclasses of Skyrim destiny tree layout parser
     esp-reader.mjs         # Skyrim plugin record parser (single-pass batch scan)
     formid.mjs             # TES4 master list + plugin-local form ID → global identity

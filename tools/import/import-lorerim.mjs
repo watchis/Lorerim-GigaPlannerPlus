@@ -18,7 +18,6 @@ import { loadJsonIfExists } from "./lib/transform-utils.mjs";
 import { removeStalePerkFiles } from "./lib/import-reset.mjs";
 import { createImportReporter, formatCount } from "./lib/import-progress.mjs";
 import { buildDeityEligibilityIndex } from "./lib/deity-eligibility.mjs";
-import { fetchFaithEffectsFromSheet } from "./lib/deity-faith-effects.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..", "..");
@@ -205,15 +204,6 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     questRecords,
     spellRecords,
   });
-  let faithEffectsById = new Map();
-  try {
-    faithEffectsById = await fetchFaithEffectsFromSheet();
-    progress.step(`Faith effects sheet — ${formatCount(faithEffectsById.size)} deities`);
-  } catch (error) {
-    console.warn(
-      `Warning: could not fetch faith effects sheet (${error instanceof Error ? error.message : error})`,
-    );
-  }
   const deities = transformDeityRecords(
     spellRecords,
     wintersunMgefRecords,
@@ -221,7 +211,6 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     join(dataDir, "deities.json"),
     altarMagnitudes,
     deityEligibility,
-    faithEffectsById,
   );
   progress.step(`Deities — ${formatCount(deities.deities.length)} entries`);
 

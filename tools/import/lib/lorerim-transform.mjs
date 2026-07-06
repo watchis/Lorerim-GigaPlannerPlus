@@ -27,7 +27,7 @@ import {
 } from "./append-missing-perks.mjs";
 import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
 import { collectWorshipAltarKeys, deityNameFromAltarKey, normalizeAltarKey, resolveDeityEligibility } from "./deity-eligibility.mjs";
-import { resolveFaithEffects } from "./deity-faith-effects.mjs";
+import { extractFaithEffectsFromPlugins, indexDeityFaithMgef } from "./deity-faith-from-plugins.mjs";
 
 const DESTINY_SKILL_ID = "destiny";
 const DESTINY_COORD_SCALE = 2;
@@ -691,24 +691,6 @@ function blessingNameFromSpell(spellName, altarKey = "") {
   return cleanName(spellName);
 }
 
-function parseWorshipMessage(description) {
-  const text = String(description ?? "");
-  const sections = text.split(/\r?\n\r?\n/);
-  const intro = cleanDescription(sections[0] ?? "");
-  let follower = "";
-  let tenets = "";
-
-  for (const section of sections.slice(1)) {
-    if (/^Follower:/i.test(section)) {
-      follower = cleanDescription(section.replace(/^Follower:\s*/i, ""));
-    } else if (/^Tenets:/i.test(section)) {
-      tenets = cleanDescription(section.replace(/^Tenets:\s*/i, ""));
-    }
-  }
-
-  return { intro, follower, tenets };
-}
-
 function parseBlessingRequirement(failMessage) {
   const text = cleanDescription(failMessage ?? "");
   if (!text) return { requirement: "None", race: "All" };
@@ -730,25 +712,6 @@ function parseBlessingRequirement(failMessage) {
   }
 
   return { requirement: text, race: "All" };
-}
-
-function buildMgefLookup(mgefRecords) {
-  const byEdid = new Map(mgefRecords.map((record) => [record.edid, record]));
-  return byEdid;
-}
-
-function findBlessingMgef(byEdid, altarKey, boon) {
-  const exact = byEdid.get(`WSN_${altarKey}_${boon}_Effect_Ab`);
-  if (exact) return exact;
-
-  const prefix = `WSN_${altarKey}_${boon}_Effect_Ab`;
-  for (const [edid, record] of byEdid) {
-    if (edid.startsWith(prefix) && !edid.includes("_old")) {
-      return record;
-    }
-  }
-
-  return null;
 }
 
 function isAltarBlessingSpell(record) {
@@ -782,11 +745,6 @@ function buildAltarBlessingSpellIndex(spellRecords) {
   return byAltarKey;
 }
 
-function blessingEffectText(record, magnitude = null) {
-  if (!record) return "";
-  return cleanWintersunEffectText(record.effectDescription || record.description, magnitude);
-}
-
 export function transformDeityRecords(
   spellRecords,
   mgefRecords,
@@ -794,12 +752,11 @@ export function transformDeityRecords(
   deitiesPath,
   altarMagnitudes = new Map(),
   deityEligibility = new Map(),
-  faithEffectsById = new Map(),
 ) {
   const existing = JSON.parse(readFileSync(deitiesPath, "utf8"));
   const existingEntries = existing.deities ?? existing.blessings ?? [];
   const existingById = new Map(existingEntries.map((deity) => [deity.id, deity]));
-  const mgefByEdid = buildMgefLookup(mgefRecords);
+  const mgefIndex = indexDeityFaithMgef(mgefRecords);
   const mesgByEdid = new Map(mesgRecords.map((record) => [record.edid, record]));
   const spellByAltarKey = buildAltarBlessingSpellIndex(spellRecords);
   const altarKeys = new Set([...collectWorshipAltarKeys(mesgRecords), ...spellByAltarKey.keys()]);
@@ -814,21 +771,14 @@ export function transformDeityRecords(
 
     const worship = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}`);
     const fail = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}_Fail`);
-    const worshipText = parseWorshipMessage(worship?.description);
-
-    const shrineMgef = mgefByEdid.get(`WSN_AltarBlessing_${altarKey}_Effect`);
-    const followerMgef = findBlessingMgef(mgefByEdid, altarKey, "Boon1");
-    const devoteeMgef = findBlessingMgef(mgefByEdid, altarKey, "Boon2");
     const { requirement } = parseBlessingRequirement(fail?.description);
     const shrineMagnitude = altarMagnitudes.get(altarKey)?.magnitude ?? null;
-    const faithEffects = resolveFaithEffects(id, faithEffectsById);
-
-    const shrineFromPlugin = blessingEffectText(shrineMgef, shrineMagnitude);
-    const followerFromPlugin = blessingEffectText(followerMgef) || worshipText.follower;
-    const devoteeFromPlugin = blessingEffectText(devoteeMgef);
-    const shrine = faithEffects?.shrine || shrineFromPlugin || prior?.shrine || "-";
-    const follower = faithEffects?.follower || followerFromPlugin || prior?.follower || "-";
-    const devotee = faithEffects?.devotee || devoteeFromPlugin || prior?.devotee || "-";
+    const faithEffects = extractFaithEffectsFromPlugins({
+      altarKey,
+      mgefIndex,
+      worshipDescription: worship?.description,
+      altarMagnitude: shrineMagnitude,
+    });
     const eligibility = resolveDeityEligibility(id, name, deityEligibility);
 
     deities.push({
@@ -847,15 +797,17 @@ export function transformDeityRecords(
       }),
       id,
       name,
-      shrine,
-      follower,
-      devotee,
-      tenets: worshipText.tenets || prior?.tenets || "-",
+      shrine: faithEffects.shrine !== "-" ? faithEffects.shrine : prior?.shrine || "-",
+      follower: faithEffects.follower !== "-" ? faithEffects.follower : prior?.follower || "-",
+      devotee: faithEffects.devotee !== "-" ? faithEffects.devotee : prior?.devotee || "-",
+      tenets: faithEffects.tenets !== "-" ? faithEffects.tenets : prior?.tenets || "-",
       race: eligibility.race || prior?.race || "All",
       starting: eligibility.starting || prior?.starting || "",
       requirement: eligibility.requirement || requirement || prior?.requirement || "None",
       shrineLocations: eligibility.shrineLocations ?? prior?.shrineLocations ?? [],
-      effects: parseBonusEffects(shrine),
+      effects: parseBonusEffects(
+        faithEffects.shrine !== "-" ? faithEffects.shrine : prior?.shrine || "-",
+      ),
     });
   }
 
