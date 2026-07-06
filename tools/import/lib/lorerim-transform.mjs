@@ -758,6 +758,14 @@ function buildAltarBlessingSpellIndex(spellRecords) {
   return byAltarKey;
 }
 
+function hasDeityFaithEffects({ shrine, follower, devotee }) {
+  for (const value of [shrine, follower, devotee]) {
+    const text = String(value ?? "").trim();
+    if (text && text !== "-") return true;
+  }
+  return false;
+}
+
 export function transformDeityRecords(
   spellRecords,
   mgefRecords,
@@ -794,6 +802,14 @@ export function transformDeityRecords(
     });
     const eligibility = resolveDeityEligibility(id, name, deityEligibility);
 
+    const shrine = faithEffects.shrine !== "-" ? faithEffects.shrine : prior?.shrine || "-";
+    const follower = faithEffects.follower !== "-" ? faithEffects.follower : prior?.follower || "-";
+    const devotee = faithEffects.devotee !== "-" ? faithEffects.devotee : prior?.devotee || "-";
+
+    if (!hasDeityFaithEffects({ shrine, follower, devotee })) {
+      continue;
+    }
+
     deities.push({
       ...(prior ?? {
         id,
@@ -810,17 +826,15 @@ export function transformDeityRecords(
       }),
       id,
       name,
-      shrine: faithEffects.shrine !== "-" ? faithEffects.shrine : prior?.shrine || "-",
-      follower: faithEffects.follower !== "-" ? faithEffects.follower : prior?.follower || "-",
-      devotee: faithEffects.devotee !== "-" ? faithEffects.devotee : prior?.devotee || "-",
+      shrine,
+      follower,
+      devotee,
       tenets: faithEffects.tenets !== "-" ? faithEffects.tenets : prior?.tenets || "-",
       race: eligibility.race || prior?.race || "All",
       starting: eligibility.starting || prior?.starting || "",
       requirement: eligibility.requirement || requirement || prior?.requirement || "None",
       shrineLocations: eligibility.shrineLocations ?? prior?.shrineLocations ?? [],
-      effects: parseBonusEffects(
-        faithEffects.shrine !== "-" ? faithEffects.shrine : prior?.shrine || "-",
-      ),
+      effects: parseBonusEffects(shrine !== "-" ? shrine : "-"),
     });
   }
 

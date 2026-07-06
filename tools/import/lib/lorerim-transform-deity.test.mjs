@@ -92,4 +92,23 @@ assert.match(byId.get("almalexia")?.follower ?? "", /blocking/i);
 assert.match(byId.get("almalexia")?.devotee ?? "", /Healing from most sources/i);
 assert.match(byId.get("almalexia")?.tenets ?? "", /beggars and children/);
 
+const emptyFaithPath = join(tempDir, "deities-empty.json");
+writeFileSync(emptyFaithPath, JSON.stringify({ deities: [{ id: "none", name: "None" }] }));
+const emptyFaith = transformDeityRecords(
+  [],
+  [],
+  [
+    {
+      edid: "WSN_WorshipRequest_Message_EmptyFaith",
+      description: "Pray to Empty.\n\nTenets: Do nothing useful.",
+    },
+  ],
+  emptyFaithPath,
+);
+assert.equal(
+  emptyFaith.deities.filter((deity) => deity.id !== "none").length,
+  0,
+  "deities without shrine/follower/devotee values are not imported",
+);
+
 console.log("lorerim-transform-deity tests passed");

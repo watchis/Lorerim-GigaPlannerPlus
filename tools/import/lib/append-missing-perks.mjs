@@ -223,7 +223,7 @@ function createPerkNode(skillId, record, usedIds, position, tree, metadataIndex,
     prerequisitesAny: [],
   };
 
-  if (record.perkMeta?.playerLevelReq > 0) {
+  if (record.perkMeta?.playerLevelReq > 1) {
     perk._importPlayerLevelReq = record.perkMeta.playerLevelReq;
   }
 
@@ -279,7 +279,7 @@ export function buildPerkPlayerLevelReqs(trees) {
   for (const tree of Object.values(trees)) {
     for (const perk of tree.perks ?? []) {
       const level = perk._importPlayerLevelReq;
-      if (level > 0) reqs[perk.id] = level;
+      if (level > 1) reqs[perk.id] = level;
       delete perk._importPlayerLevelReq;
     }
   }

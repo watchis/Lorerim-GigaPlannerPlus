@@ -168,7 +168,7 @@ export function loadPerkPlayerLevelReqsByGraphKey(perksDir) {
 
     for (const perk of tree.perks ?? []) {
       const level = reqs[perk.id];
-      if (typeof level === "number" && level > 0) {
+      if (typeof level === "number" && level > 1) {
         byGraphKey.set(perkGraphKey(perk), level);
       }
     }
@@ -190,14 +190,14 @@ export function mergePerkPlayerLevelReqs(trees, importedReqs, existingByGraphKey
 
   const merged = {};
   for (const [id, level] of Object.entries(importedReqs)) {
-    if (validIds.has(id) && typeof level === "number" && level > 0) {
+    if (validIds.has(id) && typeof level === "number" && level > 1) {
       merged[id] = level;
     }
   }
 
   for (const [graphKey, level] of existingByGraphKey) {
     const id = idByGraphKey.get(graphKey);
-    if (id && merged[id] == null && level > 0) {
+    if (id && merged[id] == null && level > 1) {
       merged[id] = level;
     }
   }

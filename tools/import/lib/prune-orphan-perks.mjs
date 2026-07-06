@@ -13,7 +13,7 @@ function hasSkillRequirement(perk) {
 }
 
 function hasPlayerLevelRequirement(perk) {
-  return perk.playerLevelReq != null && perk.playerLevelReq > 0;
+  return perk.playerLevelReq != null && perk.playerLevelReq > 1;
 }
 
 function buildReferencedPerkIds(perks) {

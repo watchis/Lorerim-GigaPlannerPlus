@@ -5,10 +5,15 @@ export interface PerkNodeRequirements {
   playerLevelReq: number | null;
 }
 
+/** Level 1 is the default player level and is not shown or enforced as a perk gate. */
+export function meaningfulPlayerLevelReq(level: number | null | undefined): number | null {
+  return level != null && level > 1 ? level : null;
+}
+
 export function getPerkNodeRequirements(perk: Perk): PerkNodeRequirements {
   return {
     skillReq: perk.skillReq > 0 ? perk.skillReq : null,
-    playerLevelReq: perk.playerLevelReq ?? null,
+    playerLevelReq: meaningfulPlayerLevelReq(perk.playerLevelReq),
   };
 }
 
