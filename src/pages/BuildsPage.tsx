@@ -813,7 +813,12 @@ export function BuildsPage() {
   };
 
   return (
-    <div className="page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4">
+    <div
+      className={cn(
+        "page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4",
+        mobileTab === "transfer" ? "max-lg:overflow-hidden" : "overflow-y-auto",
+      )}
+    >
       <header className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
           <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-[var(--color-accent-muted)]">
@@ -834,7 +839,13 @@ export function BuildsPage() {
         </Button>
       </header>
 
-      <div className="flex flex-col gap-3 lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6 lg:overflow-hidden">
+      <div
+        className={cn(
+          "flex flex-col gap-3",
+          mobileTab === "transfer" && "min-h-0 flex-1 overflow-hidden max-lg:overflow-hidden",
+          "lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch lg:gap-6 lg:overflow-hidden",
+        )}
+      >
         <div className="grid h-10 shrink-0 grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5 lg:hidden">
           <button
             type="button"
@@ -930,8 +941,9 @@ export function BuildsPage() {
 
         <aside
           className={cn(
-            "min-w-0 shrink-0",
+            "min-h-0 min-w-0 overflow-y-auto overscroll-y-contain pr-1",
             mobileTab !== "transfer" && "hidden lg:block",
+            mobileTab === "transfer" && "flex-1 lg:flex-none",
           )}
         >
           <TransferSidebar
