@@ -104,6 +104,17 @@ assert.equal(
   "Increases your Health and Stamina by 15 points.",
 );
 
+const unresolvedMag = extractFaithEffectsFromPlugins({
+  altarKey: "Tribunal_Almalexia",
+  mgefIndex: indexDeityFaithMgef([
+    {
+      edid: "WSN_AltarBlessing_Tribunal_Almalexia_Effect",
+      effectDescription: "Increases your Health and Stamina by <mag> points.",
+    },
+  ]),
+});
+assert.equal(unresolvedMag.shrine, "-", "unresolved <mag> should not render literal 'mag'");
+
 const fixtureCsv = readFileSync(join(__dirname, "deity-faith-effects.sample.csv"), "utf8");
 const fixtureRows = fixtureCsv
   .trim()

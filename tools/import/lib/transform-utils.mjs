@@ -29,6 +29,8 @@ export function cleanWintersunEffectText(text, magnitude = null) {
   if (magnitude != null) {
     const formatted = formatEffectMagnitude(magnitude);
     cleaned = cleaned.replace(/<mag>/gi, formatted);
+  } else {
+    cleaned = cleaned.replace(/<mag>/gi, "");
   }
 
   cleaned = cleaned.replace(/<([^<>]+)>/g, "$1");
@@ -39,6 +41,10 @@ export function cleanWintersunEffectText(text, magnitude = null) {
     .replace(/(\d)%%+/g, "$1%")
     .replace(/\s{2,}/g, " ")
     .trim();
+
+  if (/\bby\s+points\b/i.test(cleaned) || /\bmag\s+points\b/i.test(cleaned)) {
+    return "";
+  }
 
   return cleaned;
 }

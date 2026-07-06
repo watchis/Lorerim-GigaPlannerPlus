@@ -104,18 +104,31 @@ function mergeCollectedRecord(existing, incoming) {
   return incomingScore >= existingScore ? incoming : existing;
 }
 
-function readEfitMagnitudes(recordBuffer) {
+/**
+ * SPEL EFIT layout (Skyrim): uint32 effect FormID, float magnitude, uint32 area, uint32 duration.
+ */
+export function readSpellEfitMagnitudes(recordBuffer) {
   const magnitudes = [];
   let index = 0;
 
   while ((index = recordBuffer.indexOf("EFIT", index)) !== -1) {
     const size = recordBuffer.readUInt16LE(index + 4);
     const data = recordBuffer.subarray(index + 6, index + 6 + size);
-    if (data.length >= 4) magnitudes.push(data.readFloatLE(0));
+    if (data.length >= 8) {
+      const magnitude = data.readFloatLE(4);
+      if (Number.isFinite(magnitude)) magnitudes.push(magnitude);
+    }
     index += 4;
   }
 
   return magnitudes;
+}
+
+function readMgefDataMagnitude(record) {
+  const data = readDataBuffer(record);
+  if (!data || data.length < 4) return null;
+  const magnitude = data.readFloatLE(0);
+  return Number.isFinite(magnitude) ? magnitude : null;
 }
 
 function altarKeyFromSpellEdid(edid) {
@@ -130,7 +143,7 @@ function collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName) {
   const altarKey = altarKeyFromSpellEdid(edid);
   if (!altarKey) return null;
 
-  const effectMagnitudes = readEfitMagnitudes(buffer).filter((value) => value > 0);
+  const effectMagnitudes = readSpellEfitMagnitudes(buffer).filter((value) => value > 0);
   if (effectMagnitudes.length === 0) return null;
 
   return {
@@ -187,9 +200,10 @@ async function readPluginImportPayload({ pluginName, path }) {
       if (!parsed) continue;
 
       if (parsed.type === "MGEF") {
-        const magnitudes = readEfitMagnitudes(buffer).filter((value) => value > 0);
-        if (magnitudes.length > 0) {
-          parsed.effectMagnitude = magnitudes[0];
+        const record = tesData.getRecord(buffer);
+        const magnitude = readMgefDataMagnitude(record);
+        if (magnitude != null && magnitude > 0) {
+          parsed.effectMagnitude = magnitude;
         }
       }
 

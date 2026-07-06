@@ -47,15 +47,18 @@ const spellRecords = [
 const mgefRecords = [
   {
     edid: "WSN_AltarBlessing_Tribunal_Almalexia_Effect",
-    effectDescription: "15 More Health and Stamina",
+    effectDescription: "Increases your Health and Stamina by <mag> points.",
+    effectMagnitude: 15,
   },
   {
     edid: "WSN_AltarBlessing_Tribunal_SothaSil_Effect",
-    effectDescription: "15 More Health and Magicka",
+    effectDescription: "Increases your Health and Magicka by <mag> points.",
+    effectMagnitude: 15,
   },
   {
     edid: "WSN_AltarBlessing_Tribunal_Vivec_Effect",
-    effectDescription: "15 More Magicka and Stamina",
+    effectDescription: "Increases your Magicka and Stamina by <mag> points.",
+    effectMagnitude: 15,
   },
   {
     edid: "WSN_Tribunal_Almalexia_Boon1_Effect_Ab",
@@ -77,7 +80,11 @@ const mgefRecords = [
   },
 ];
 
-const result = transformDeityRecords(spellRecords, mgefRecords, mesgRecords, deitiesPath);
+const result = transformDeityRecords(spellRecords, mgefRecords, mesgRecords, deitiesPath, new Map([
+  ["Tribunal_Almalexia", { magnitude: 15 }],
+  ["Tribunal_SothaSil", { magnitude: 15 }],
+  ["Tribunal_Vivec", { magnitude: 15 }],
+]));
 const byId = new Map(result.deities.map((deity) => [deity.id, deity]));
 
 assert.ok(byId.has("almalexia"), "expected Almalexia to import from worship MESG");
@@ -87,7 +94,10 @@ assert.ok(byId.has("vivec"), "expected Vivec to import from worship MESG");
 assert.equal(byId.get("almalexia")?.name, "Almalexia");
 assert.equal(byId.get("sotha-sil")?.name, "Sotha Sil");
 assert.equal(byId.get("vivec")?.name, "Vivec");
-assert.match(byId.get("almalexia")?.shrine ?? "", /15 More Health and Stamina/);
+assert.equal(
+  byId.get("almalexia")?.shrine,
+  "Increases your Health and Stamina by 15 points.",
+);
 assert.match(byId.get("almalexia")?.follower ?? "", /blocking/i);
 assert.match(byId.get("almalexia")?.devotee ?? "", /Healing from most sources/i);
 assert.match(byId.get("almalexia")?.tenets ?? "", /beggars and children/);
