@@ -38,6 +38,7 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 1. **MO2 profile** — active profile from `ModOrganizer.ini` (`modlist.txt` + `loadorder.txt`)
 2. **Plugin files** — each plugin in load order is read from the winning MO2 mod folder (`modlist.txt`, bottom wins), except **`LoreRim - xEdit64 Output`** and **`LoreRim - Synthesis Output`**, which always override the same plugin name from upstream mods
 3. **Records** — when the same Editor ID appears in multiple plugins, the **last** plugin in `loadorder.txt` wins
+4. **Non-mechanics plugins** — plugins with no PERK/SPEL/RACE/MESG/QUST/AVIF/FLST/MGEF records (textures, meshes, etc.) are classified once and skipped on later runs via `tools/import/cache/non-mechanics-plugins.json`. Use `--rescan-plugins` to rebuild that cache.
 
 | Game source | Planner output |
 |-------------|----------------|
@@ -55,13 +56,14 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 | `--install`, `-i <path>` | LoreRim install root (**required**; must contain `ModOrganizer.exe`) |
 | `--dry-run` | Parse and print a summary without writing files |
 | `--plugin-limit <n>` | Scan only the first N plugins (debug) |
+| `--rescan-plugins` | Reclassify every plugin; ignore the non-mechanics skip cache |
 | `--help`, `-h` | Show usage |
 
 ### Runtime
 
-A full LoreRim load order is ~3,500 plugins. The importer reads each plugin **once** (PERK, AVIF, SPEL, RACE, MESG, QUST, Wintersun MGEF, altar blessings, and trait FormList data in a single pass) with parallel I/O across up to 8 plugins at a time. Expect the scan to take **about one minute** on a fast SSD (previously several minutes with repeated full scans).
+A full LoreRim load order is ~3,500 plugins. The importer classifies each plugin (quick record-type header scan), skips asset-only plugins using a persistent cache, then reads the remainder **once** (PERK, AVIF, SPEL, RACE, MESG, QUST, Wintersun MGEF, altar blessings, and trait FormList data in a single pass) with parallel I/O across up to 8 plugins at a time. Expect the scan to take **about one minute** on a fast SSD after the first run (subsequent runs are faster when most plugins are cached as non-mechanics).
 
-Set `IMPORT_PLUGIN_CONCURRENCY` to tune parallel plugin reads (default `8`).
+Set `IMPORT_PLUGIN_CONCURRENCY` to tune parallel plugin reads (default `8`). Set `IMPORT_CLASSIFY_CONCURRENCY` for the classification pass (default `16`).
 
 ### Modpack version
 
@@ -140,14 +142,16 @@ tools/import/
     giga-planner-layout.json # static legacy layout coordinates
     import-progress.mjs    # CLI progress reporting helpers
     import-reset.mjs       # empty perk shells, hand-tuned overrides, layout preservation, stale file cleanup
-    lorerim-install.mjs    # MO2 discovery, load order, plugin paths
+    lorerim-install.mjs    # MO2 discovery, loadorder.txt, plugin paths
     lorerim-transform.mjs  # plugin records → planner JSON
     lorerim-version.mjs    # modpack version from Wabbajack + install fingerprints
     parse-bonus-effects.mjs # bonus text → structured effects (rule-based)
     parse-trait-body.mjs    # trait spell text → description + bonus
     perk-import-filter.mjs # which plugin perks belong in planner trees
     perk-tree-metadata.mjs # skillReq / prerequisite enrichment from PERK records
+    plugin-classifier.mjs  # quick mechanics vs asset-only plugin detection
     plugin-io.mjs          # shared plugin visit/read helpers + concurrent mapper
+    plugin-skip-cache.mjs  # persistent skip list for non-mechanics plugins
     prune-orphan-perks.mjs # remove unanchored perk nodes after metadata enrichment
     skill-constants.mjs    # skill id ordering
     trait-ability-list.mjs # Biggie Traits FormList spell collection
