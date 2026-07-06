@@ -496,7 +496,7 @@ function isIncompleteCanFollow(race, failMessages, guideEntry) {
 function stripInlineHtml(text) {
   return String(text ?? "")
     .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]+>/g, "")
+    .replace(/<[^>]*>?/g, "")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, "&")
