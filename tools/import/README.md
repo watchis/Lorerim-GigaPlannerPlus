@@ -65,10 +65,6 @@ A full LoreRim load order is ~3,500 plugins. The importer classifies each plugin
 
 Set `IMPORT_PLUGIN_CONCURRENCY` to tune parallel plugin reads (default `8`). Set `IMPORT_CLASSIFY_CONCURRENCY` for the classification pass (default `16`).
 
-### Spriggit (optional)
-
-For debugging or future migration off raw ESP parsing, [Spriggit](https://github.com/Mutagen-Modding/Spriggit) can export plugins to JSON/YAML. Set `IMPORT_SPRIGGIT_CLI` to your `Spriggit.CLI` path; helpers live in `lib/spriggit-export.mjs`. The main import path still uses `@fcrick/tes-data` today.
-
 ### Modpack version
 
 `import:lorerim` updates `data/game/manifest.json` → `version` from the installed LoreRim Wabbajack list (the `Version` field inside the `.wabbajack` file, e.g. `5.0.3.2`). Detection works like this:
@@ -158,7 +154,6 @@ tools/import/
     plugin-skip-cache.mjs  # persistent skip list for non-mechanics plugins
     prune-orphan-perks.mjs # remove unanchored perk nodes after metadata enrichment
     skill-constants.mjs    # skill id ordering
-    spriggit-export.mjs    # optional Spriggit CLI export helpers
     trait-ability-list.mjs # Biggie Traits FormList spell collection
     transform-utils.mjs    # shared string/json helpers
 ```
