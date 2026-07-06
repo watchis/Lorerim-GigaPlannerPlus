@@ -3,12 +3,28 @@ import { createContext, useContext } from "react";
 import type { Layout } from "@/data/schemas";
 
 const CENTER_TO_SIDES_RATIO = 1.5;
-const PLANNER_COLUMN_GAP_PX = 16;
+export const PLANNER_COLUMN_GAP_PX = 16;
+/** Below this inner layout width, panes stack vertically (phones / narrow portrait). */
+export const STACKED_LAYOUT_MAX_WIDTH = 720;
 
-export const PlannerLayoutContext = createContext(false);
+export interface PlannerLayoutState {
+  useThreeColumnLayout: boolean;
+  scale: number;
+  gridTemplateColumns: string | null;
+}
+
+export const PlannerLayoutContext = createContext<PlannerLayoutState>({
+  useThreeColumnLayout: false,
+  scale: 1,
+  gridTemplateColumns: null,
+});
 
 export function usePlannerThreeColumnLayout(): boolean {
-  return useContext(PlannerLayoutContext);
+  return useContext(PlannerLayoutContext).useThreeColumnLayout;
+}
+
+export function usePlannerLayoutScale(): number {
+  return useContext(PlannerLayoutContext).scale;
 }
 
 function parsePxWidth(width: string): number | null {
@@ -19,33 +35,72 @@ function parsePxWidth(width: string): number | null {
   return Number.isNaN(px) ? null : px;
 }
 
-function getDeclaredSideWidths(layout: Layout): number[] {
-  if (layout.columns.length < 3) return [];
+function getSideDesignWidths(layout: Layout): { left: number; right: number } | null {
+  if (layout.columns.length < 3) return null;
 
-  const first = parsePxWidth(layout.columns[0].width);
-  const last = parsePxWidth(layout.columns[layout.columns.length - 1].width);
+  const left = parsePxWidth(layout.columns[0].width);
+  const right = parsePxWidth(layout.columns[layout.columns.length - 1].width);
 
-  return [first, last].filter((width): width is number => width !== null);
+  if (left === null || right === null) return null;
+  return { left, right };
 }
 
-export function getThreeColumnMinWidth(
-  layout: Layout,
-  columnGapPx = PLANNER_COLUMN_GAP_PX,
-): number {
-  const sideWidths = getDeclaredSideWidths(layout);
-  if (sideWidths.length === 0) return Number.POSITIVE_INFINITY;
-
-  const sideTotal = sideWidths.reduce((sum, width) => sum + width, 0);
-  const gaps = columnGapPx * (layout.columns.length - 1);
-
-  return sideTotal + sideTotal * CENTER_TO_SIDES_RATIO + gaps;
+export interface PlannerLayoutMetrics extends PlannerLayoutState {
+  sideWidths: { left: number; right: number } | null;
+  centerWidth: number;
 }
 
-export function canShowThreeColumnLayout(
+export function computePlannerLayoutMetrics(
   containerWidth: number,
   layout: Layout,
   columnGapPx = PLANNER_COLUMN_GAP_PX,
-): boolean {
-  if (containerWidth <= 0) return false;
-  return containerWidth >= getThreeColumnMinWidth(layout, columnGapPx);
+): PlannerLayoutMetrics {
+  const stacked: PlannerLayoutMetrics = {
+    useThreeColumnLayout: false,
+    scale: 1,
+    gridTemplateColumns: null,
+    sideWidths: null,
+    centerWidth: 0,
+  };
+
+  if (containerWidth <= 0) return stacked;
+
+  const sides = getSideDesignWidths(layout);
+  if (!sides) return stacked;
+
+  const gaps = columnGapPx * (layout.columns.length - 1);
+  const available = containerWidth - gaps;
+
+  if (available < STACKED_LAYOUT_MAX_WIDTH) return stacked;
+
+  const designSideTotal = sides.left + sides.right;
+  const scaledSideTotal = available / (1 + CENTER_TO_SIDES_RATIO);
+  const scale = Math.min(1, scaledSideTotal / designSideTotal);
+  const leftWidth = Math.round(sides.left * scale);
+  const rightWidth = Math.round(sides.right * scale);
+  const centerWidth = available - leftWidth - rightWidth;
+
+  if (centerWidth <= 0) return stacked;
+
+  return {
+    useThreeColumnLayout: true,
+    scale,
+    gridTemplateColumns: `${leftWidth}px minmax(0, 1fr) ${rightWidth}px`,
+    sideWidths: { left: leftWidth, right: rightWidth },
+    centerWidth,
+  };
+}
+
+/** Full design width where side panes reach their declared sizes at 1.5x center ratio. */
+export function getThreeColumnDesignWidth(
+  layout: Layout,
+  columnGapPx = PLANNER_COLUMN_GAP_PX,
+): number {
+  const sides = getSideDesignWidths(layout);
+  if (!sides) return Number.POSITIVE_INFINITY;
+
+  const designSideTotal = sides.left + sides.right;
+  const gaps = columnGapPx * (layout.columns.length - 1);
+
+  return designSideTotal + designSideTotal * CENTER_TO_SIDES_RATIO + gaps;
 }

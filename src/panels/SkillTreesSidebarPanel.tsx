@@ -15,11 +15,13 @@ import {
 import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
-import { usePlannerThreeColumnLayout } from "@/layout/plannerLayout";
+import { usePlannerLayoutScale, usePlannerThreeColumnLayout } from "@/layout/plannerLayout";
 
 export function SkillTreesSidebarPanel() {
   const labels = usePanelLabels("skill-trees");
   const useThreeColumnLayout = usePlannerThreeColumnLayout();
+  const layoutScale = usePlannerLayoutScale();
+  const compact = useThreeColumnLayout && layoutScale < 0.75;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const resetAllPerks = useBuildStore((s) => s.resetAllPerks);
@@ -41,20 +43,28 @@ export function SkillTreesSidebarPanel() {
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <CardHeader className="flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50 px-3 py-3">
+      <CardHeader
+        className={cn(
+          "flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50 py-3",
+          compact ? "gap-2 px-2 py-2" : "px-3",
+        )}
+      >
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="min-w-0 flex-1 truncate text-base">{labels.title}</CardTitle>
+          <CardTitle className={cn("min-w-0 flex-1 truncate", compact ? "text-sm" : "text-base")}>
+            {labels.title}
+          </CardTitle>
           <ResetPerksButton onClick={resetAllPerks}>{labels.resetAll}</ResetPerksButton>
         </div>
         <BuildVariantsDropdown />
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-2">
+      <CardContent className={cn("flex min-h-0 flex-1 flex-col overflow-hidden", compact ? "p-1" : "p-2")}>
         <div
           className={cn(
             "grid gap-1",
             !useThreeColumnLayout &&
               "auto-rows-[minmax(5.5rem,auto)] grid-cols-4 sm:grid-cols-5",
             useThreeColumnLayout && "h-full min-h-0 flex-1 grid-cols-3 grid-rows-6",
+            compact && "gap-0.5",
           )}
         >
           {trees.map((tree) => {
@@ -79,7 +89,8 @@ export function SkillTreesSidebarPanel() {
                 type="button"
                 onClick={() => openSkillTree(tree.skillId)}
                 className={cn(
-                  "grid min-h-[5.5rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border p-1 text-left transition-colors",
+                  "grid min-h-[5.5rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
+                  compact ? "p-0.5" : "p-1",
                   useThreeColumnLayout && "h-full min-h-0",
                   hasProblem &&
                     "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
@@ -105,7 +116,10 @@ export function SkillTreesSidebarPanel() {
                     )}
                   />
                   <span
-                    className="min-w-0 truncate text-[11px] font-semibold leading-snug tracking-tight text-[var(--color-foreground)]"
+                    className={cn(
+                      "min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]",
+                      compact ? "text-[10px]" : "text-[11px]",
+                    )}
                     title={tree.skillName}
                   >
                     {tree.skillName}

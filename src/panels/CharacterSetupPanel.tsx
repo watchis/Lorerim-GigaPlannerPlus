@@ -10,6 +10,7 @@ import { getTraitLimit } from "@/engine/buildEngine";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
+import { usePlannerLayoutScale, usePlannerThreeColumnLayout } from "@/layout/plannerLayout";
 interface SelectedChip {
   id: string;
   label: string;
@@ -185,6 +186,9 @@ export function CharacterSetupPanel() {
   const characterOptionsOpen = useUiStore((s) => s.characterOptionsOpen);
   const toggleSetupPicker = useUiStore((s) => s.toggleSetupPicker);
   const toggleCharacterOptions = useUiStore((s) => s.toggleCharacterOptions);
+  const useThreeColumnLayout = usePlannerThreeColumnLayout();
+  const layoutScale = usePlannerLayoutScale();
+  const compact = useThreeColumnLayout && layoutScale < 0.75;
 
   if (!gameData) return null;
 
@@ -225,8 +229,13 @@ export function CharacterSetupPanel() {
 
   return (
     <Card className="flex-shrink-0">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base">{labels.title}</CardTitle>
+      <CardHeader
+        className={cn(
+          "flex flex-row items-center justify-between space-y-0",
+          compact ? "pb-1.5" : "pb-2",
+        )}
+      >
+        <CardTitle className={cn(compact ? "text-sm" : "text-base")}>{labels.title}</CardTitle>
         <Button
           type="button"
           variant="ghost"
@@ -243,7 +252,7 @@ export function CharacterSetupPanel() {
           <Settings className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className={cn("space-y-3", compact && "space-y-2 text-[13px]")}>
         <div className="space-y-1.5">
           <SetupPickerRow
             label={labels.race}

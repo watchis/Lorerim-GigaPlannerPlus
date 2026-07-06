@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType, type CSSProperties } from "react";
 
 import type { Layout } from "@/data/schemas";
 
@@ -11,9 +11,9 @@ import { SkillTreesSidebarPanel } from "@/panels/SkillTreesSidebarPanel";
 import { cn } from "@/lib/utils";
 
 import {
-  canShowThreeColumnLayout,
-  getThreeColumnMinWidth,
+  computePlannerLayoutMetrics,
   PlannerLayoutContext,
+  type PlannerLayoutMetrics,
 } from "@/layout/plannerLayout";
 
 
@@ -35,6 +35,14 @@ const mobilePanelWrapperClass: Record<string, string> = {
   "skill-trees-sidebar": "shrink-0",
 };
 
+const defaultLayoutMetrics: PlannerLayoutMetrics = {
+  useThreeColumnLayout: false,
+  scale: 1,
+  gridTemplateColumns: null,
+  sideWidths: null,
+  centerWidth: 0,
+};
+
 
 
 interface LayoutRendererProps {
@@ -45,30 +53,10 @@ interface LayoutRendererProps {
 
 
 
-function getDesktopGridTemplate(layout: Layout): string {
-  return layout.columns
-    .map((col) => {
-      const width = col.width.trim();
-      if (width.endsWith("px")) {
-        const px = Number.parseInt(width, 10);
-        if (!Number.isNaN(px)) {
-          const min = Math.round(px * 0.75);
-          return `minmax(${min}px, ${width})`;
-        }
-      }
-      return width;
-    })
-    .join(" ");
-}
-
-
-
 export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
-  const desktopTemplate = getDesktopGridTemplate(layout);
-  const threeColumnMinWidth = useMemo(() => getThreeColumnMinWidth(layout), [layout]);
   const layoutRef = useRef<HTMLDivElement>(null);
-  const [useThreeColumnLayout, setUseThreeColumnLayout] = useState(false);
+  const [layoutMetrics, setLayoutMetrics] = useState<PlannerLayoutMetrics>(defaultLayoutMetrics);
 
 
 
@@ -82,7 +70,7 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
     const update = () => {
 
-      setUseThreeColumnLayout(canShowThreeColumnLayout(element.clientWidth, layout));
+      setLayoutMetrics(computePlannerLayoutMetrics(element.clientWidth, layout));
 
     };
 
@@ -102,18 +90,21 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
 
 
+  const plannerScaleStyle = {
+    "--planner-scale": layoutMetrics.scale,
+  } as CSSProperties;
+
+
+
   return (
 
-    <div
-      className="mx-auto flex min-h-0 w-full flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6"
-      style={{ maxWidth: threeColumnMinWidth + 48 }}
-    >
+    <div className="mx-auto flex min-h-0 w-full max-w-[1800px] flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
 
       <div ref={layoutRef} className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
 
-        <PlannerLayoutContext.Provider value={useThreeColumnLayout}>
+        <PlannerLayoutContext.Provider value={layoutMetrics}>
 
-          {!useThreeColumnLayout ? (
+          {!layoutMetrics.useThreeColumnLayout ? (
 
             <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain">
 
@@ -147,7 +138,10 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
               className="grid min-h-0 flex-1 gap-4"
 
-              style={{ gridTemplateColumns: desktopTemplate }}
+              style={{
+                ...plannerScaleStyle,
+                gridTemplateColumns: layoutMetrics.gridTemplateColumns ?? undefined,
+              }}
 
             >
 
