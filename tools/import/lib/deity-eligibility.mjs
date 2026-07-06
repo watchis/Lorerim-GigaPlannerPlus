@@ -514,9 +514,34 @@ export function normalizeGuideText(content) {
 
 function sectionEndIndex(lines, startIndex) {
   for (let index = startIndex + 1; index < lines.length; index++) {
-    if (/^Can follow /i.test(lines[index])) return index;
+    const line = lines[index];
+    if (/^Can follow /i.test(line)) return index;
+    if (/^##\s+/.test(line)) return index;
+    if (/^#\s+/.test(line) && !/^##\s+/.test(line)) return index;
+    if (/^Page updated$/i.test(line)) return index;
+    if (/Google Sites/i.test(line)) return index;
   }
   return lines.length;
+}
+
+const SHRINE_LOCATION_FOOTER = /Google Sites|Report abuse|DOCS_timing|WEBSITE BY|Page updated|Page details/i;
+const SHRINE_LOCATION_SECTION_BREAK =
+  /^(Can follow |#{1,6}\s|Temptation:|Tenets:|Follower:|Devotee:|Shrine Blessing:|Racial starting deity for:|Shrine locations:)/i;
+
+function isShrineLocationLine(line) {
+  const trimmed = String(line ?? "").trim();
+  if (!trimmed) return false;
+  if (SHRINE_LOCATION_SECTION_BREAK.test(trimmed)) return false;
+  if (SHRINE_LOCATION_FOOTER.test(trimmed)) return false;
+  if (/^-\s*/.test(trimmed)) {
+    const content = trimmed.replace(/^-\s*/, "").trim();
+    if (SHRINE_LOCATION_SECTION_BREAK.test(content)) return false;
+    if (SHRINE_LOCATION_FOOTER.test(content)) return false;
+    return content.length > 0;
+  }
+  if (/^Location:/i.test(trimmed)) return true;
+  if (!/\s/.test(trimmed) && trimmed.length < 24) return false;
+  return trimmed.length > 3;
 }
 
 export function parseShrineLocations(lines, startIndex, endIndex) {
@@ -529,24 +554,15 @@ export function parseShrineLocations(lines, startIndex, endIndex) {
       const line = lines[lookAhead];
       if (!line) continue;
 
-      const normalized = line.replace(/^-\s*/, "").trim();
-      if (!normalized) continue;
-      if (/^#{1,6}\s/.test(normalized)) break;
-      if (/^Temptation:/i.test(normalized)) break;
-      if (/^Can follow /i.test(normalized)) break;
-      if (
-        /^(Tenets|Follower|Devotee|Shrine Blessing|Racial starting deity for):/i.test(normalized)
-      ) {
-        break;
-      }
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (/^#{1,6}\s/.test(trimmed)) break;
+      if (/^##\s+/.test(trimmed)) break;
+      if (SHRINE_LOCATION_FOOTER.test(trimmed)) break;
+      if (SHRINE_LOCATION_SECTION_BREAK.test(trimmed)) break;
+      if (!isShrineLocationLine(trimmed)) break;
 
-      const nextLine = lines[lookAhead + 1];
-      const nextCanFollow = nextLine?.match(/^Can follow (.+):/i);
-      if (nextCanFollow && deityIdFromName(nextCanFollow[1]) === deityIdFromName(normalized)) {
-        break;
-      }
-
-      locations.push(normalized);
+      locations.push(trimmed.replace(/^-\s*/, "").trim());
     }
     break;
   }

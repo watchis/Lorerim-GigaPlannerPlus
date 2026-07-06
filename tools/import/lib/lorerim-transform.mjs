@@ -27,6 +27,7 @@ import {
 } from "./append-missing-perks.mjs";
 import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
 import { collectWorshipAltarKeys, deityNameFromAltarKey, normalizeAltarKey, resolveDeityEligibility } from "./deity-eligibility.mjs";
+import { resolveFaithEffects } from "./deity-faith-effects.mjs";
 
 const DESTINY_SKILL_ID = "destiny";
 const DESTINY_COORD_SCALE = 2;
@@ -793,6 +794,7 @@ export function transformDeityRecords(
   deitiesPath,
   altarMagnitudes = new Map(),
   deityEligibility = new Map(),
+  faithEffectsById = new Map(),
 ) {
   const existing = JSON.parse(readFileSync(deitiesPath, "utf8"));
   const existingEntries = existing.deities ?? existing.blessings ?? [];
@@ -819,11 +821,14 @@ export function transformDeityRecords(
     const devoteeMgef = findBlessingMgef(mgefByEdid, altarKey, "Boon2");
     const { requirement } = parseBlessingRequirement(fail?.description);
     const shrineMagnitude = altarMagnitudes.get(altarKey)?.magnitude ?? null;
+    const faithEffects = resolveFaithEffects(id, faithEffectsById);
 
-    const shrine = blessingEffectText(shrineMgef, shrineMagnitude);
-    const follower = blessingEffectText(followerMgef) || worshipText.follower;
-    const devotee = blessingEffectText(devoteeMgef);
-    const resolvedShrine = shrine || prior?.shrine || "-";
+    const shrineFromPlugin = blessingEffectText(shrineMgef, shrineMagnitude);
+    const followerFromPlugin = blessingEffectText(followerMgef) || worshipText.follower;
+    const devoteeFromPlugin = blessingEffectText(devoteeMgef);
+    const shrine = faithEffects?.shrine || shrineFromPlugin || prior?.shrine || "-";
+    const follower = faithEffects?.follower || followerFromPlugin || prior?.follower || "-";
+    const devotee = faithEffects?.devotee || devoteeFromPlugin || prior?.devotee || "-";
     const eligibility = resolveDeityEligibility(id, name, deityEligibility);
 
     deities.push({
@@ -842,15 +847,15 @@ export function transformDeityRecords(
       }),
       id,
       name,
-      shrine: resolvedShrine,
-      follower: follower || prior?.follower || "-",
-      devotee: devotee || prior?.devotee || "-",
+      shrine,
+      follower,
+      devotee,
       tenets: worshipText.tenets || prior?.tenets || "-",
       race: eligibility.race || prior?.race || "All",
       starting: eligibility.starting || prior?.starting || "",
       requirement: eligibility.requirement || requirement || prior?.requirement || "None",
       shrineLocations: eligibility.shrineLocations ?? prior?.shrineLocations ?? [],
-      effects: parseBonusEffects(resolvedShrine),
+      effects: parseBonusEffects(shrine),
     });
   }
 

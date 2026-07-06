@@ -126,6 +126,40 @@ assert.deepEqual(parseShrineLocations(shrineLinesWithHeaders, 0, shrineLinesWith
   "Wilderness south of Saarthal",
 ]);
 
+const mannimarcoShrineLines = [
+  "Can follow Mannimarco: Everyone",
+  "Shrine locations:",
+  "- Wilderness southwest of Witchmist Grove",
+  "Sai",
+  "Shrine Blessing: 10% Light Armor Rating",
+];
+assert.deepEqual(parseShrineLocations(mannimarcoShrineLines, 0, 4), [
+  "Wilderness southwest of Witchmist Grove",
+]);
+
+const oldWaysShrineLines = [
+  "Can follow The Old Ways: Breton / Nord",
+  "Shrine locations:",
+  "- Bromjunaar Sanctuary (in the past)",
+  "Page updated",
+  "Google Sites",
+];
+assert.deepEqual(parseShrineLocations(oldWaysShrineLines, 0, oldWaysShrineLines.length), [
+  "Bromjunaar Sanctuary (in the past)",
+]);
+
+const azuraShrineLines = [
+  "Can follow Azura: Dunmer",
+  "Shrine locations:",
+  "Raven Rock Temple",
+  "Wilderness north of Talking Stone Camp",
+  "Can follow Boethiah: Dunmer",
+];
+assert.deepEqual(parseShrineLocations(azuraShrineLines, 0, 4), [
+  "Raven Rock Temple",
+  "Wilderness north of Talking Stone Camp",
+]);
+
 const tribunalGuide = `
 # The Tribunal
 

@@ -71,7 +71,24 @@ const mgefRecords = [
   },
 ];
 
-const result = transformDeityRecords(spellRecords, mgefRecords, mesgRecords, deitiesPath);
+const result = transformDeityRecords(
+  spellRecords,
+  mgefRecords,
+  mesgRecords,
+  deitiesPath,
+  new Map(),
+  new Map(),
+  new Map([
+    [
+      "almalexia",
+      {
+        shrine: "15 More Health and Stamina",
+        follower: "Take up to 20% less damage from attacks/spells when blocking.",
+        devotee: "Healing from most sources is increased by up to 20%.",
+      },
+    ],
+  ]),
+);
 const byId = new Map(result.deities.map((deity) => [deity.id, deity]));
 
 assert.ok(byId.has("almalexia"), "expected Almalexia to import from worship MESG");
@@ -81,7 +98,7 @@ assert.ok(byId.has("vivec"), "expected Vivec to import from worship MESG");
 assert.equal(byId.get("almalexia")?.name, "Almalexia");
 assert.equal(byId.get("sotha-sil")?.name, "Sotha Sil");
 assert.equal(byId.get("vivec")?.name, "Vivec");
-assert.match(byId.get("almalexia")?.shrine ?? "", /Health and Stamina/);
+assert.match(byId.get("almalexia")?.shrine ?? "", /15 More Health and Stamina/);
 assert.match(byId.get("almalexia")?.tenets ?? "", /beggars and children/);
 
 console.log("lorerim-transform-deity tests passed");
