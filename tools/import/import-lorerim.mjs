@@ -171,7 +171,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
 
   progress.phase("Transforming game data", 3, 5);
   progress.step("Building perk trees…");
-  const { trees, indexEntries, addedPerks, removedPerks } = transformPerkRecords(
+  const { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs } = transformPerkRecords(
     perkRecords,
     perksDir,
     install.installDir,
@@ -285,6 +285,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   progress.phase("Writing planner JSON", 5, 5);
   const filesToWrite = [
     ["perks/index.json", indexEntries],
+    ["perk-player-level-reqs.json", playerLevelReqs],
     ["traits.json", traits],
     ["races.json", races],
     ["birthsigns.json", birthsigns],

@@ -11,7 +11,7 @@ import {
 import { classifyPerkTreeSkill, isAllocatablePerkSkill } from "./perk-skill-classifier.mjs";
 import { cleanDescription, cleanName, slugify } from "./transform-utils.mjs";
 import { parseBonusEffects } from "./parse-bonus-effects.mjs";
-import { applyPerkMetadata } from "./perk-tree-metadata.mjs";
+import { applyPerkMetadata, stackRankFromPerkId } from "./perk-tree-metadata.mjs";
 import { applyGigaPlannerTreeLayout } from "./giga-planner-layout.mjs";
 
 const RECORD_PREFIX_PRIORITY = [
@@ -223,7 +223,68 @@ function createPerkNode(skillId, record, usedIds, position, tree, metadataIndex,
     prerequisitesAny: [],
   };
 
+  if (record.perkMeta?.playerLevelReq > 0) {
+    perk._importPlayerLevelReq = record.perkMeta.playerLevelReq;
+  }
+
   return metadataIndex ? applyPerkMetadata(perk, tree, metadataIndex) : perk;
+}
+
+function groupPerksByStackName(perks) {
+  const byName = new Map();
+
+  for (const perk of perks) {
+    const canonical = canonicalPerkName(perk.name);
+    const group = byName.get(canonical);
+    if (group) {
+      group.push(perk);
+    } else {
+      byName.set(canonical, [perk]);
+    }
+  }
+
+  return byName;
+}
+
+function sortStackPerks(perks) {
+  return [...perks].sort((left, right) => {
+    const skillDiff = (left.skillReq ?? 0) - (right.skillReq ?? 0);
+    if (skillDiff !== 0) return skillDiff;
+    const rankDiff = stackRankFromPerkId(left.id) - stackRankFromPerkId(right.id);
+    if (rankDiff !== 0) return rankDiff;
+    return String(left.id).localeCompare(String(right.id));
+  });
+}
+
+/** Rank 2+ inherit rank 1 prerequisites; chain-only GetIsID gates are not kept on higher ranks. */
+export function normalizeStackPrerequisites(tree) {
+  for (const stack of groupPerksByStackName(tree.perks).values()) {
+    if (stack.length <= 1) continue;
+
+    const sorted = sortStackPerks(stack);
+    const base = sorted[0];
+    const basePrerequisites = [...(base.prerequisites ?? [])];
+    const basePrerequisitesAny = [...(base.prerequisitesAny ?? [])];
+
+    for (const perk of sorted.slice(1)) {
+      perk.prerequisites = [...basePrerequisites];
+      perk.prerequisitesAny = [...basePrerequisitesAny];
+    }
+  }
+}
+
+export function buildPerkPlayerLevelReqs(trees) {
+  const reqs = {};
+
+  for (const tree of Object.values(trees)) {
+    for (const perk of tree.perks ?? []) {
+      const level = perk._importPlayerLevelReq;
+      if (level > 0) reqs[perk.id] = level;
+      delete perk._importPlayerLevelReq;
+    }
+  }
+
+  return Object.fromEntries(Object.keys(reqs).sort().map((id) => [id, reqs[id]]));
 }
 
 /** Follow PERK `NNAM` links to enumerate every rank of a multi-rank perk, starting at rank 1. */
@@ -453,6 +514,7 @@ export function appendMissingPerkNodes(
       tree.perks = tree.perks.map((perk) => applyPerkMetadata(perk, tree, metadataIndex));
     }
     tree.perks = removeDanglingPrerequisites(tree.perks);
+    normalizeStackPrerequisites(tree);
     applyGigaPlannerTreeLayout(tree);
     repositionOutOfGridPerks(tree);
     tree.grid = resizeGridToFit(tree.perks, tree.grid ?? { width: 25, height: 25 });

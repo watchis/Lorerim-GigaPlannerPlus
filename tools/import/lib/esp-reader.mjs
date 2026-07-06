@@ -46,6 +46,7 @@ function buildPerkMeta(buffer, edid, ownerPluginLower, masters) {
   return {
     formIdentity: resolveFormIdentity(ownerPluginLower, masters, meta.rawFormId),
     skillReq: meta.skillReq,
+    playerLevelReq: meta.playerLevelReq,
     prerequisiteIdentities: meta.prerequisiteRawFormIds.map((rawFormId) =>
       resolveFormIdentity(ownerPluginLower, masters, rawFormId),
     ),

@@ -1,5 +1,6 @@
 /** Skyrim condition function indices (stored value = wiki index + 4096). */
 export const GET_BASE_ACTOR_VALUE = 4373;
+export const GET_LEVEL = 4110;
 export const GET_IS_ID = 4544;
 
 const SKILL_REQ_EDID_PATTERN = /_(\d{3})_/;
@@ -55,6 +56,7 @@ export function parseSkillReqFromEdid(edid) {
 
 export function parseTopLevelPerkConditions(buffer) {
   const skillReqs = [];
+  const playerLevelReqs = [];
   const prerequisiteRawFormIds = [];
 
   for (const sub of scanSubrecords(buffer)) {
@@ -71,6 +73,13 @@ export function parseTopLevelPerkConditions(buffer) {
       skillReqs.push(Math.round(condition.value));
     }
 
+    if (
+      condition.functionIndex === GET_LEVEL &&
+      (condition.compareOp === 3 || condition.compareOp === 5)
+    ) {
+      playerLevelReqs.push(Math.round(condition.value));
+    }
+
     if (condition.functionIndex === GET_IS_ID) {
       prerequisiteRawFormIds.push(condition.param1 >>> 0);
     }
@@ -78,6 +87,7 @@ export function parseTopLevelPerkConditions(buffer) {
 
   return {
     skillReq: skillReqs.length > 0 ? Math.max(...skillReqs) : null,
+    playerLevelReq: playerLevelReqs.length > 0 ? Math.max(...playerLevelReqs) : null,
     prerequisiteRawFormIds,
   };
 }
@@ -98,6 +108,7 @@ export function parsePerkRecordMetadata(buffer, edid) {
   return {
     rawFormId: readRecordFormId(buffer) >>> 0,
     skillReq: parseSkillReqFromEdid(edid) ?? conditions.skillReq,
+    playerLevelReq: conditions.playerLevelReq,
     prerequisiteRawFormIds: conditions.prerequisiteRawFormIds,
     nextRankRawFormId: parseNextRankRawFormId(buffer),
   };

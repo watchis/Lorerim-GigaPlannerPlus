@@ -12,6 +12,7 @@ import {
   loadPerkGraphSnapshots,
   loadPerkHandTunedOverrides,
   loadPerkLayoutOverrides,
+  perkGraphKey,
   removeStalePerkFiles,
 } from "./import-reset.mjs";
 
@@ -237,5 +238,15 @@ writeFileSync(join(perksDir, "smithing.json"), readFileSync(join(perksDir, "smit
 const removed = removeStalePerkFiles(perksDir, ["smithing.json", "block.json", "destiny.json"]);
 assert.deepEqual(removed, ["orphan.json"]);
 assert.ok(!existsSync(join(perksDir, "orphan.json")));
+
+assert.equal(perkGraphKey({ id: "alchemy-herbalist", name: "Herbalist", skillReq: 0 }), "herbalist:s0");
+assert.equal(
+  perkGraphKey({ id: "alchemy-herbalist-r2", name: "Herbalist", skillReq: 0 }),
+  "herbalist:r2",
+);
+assert.notEqual(
+  perkGraphKey({ id: "alchemy-herbalist", name: "Herbalist", skillReq: 0 }),
+  perkGraphKey({ id: "alchemy-herbalist-r2", name: "Herbalist", skillReq: 0 }),
+);
 
 console.log("import-reset.test.mjs: ok");

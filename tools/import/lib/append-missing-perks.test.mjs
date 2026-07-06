@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import {
   appendMissingPerkNodes,
+  buildPerkPlayerLevelReqs,
   nextAvailablePosition,
+  normalizeStackPrerequisites,
   repositionOutOfGridPerks,
   resizeGridToFit,
 } from "./append-missing-perks.mjs";
@@ -115,7 +117,7 @@ const improvedId = blockPerks.find((perk) => perk.name === "Improved Blocking").
 const rank1 = shieldStrikes.find((perk) => perk.skillReq === 25);
 const rank2 = shieldStrikes.find((perk) => perk.skillReq === 50);
 assert.deepEqual(rank1.prerequisites, [improvedId], "rank 1 keeps its parent prerequisite");
-assert.deepEqual(rank2.prerequisites, [], "higher ranks are gated by the stack, not prerequisites");
+assert.deepEqual(rank2.prerequisites, rank1.prerequisites, "higher ranks inherit rank 1 prerequisites");
 
 // BOOB speech perks are player-visible but absent from AVIF PNAM sections.
 const boobRecords = [
@@ -214,5 +216,40 @@ assert.ok(
   duplicateTrees["one-handed.json"].perks.some((perk) => perk.name === "Relentless Onslaught"),
   "one-handed Relentless Onslaught is imported even when heavy-armor already has the name",
 );
+
+const levelRankTrees = {
+  "alchemy.json": {
+    skillId: "alchemy",
+    skillName: "Alchemy",
+    grid: { width: 25, height: 25 },
+    perks: [
+      {
+        id: "alchemy-herbalist",
+        name: "Herbalist",
+        skillReq: 0,
+        position: { x: 0, y: 21 },
+        prerequisites: [],
+        description: "",
+        effects: [],
+        _importPlayerLevelReq: 10,
+      },
+      {
+        id: "alchemy-herbalist-r2",
+        name: "Herbalist",
+        skillReq: 0,
+        position: { x: 0, y: 21 },
+        prerequisites: [],
+        description: "",
+        effects: [],
+        _importPlayerLevelReq: 20,
+      },
+    ],
+  },
+};
+
+const herbalistReqs = buildPerkPlayerLevelReqs(levelRankTrees);
+assert.equal(herbalistReqs["alchemy-herbalist"], 10);
+assert.equal(herbalistReqs["alchemy-herbalist-r2"], 20);
+assert.equal(levelRankTrees["alchemy.json"].perks[0]._importPlayerLevelReq, undefined);
 
 console.log("append-missing-perks.test.mjs: ok");

@@ -142,7 +142,9 @@ export function applyPerkLayoutOverrides(trees, layoutOverrides) {
 }
 
 export function perkGraphKey(perk) {
-  return `${canonicalPerkName(perk.name)}:${perk.skillReq ?? 0}`;
+  const rankMatch = String(perk.id ?? "").match(/-r(\d+)$/);
+  const rankPart = rankMatch ? `r${rankMatch[1]}` : `s${perk.skillReq ?? 0}`;
+  return `${canonicalPerkName(perk.name)}:${rankPart}`;
 }
 
 export function loadExistingPerkTree(perksDir, filename) {

@@ -213,8 +213,26 @@ function sameGridPosition(a: GridPoint, b: GridPoint): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
+function stackRankFromPerkId(id: string): number {
+  const match = id.match(/-r(\d+)$/);
+  return match ? Number(match[1]) : 1;
+}
+
+function comparePerkStackOrder(left: Perk, right: Perk): number {
+  const skillDiff = left.skillReq - right.skillReq;
+  if (skillDiff !== 0) return skillDiff;
+
+  const levelDiff = (left.playerLevelReq ?? 0) - (right.playerLevelReq ?? 0);
+  if (levelDiff !== 0) return levelDiff;
+
+  const rankDiff = stackRankFromPerkId(left.id) - stackRankFromPerkId(right.id);
+  if (rankDiff !== 0) return rankDiff;
+
+  return left.id.localeCompare(right.id);
+}
+
 export function sortPerkStack(perks: Perk[]): Perk[] {
-  return [...perks].sort((a, b) => a.skillReq - b.skillReq);
+  return [...perks].sort(comparePerkStackOrder);
 }
 
 export function groupPerksByPosition(tree: PerkTree): Map<string, Perk[]> {
@@ -339,7 +357,7 @@ export function parseSvgViewBox(viewBox: string): PerkTreeContentBounds {
 
 /** Perks sharing a grid cell stack; the front perk receives pointer input. */
 export function getFrontPerkIdAtPosition(perks: Perk[], selectedPerkIds: string[]): string {
-  const sorted = [...perks].sort((a, b) => a.skillReq - b.skillReq);
+  const sorted = sortPerkStack(perks);
   const nextUnselected = sorted.find((perk) => !selectedPerkIds.includes(perk.id));
   return nextUnselected?.id ?? sorted[sorted.length - 1].id;
 }

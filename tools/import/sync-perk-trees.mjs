@@ -20,7 +20,7 @@ const avifMembership = buildAvifMembershipIndex(
   buildIdentityToPerkName(perkRecords),
 );
 const perkMetadataIndex = buildPerkMetadataIndex(perkRecords, avifTrees, avifMembership);
-const { trees, indexEntries, addedPerks, removedPerks } = transformPerkRecords(
+const { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs } = transformPerkRecords(
   perkRecords,
   perksDir,
   install.installDir,
@@ -33,6 +33,10 @@ for (const [filename, tree] of Object.entries(trees)) {
 }
 
 writeFileSync(join(perksDir, "index.json"), `${JSON.stringify(indexEntries, null, 2)}\n`);
+writeFileSync(
+  join(__dirname, "..", "..", "data", "game", "perk-player-level-reqs.json"),
+  `${JSON.stringify(playerLevelReqs, null, 2)}\n`,
+);
 
 const removedPerkFiles = removeStalePerkFiles(perksDir, Object.keys(trees));
 

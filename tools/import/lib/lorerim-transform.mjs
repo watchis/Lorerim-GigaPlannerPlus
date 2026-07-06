@@ -24,6 +24,8 @@ import {
 } from "./perk-import-filter.mjs";
 import {
   appendMissingPerkNodes,
+  buildPerkPlayerLevelReqs,
+  normalizeStackPrerequisites,
 } from "./append-missing-perks.mjs";
 import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
 import { collectWorshipAltarKeys, deityNameFromAltarKey, normalizeAltarKey, resolveDeityEligibility } from "./deity-eligibility.mjs";
@@ -316,8 +318,12 @@ export function transformPerkRecords(
   const removedPerks = pruneAllPerkTrees(trees, { membership });
   applyPerkLayoutOverrides(trees, layoutOverrides);
   applyPerkGraphSnapshots(trees, graphSnapshots);
+  for (const tree of Object.values(trees)) {
+    normalizeStackPrerequisites(tree);
+  }
+  const playerLevelReqs = buildPerkPlayerLevelReqs(trees);
 
-  return { trees, indexEntries, addedPerks, removedPerks };
+  return { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs };
 }
 
 function resolveTraitText(spellRecord) {

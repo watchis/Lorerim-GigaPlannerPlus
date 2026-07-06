@@ -232,7 +232,9 @@
         "x": 21,
         "y": 27
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "speech-haggling"
+      ],
       "description": "Your knowledge in combat tactics allow you to effectively lead your allies in combat. [Improve nearby allies' skills by 20%, increase magicka, stamina, and their regeneration by 100(%), increase unarmed damage by 10]",
       "effects": [],
       "prerequisitesAny": []
@@ -245,7 +247,9 @@
         "x": 21,
         "y": 27
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "speech-haggling"
+      ],
       "description": "Your knowledge in combat tactics allow you to effectively lead your allies in combat. [Improve nearby allies' skills by 30%, increase magicka, stamina, and their regeneration by 150(%), increase unarmed damage by 15]",
       "effects": [],
       "prerequisitesAny": []

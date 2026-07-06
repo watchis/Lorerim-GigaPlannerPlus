@@ -11,6 +11,8 @@ const consumeLifePrereqHex =
   "000000000000803fc0010000685c0045000000000000000000000000ffffffff";
 const destructionSkillHex =
   "600000000000c8421501000014000000000000000000000000000000ffffffff";
+const playerLevelHex =
+  "60000000000020410e0000140000000000000000000000000000000000ffffffff";
 
 assert.equal(parseSkillReqFromEdid("REQ_Destruction_BloodMagic_100_BloodMastery"), 100);
 assert.equal(parseSkillReqFromEdid("REQ_Destruction_BloodMagic_075_ConsumeLife"), 75);
@@ -62,6 +64,11 @@ const metadata = parsePerkRecordMetadata(buffer, "REQ_Destruction_BloodMagic_100
 assert.equal(metadata.skillReq, 100);
 assert.deepEqual(metadata.prerequisiteRawFormIds, [expectedPrereqFormId]);
 assert.equal(metadata.nextRankRawFormId, null);
+
+const levelBuffer = buildPerkBuffer("REQ_Alchemy_Herbalist1", [playerLevelHex]);
+const levelConditions = parseTopLevelPerkConditions(levelBuffer);
+assert.equal(levelConditions.playerLevelReq, 10);
+assert.equal(parsePerkRecordMetadata(levelBuffer, "REQ_Alchemy_Herbalist1").playerLevelReq, 10);
 
 const rankedBuffer = (() => {
   const parts = [Buffer.from("EDID"), Buffer.alloc(2), Buffer.from("REQ_Sneak_Stealth1\0", "utf8")];
