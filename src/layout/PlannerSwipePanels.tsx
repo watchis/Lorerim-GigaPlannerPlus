@@ -19,6 +19,7 @@ import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 
 const CENTER_PANE_INDEX = 1;
+const SWIPE_NAV_HEIGHT = "4.25rem";
 
 const GoToSwipePaneContext = createContext<(index: number) => void>(() => {});
 
@@ -32,18 +33,21 @@ const PANE_NAV = [
     Icon: UserRound,
     labelKey: "character-setup" as const,
     labelField: "title" as const,
+    shortLabelField: "title" as const,
   },
   {
     panelId: "skill-trees",
     Icon: LayoutGrid,
     labelKey: "character-setup" as const,
     labelField: "overviewTitle" as const,
+    shortLabelField: "overviewTitle" as const,
   },
   {
     panelId: "skill-trees-sidebar",
     Icon: Trees,
     labelKey: "skill-trees" as const,
     labelField: "title" as const,
+    shortLabelField: "title" as const,
   },
 ] as const;
 
@@ -118,11 +122,21 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
     scrollToIndex,
   ]);
 
-  const getPaneAriaLabel = (panelId: string): string => {
+  const getPaneLabel = (panelId: string): string => {
     const nav = PANE_NAV.find((item) => item.panelId === panelId);
     if (!nav) return panelId;
     const labels = nav.labelKey === "skill-trees" ? skillLabels : panelLabels;
     return labels[nav.labelField] ?? panelId;
+  };
+
+  const getPaneShortLabel = (panelId: string): string => {
+    const nav = PANE_NAV.find((item) => item.panelId === panelId);
+    if (!nav) return panelId;
+    const labels = nav.labelKey === "skill-trees" ? skillLabels : panelLabels;
+    const full = labels[nav.shortLabelField] ?? panelId;
+    if (panelId === "skill-trees-sidebar") return labels.title ?? "Skills";
+    if (panelId === "skill-trees") return labels.overviewTitle ?? "Build";
+    return full;
   };
 
   return (
@@ -130,8 +144,11 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
           ref={scrollRef}
-          className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain pb-[calc(3.75rem+env(safe-area-inset-bottom))] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          style={{ touchAction: "pan-x" }}
+          className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{
+            touchAction: "pan-x",
+            paddingBottom: `calc(${SWIPE_NAV_HEIGHT} + env(safe-area-inset-bottom))`,
+          }}
         >
           {panelIds.map((panelId, index) => {
             const Panel = panelRegistry[panelId] as ComponentType | undefined;
@@ -154,16 +171,17 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
         </div>
 
         <nav
-          className="absolute inset-x-0 bottom-0 z-20 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
           role="tablist"
           aria-label="Planner sections"
         >
-          <div className="mx-auto flex max-w-lg items-center justify-around gap-1 px-3 pt-1.5">
+          <div className="pointer-events-auto mx-auto flex max-w-md items-stretch gap-1 rounded-2xl border border-[var(--color-border)]/80 bg-[var(--color-surface)]/90 p-1 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl">
             {panelIds.map((panelId, index) => {
               const nav = PANE_NAV.find((item) => item.panelId === panelId);
               const Icon = nav?.Icon ?? LayoutGrid;
               const isActive = index === activeIndex;
-              const ariaLabel = getPaneAriaLabel(panelId);
+              const ariaLabel = getPaneLabel(panelId);
+              const shortLabel = getPaneShortLabel(panelId);
 
               return (
                 <button
@@ -176,31 +194,24 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
                   aria-controls={`planner-swipe-pane-${panelId}`}
                   onClick={() => scrollToIndex(index)}
                   className={cn(
-                    "relative flex min-h-11 min-w-11 flex-1 flex-col items-center justify-center gap-1 rounded-[var(--radius-md)] px-2 py-1.5 transition-colors",
+                    "relative flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1.5 transition-all duration-200",
                     isActive
-                      ? "text-[var(--color-accent)]"
-                      : "text-[var(--color-muted)] hover:text-[var(--color-foreground)]",
+                      ? "bg-[var(--color-accent)]/14 text-[var(--color-accent)] shadow-[inset_0_0_0_1px_rgba(201,162,39,0.22)]"
+                      : "text-[var(--color-muted)] hover:bg-[var(--color-surface-elevated)]/50 hover:text-[var(--color-foreground)]",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-full border transition-colors",
-                      isActive
-                        ? "border-[var(--color-accent)]/40 bg-[var(--color-accent)]/12"
-                        : "border-transparent bg-[var(--color-surface-elevated)]/40",
-                    )}
-                  >
-                    <Icon className="h-5 w-5" aria-hidden />
-                  </span>
-                  <span
-                    className={cn(
-                      "h-1 w-1 rounded-full transition-opacity",
-                      isActive
-                        ? "bg-[var(--color-accent)] opacity-100"
-                        : "bg-[var(--color-muted)] opacity-35",
-                    )}
+                  <Icon
+                    className={cn("h-5 w-5 shrink-0 transition-transform", isActive && "scale-105")}
                     aria-hidden
                   />
+                  <span
+                    className={cn(
+                      "max-w-full truncate text-[10px] font-medium leading-none tracking-wide",
+                      isActive ? "text-[var(--color-accent)]" : "text-[var(--color-muted)]",
+                    )}
+                  >
+                    {shortLabel}
+                  </span>
                 </button>
               );
             })}
@@ -229,7 +240,7 @@ function SwipePane({
       aria-hidden={!isActive}
       className={cn(
         "planner-swipe-pane h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-y-contain",
-        fullHeight && "flex flex-col",
+        fullHeight && "flex flex-col overflow-hidden",
       )}
     >
       <div

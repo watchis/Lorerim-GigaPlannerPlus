@@ -1,6 +1,8 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { Info } from "lucide-react";
 import {
   forwardRef,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -54,6 +56,113 @@ export const TooltipContent = forwardRef<
   </TooltipPrimitive.Portal>
 ));
 TooltipContent.displayName = "TooltipContent";
+
+function useSupportsHover(): boolean {
+  const [supportsHover, setSupportsHover] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  });
+
+  useEffect(() => {
+    const media = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const update = () => setSupportsHover(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return supportsHover;
+}
+
+type HoverTapTooltipProps = {
+  children: ReactNode;
+  content: ReactNode;
+  side?: ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>["side"];
+  align?: ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>["align"];
+  contentClassName?: string;
+  triggerClassName?: string;
+};
+
+/** Tooltip that opens on hover (desktop) or tap (touch). */
+export function HoverTapTooltip({
+  children,
+  content,
+  side = "bottom",
+  align = "center",
+  contentClassName,
+  triggerClassName,
+}: HoverTapTooltipProps) {
+  const supportsHover = useSupportsHover();
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!open || supportsHover) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (triggerRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open, supportsHover]);
+
+  const handleTap = (event: MouseEvent<HTMLSpanElement>) => {
+    if (supportsHover) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setOpen((value) => !value);
+  };
+
+  return (
+    <Tooltip
+      open={supportsHover ? undefined : open}
+      onOpenChange={supportsHover ? undefined : setOpen}
+    >
+      <TooltipTrigger asChild>
+        <span
+          ref={triggerRef}
+          className={cn("inline-flex", triggerClassName)}
+          onClick={handleTap}
+        >
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side={side} align={align} className={contentClassName}>
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+export function InfoTooltipButton({
+  text,
+  className,
+  iconClassName,
+  side = "bottom",
+}: {
+  text: string;
+  className?: string;
+  iconClassName?: string;
+  side?: ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>["side"];
+}) {
+  return (
+    <HoverTapTooltip content={text} side={side} contentClassName="max-w-xs">
+      <button
+        type="button"
+        className={cn(
+          "inline-flex min-h-7 min-w-7 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-muted)] transition-colors hover:text-[var(--color-foreground)] md:min-h-0 md:min-w-0",
+          className,
+        )}
+        aria-label={text}
+      >
+        <Info className={cn("h-3.5 w-3.5", iconClassName)} />
+      </button>
+    </HoverTapTooltip>
+  );
+}
 
 export function CursorTooltip({
   children,

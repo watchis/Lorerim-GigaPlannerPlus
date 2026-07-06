@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearchInput";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { BugReportButton } from "@/components/BugReportButton";
 import type { GameData } from "@/data/schemas";
 import {
   decodeBuildPackage,
@@ -47,7 +48,8 @@ import {
   normalizeSavedBuild,
   updateSavedBuildInList,
 } from "@/store/savedBuilds";
-import { BugReportButton } from "@/components/BugReportButton";
+
+type MobileBuildsTab = "builds" | "transfer";
 
 function formatUpdatedAt(timestamp: number): string {
   return new Date(timestamp).toLocaleString(undefined, {
@@ -101,7 +103,7 @@ function BuildAction({ label, onClick, disabled, destructive, children }: BuildA
             variant="ghost"
             size="icon"
             className={cn(
-              "h-8 w-8",
+              "h-9 w-9",
               destructive && "text-[var(--color-error)] hover:text-[var(--color-error)]",
             )}
             disabled={disabled}
@@ -109,6 +111,7 @@ function BuildAction({ label, onClick, disabled, destructive, children }: BuildA
               stopPropagation(event);
               onClick();
             }}
+            aria-label={label}
           >
             {children}
           </Button>
@@ -606,7 +609,7 @@ function SavedBuildCard({
       <div
         className={cn(
           "flex shrink-0 touch-none items-center px-2 text-[var(--color-muted)]",
-          canReorder ? "cursor-grab active:cursor-grabbing" : "opacity-30",
+          canReorder ? "cursor-grab active:cursor-grabbing max-lg:hidden" : "hidden",
         )}
         aria-hidden
       >
@@ -667,6 +670,7 @@ export function BuildsPage() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [activeCodeCopied, setActiveCodeCopied] = useState<"code" | "link" | null>(null);
   const [buildSearchQuery, setBuildSearchQuery] = useState("");
+  const [mobileTab, setMobileTab] = useState<MobileBuildsTab>("builds");
 
   const visibleBuilds = useMemo(() => {
     if (!gameData) return [];
@@ -810,19 +814,19 @@ export function BuildsPage() {
 
   return (
     <div className="page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4">
-      <header className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <header className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
           <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-[var(--color-accent-muted)]">
             {labels.eyebrow}
           </p>
-          <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold tracking-wide text-[var(--color-foreground)]">
+          <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold tracking-wide text-[var(--color-foreground)] sm:text-3xl">
             {labels.title}
           </h1>
           <p className="mt-1.5 text-sm text-[var(--color-muted)]">
             {formatLabel(labels.buildCount, { count: savedBuilds.length })} · {labels.autoSaveHint}
           </p>
         </div>
-        <Button asChild variant="outline" className="shrink-0 self-start">
+        <Button asChild variant="outline" className="w-full shrink-0 sm:w-auto sm:self-start">
           <Link to="/planner">
             {labels.openPlanner}
             <ArrowRight className="h-4 w-4" />
@@ -830,8 +834,40 @@ export function BuildsPage() {
         </Button>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:overflow-hidden">
-        <section className="flex min-h-0 min-w-0 flex-col gap-3 lg:h-full lg:overflow-hidden">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6 lg:overflow-hidden">
+        <div className="grid h-10 shrink-0 grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileTab("builds")}
+            className={cn(
+              "rounded-[var(--radius-md)] px-3 text-xs font-medium transition-colors sm:text-sm",
+              mobileTab === "builds"
+                ? "bg-[var(--color-surface)] text-[var(--color-accent)] shadow-sm"
+                : "text-[var(--color-muted)]",
+            )}
+          >
+            {labels.savedBuildsTitle}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("transfer")}
+            className={cn(
+              "rounded-[var(--radius-md)] px-3 text-xs font-medium transition-colors sm:text-sm",
+              mobileTab === "transfer"
+                ? "bg-[var(--color-surface)] text-[var(--color-accent)] shadow-sm"
+                : "text-[var(--color-muted)]",
+            )}
+          >
+            {labels.shareCodeTitle}
+          </button>
+        </div>
+
+        <section
+          className={cn(
+            "flex min-h-0 min-w-0 flex-col gap-3 lg:h-full lg:overflow-hidden",
+            mobileTab !== "builds" && "hidden lg:flex",
+          )}
+        >
           <div className="flex shrink-0 items-center justify-between gap-3">
             <h2 className="font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-accent)]">
               {labels.savedBuildsTitle}
@@ -853,7 +889,7 @@ export function BuildsPage() {
             placeholder={labels.searchBuilds}
           />
 
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 max-lg:max-h-[calc(100dvh-20rem)]">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:max-h-none">
             {visibleBuilds.length === 0 ? (
               <p className="px-1 py-6 text-center text-sm text-[var(--color-muted)]">
                 {labels.noSearchResults}
@@ -891,7 +927,7 @@ export function BuildsPage() {
           </div>
         </section>
 
-        <aside className="shrink-0">
+        <aside className={cn("shrink-0", mobileTab !== "transfer" && "hidden lg:block")}>
           <TransferSidebar
             labels={labels}
             activeBuildName={activeBuild?.name}

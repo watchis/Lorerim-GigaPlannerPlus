@@ -1,8 +1,14 @@
-import { AlertCircle, ChevronsDown, ChevronsUp, Info, Minus, Plus } from "lucide-react";
-import type { ReactNode } from "react";
+import { AlertCircle, ChevronsDown, ChevronsUp, Info, Minus, Plus, Wallet } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { NumericLevelInput } from "@/components/NumericLevelInput";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger, CursorTooltip } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  CursorTooltip,
+  InfoTooltipButton,
+} from "@/components/ui/tooltip";
 import {
   getBuildPlayerLevelWarnings,
   ensurePlayerLevelForBuild,
@@ -133,21 +139,129 @@ function BuildIssuesBanner({
 }
 
 function PointsInfoTooltip({ text }: { text: string }) {
+  return <InfoTooltipButton text={text} />;
+}
+
+function BudgetStatRow({
+  label,
+  remaining,
+  spentLabel,
+  spent,
+  info,
+  overBudget,
+}: {
+  label: string;
+  remaining: number;
+  spentLabel: string;
+  spent: number;
+  info: string;
+  overBudget: boolean;
+}) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
-          aria-label={text}
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 space-y-1">
+        <div className="flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
+          <span>{label}</span>
+          <InfoTooltipButton text={info} iconClassName="h-3 w-3" />
+        </div>
+        <p className="text-[11px] text-[var(--color-muted)]">
+          {spent} {spentLabel}
+        </p>
+      </div>
+      <span className={remainingCountClassName(overBudget)}>{remaining}</span>
+    </div>
+  );
+}
+
+function MobileBudgetDropdown({
+  barLabels,
+  computed,
+  perkPointsInfo,
+  skillPointsInfo,
+  trainingLevelsInfo,
+  perkOverBudget,
+  skillOverBudget,
+  trainingOverBudget,
+}: {
+  barLabels: Record<string, string>;
+  computed: NonNullable<ReturnType<typeof useBuildStore.getState>["computed"]>;
+  perkPointsInfo: string;
+  skillPointsInfo: string;
+  trainingLevelsInfo: string;
+  perkOverBudget: boolean;
+  skillOverBudget: boolean;
+  trainingOverBudget: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const hasIssue = perkOverBudget || skillOverBudget || trainingOverBudget;
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (menuRef.current?.contains(event.target as Node)) return;
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
+
+  return (
+    <div ref={menuRef} className="relative md:hidden">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className={cn(
+          "h-8 gap-1.5 border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 px-2.5 text-xs",
+          hasIssue && "border-[var(--color-error)]/50 text-[var(--color-error)]",
+        )}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen((value) => !value)}
+      >
+        <Wallet className="h-3.5 w-3.5 shrink-0" />
+        <span className="tabular-nums">
+          {computed.perkPointsRemaining}/{computed.skillPointsRemaining}
+        </span>
+        <Info className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
+      </Button>
+
+      {open && (
+        <div
+          role="dialog"
+          aria-label={barLabels.budgetSummaryTitle ?? "Build budget"}
+          className="absolute right-0 top-[calc(100%+0.375rem)] z-40 w-[min(18rem,calc(100vw-2rem))] space-y-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-3 shadow-[var(--shadow-panel)]"
         >
-          <Info className="h-3 w-3" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom" className="max-w-xs">
-        {text}
-      </TooltipContent>
-    </Tooltip>
+          <BudgetStatRow
+            label={barLabels.perkPointsRemaining}
+            remaining={computed.perkPointsRemaining}
+            spentLabel={barLabels.perkPointsSpent}
+            spent={computed.perkPointsSpent}
+            info={perkPointsInfo}
+            overBudget={perkOverBudget}
+          />
+          <BudgetStatRow
+            label={barLabels.trainingLevelsRemaining}
+            remaining={computed.trainingLevelsRemaining}
+            spentLabel={barLabels.trainingLevelsSpent}
+            spent={computed.trainingLevelsUsed}
+            info={trainingLevelsInfo}
+            overBudget={trainingOverBudget}
+          />
+          <BudgetStatRow
+            label={barLabels.skillPointsRemaining}
+            remaining={computed.skillPointsRemaining}
+            spentLabel={barLabels.skillPointsSpent}
+            spent={computed.skillPointsSpent}
+            info={skillPointsInfo}
+            overBudget={skillOverBudget}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -294,7 +408,7 @@ export function LevelBar() {
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-start sm:gap-3">
           <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
             {barLabels.playerLevel}
           </span>
@@ -340,9 +454,20 @@ export function LevelBar() {
           >
             <ChevronsDown className="h-3.5 w-3.5" />
           </LevelStepperTooltipButton>
+
+          <MobileBudgetDropdown
+            barLabels={barLabels}
+            computed={computed}
+            perkPointsInfo={perkPointsInfo}
+            skillPointsInfo={skillPointsInfo}
+            trainingLevelsInfo={trainingLevelsInfo}
+            perkOverBudget={perkOverBudget}
+            skillOverBudget={skillOverBudget}
+            trainingOverBudget={trainingOverBudget}
+          />
         </div>
 
-        <div className="-mx-1 flex items-center gap-3 overflow-x-auto overscroll-x-contain px-1 pb-0.5 text-xs md:flex-wrap md:overflow-visible md:pb-0">
+        <div className="hidden items-center gap-3 text-xs md:flex md:flex-wrap">
           <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
             <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
               <span>{barLabels.perkPointsRemaining}:</span>

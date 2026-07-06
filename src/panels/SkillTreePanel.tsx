@@ -1,4 +1,4 @@
-import { AlertCircle, Minus, Plus } from "lucide-react";
+import { AlertCircle, Minus, Plus, RotateCcw, ChevronLeft } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { SkillTrainingSection } from "@/components/SkillTrainingSection";
@@ -7,7 +7,7 @@ import { PerkTreeView } from "@/components/PerkTreeView";
 import { SkillIcon } from "@/components/SkillIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { HoverTapTooltip } from "@/components/ui/tooltip";
 import {
   getOrderedPerkTrees,
   computeDestinyPerkPointsSpent,
@@ -45,18 +45,9 @@ function SkillTreeWarningIcon({
   if (messages.length === 0) return null;
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className="shrink-0 rounded-sm text-[var(--color-error)] transition-colors hover:text-[var(--color-error-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-error)]/50"
-          aria-label={ariaLabel}
-        >
-          <AlertCircle className="h-4 w-4" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom" align="start" className="max-w-xs">
-        {messages.length === 1 ? (
+    <HoverTapTooltip
+      content={
+        messages.length === 1 ? (
           <p className="text-xs leading-relaxed">{messages[0]}</p>
         ) : (
           <ul className="space-y-1.5 text-xs leading-relaxed">
@@ -67,9 +58,20 @@ function SkillTreeWarningIcon({
               </li>
             ))}
           </ul>
-        )}
-      </TooltipContent>
-    </Tooltip>
+        )
+      }
+      side="bottom"
+      align="start"
+      contentClassName="max-w-xs"
+    >
+      <button
+        type="button"
+        className="inline-flex min-h-8 min-w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-error)] transition-colors hover:text-[var(--color-error-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-error)]/50"
+        aria-label={ariaLabel}
+      >
+        <AlertCircle className="h-4 w-4" />
+      </button>
+    </HoverTapTooltip>
   );
 }
 
@@ -243,6 +245,193 @@ export function SkillTreePanel() {
     ...(conflictMessage ? [conflictMessage] : []),
   ];
   const hasTreeProblem = warningMessages.length > 0;
+
+  const perkTree = (
+    <PerkTreeView
+      fit={!stackedLayout}
+      scrollable={stackedLayout}
+      className="min-h-0 flex-1"
+      tree={activeTree}
+      labels={labels}
+      conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}
+      playerLevelConflictPerkIds={invalidPerkIdsOnTree}
+      showSkillRequirements={showPerkSkillRequirements}
+    />
+  );
+
+  if (stackedLayout) {
+    return (
+      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-surface)]">
+        <header className="shrink-0 border-b border-[var(--color-border)]/50 px-3 py-2.5">
+          <div className="flex items-start gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              onClick={() => setMiddleView("character-info")}
+              aria-label={setupLabels.backToOverview ?? setupLabels.title}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 items-center gap-2">
+                <SkillIcon
+                  skillId={activeTree.skillId}
+                  className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]"
+                />
+                <h2 className="truncate font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-foreground)]">
+                  {activeTree.skillName}
+                </h2>
+                <SkillTreeWarningIcon
+                  messages={warningMessages}
+                  ariaLabel={labels.skillTreeWarning}
+                />
+              </div>
+              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
+                {isTrainingMode ? (
+                  labels.trainingModeActive
+                ) : (
+                  <>
+                    <span className="font-medium tabular-nums text-[var(--color-foreground)]">
+                      {selectedCount}/{activeTree.perks.length}
+                    </span>{" "}
+                    {labels.perksSelected}
+                  </>
+                )}
+              </p>
+            </div>
+            {!isDestinyTree && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 text-[var(--color-muted)]"
+                onClick={() =>
+                  isTrainingMode
+                    ? resetSkillTraining(activeTree.skillId)
+                    : resetSkillPerks(activeTree.skillId)
+                }
+                aria-label={isTrainingMode ? labels.resetTraining : labels.resetSkill}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </header>
+
+        <div className="shrink-0 space-y-2 border-b border-[var(--color-border)]/50 px-3 py-2">
+          {!isDestinyTree && (
+            <div className="grid grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
+              <Button
+                variant={isTrainingMode ? "ghost" : "default"}
+                size="sm"
+                className="h-9 text-xs"
+                onClick={() => setSkillWorkspaceMode("perks")}
+              >
+                {labels.perksMode}
+              </Button>
+              <Button
+                variant={isTrainingMode ? "default" : "ghost"}
+                size="sm"
+                className="h-9 text-xs"
+                onClick={() => setSkillWorkspaceMode("training")}
+              >
+                {labels.trainingMode}
+              </Button>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {isDestinyTree ? (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                  {labels.destinyPoints ?? "Destiny points"}
+                </span>
+                <span
+                  className={cn(
+                    "tabular-nums",
+                    destinyOverBudget
+                      ? "font-medium text-[var(--color-error)]"
+                      : "text-[var(--color-muted)]",
+                  )}
+                >
+                  {computeDestinyPerkPointsSpent(gameData.game, build)}/
+                  {getEarnedDestinyPerkPoints(gameData.game, build)}
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                  {labels.skillLevel}
+                </span>
+                <div
+                  className={cn(
+                    "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
+                    hasSkillLevelProblem
+                      ? "border-[var(--color-error)]/70 ring-1 ring-[var(--color-error)]/30"
+                      : "border-[var(--color-border)]",
+                  )}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => setSkillLevel(activeTree.skillId, level - 1)}
+                    disabled={level <= Math.max(floor, trainingFloor)}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <NumericLevelInput
+                    value={level}
+                    min={Math.max(floor, trainingFloor)}
+                    max={skillLevelCap}
+                    onCommit={(next) => setSkillLevel(activeTree.skillId, next)}
+                    className={hasSkillLevelProblem ? "text-[var(--color-error)]" : undefined}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => setSkillLevel(activeTree.skillId, level + 1)}
+                    disabled={level >= skillLevelCap}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <span className="text-[11px] text-[var(--color-muted)]">
+                  {labels.skillLevelMin}: <span className="tabular-nums">{floor}</span>
+                </span>
+              </div>
+            )}
+
+            {!isDestinyTree && !isTrainingMode && (
+              <label className="inline-flex cursor-pointer items-center gap-2 text-[11px] text-[var(--color-muted)]">
+                <input
+                  type="checkbox"
+                  checked={showPerkSkillRequirements}
+                  onChange={(event) => setShowPerkSkillRequirements(event.target.checked)}
+                  className="h-4 w-4 shrink-0 accent-[var(--color-accent)]"
+                />
+                {labels.showSkillRequirements}
+              </label>
+            )}
+          </div>
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-2">
+          {isTrainingMode ? (
+            <SkillTrainingSection
+              game={gameData.game}
+              build={build}
+              skillId={activeTree.skillId}
+              labels={labels}
+            />
+          ) : (
+            perkTree
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -420,16 +609,7 @@ export function SkillTreePanel() {
             labels={labels}
           />
         ) : (
-          <PerkTreeView
-            fit={!stackedLayout}
-            scrollable={stackedLayout}
-            className="min-h-0 flex-1"
-            tree={activeTree}
-            labels={labels}
-            conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}
-            playerLevelConflictPerkIds={invalidPerkIdsOnTree}
-            showSkillRequirements={showPerkSkillRequirements}
-          />
+          perkTree
         )}
       </CardContent>
     </Card>
