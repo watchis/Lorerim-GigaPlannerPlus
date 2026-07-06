@@ -104,6 +104,31 @@ assert.equal(
   "Increases your Health and Stamina by 15 points.",
 );
 
+const hircineShrine = extractFaithEffectsFromPlugins({
+  altarKey: "Daedra_Hircine",
+  mgefIndex: indexDeityFaithMgef([
+    {
+      edid: "WSN_AltarBlessing_Daedra_Hircine_Effect",
+      effectDescription: "Regenerate Stamina <mag>% faster.",
+    },
+  ]),
+  altarMagnitude: 25,
+});
+assert.equal(hircineShrine.shrine, "Regenerate Stamina 25% faster.");
+
+const ignoredZeroMagnitude = extractFaithEffectsFromPlugins({
+  altarKey: "Daedra_Hircine",
+  mgefIndex: indexDeityFaithMgef([
+    {
+      edid: "WSN_AltarBlessing_Daedra_Hircine_Effect",
+      effectDescription: "Regenerate Stamina <mag>% faster.",
+      effectMagnitude: 0,
+    },
+  ]),
+  altarMagnitude: 0,
+});
+assert.equal(ignoredZeroMagnitude.shrine, "-", "zero magnitudes must not render as 0%");
+
 const unresolvedMag = extractFaithEffectsFromPlugins({
   altarKey: "Tribunal_Almalexia",
   mgefIndex: indexDeityFaithMgef([

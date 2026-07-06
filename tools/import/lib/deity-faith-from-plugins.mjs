@@ -1,5 +1,5 @@
 import { normalizeAltarKey } from "./deity-eligibility.mjs";
-import { cleanDescription, cleanWintersunEffectText } from "./transform-utils.mjs";
+import { cleanDescription, cleanWintersunEffectText, meaningfulEffectMagnitude } from "./transform-utils.mjs";
 
 const BOON1_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon1_Effect(?:_Ab)?$/i;
 const BOON2_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon2_Effect(?:_Ab)?$/i;
@@ -26,9 +26,15 @@ export function parseWorshipMessage(description) {
   return { intro, follower, devotee, tenets };
 }
 
+function isBrokenShrinePlaceholder(text) {
+  const cleaned = String(text ?? "").trim();
+  if (!cleaned) return true;
+  return /\bby\s+points\b/i.test(cleaned) || /\bmag\s+points\b/i.test(cleaned) || /(?<!\d)\s*%/.test(cleaned);
+}
+
 function effectText(record, magnitude = null) {
   if (!record) return "";
-  const resolvedMagnitude = magnitude ?? record.effectMagnitude ?? null;
+  const resolvedMagnitude = meaningfulEffectMagnitude(magnitude ?? record.effectMagnitude ?? null);
   return cleanWintersunEffectText(record.effectDescription || record.description, resolvedMagnitude);
 }
 
@@ -72,8 +78,11 @@ export function extractFaithEffectsFromPlugins({
   const worship = parseWorshipMessage(worshipDescription);
 
   const shrineRecord = mgefIndex.shrineByAltar.get(key);
-  const shrineMagnitude = altarMagnitude ?? shrineRecord?.effectMagnitude ?? null;
-  const shrine = effectText(shrineRecord, shrineMagnitude);
+  const shrineMagnitude = meaningfulEffectMagnitude(
+    altarMagnitude ?? shrineRecord?.effectMagnitude ?? null,
+  );
+  let shrine = effectText(shrineRecord, shrineMagnitude);
+  if (isBrokenShrinePlaceholder(shrine)) shrine = "";
   const follower = effectText(mgefIndex.followerByAltar.get(key)) || worship.follower;
   const devotee = effectText(mgefIndex.devoteeByAltar.get(key)) || worship.devotee;
 

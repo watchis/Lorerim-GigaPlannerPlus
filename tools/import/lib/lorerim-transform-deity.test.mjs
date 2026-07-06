@@ -33,6 +33,11 @@ const spellRecords = [
     description: "",
   },
   {
+    edid: "WSN_AltarBlessing_Daedra_Hircine_Spell",
+    name: "Hircine's Blessing",
+    description: "",
+  },
+  {
     edid: "WSN_AltarBlessing_Tribunal_SothaSil_Spell",
     name: "Soul of Sotha Sil",
     description: "",
@@ -48,17 +53,18 @@ const mgefRecords = [
   {
     edid: "WSN_AltarBlessing_Tribunal_Almalexia_Effect",
     effectDescription: "Increases your Health and Stamina by <mag> points.",
-    effectMagnitude: 15,
+  },
+  {
+    edid: "WSN_AltarBlessing_Daedra_Hircine_Effect",
+    effectDescription: "Regenerate Stamina <mag>% faster.",
   },
   {
     edid: "WSN_AltarBlessing_Tribunal_SothaSil_Effect",
     effectDescription: "Increases your Health and Magicka by <mag> points.",
-    effectMagnitude: 15,
   },
   {
     edid: "WSN_AltarBlessing_Tribunal_Vivec_Effect",
     effectDescription: "Increases your Magicka and Stamina by <mag> points.",
-    effectMagnitude: 15,
   },
   {
     edid: "WSN_Tribunal_Almalexia_Boon1_Effect_Ab",
@@ -82,6 +88,7 @@ const mgefRecords = [
 
 const result = transformDeityRecords(spellRecords, mgefRecords, mesgRecords, deitiesPath, new Map([
   ["Tribunal_Almalexia", { magnitude: 15 }],
+  ["Daedra_Hircine", { magnitude: 25 }],
   ["Tribunal_SothaSil", { magnitude: 15 }],
   ["Tribunal_Vivec", { magnitude: 15 }],
 ]));
@@ -98,6 +105,7 @@ assert.equal(
   byId.get("almalexia")?.shrine,
   "Increases your Health and Stamina by 15 points.",
 );
+assert.equal(byId.get("hircine")?.shrine, "Regenerate Stamina 25% faster.");
 assert.match(byId.get("almalexia")?.follower ?? "", /blocking/i);
 assert.match(byId.get("almalexia")?.devotee ?? "", /Healing from most sources/i);
 assert.match(byId.get("almalexia")?.tenets ?? "", /beggars and children/);

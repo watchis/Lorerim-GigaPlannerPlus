@@ -17,7 +17,7 @@ import {
 } from "./import-reset.mjs";
 import { parseTraitBody } from "./parse-trait-body.mjs";
 import { collectTraitAbilitySpells } from "./trait-ability-list.mjs";
-import { cleanDescription, cleanName, cleanWintersunEffectText, slugify } from "./transform-utils.mjs";
+import { cleanDescription, cleanName, cleanWintersunEffectText, meaningfulEffectMagnitude, slugify } from "./transform-utils.mjs";
 import { parseBonusEffects, extractConditionalBonusDetails, mergeEffects } from "./parse-bonus-effects.mjs";
 import { parseRaceData } from "./race-data-parser.mjs";
 import { detectLorerimVersion } from "./lorerim-version.mjs";
@@ -810,7 +810,7 @@ export function transformDeityRecords(
     const worship = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}`);
     const fail = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}_Fail`);
     const { requirement } = parseBlessingRequirement(fail?.description);
-    const shrineMagnitude = altarMagnitudes.get(altarKey)?.magnitude ?? null;
+    const shrineMagnitude = meaningfulEffectMagnitude(altarMagnitudes.get(altarKey)?.magnitude ?? null);
     const faithEffects = extractFaithEffectsFromPlugins({
       altarKey,
       mgefIndex,

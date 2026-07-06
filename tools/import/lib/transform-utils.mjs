@@ -23,11 +23,19 @@ export function cleanDescription(description) {
     .trim();
 }
 
+export function meaningfulEffectMagnitude(value) {
+  if (value == null || !Number.isFinite(value) || value <= 0) return null;
+  const rounded = Math.round(value);
+  if (rounded <= 0) return null;
+  return value;
+}
+
 export function cleanWintersunEffectText(text, magnitude = null) {
   let cleaned = String(text ?? "");
+  const usableMagnitude = meaningfulEffectMagnitude(magnitude);
 
-  if (magnitude != null) {
-    const formatted = formatEffectMagnitude(magnitude);
+  if (usableMagnitude != null) {
+    const formatted = formatEffectMagnitude(usableMagnitude);
     cleaned = cleaned.replace(/<mag>/gi, formatted);
   } else {
     cleaned = cleaned.replace(/<mag>/gi, "");

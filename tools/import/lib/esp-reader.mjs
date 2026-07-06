@@ -7,6 +7,7 @@ import { parseMasters, resolveFormIdentity } from "./formid.mjs";
 import { raceDataSkillScore } from "./race-data-parser.mjs";
 import { getRecordBufferAsync, mapConcurrent, visitAsync } from "./plugin-io.mjs";
 import { normalizeAltarKey } from "./deity-eligibility.mjs";
+import { meaningfulEffectMagnitude } from "./transform-utils.mjs";
 
 const IMPORT_RECORD_TYPES = ["PERK", "SPEL", "RACE", "MESG", "QUST"];
 const LORERIM_RACE_PLUGIN_PATTERN = /LoreRim - NPCs and Races/i;
@@ -105,17 +106,21 @@ function mergeCollectedRecord(existing, incoming) {
 }
 
 /**
- * SPEL EFIT layout (Skyrim): uint32 effect FormID, float magnitude, uint32 area, uint32 duration.
+ * SPEL EFIT layout (Skyrim): float magnitude, uint32 area, uint32 duration.
+ * The linked MGEF FormID is stored in the preceding EFID subrecord.
  */
 export function readSpellEfitMagnitudes(recordBuffer) {
+  const fromParsed = readSpellEfitMagnitudesParsed(recordBuffer);
+  if (fromParsed.length > 0) return fromParsed;
+
   const magnitudes = [];
   let index = 0;
 
   while ((index = recordBuffer.indexOf("EFIT", index)) !== -1) {
     const size = recordBuffer.readUInt16LE(index + 4);
     const data = recordBuffer.subarray(index + 6, index + 6 + size);
-    if (data.length >= 8) {
-      const magnitude = data.readFloatLE(4);
+    if (data.length >= 4) {
+      const magnitude = data.readFloatLE(0);
       if (Number.isFinite(magnitude)) magnitudes.push(magnitude);
     }
     index += 4;
@@ -124,11 +129,49 @@ export function readSpellEfitMagnitudes(recordBuffer) {
   return magnitudes;
 }
 
-function readMgefDataMagnitude(record) {
-  const data = readDataBuffer(record);
-  if (!data || data.length < 4) return null;
-  const magnitude = data.readFloatLE(0);
-  return Number.isFinite(magnitude) ? magnitude : null;
+function readSpellEfitMagnitudesParsed(recordBuffer) {
+  try {
+    const record = tesData.getRecord(recordBuffer);
+    if (record.compressed) return [];
+
+    const magnitudes = [];
+    for (const sub of record.subRecords ?? []) {
+      if (sub.type !== "EFIT") continue;
+
+      if (sub.value?.magnitude != null && Number.isFinite(sub.value.magnitude)) {
+        magnitudes.push(sub.value.magnitude);
+        continue;
+      }
+
+      if (Buffer.isBuffer(sub.value) && sub.value.length >= 4) {
+        const magnitude = sub.value.readFloatLE(0);
+        if (Number.isFinite(magnitude)) magnitudes.push(magnitude);
+      }
+    }
+
+    return magnitudes;
+  } catch {
+    return [];
+  }
+}
+
+function pickBestSpellMagnitude(magnitudes) {
+  const meaningful = magnitudes
+    .map((value) => meaningfulEffectMagnitude(value))
+    .filter((value) => value != null);
+  if (meaningful.length === 0) return null;
+  return Math.max(...meaningful);
+}
+
+function isVariantAltarBlessingSpellEdid(edid) {
+  return /Gift|Cloak|BuffOnly|NoAutocast/i.test(edid);
+}
+
+function shouldReplaceAltarMagnitude(existing, incoming) {
+  if (!existing) return true;
+  if (existing.isVariant && !incoming.isVariant) return true;
+  if (!existing.isVariant && incoming.isVariant) return false;
+  return incoming.magnitude > existing.magnitude;
 }
 
 function altarKeyFromSpellEdid(edid) {
@@ -143,13 +186,14 @@ function collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName) {
   const altarKey = altarKeyFromSpellEdid(edid);
   if (!altarKey) return null;
 
-  const effectMagnitudes = readSpellEfitMagnitudes(buffer).filter((value) => value > 0);
-  if (effectMagnitudes.length === 0) return null;
+  const magnitude = pickBestSpellMagnitude(readSpellEfitMagnitudes(buffer));
+  if (magnitude == null) return null;
 
   return {
     altarKey,
-    magnitude: effectMagnitudes[0],
+    magnitude,
     plugin: pluginName,
+    isVariant: isVariantAltarBlessingSpellEdid(edid),
   };
 }
 
@@ -198,14 +242,6 @@ async function readPluginImportPayload({ pluginName, path }) {
 
       const parsed = parseRecord(buffer, ownerPluginLower, masters);
       if (!parsed) continue;
-
-      if (parsed.type === "MGEF") {
-        const record = tesData.getRecord(buffer);
-        const magnitude = readMgefDataMagnitude(record);
-        if (magnitude != null && magnitude > 0) {
-          parsed.effectMagnitude = magnitude;
-        }
-      }
 
       if (type === "SPEL") {
         const altarBlessing = collectAltarBlessingFromSpellBuffer(buffer, parsed.edid, pluginName);
@@ -262,9 +298,12 @@ function mergePluginPayload(
   }
 
   for (const blessing of altarBlessings) {
+    const existing = altarMagnitudes.get(blessing.altarKey);
+    if (!shouldReplaceAltarMagnitude(existing, blessing)) continue;
     altarMagnitudes.set(blessing.altarKey, {
       magnitude: blessing.magnitude,
       plugin: blessing.plugin,
+      isVariant: blessing.isVariant,
     });
   }
 
