@@ -66,7 +66,7 @@ const DEITY_DA_QUEST_EDID = {
   meridia: "DA09",
   "molag-bal": "DA10",
   namira: "DA11",
-  nocturnal: "DA13",
+  nocturnal: "TG09",
   peryite: "DA13",
   sanguine: "DA14",
   sheogorath: "DA15",

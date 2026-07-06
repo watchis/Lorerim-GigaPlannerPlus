@@ -103,6 +103,36 @@ const akatoshFollow = buildCanFollowFromInstall({
 assert.equal(akatoshFollow.race, "All");
 assert.equal(akatoshFollow.requirement, "None");
 
+const nocturnalFollow = buildCanFollowFromInstall({
+  deityId: "nocturnal",
+  deityName: "Nocturnal",
+  altarKey: "Daedra_Nocturnal",
+  failMessages: ["Nocturnal does not accept those who have not served her."],
+  deityMeta: null,
+  startingRaces: ["Dunmer"],
+  questByEdid: new Map([
+    ["TG09", "Darkness Returns"],
+    ["DA13", "The Only Cure"],
+  ]),
+});
+assert.match(nocturnalFollow.race, /Darkness Returns/);
+assert.doesNotMatch(nocturnalFollow.race, /The Only Cure/);
+
+const peryiteFollow = buildCanFollowFromInstall({
+  deityId: "peryite",
+  deityName: "Peryite",
+  altarKey: "Daedra_Peryite",
+  failMessages: ["Peryite does not accept those who have not served him."],
+  deityMeta: null,
+  startingRaces: [],
+  questByEdid: new Map([
+    ["TG09", "Darkness Returns"],
+    ["DA13", "The Only Cure"],
+  ]),
+});
+assert.match(peryiteFollow.race, /The Only Cure/);
+assert.doesNotMatch(peryiteFollow.race, /Darkness Returns/);
+
 assert.equal(normalizeAltarKey("Tribunal_Almalexia_BuffOnly"), "Tribunal_Almalexia");
 assert.equal(deityNameFromAltarKey("Tribunal_Almalexia"), "Almalexia");
 assert.equal(deityNameFromAltarKey("Tribunal_SothaSil"), "Sotha Sil");

@@ -94,7 +94,9 @@
         "x": 14,
         "y": 4
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "speech-silver-tongue"
+      ],
       "description": "There is no role you cannot play, and your acting is so believable that there is almost no way for others to see through your disguises.",
       "effects": [],
       "prerequisitesAny": []

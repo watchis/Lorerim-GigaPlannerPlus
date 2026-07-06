@@ -409,8 +409,7 @@
       "description": "You can cast simple spells without mastering them but with less potency. [Spells up to Apprentice level cost 50% less magicka to cast without mastery perks, +0.5% spell power for each skill level]",
       "effects": [],
       "prerequisitesAny": [],
-      "costsPerkPoint": true,
-      "playerLevelReq": 10
+      "costsPerkPoint": true
     },
     {
       "id": "alteration-unskilled-spellcasting-r3",
@@ -424,8 +423,7 @@
       "description": "You can cast simple spells without mastering them but with less potency. [Spells up to Adept level cost 50% less magicka to cast without mastery perks, +1% spell power for each skill level]",
       "effects": [],
       "prerequisitesAny": [],
-      "costsPerkPoint": true,
-      "playerLevelReq": 20
+      "costsPerkPoint": true
     },
     {
       "id": "alteration-metamagic",

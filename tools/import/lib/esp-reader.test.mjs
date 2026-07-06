@@ -124,4 +124,36 @@ const variantBoon = collectBoonFromSpellBuffer(
 );
 assert.equal(variantBoon?.isVariant, true);
 
+const tribunalShrineMgefFormId = 0x1c00084a;
+const tribunalCcBuffer = Buffer.concat([
+  buildSpellEfidBuffer(0x000fbff5),
+  buildSpellEfitBuffer(25),
+  buildSpellEfidBuffer(tribunalShrineMgefFormId),
+  buildSpellEfitBuffer(15),
+]);
+const tribunalCcBlessing = collectAltarBlessingFromSpellBuffer(
+  tribunalCcBuffer,
+  "ccASVSSE001_AlmalexiaSpell",
+  "Wintersun - Reqtificated.esp",
+  new Map([["WSN_AltarBlessing_Tribunal_Almalexia_Effect", tribunalShrineMgefFormId]]),
+);
+assert.deepEqual(tribunalCcBlessing?.magnitudes, [15]);
+assert.equal(tribunalCcBlessing?.altarKey, "Tribunal_Almalexia");
+assert.equal(tribunalCcBlessing?.shrineMgefEdid, "WSN_AltarBlessing_Tribunal_Almalexia_Effect");
+
+const multiEffectWithoutLookup = collectAltarBlessingFromSpellBuffer(
+  Buffer.concat([buildSpellEfitBuffer(2), buildSpellEfitBuffer(25)]),
+  "WSN_AltarBlessing_Daedra_Hircine_Spell",
+  "Wintersun.esp",
+);
+assert.deepEqual(multiEffectWithoutLookup?.magnitudes, [2, 25]);
+
+const multiEffectWithLookup = collectAltarBlessingFromSpellBuffer(
+  hircineSpell,
+  "WSN_AltarBlessing_Daedra_Hircine_Spell",
+  "Wintersun.esp",
+  hircineMgefMap,
+);
+assert.deepEqual(multiEffectWithLookup?.magnitudes, [25]);
+
 console.log("esp-reader tests passed");

@@ -304,7 +304,9 @@
         "x": 16,
         "y": 25
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "wayfarer-cheap-tricks"
+      ],
       "description": "You've spent significant time hunting in the wilderness and can deal more damage to animals. Deal 40% more damage to all animals and half that to dragons.",
       "effects": [],
       "prerequisitesAny": []

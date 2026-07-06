@@ -10,6 +10,7 @@ import { normalizeAltarKey } from "./deity-eligibility.mjs";
 import {
   collectBoonMgefFormIds,
   isAltarBlessingMgefEdid,
+  parseShrineMgefAltarKey,
 } from "./deity-faith-from-plugins.mjs";
 import {
   meaningfulSpellMagnitudes,
@@ -164,37 +165,58 @@ function resolveFaithMgefEdid(formId, lookup) {
   return null;
 }
 
+function hasFaithMgefLookup(lookup) {
+  return lookup?.formIdsByEdid?.size > 0 || lookup?.edidByFormIdentity?.size > 0;
+}
+
+function collectShrineEffectsFromSpell(buffer, lookup) {
+  return readSpellFaithEffectEntries(buffer)
+    .map((entry) => ({
+      ...entry,
+      mgefEdid: resolveFaithMgefEdid(entry.formId, lookup),
+    }))
+    .filter((entry) => entry.magnitude != null && isAltarBlessingMgefEdid(entry.mgefEdid));
+}
+
+function resolveAltarBlessingFromSpellEffects(buffer, lookup) {
+  if (!hasFaithMgefLookup(lookup)) return null;
+
+  const shrineEffects = collectShrineEffectsFromSpell(buffer, lookup);
+  if (shrineEffects.length === 0) return null;
+
+  const altarKey = parseShrineMgefAltarKey(shrineEffects[0].mgefEdid);
+  if (!altarKey) return null;
+
+  return {
+    altarKey,
+    magnitudes: shrineEffects.map((entry) => entry.magnitude),
+    shrineMgefEdid: shrineEffects[0].mgefEdid,
+  };
+}
+
 function pickAltarBlessingMagnitudes(buffer, altarKey, lookup) {
   const resolved = resolveAltarBlessingFromSpell(buffer, altarKey, lookup);
   return resolved?.magnitudes ?? [];
 }
 
 function resolveAltarBlessingFromSpell(buffer, altarKey, lookup) {
-  const hasLookup = lookup?.formIdsByEdid?.size > 0 || lookup?.edidByFormIdentity?.size > 0;
-  if (!hasLookup) {
-    const magnitudes = meaningfulSpellMagnitudes(buffer);
-    if (magnitudes.length === 0) return null;
-    return { magnitudes, shrineMgefEdid: null };
+  if (hasFaithMgefLookup(lookup)) {
+    const shrineEffects = collectShrineEffectsFromSpell(buffer, lookup);
+    if (shrineEffects.length === 0) return null;
+
+    return {
+      magnitudes: shrineEffects.map((entry) => entry.magnitude),
+      shrineMgefEdid: shrineEffects[0].mgefEdid,
+    };
   }
 
-  const shrineEffects = readSpellFaithEffectEntries(buffer)
-    .map((entry) => ({
-      ...entry,
-      mgefEdid: resolveFaithMgefEdid(entry.formId, lookup),
-    }))
-    .filter((entry) => entry.magnitude != null && isAltarBlessingMgefEdid(entry.mgefEdid));
-
-  if (shrineEffects.length === 0) return null;
-
-  return {
-    magnitudes: shrineEffects.map((entry) => entry.magnitude),
-    shrineMgefEdid: shrineEffects[0].mgefEdid,
-  };
+  const magnitudes = meaningfulSpellMagnitudes(buffer);
+  if (magnitudes.length === 0) return null;
+  return { magnitudes, shrineMgefEdid: null };
 }
 
 function pickBoonMagnitudes(buffer, altarKey, boonNumber, lookup) {
-  const hasLookup = lookup?.formIdsByEdid?.size > 0 || lookup?.edidByFormIdentity?.size > 0;
-  if (hasLookup) {
+  if (hasFaithMgefLookup(lookup)) {
     const boonFormIds = collectBoonMgefFormIds(lookup.formIdsByEdid ?? new Map(), altarKey, boonNumber);
     const boonEdids = new Set();
     for (const [edid, formId] of lookup.formIdsByEdid ?? []) {
@@ -213,9 +235,16 @@ function pickBoonMagnitudes(buffer, altarKey, boonNumber, lookup) {
 
     const magnitudes = readSpellMagnitudesForFormIds(buffer, boonFormIds);
     if (magnitudes.length > 0) return magnitudes;
+
+    return [];
   }
 
   return meaningfulSpellMagnitudes(buffer);
+}
+
+function spellBufferHasAltarBlessingEffect(buffer, lookup) {
+  if (!hasFaithMgefLookup(lookup)) return false;
+  return collectShrineEffectsFromSpell(buffer, lookup).length > 0;
 }
 
 function isVariantAltarBlessingSpellEdid(edid) {
@@ -240,62 +269,23 @@ function altarKeyFromSpellEdid(edid) {
   return normalizeAltarKey(rawKey);
 }
 
-/** Tribunal shrines use Ghosts of the Tribunal CC spells, not WSN_AltarBlessing_*_Spell. */
-const TRIBUNAL_CC_ALTAR_SPELLS = {
-  ccASVSSE001_AlmalexiaSpell: {
-    altarKey: "Tribunal_Almalexia",
-    shrineMgefEdid: "WSN_AltarBlessing_Tribunal_Almalexia_Effect",
-  },
-  ccASVSSE001_SothaSpell: {
-    altarKey: "Tribunal_SothaSil",
-    shrineMgefEdid: "WSN_AltarBlessing_Tribunal_SothaSil_Effect",
-  },
-  ccASVSSE001_VivecSpell: {
-    altarKey: "Tribunal_Vivec",
-    shrineMgefEdid: "WSN_AltarBlessing_Tribunal_Vivec_Effect",
-  },
-};
-
-function collectTribunalCcAltarBlessingFromSpellBuffer(buffer, edid, pluginName, lookup) {
-  const spec = TRIBUNAL_CC_ALTAR_SPELLS[edid];
-  if (!spec || !lookup) return null;
-
-  for (const entry of readSpellFaithEffectEntries(buffer)) {
-    if (entry.magnitude == null) continue;
-    const mgefEdid = resolveFaithMgefEdid(entry.formId, lookup);
-    if (mgefEdid !== spec.shrineMgefEdid) continue;
-
-    return {
-      altarKey: normalizeAltarKey(spec.altarKey),
-      magnitudes: [entry.magnitude],
-      magnitude: entry.magnitude,
-      shrineMgefEdid: mgefEdid,
-      plugin: pluginName,
-      isVariant: false,
-    };
-  }
-
-  return null;
-}
-
 export function collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName, lookupArg = null) {
   const lookup = parseFaithMgefLookupArg(lookupArg, pluginName);
   const altarKey = altarKeyFromSpellEdid(edid);
-  if (altarKey) {
-    const resolved = resolveAltarBlessingFromSpell(buffer, altarKey, lookup);
-    if (!resolved || resolved.magnitudes.length === 0) return null;
+  const resolved = altarKey
+    ? resolveAltarBlessingFromSpell(buffer, altarKey, lookup)
+    : resolveAltarBlessingFromSpellEffects(buffer, lookup);
 
-    return {
-      altarKey,
-      magnitudes: resolved.magnitudes,
-      magnitude: Math.max(...resolved.magnitudes),
-      shrineMgefEdid: resolved.shrineMgefEdid,
-      plugin: pluginName,
-      isVariant: isVariantAltarBlessingSpellEdid(edid),
-    };
-  }
+  if (!resolved || resolved.magnitudes.length === 0) return null;
 
-  return collectTribunalCcAltarBlessingFromSpellBuffer(buffer, edid, pluginName, lookup);
+  return {
+    altarKey: altarKey ?? resolved.altarKey,
+    magnitudes: resolved.magnitudes,
+    magnitude: Math.max(...resolved.magnitudes),
+    shrineMgefEdid: resolved.shrineMgefEdid,
+    plugin: pluginName,
+    isVariant: altarKey ? isVariantAltarBlessingSpellEdid(edid) : false,
+  };
 }
 
 const BOON_SPELL_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon([12])_Spell/i;
@@ -418,10 +408,16 @@ async function readPluginImportPayload({ pluginName, path }) {
 
       if (type === "SPEL") {
         const spellEdid = parsed.edid;
+        const pluginFaithLookup = {
+          formIdsByEdid: pluginMgefFormIds,
+          edidByFormIdentity: pluginMgefIdentities,
+          ownerPluginLower,
+          masters,
+        };
         if (
           spellEdid.startsWith("WSN_AltarBlessing_") ||
           BOON_SPELL_PATTERN.test(spellEdid) ||
-          TRIBUNAL_CC_ALTAR_SPELLS[spellEdid]
+          spellBufferHasAltarBlessingEffect(buffer, pluginFaithLookup)
         ) {
           faithSpellCandidates.push({ edid: spellEdid, buffer: Buffer.from(buffer) });
         }

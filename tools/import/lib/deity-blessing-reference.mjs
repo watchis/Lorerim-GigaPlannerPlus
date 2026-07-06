@@ -31,7 +31,6 @@ const DEITY_NAME_TO_ALTAR_KEY = {
   Syrabane: "Divine_Syrabane",
   Magnus: "Divine_Magnus",
   Jephre: "Divine_Jephre",
-  Morwha: "Divine_Morwha",
   Leki: "Divine_Leki",
   Sai: "Divine_Sai",
   Rajhin: "Divine_Rajhin",

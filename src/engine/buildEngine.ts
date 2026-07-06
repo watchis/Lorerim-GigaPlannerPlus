@@ -961,7 +961,8 @@ export function getPerksRequiringHigherPlayerLevel(
 ): Perk[] {
   return state.selectedPerkIds.flatMap((perkId) => {
     const perk = getPerkById(game, perkId);
-    const playerLevelReq = meaningfulPlayerLevelReq(perk?.playerLevelReq);
+    if (!perk) return [];
+    const playerLevelReq = meaningfulPlayerLevelReq(perk.playerLevelReq);
     if (!playerLevelReq || playerLevelReq <= playerLevel) return [];
     return [perk];
   });
