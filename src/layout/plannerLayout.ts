@@ -9,12 +9,15 @@ export const STACKED_LAYOUT_MAX_WIDTH = 720;
 /** Side-by-side picker layout needs at least this much center column width. */
 export const PICKER_SIDE_BY_SIDE_MIN_WIDTH = 520;
 
-/** Stacked mobile order: skill navigation first, workspace second, setup last. */
-export const STACKED_PANEL_ORDER = [
-  "skill-trees-sidebar",
-  "skill-trees",
+/** Mobile swipe order: character setup, center workspace, skill trees. */
+export const SWIPE_PANEL_ORDER = [
   "character-setup",
+  "skill-trees",
+  "skill-trees-sidebar",
 ] as const;
+
+/** @deprecated Use SWIPE_PANEL_ORDER */
+export const STACKED_PANEL_ORDER = SWIPE_PANEL_ORDER;
 
 export interface PlannerLayoutState {
   useThreeColumnLayout: boolean;
@@ -57,9 +60,14 @@ export function usePlannerCompactUI(): boolean {
   return !state.useThreeColumnLayout || state.centerWidth < PICKER_SIDE_BY_SIDE_MIN_WIDTH;
 }
 
-export function getStackedPanelIds(layout: Layout): string[] {
+export function getSwipePanelIds(layout: Layout): string[] {
   const panelIds = new Set(layout.columns.flatMap((column) => column.panels));
-  return STACKED_PANEL_ORDER.filter((panelId) => panelIds.has(panelId));
+  return SWIPE_PANEL_ORDER.filter((panelId) => panelIds.has(panelId));
+}
+
+/** @deprecated Use getSwipePanelIds */
+export function getStackedPanelIds(layout: Layout): string[] {
+  return getSwipePanelIds(layout);
 }
 
 function parsePxWidth(width: string): number | null {

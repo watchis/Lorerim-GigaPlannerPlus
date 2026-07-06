@@ -414,8 +414,7 @@ export function SkillTreePanel() {
       <CardContent
         className={cn(
           "flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-4 sm:p-6",
-          stackedLayout && "min-h-[min(52dvh,480px)] p-3",
-          !stackedLayout && "min-h-[280px]",
+          stackedLayout && "p-3",
         )}
       >
         {isTrainingMode ? (
@@ -428,7 +427,7 @@ export function SkillTreePanel() {
         ) : (
           <PerkTreeView
             fit
-            className={cn(stackedLayout && "min-h-[min(48dvh,440px)]")}
+            className="min-h-0 flex-1"
             tree={activeTree}
             labels={labels}
             conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}

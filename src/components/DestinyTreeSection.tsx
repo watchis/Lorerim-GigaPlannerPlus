@@ -2,6 +2,8 @@ import { PerkTreeMiniView } from "@/components/PerkTreeMiniView";
 import { SkillIcon } from "@/components/SkillIcon";
 import { getBuildPlayerLevelWarnings } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
+import { useGoToSwipePane } from "@/layout/PlannerSwipePanels";
+import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
@@ -15,6 +17,8 @@ export function DestinyTreeSection() {
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
   const openSkillTree = useUiStore((s) => s.openSkillTree);
+  const stackedLayout = usePlannerStackedLayout();
+  const goToSwipePane = useGoToSwipePane();
 
   if (!gameData) return null;
 
@@ -39,7 +43,12 @@ export function DestinyTreeSection() {
     <div className="border-t border-[var(--color-border)]/70 pt-3">
       <button
         type="button"
-        onClick={() => openSkillTree(DESTINY_SKILL_ID)}
+        onClick={() => {
+          openSkillTree(DESTINY_SKILL_ID);
+          if (stackedLayout) {
+            goToSwipePane(1);
+          }
+        }}
         className={cn(
           "grid w-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border p-1 text-left transition-colors",
           hasProblem && "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",

@@ -4,7 +4,7 @@ import type { Layout } from "@/data/schemas";
 
 import {
   computePlannerLayoutMetrics,
-  getStackedPanelIds,
+  getSwipePanelIds,
   getThreeColumnDesignWidth,
   STACKED_LAYOUT_MAX_WIDTH,
 } from "@/layout/plannerLayout";
@@ -52,11 +52,11 @@ describe("plannerLayout", () => {
     expect(getThreeColumnDesignWidth(lorerimLayout)).toBe(1707);
   });
 
-  it("orders stacked panels with skill navigation first", () => {
-    expect(getStackedPanelIds(lorerimLayout)).toEqual([
-      "skill-trees-sidebar",
-      "skill-trees",
+  it("orders swipe panels as setup, center, then skill trees", () => {
+    expect(getSwipePanelIds(lorerimLayout)).toEqual([
       "character-setup",
+      "skill-trees",
+      "skill-trees-sidebar",
     ]);
   });
 });

@@ -16,6 +16,7 @@ import {
 import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
+import { useGoToSwipePane } from "@/layout/PlannerSwipePanels";
 import {
   usePlannerLayoutScale,
   usePlannerSideWidths,
@@ -24,6 +25,7 @@ import {
 } from "@/layout/plannerLayout";
 
 const RESET_ICON_ONLY_MAX_WIDTH = 280;
+const CENTER_SWIPE_PANE_INDEX = 1;
 
 export function SkillTreesSidebarPanel() {
   const labels = usePanelLabels("skill-trees");
@@ -42,6 +44,7 @@ export function SkillTreesSidebarPanel() {
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
   const openSkillTree = useUiStore((s) => s.openSkillTree);
+  const goToSwipePane = useGoToSwipePane();
 
   if (!gameData) return null;
 
@@ -89,12 +92,7 @@ export function SkillTreesSidebarPanel() {
           compact ? "p-1" : "p-2",
         )}
       >
-        <ScrollArea
-          className={cn(
-            "min-h-0 flex-1",
-            stackedLayout && "max-h-[min(42dvh,380px)]",
-          )}
-        >
+        <ScrollArea className="min-h-0 flex-1">
           <div
             className={cn(
               "grid grid-cols-3 gap-1 pr-1",
@@ -123,7 +121,12 @@ export function SkillTreesSidebarPanel() {
                 <button
                   key={tree.skillId}
                   type="button"
-                  onClick={() => openSkillTree(tree.skillId)}
+                  onClick={() => {
+                    openSkillTree(tree.skillId);
+                    if (stackedLayout) {
+                      goToSwipePane(CENTER_SWIPE_PANE_INDEX);
+                    }
+                  }}
                   className={cn(
                     "grid min-h-[5.75rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
                     compact ? "p-0.5" : "p-1",
