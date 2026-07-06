@@ -88,7 +88,7 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | Default layout for newly added perks (curated coords from `data/game/perks` via `giga-planner-layout.json`, or prerequisite graph) | Perk `position` and `grid` per skill tree (matched by skill + perk name; multi-rank stacks share one cell) |
 | Multiple AVIF parents for one perk → `prerequisitesAny` (OR) | Stable perk `id`, `prerequisites` / `prerequisitesAny` wiring, explicit `costsPerkPoint: true`, and hand-tuned `effects` (matched by skill + name + `skillReq`) |
 | All traits from `Traits_AbilityList` (base FormList + FLM additions) | — |
-| Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA` | `race-effects.json`, race `speedBonus` / `attributeBonus` when not in `DATA` |
+| Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA`, parsed race `effects` in `race-effects.json` | race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
 | Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
 | `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
@@ -116,9 +116,9 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 ### Imported with perks
 
 - `data/game/perk-player-level-reqs.json` — player level gates from `PERK` `GetLevel` conditions (one entry per rank id)
+- `data/game/race-effects.json` — structured effects parsed from race ability bonus text
 
 ### Never overwritten
-- `data/game/race-effects.json`
 - `data/game/stats.json`
 - `data/game/skills.json`
 - `data/game/character-options.json`

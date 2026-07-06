@@ -18,7 +18,7 @@ import {
 import { parseTraitBody } from "./parse-trait-body.mjs";
 import { collectTraitAbilitySpells } from "./trait-ability-list.mjs";
 import { cleanDescription, cleanName, cleanWintersunEffectText, slugify } from "./transform-utils.mjs";
-import { parseBonusEffects, extractConditionalBonusDetails } from "./parse-bonus-effects.mjs";
+import { parseBonusEffects, extractConditionalBonusDetails, mergeEffects } from "./parse-bonus-effects.mjs";
 import { parseRaceData } from "./race-data-parser.mjs";
 import { detectLorerimVersion } from "./lorerim-version.mjs";
 import {
@@ -502,6 +502,19 @@ function mergeImportedRaceStats(prior, importedStats) {
   };
 }
 
+export function buildRaceEffectsFromRaces(races) {
+  const raceEffects = {};
+
+  for (const race of races) {
+    if (race.id === "none") continue;
+    raceEffects[race.id] = mergeEffects(
+      ...race.bonuses.map((bonus) => parseBonusEffects(bonus)),
+    );
+  }
+
+  return raceEffects;
+}
+
 export function transformRaceRecords(
   raceRecords,
   spellRecords,
@@ -555,7 +568,11 @@ export function transformRaceRecords(
     });
 
   const none = existing.races.find((race) => race.id === "none");
-  return { races: none ? [none, ...races] : races };
+  const playableRaces = none ? [none, ...races] : races;
+  return {
+    races: { races: playableRaces },
+    raceEffects: buildRaceEffectsFromRaces(races),
+  };
 }
 
 export function transformManifestFromInstall(existingManifest, installDir) {

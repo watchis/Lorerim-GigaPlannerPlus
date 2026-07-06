@@ -201,7 +201,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
         ? ` with ${formatCount(lorerimRaceRecords.length)} LoreRim race overrides`
         : ""),
   );
-  const races = transformRaceRecords(
+  const { races, raceEffects } = transformRaceRecords(
     raceRecords,
     spellRecords,
     join(dataDir, "races.json"),
@@ -288,6 +288,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     ["perk-player-level-reqs.json", playerLevelReqs],
     ["traits.json", traits],
     ["races.json", races],
+    ["race-effects.json", raceEffects],
     ["birthsigns.json", birthsigns],
     ["deities.json", deities],
     ["manifest.json", manifest],
