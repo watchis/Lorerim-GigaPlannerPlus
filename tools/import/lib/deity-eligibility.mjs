@@ -493,35 +493,82 @@ function isIncompleteCanFollow(race, failMessages, guideEntry) {
   return !hasQuestPhrase && !hasRaces;
 }
 
-function stripInlineHtml(text) {
+function decodeGuideEntities(text) {
   return String(text ?? "")
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]*>/g, "")
-    .replace(/<[^>]*$/g, "")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, "&")
-    .replace(/\u00a0/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/\u00a0/g, " ");
+}
+
+function parseHtmlTag(rawTag) {
+  const normalized = String(rawTag ?? "")
+    .trim()
+    .replace(/\/$/, "")
+    .trim()
+    .toLowerCase();
+  if (!normalized) return { name: "", closing: false };
+  if (normalized.startsWith("/")) {
+    const tagName = normalized.slice(1).split(/\s+/, 1)[0];
+    return { name: tagName, closing: true };
+  }
+  return { name: normalized.split(/\s+/, 1)[0], closing: false };
+}
+
+function stripInlineHtml(text) {
+  const source = String(text ?? "");
+  let output = "";
+  for (let index = 0; index < source.length; index++) {
+    if (source[index] !== "<") {
+      output += source[index];
+      continue;
+    }
+
+    const closeIndex = source.indexOf(">", index + 1);
+    if (closeIndex === -1) break;
+
+    const { name, closing } = parseHtmlTag(source.slice(index + 1, closeIndex));
+    if (!closing && (name === "br" || name === "p")) {
+      output += " ";
+    }
+    index = closeIndex;
+  }
+
+  return decodeGuideEntities(output).replace(/\s+/g, " ").trim();
 }
 
 export function normalizeGuideText(content) {
   const text = String(content ?? "");
   if (!/<html|<body|<p[\s>]/i.test(text)) return text;
 
-  let normalized = text
-    .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, (_, inner) => `\n# ${stripInlineHtml(inner)}\n`)
-    .replace(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi, (_, inner) => `\n## ${stripInlineHtml(inner)}\n`)
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<[^>]*>/g, "")
-    .replace(/<[^>]*$/g, "")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, "&")
-    .replace(/\u00a0/g, " ")
-    .replace(/\r/g, "");
+  let normalized = "";
+  for (let index = 0; index < text.length; index++) {
+    if (text[index] !== "<") {
+      normalized += text[index];
+      continue;
+    }
+
+    const closeIndex = text.indexOf(">", index + 1);
+    if (closeIndex === -1) break;
+
+    const { name, closing } = parseHtmlTag(text.slice(index + 1, closeIndex));
+    if (!closing && name === "h1") {
+      normalized += "\n# ";
+    } else if (closing && name === "h1") {
+      normalized += "\n";
+    } else if (!closing && name === "h2") {
+      normalized += "\n## ";
+    } else if (closing && name === "h2") {
+      normalized += "\n";
+    } else if (!closing && (name === "br" || name === "p")) {
+      normalized += "\n";
+    } else if (closing && name === "p") {
+      normalized += "\n";
+    }
+    index = closeIndex;
+  }
+
+  normalized = decodeGuideEntities(normalized).replace(/\r/g, "");
 
   return normalized.replace(/\n{3,}/g, "\n\n");
 }
