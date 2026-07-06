@@ -11,7 +11,7 @@ export function BugReportButton() {
         <Button
           variant="outline"
           size="icon"
-          className="fixed bottom-4 right-4 z-30 h-12 w-12 rounded-full border-[var(--color-border)] bg-[var(--color-surface)]/90 shadow-[var(--shadow-panel)] backdrop-blur-sm hover:bg-[var(--color-surface-elevated)]"
+          className="fixed right-4 z-30 h-12 w-12 rounded-full border-[var(--color-border)] bg-[var(--color-surface)]/90 shadow-[var(--shadow-panel)] backdrop-blur-sm hover:bg-[var(--color-surface-elevated)] bottom-[max(1rem,env(safe-area-inset-bottom))]"
           asChild
         >
           <a

@@ -16,9 +16,6 @@ import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 
-const SIDEBAR_COLUMNS = 3;
-const SIDEBAR_ROWS = 6;
-
 export function SkillTreesSidebarPanel() {
   const labels = usePanelLabels("skill-trees");
   const gameData = useBuildStore((s) => s.gameData);
@@ -51,11 +48,11 @@ export function SkillTreesSidebarPanel() {
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-2">
         <div
-          className="grid h-full min-h-0 flex-1 gap-1"
-          style={{
-            gridTemplateColumns: `repeat(${SIDEBAR_COLUMNS}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${SIDEBAR_ROWS}, minmax(0, 1fr))`,
-          }}
+          className={cn(
+            "grid gap-1",
+            "max-lg:auto-rows-[minmax(5.5rem,auto)] max-lg:grid-cols-4 sm:max-lg:grid-cols-5",
+            "lg:h-full lg:min-h-0 lg:flex-1 lg:grid-cols-3 lg:grid-rows-6",
+          )}
         >
           {trees.map((tree) => {
             const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
@@ -79,7 +76,7 @@ export function SkillTreesSidebarPanel() {
                 type="button"
                 onClick={() => openSkillTree(tree.skillId)}
                 className={cn(
-                  "grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border p-1 text-left transition-colors",
+                  "grid min-h-[5.5rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border p-1 text-left transition-colors lg:h-full lg:min-h-0",
                   hasProblem &&
                     "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
                   !hasProblem &&

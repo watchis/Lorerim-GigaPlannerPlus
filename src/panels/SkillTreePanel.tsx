@@ -382,7 +382,7 @@ export function SkillTreePanel() {
         </div>
 
         {!isTrainingMode && (
-          <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <PerkLegend labels={labels} hasProblem={hasTreeProblem} />
             {!isDestinyTree && (
               <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 text-[11px] text-[var(--color-muted)]">

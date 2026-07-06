@@ -5,6 +5,7 @@ import {
   useState,
   type MouseEvent,
   type MutableRefObject,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
   arePrerequisitesMet,
@@ -142,6 +143,25 @@ function PerkNode({
   labels,
   showSkillRequirements,
 }: PerkNodeProps) {
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const singleTapTimerRef = useRef<number | null>(null);
+  const lastTapRef = useRef(0);
+
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current !== null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const clearSingleTapTimer = () => {
+    if (singleTapTimerRef.current !== null) {
+      window.clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
+    }
+  };
+
   const handleForceAllocate = () => {
     if (!isInteractive || tookPerkWithLastClickRef.current) return false;
     const tookPerk = onForceTake(perk.id);
@@ -170,6 +190,63 @@ function PerkNode({
 
     tookPerkWithLastClickRef.current = onTryTake(takeTargetId);
   };
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!isInteractive) return;
+
+    longPressTriggeredRef.current = false;
+    clearLongPressTimer();
+
+    if (event.pointerType === "mouse") {
+      handleMouseDown(event as unknown as MouseEvent<HTMLButtonElement>);
+      return;
+    }
+
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      if (isSelected) {
+        onRemove(perk.id);
+      } else {
+        handleForceAllocate();
+      }
+    }, 500);
+  };
+
+  const handlePointerUp = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === "mouse") return;
+
+    clearLongPressTimer();
+    if (!isInteractive || longPressTriggeredRef.current) return;
+
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      clearSingleTapTimer();
+      lastTapRef.current = 0;
+      handleForceAllocate();
+      return;
+    }
+
+    lastTapRef.current = now;
+    clearSingleTapTimer();
+    singleTapTimerRef.current = window.setTimeout(() => {
+      singleTapTimerRef.current = null;
+      tookPerkWithLastClickRef.current = onTryTake(takeTargetId);
+    }, 300);
+  };
+
+  const handlePointerCancel = () => {
+    clearLongPressTimer();
+    clearSingleTapTimer();
+    longPressTriggeredRef.current = false;
+  };
+
+  useEffect(
+    () => () => {
+      clearLongPressTimer();
+      clearSingleTapTimer();
+    },
+    [],
+  );
 
   const handleDoubleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -289,9 +366,12 @@ function PerkNode({
         type="button"
         aria-label={perk.name}
         onMouseDown={handleMouseDown}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
         onDoubleClick={handleDoubleClick}
         onContextMenu={(event) => event.preventDefault()}
-        className="group relative border-0 bg-transparent p-0"
+        className="group relative touch-manipulation border-0 bg-transparent p-0"
       >
         <span
           className={circleClassName}

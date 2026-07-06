@@ -1,16 +1,45 @@
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "block rounded-[var(--radius-md)] px-3 py-2 text-sm transition-colors sm:py-1.5",
+    isActive
+      ? "bg-[var(--color-accent)]/15 text-[var(--color-accent)]"
+      : "text-[var(--color-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-foreground)]",
+  );
 
 export function AppShell() {
   const { labels } = useThemeConfig();
   const version = useBuildStore((s) => s.gameData?.game.manifest.version);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileNavOpen]);
+
+  const navItems = [
+    { to: "/", end: true, label: labels.nav.home },
+    { to: "/planner", label: labels.nav.planner },
+    { to: "/builds", label: labels.nav.builds },
+  ] as const;
 
   return (
-    <div className="app-shell flex h-screen flex-col overflow-hidden">
-      <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface)]/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <div className="app-shell flex h-dvh min-h-dvh flex-col overflow-hidden">
+      <header className="sticky top-0 z-40 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6">
           <Link to="/" className="group flex min-w-0 items-center gap-3">
             <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-visible">
               <svg
@@ -38,54 +67,58 @@ export function AppShell() {
             </span>
           </Link>
 
-          <nav className="flex items-center gap-2 sm:gap-3">
+          <nav className="hidden items-center gap-2 sm:gap-3 md:flex">
             {version && (
-              <span className="hidden rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[10px] text-[var(--color-muted)] sm:inline sm:text-xs">
+              <span className="hidden rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[10px] text-[var(--color-muted)] lg:inline lg:text-xs">
                 {labels.app.versionLabel}: {version}
               </span>
             )}
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                cn(
-                  "rounded-[var(--radius-md)] px-3 py-1.5 text-sm transition-colors",
-                  isActive
-                    ? "bg-[var(--color-accent)]/15 text-[var(--color-accent)]"
-                    : "text-[var(--color-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-foreground)]",
-                )
-              }
-            >
-              {labels.nav.home}
-            </NavLink>
-            <NavLink
-              to="/planner"
-              className={({ isActive }) =>
-                cn(
-                  "rounded-[var(--radius-md)] px-3 py-1.5 text-sm transition-colors",
-                  isActive
-                    ? "bg-[var(--color-accent)]/15 text-[var(--color-accent)]"
-                    : "text-[var(--color-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-foreground)]",
-                )
-              }
-            >
-              {labels.nav.planner}
-            </NavLink>
-            <NavLink
-              to="/builds"
-              className={({ isActive }) =>
-                cn(
-                  "rounded-[var(--radius-md)] px-3 py-1.5 text-sm transition-colors",
-                  isActive
-                    ? "bg-[var(--color-accent)]/15 text-[var(--color-accent)]"
-                    : "text-[var(--color-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-foreground)]",
-                )
-              }
-            >
-              {labels.nav.builds}
-            </NavLink>
+            {navItems.map(({ to, label, ...rest }) => (
+              <NavLink key={to} to={to} className={navLinkClass} {...rest}>
+                {label}
+              </NavLink>
+            ))}
           </nav>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 text-[var(--color-muted)] md:hidden"
+            aria-expanded={mobileNavOpen}
+            aria-controls="mobile-nav"
+            aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
+
+        {mobileNavOpen && (
+          <nav
+            id="mobile-nav"
+            className="border-t border-[var(--color-border)]/70 bg-[var(--color-surface)]/95 px-4 py-3 md:hidden"
+          >
+            <div className="mx-auto flex max-w-[1600px] flex-col gap-1">
+              {version && (
+                <span className="mb-1 px-3 text-[10px] text-[var(--color-muted)]">
+                  {labels.app.versionLabel}: {version}
+                </span>
+              )}
+              {navItems.map(({ to, label, ...rest }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={navLinkClass}
+                  onClick={() => setMobileNavOpen(false)}
+                  {...rest}
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          </nav>
+        )}
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col">

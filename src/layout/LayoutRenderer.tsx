@@ -24,6 +24,13 @@ export const panelRegistry: Record<string, ComponentType> = {
 
 
 
+const mobilePanelWrapperClass: Record<string, string> = {
+  "skill-trees": "flex min-h-[min(70dvh,720px)] flex-col",
+  "skill-trees-sidebar": "shrink-0",
+};
+
+
+
 interface LayoutRendererProps {
 
   layout: Layout;
@@ -32,9 +39,27 @@ interface LayoutRendererProps {
 
 
 
+function getDesktopGridTemplate(layout: Layout): string {
+  return layout.columns
+    .map((col) => {
+      const width = col.width.trim();
+      if (width.endsWith("px")) {
+        const px = Number.parseInt(width, 10);
+        if (!Number.isNaN(px)) {
+          const min = Math.round(px * 0.75);
+          return `minmax(${min}px, ${width})`;
+        }
+      }
+      return width;
+    })
+    .join(" ");
+}
+
+
+
 export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
-  const desktopTemplate = layout.columns.map((col) => col.width).join(" ");
+  const desktopTemplate = getDesktopGridTemplate(layout);
 
 
 
@@ -42,9 +67,9 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
     <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
 
-      {/* Mobile / tablet: single column */}
+      {/* Mobile / tablet: single scrollable column */}
 
-      <div className="flex flex-col gap-4 lg:hidden">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain lg:hidden">
 
         {layout.columns.flatMap((column) =>
 
@@ -54,7 +79,15 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
             if (!Panel) return null;
 
-            return <Panel key={panelId} />;
+            const wrapperClass = mobilePanelWrapperClass[panelId];
+
+            return wrapperClass ? (
+              <div key={panelId} className={wrapperClass}>
+                <Panel />
+              </div>
+            ) : (
+              <Panel key={panelId} />
+            );
 
           }),
 

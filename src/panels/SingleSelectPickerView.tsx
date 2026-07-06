@@ -59,8 +59,8 @@ export function SingleSelectPickerView({
     filteredOptions.find((option) => option.id === previewId) ?? filteredOptions[0];
 
   return (
-    <div className="flex min-h-0 flex-1 gap-3">
-      <PickerListPanel className="h-full w-[11.5rem] shrink-0 sm:w-52">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 max-lg:min-h-[24rem] lg:flex-row">
+      <PickerListPanel className="h-auto max-h-48 w-full shrink-0 lg:h-full lg:max-h-none lg:w-52">
         <PickerSearchInput
           value={query}
           onChange={setQuery}

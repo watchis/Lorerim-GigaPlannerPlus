@@ -293,8 +293,8 @@ export function LevelBar() {
 
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">
-      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
             {barLabels.playerLevel}
           </span>
