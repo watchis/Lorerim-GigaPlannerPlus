@@ -282,7 +282,12 @@ export function SkillTreePanel() {
         }
       />
 
-      <div className="flex-shrink-0 border-b border-[var(--color-border)]/50 px-4 py-3">
+      <div
+        className={cn(
+          "flex-shrink-0 border-b border-[var(--color-border)]/50 px-4 py-3",
+          stackedLayout && "px-3 py-2",
+        )}
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           {!isDestinyTree && (
             <div className="inline-flex rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
@@ -406,7 +411,13 @@ export function SkillTreePanel() {
         )}
       </div>
 
-      <CardContent className="min-h-0 flex-1 overflow-hidden bg-[var(--color-background)]/40 p-4 sm:p-6">
+      <CardContent
+        className={cn(
+          "flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-4 sm:p-6",
+          stackedLayout && "min-h-[min(52dvh,480px)] p-3",
+          !stackedLayout && "min-h-[280px]",
+        )}
+      >
         {isTrainingMode ? (
           <SkillTrainingSection
             game={gameData.game}
@@ -417,6 +428,7 @@ export function SkillTreePanel() {
         ) : (
           <PerkTreeView
             fit
+            className={cn(stackedLayout && "min-h-[min(48dvh,440px)]")}
             tree={activeTree}
             labels={labels}
             conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}

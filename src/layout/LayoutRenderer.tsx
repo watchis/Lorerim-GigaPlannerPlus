@@ -32,9 +32,8 @@ export const panelRegistry: Record<string, ComponentType> = {
 
 
 const stackedPanelWrapperClass: Record<string, string> = {
-  "skill-trees-sidebar":
-    "max-h-[min(45dvh,420px)] shrink-0 overflow-hidden",
-  "skill-trees": "flex min-h-[min(50dvh,480px)] flex-col",
+  "skill-trees-sidebar": "shrink-0",
+  "skill-trees": "flex min-h-[min(62dvh,560px)] flex-col",
 };
 
 const defaultLayoutMetrics: PlannerLayoutMetrics = {

@@ -12,6 +12,8 @@ import {
 import type { GameData } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
 import { sumTrainingRanges } from "@/lib/skillTraining";
+import { cn } from "@/lib/utils";
+import { usePlannerCompactUI, usePlannerStackedLayout } from "@/layout/plannerLayout";
 import { useBuildStore } from "@/store/buildStore";
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
@@ -35,6 +37,10 @@ export function SkillTrainingSection({
   labels,
 }: SkillTrainingSectionProps) {
   const setSkillTrainingRange = useBuildStore((s) => s.setSkillTrainingRange);
+  const stackedLayout = usePlannerStackedLayout();
+  const compactUI = usePlannerCompactUI();
+  const compact = stackedLayout || compactUI;
+
   const floor = getSkillFloor(game, build, skillId);
   const tiers = getTrainingTierDefinitions(game);
   const ranges = getSkillTrainingRanges(game, build, skillId);
@@ -44,8 +50,13 @@ export function SkillTrainingSection({
   const globalRemaining = getRemainingTrainingLevels(game, build);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-      <div className="flex flex-wrap gap-x-6 gap-y-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-4 py-3 text-xs">
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain">
+      <div
+        className={cn(
+          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-4 py-3 text-xs",
+          compact ? "flex flex-col gap-2" : "flex flex-wrap gap-x-6 gap-y-2",
+        )}
+      >
         <div>
           <span className="text-[var(--color-muted)]">{labels.trainingSkillTotal}: </span>
           <span className="font-medium tabular-nums text-[var(--color-foreground)]">
@@ -60,7 +71,7 @@ export function SkillTrainingSection({
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
             {labels.trainingRangesTitle}
@@ -89,7 +100,12 @@ export function SkillTrainingSection({
           return (
             <div
               key={`${tier.minLevel}-${tier.maxLevel}`}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]/60 px-4 py-3"
+              className={cn(
+                "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)]/60 px-4 py-3",
+                compact
+                  ? "flex flex-col items-stretch gap-3"
+                  : "flex flex-wrap items-center justify-between gap-3",
+              )}
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium text-[var(--color-foreground)]">
@@ -100,11 +116,16 @@ export function SkillTrainingSection({
                 </p>
               </div>
 
-              <div className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
+              <div
+                className={cn(
+                  "inline-flex items-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5",
+                  compact && "self-end",
+                )}
+              >
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className={cn(compact ? "h-9 w-9" : "h-7 w-7")}
                   onClick={() => setSkillTrainingRange(skillId, tierIndex, count - 1)}
                   disabled={count <= 0}
                 >
@@ -115,12 +136,12 @@ export function SkillTrainingSection({
                   min={0}
                   max={tier.tierCapacity}
                   onCommit={(next) => setSkillTrainingRange(skillId, tierIndex, next)}
-                  className="w-12"
+                  className={compact ? "w-14" : "w-12"}
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className={cn(compact ? "h-9 w-9" : "h-7 w-7")}
                   onClick={() => setSkillTrainingRange(skillId, tierIndex, count + 1)}
                   disabled={!canIncrease}
                 >

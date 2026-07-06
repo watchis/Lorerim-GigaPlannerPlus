@@ -425,8 +425,10 @@ function useFitContainSize(aspect: number, enabled: boolean) {
       const containerHeight = element.clientHeight;
       if (!containerWidth || !containerHeight) return;
 
-      const availableWidth = containerWidth * FIT_REGION_INSET_RATIO;
-      const availableHeight = containerHeight * FIT_REGION_INSET_RATIO;
+      const insetRatio =
+        containerHeight < 360 || containerWidth < 360 ? 0.96 : FIT_REGION_INSET_RATIO;
+      const availableWidth = containerWidth * insetRatio;
+      const availableHeight = containerHeight * insetRatio;
 
       if (availableWidth / availableHeight > aspect) {
         setSize({ width: availableHeight * aspect, height: availableHeight });
