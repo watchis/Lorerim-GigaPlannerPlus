@@ -293,7 +293,7 @@ export function LevelBar() {
 
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
             {barLabels.playerLevel}
@@ -302,7 +302,7 @@ export function LevelBar() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="h-9 w-9 md:h-7 md:w-7"
               onClick={() => setPlayerLevel(build.playerLevel - 1)}
               disabled={build.playerLevel <= baseLevel}
             >
@@ -317,7 +317,7 @@ export function LevelBar() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="h-9 w-9 md:h-7 md:w-7"
               onClick={() => setPlayerLevel(build.playerLevel + 1)}
               disabled={build.playerLevel >= maxPlayerLevel}
             >
@@ -342,8 +342,8 @@ export function LevelBar() {
           </LevelStepperTooltipButton>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="-mx-1 flex items-center gap-3 overflow-x-auto overscroll-x-contain px-1 pb-0.5 text-xs md:flex-wrap md:overflow-visible md:pb-0">
+          <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
             <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
               <span>{barLabels.perkPointsRemaining}:</span>
               <span className={remainingCountClassName(perkOverBudget)}>
@@ -356,7 +356,7 @@ export function LevelBar() {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
             <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
               <span>{barLabels.trainingLevelsRemaining}:</span>
               <span className={remainingCountClassName(trainingOverBudget)}>
@@ -369,7 +369,7 @@ export function LevelBar() {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
             <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
               <span>{barLabels.skillPointsRemaining}:</span>
               <span className={remainingCountClassName(skillOverBudget)}>

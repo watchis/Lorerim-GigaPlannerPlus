@@ -13,7 +13,7 @@ import { useBuildStore } from "@/store/buildStore";
 import {
   usePlannerLayoutScale,
   usePlannerSideWidths,
-  usePlannerThreeColumnLayout,
+  usePlannerStackedLayout,
 } from "@/layout/plannerLayout";
 
 const COMPACT_ATTRIBUTES_MAX_WIDTH = 240;
@@ -118,7 +118,7 @@ function SetupPickerRow({
           type="button"
           onClick={onOpen}
           className={cn(
-            "group flex min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] border px-2.5 py-2 text-left transition-colors",
+            "group flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] border px-2.5 py-2 text-left transition-colors",
             isActive
               ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/8"
               : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/40 hover:border-[var(--color-accent-muted)]/60 hover:bg-[var(--color-surface-elevated)]",
@@ -192,13 +192,15 @@ export function CharacterSetupPanel() {
   const characterOptionsOpen = useUiStore((s) => s.characterOptionsOpen);
   const toggleSetupPicker = useUiStore((s) => s.toggleSetupPicker);
   const toggleCharacterOptions = useUiStore((s) => s.toggleCharacterOptions);
-  const useThreeColumnLayout = usePlannerThreeColumnLayout();
+  const stackedLayout = usePlannerStackedLayout();
+  const useThreeColumnLayout = !stackedLayout;
   const layoutScale = usePlannerLayoutScale();
   const sideWidths = usePlannerSideWidths();
-  const compact = useThreeColumnLayout && layoutScale < 0.75;
+  const compact = stackedLayout || (useThreeColumnLayout && layoutScale < 0.75);
   const compactAttributes =
-    useThreeColumnLayout &&
-    (sideWidths?.left ?? Number.POSITIVE_INFINITY) < COMPACT_ATTRIBUTES_MAX_WIDTH;
+    stackedLayout ||
+    (useThreeColumnLayout &&
+      (sideWidths?.left ?? Number.POSITIVE_INFINITY) < COMPACT_ATTRIBUTES_MAX_WIDTH);
 
   if (!gameData) return null;
 

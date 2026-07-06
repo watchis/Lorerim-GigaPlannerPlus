@@ -22,7 +22,7 @@ export function PickerSearchInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-8 w-full rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-background)]/60 pl-8 pr-2 text-xs text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]/40"
+        className="h-8 w-full rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-background)]/60 pl-8 pr-2 text-xs text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]/40 max-md:h-10 max-md:text-sm"
       />
     </div>
   );

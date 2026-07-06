@@ -99,7 +99,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-7 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+    <div className="page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-7 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
       <section>
         <h2 className="mb-3 font-[family-name:var(--font-heading)] text-lg font-semibold text-[var(--color-accent)]">
           {landing.howItWorksTitle}

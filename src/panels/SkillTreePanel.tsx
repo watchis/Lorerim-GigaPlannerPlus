@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
+import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
@@ -126,6 +127,7 @@ export function SkillTreePanel() {
   const setSkillWorkspaceMode = useUiStore((s) => s.setSkillWorkspaceMode);
   const showPerkSkillRequirements = useUiStore((s) => s.showPerkSkillRequirements);
   const setShowPerkSkillRequirements = useUiStore((s) => s.setShowPerkSkillRequirements);
+  const stackedLayout = usePlannerStackedLayout();
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const computed = useBuildStore((s) => s.computed);
@@ -382,7 +384,7 @@ export function SkillTreePanel() {
         </div>
 
         {!isTrainingMode && (
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
             <PerkLegend labels={labels} hasProblem={hasTreeProblem} />
             {!isDestinyTree && (
               <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 text-[11px] text-[var(--color-muted)]">
@@ -390,12 +392,17 @@ export function SkillTreePanel() {
                   type="checkbox"
                   checked={showPerkSkillRequirements}
                   onChange={(event) => setShowPerkSkillRequirements(event.target.checked)}
-                  className="h-3.5 w-3.5 shrink-0 accent-[var(--color-accent)]"
+                  className="h-4 w-4 shrink-0 accent-[var(--color-accent)] md:h-3.5 md:w-3.5"
                 />
                 {labels.showSkillRequirements}
               </label>
             )}
           </div>
+        )}
+        {stackedLayout && !isTrainingMode && (
+          <p className="mt-2 text-[10px] leading-snug text-[var(--color-muted)] md:hidden">
+            Tap to select · double-tap to force · long-press to remove
+          </p>
         )}
       </div>
 

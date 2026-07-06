@@ -6,7 +6,11 @@ import {
   PickerListPanel,
 } from "@/components/picker/PickerListItem";
 import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearchInput";
-import { ScrollArea } from "@/components/ui/scroll-area";export interface SingleSelectOption {
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { usePlannerCompactUI, usePlannerStackedLayout } from "@/layout/plannerLayout";
+
+export interface SingleSelectOption {
   id: string;
   name: string;
   isSelected: boolean;
@@ -33,6 +37,10 @@ export function SingleSelectPickerView({
   noMatchesLabel = "No matches",
   selectedLabel = "Selected",
 }: SingleSelectPickerViewProps) {
+  const stackedLayout = usePlannerStackedLayout();
+  const compactUI = usePlannerCompactUI();
+  const sideBySide = !compactUI;
+
   const [query, setQuery] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(
     selectedId ?? options[0]?.id ?? null,
@@ -59,15 +67,27 @@ export function SingleSelectPickerView({
     filteredOptions.find((option) => option.id === previewId) ?? filteredOptions[0];
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 max-lg:min-h-[24rem] lg:flex-row">
-      <PickerListPanel className="h-auto max-h-48 w-full shrink-0 lg:h-full lg:max-h-none lg:w-52">
+    <div
+      className={cn(
+        "flex min-h-0 flex-1 gap-3",
+        sideBySide ? "flex-row" : "min-h-[24rem] flex-col sm:min-h-[28rem]",
+        stackedLayout && !sideBySide && "min-h-[32dvh]",
+      )}
+    >
+      <PickerListPanel
+        className={cn(
+          "h-auto w-full shrink-0",
+          sideBySide ? "h-full w-52 max-w-[45%]" : "max-h-[40dvh] sm:max-h-48",
+        )}
+      >
         <PickerSearchInput
           value={query}
           onChange={setQuery}
           placeholder={searchPlaceholder}
         />
         <ScrollArea className="picker-list-scroll min-h-0 flex-1">
-          <div className="space-y-0.5">            {filteredOptions.length === 0 ? (
+          <div className="space-y-0.5">
+            {filteredOptions.length === 0 ? (
               <p className="px-2 py-3 text-center text-xs text-[var(--color-muted)]">
                 {noMatchesLabel}
               </p>
@@ -92,7 +112,7 @@ export function SingleSelectPickerView({
         {previewOption ? (
           <>
             <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--color-border)]/70 px-4 py-3">
-              <h3 className="min-w-0 truncate font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-accent)]">
+              <h3 className="min-w-0 font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-accent)] [overflow-wrap:anywhere]">
                 {previewOption.name}
               </h3>
               {previewOption.isSelected && (

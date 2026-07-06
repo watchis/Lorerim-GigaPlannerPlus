@@ -20,6 +20,7 @@ import { SingleSelectPickerView, type SingleSelectOption } from "@/panels/Single
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
+import { usePlannerCompactUI } from "@/layout/plannerLayout";
 
 function pickerTitle(picker: SetupPicker, labels: Record<string, string>): string {
   switch (picker) {
@@ -107,6 +108,7 @@ export function SetupPickerPanel() {
   const toggleMajorSkill = useBuildStore((s) => s.toggleMajorSkill);
   const toggleMinorSkill = useBuildStore((s) => s.toggleMinorSkill);
   const [skillSearchQuery, setSkillSearchQuery] = useState("");
+  const compactUI = usePlannerCompactUI();
 
   useEffect(() => {
     setSkillSearchQuery("");
@@ -304,10 +306,15 @@ export function SetupPickerPanel() {
               value={skillSearchQuery}
               onChange={setSkillSearchQuery}
               placeholder={labels.search}
-              className="max-w-sm"
+              className={cn(!compactUI && "max-w-sm")}
             />
             <ScrollArea className="min-h-0 flex-1">
-              <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+              <div
+                className={cn(
+                  "grid gap-1.5",
+                  compactUI ? "grid-cols-1" : "sm:grid-cols-2 xl:grid-cols-3",
+                )}
+              >
                 {filteredSkillOptions.length === 0 ? (
                   <p className="col-span-full px-2 py-6 text-center text-sm text-[var(--color-muted)]">
                     {labels.noMatches ?? "No matches"}

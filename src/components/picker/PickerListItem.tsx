@@ -29,7 +29,7 @@ export function PickerListItem({
       onFocus={onPreview}
       onClick={onSelect}
       className={cn(
-        "flex w-full min-w-0 max-w-full items-center gap-2 rounded-[var(--radius-md)] border px-2.5 py-2 text-left transition-colors",
+        "flex w-full min-w-0 max-w-full items-center gap-2 rounded-[var(--radius-md)] border px-2.5 py-2 text-left transition-colors max-md:min-h-11",
         isSelected
           ? "border-[var(--color-accent)]/35 bg-[var(--color-accent)]/8"
           : isPreview

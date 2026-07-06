@@ -6,6 +6,15 @@ const CENTER_TO_SIDES_RATIO = 1.5;
 export const PLANNER_COLUMN_GAP_PX = 16;
 /** Below this inner layout width, panes stack vertically (phones / narrow portrait). */
 export const STACKED_LAYOUT_MAX_WIDTH = 720;
+/** Side-by-side picker layout needs at least this much center column width. */
+export const PICKER_SIDE_BY_SIDE_MIN_WIDTH = 520;
+
+/** Stacked mobile order: skill navigation first, workspace second, setup last. */
+export const STACKED_PANEL_ORDER = [
+  "skill-trees-sidebar",
+  "skill-trees",
+  "character-setup",
+] as const;
 
 export interface PlannerLayoutState {
   useThreeColumnLayout: boolean;
@@ -37,6 +46,20 @@ export function usePlannerLayoutScale(): number {
 
 export function usePlannerSideWidths(): { left: number; right: number } | null {
   return useContext(PlannerLayoutContext).sideWidths;
+}
+
+export function usePlannerStackedLayout(): boolean {
+  return !useContext(PlannerLayoutContext).useThreeColumnLayout;
+}
+
+export function usePlannerCompactUI(): boolean {
+  const state = useContext(PlannerLayoutContext);
+  return !state.useThreeColumnLayout || state.centerWidth < PICKER_SIDE_BY_SIDE_MIN_WIDTH;
+}
+
+export function getStackedPanelIds(layout: Layout): string[] {
+  const panelIds = new Set(layout.columns.flatMap((column) => column.panels));
+  return STACKED_PANEL_ORDER.filter((panelId) => panelIds.has(panelId));
 }
 
 function parsePxWidth(width: string): number | null {

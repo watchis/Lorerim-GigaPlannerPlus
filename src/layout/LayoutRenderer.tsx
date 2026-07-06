@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 import {
   computePlannerLayoutMetrics,
+  getStackedPanelIds,
   PlannerLayoutContext,
   type PlannerLayoutMetrics,
 } from "@/layout/plannerLayout";
@@ -30,9 +31,10 @@ export const panelRegistry: Record<string, ComponentType> = {
 
 
 
-const mobilePanelWrapperClass: Record<string, string> = {
-  "skill-trees": "flex min-h-[min(70dvh,720px)] flex-col",
-  "skill-trees-sidebar": "shrink-0",
+const stackedPanelWrapperClass: Record<string, string> = {
+  "skill-trees-sidebar":
+    "max-h-[min(45dvh,420px)] shrink-0 overflow-hidden",
+  "skill-trees": "flex min-h-[min(50dvh,480px)] flex-col",
 };
 
 const defaultLayoutMetrics: PlannerLayoutMetrics = {
@@ -94,6 +96,8 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
     "--planner-scale": layoutMetrics.scale,
   } as CSSProperties;
 
+  const stackedPanelIds = getStackedPanelIds(layout);
+
 
 
   return (
@@ -106,29 +110,25 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
           {!layoutMetrics.useThreeColumnLayout ? (
 
-            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain">
+            <div className="page-scroll-with-fab flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain">
 
-              {layout.columns.flatMap((column) =>
+              {stackedPanelIds.map((panelId) => {
 
-                column.panels.map((panelId) => {
+                const Panel = panelRegistry[panelId];
 
-                  const Panel = panelRegistry[panelId];
+                if (!Panel) return null;
 
-                  if (!Panel) return null;
+                const wrapperClass = stackedPanelWrapperClass[panelId];
 
-                  const wrapperClass = mobilePanelWrapperClass[panelId];
+                return wrapperClass ? (
+                  <div key={panelId} className={wrapperClass}>
+                    <Panel />
+                  </div>
+                ) : (
+                  <Panel key={panelId} />
+                );
 
-                  return wrapperClass ? (
-                    <div key={panelId} className={wrapperClass}>
-                      <Panel />
-                    </div>
-                  ) : (
-                    <Panel key={panelId} />
-                  );
-
-                }),
-
-              )}
+              })}
 
             </div>
 

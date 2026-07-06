@@ -4,6 +4,7 @@ import type { Layout } from "@/data/schemas";
 
 import {
   computePlannerLayoutMetrics,
+  getStackedPanelIds,
   getThreeColumnDesignWidth,
   STACKED_LAYOUT_MAX_WIDTH,
 } from "@/layout/plannerLayout";
@@ -49,5 +50,13 @@ describe("plannerLayout", () => {
 
   it("reports the unscaled design width for full-size side panes", () => {
     expect(getThreeColumnDesignWidth(lorerimLayout)).toBe(1707);
+  });
+
+  it("orders stacked panels with skill navigation first", () => {
+    expect(getStackedPanelIds(lorerimLayout)).toEqual([
+      "skill-trees-sidebar",
+      "skill-trees",
+      "character-setup",
+    ]);
   });
 });

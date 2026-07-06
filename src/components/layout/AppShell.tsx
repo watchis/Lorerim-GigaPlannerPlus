@@ -8,7 +8,7 @@ import { useBuildStore } from "@/store/buildStore";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    "block rounded-[var(--radius-md)] px-3 py-2 text-sm transition-colors sm:py-1.5",
+    "block rounded-[var(--radius-md)] px-3 py-2.5 text-sm transition-colors",
     isActive
       ? "bg-[var(--color-accent)]/15 text-[var(--color-accent)]"
       : "text-[var(--color-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-foreground)]",
@@ -22,12 +22,18 @@ export function AppShell() {
   useEffect(() => {
     if (!mobileNavOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMobileNavOpen(false);
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [mobileNavOpen]);
 
   const navItems = [
@@ -38,7 +44,7 @@ export function AppShell() {
 
   return (
     <div className="app-shell flex h-dvh min-h-dvh flex-col overflow-hidden">
-      <header className="sticky top-0 z-40 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]/85 backdrop-blur-md">
+      <header className="sticky top-0 z-40 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]/85 pt-[max(0px,env(safe-area-inset-top))] backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6">
           <Link to="/" className="group flex min-w-0 items-center gap-3">
             <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-visible">
@@ -84,7 +90,7 @@ export function AppShell() {
             type="button"
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-[var(--color-muted)] md:hidden"
+            className="h-11 w-11 shrink-0 text-[var(--color-muted)] md:hidden"
             aria-expanded={mobileNavOpen}
             aria-controls="mobile-nav"
             aria-label={mobileNavOpen ? "Close menu" : "Open menu"}

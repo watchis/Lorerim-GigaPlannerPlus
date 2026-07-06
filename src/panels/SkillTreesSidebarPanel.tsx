@@ -18,6 +18,7 @@ import { usePanelLabels } from "@/theme/ThemeProvider";
 import {
   usePlannerLayoutScale,
   usePlannerSideWidths,
+  usePlannerStackedLayout,
   usePlannerThreeColumnLayout,
 } from "@/layout/plannerLayout";
 
@@ -25,10 +26,12 @@ const RESET_ICON_ONLY_MAX_WIDTH = 280;
 
 export function SkillTreesSidebarPanel() {
   const labels = usePanelLabels("skill-trees");
+  const stackedLayout = usePlannerStackedLayout();
   const useThreeColumnLayout = usePlannerThreeColumnLayout();
   const layoutScale = usePlannerLayoutScale();
   const sideWidths = usePlannerSideWidths();
-  const compact = useThreeColumnLayout && layoutScale < 0.75;
+  const compact =
+    stackedLayout || (useThreeColumnLayout && layoutScale < 0.75);
   const iconOnlyReset =
     useThreeColumnLayout &&
     (sideWidths?.right ?? Number.POSITIVE_INFINITY) < RESET_ICON_ONLY_MAX_WIDTH;
@@ -84,7 +87,7 @@ export function SkillTreesSidebarPanel() {
           className={cn(
             "grid gap-1",
             !useThreeColumnLayout &&
-              "auto-rows-[minmax(5.5rem,auto)] grid-cols-4 sm:grid-cols-5",
+              "auto-rows-[minmax(6rem,auto)] grid-cols-3 sm:grid-cols-4",
             useThreeColumnLayout && "h-full min-h-0 flex-1 grid-cols-3 grid-rows-6",
             compact && "gap-0.5",
           )}
@@ -111,7 +114,7 @@ export function SkillTreesSidebarPanel() {
                 type="button"
                 onClick={() => openSkillTree(tree.skillId)}
                 className={cn(
-                  "grid min-h-[5.5rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
+                  "grid min-h-[6rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
                   compact ? "p-0.5" : "p-1",
                   useThreeColumnLayout && "h-full min-h-0",
                   hasProblem &&
@@ -140,7 +143,7 @@ export function SkillTreesSidebarPanel() {
                   <span
                     className={cn(
                       "min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]",
-                      compact ? "text-[10px]" : "text-[11px]",
+                      compact || stackedLayout ? "text-[10px]" : "text-[11px]",
                     )}
                     title={tree.skillName}
                   >

@@ -809,7 +809,7 @@ export function BuildsPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4">
+    <div className="page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4">
       <header className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-[var(--color-accent-muted)]">
