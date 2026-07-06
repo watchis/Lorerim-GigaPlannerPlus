@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 
 import type { Layout } from "@/data/schemas";
 
@@ -9,6 +9,12 @@ import { MiddleWorkspacePanel } from "@/panels/MiddleWorkspacePanel";
 import { SkillTreesSidebarPanel } from "@/panels/SkillTreesSidebarPanel";
 
 import { cn } from "@/lib/utils";
+
+import {
+  canShowThreeColumnLayout,
+  getThreeColumnMinWidth,
+  PlannerLayoutContext,
+} from "@/layout/plannerLayout";
 
 
 
@@ -60,89 +66,133 @@ function getDesktopGridTemplate(layout: Layout): string {
 export function LayoutRenderer({ layout }: LayoutRendererProps) {
 
   const desktopTemplate = getDesktopGridTemplate(layout);
+  const threeColumnMinWidth = useMemo(() => getThreeColumnMinWidth(layout), [layout]);
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const [useThreeColumnLayout, setUseThreeColumnLayout] = useState(false);
+
+
+
+  useEffect(() => {
+
+    const element = layoutRef.current;
+
+    if (!element) return;
+
+
+
+    const update = () => {
+
+      setUseThreeColumnLayout(canShowThreeColumnLayout(element.clientWidth, layout));
+
+    };
+
+
+
+    const observer = new ResizeObserver(update);
+
+    observer.observe(element);
+
+    update();
+
+
+
+    return () => observer.disconnect();
+
+  }, [layout]);
 
 
 
   return (
 
-    <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
+    <div
+      className="mx-auto flex min-h-0 w-full flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6"
+      style={{ maxWidth: threeColumnMinWidth + 48 }}
+    >
 
-      {/* Mobile / tablet: single scrollable column */}
+      <div ref={layoutRef} className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain lg:hidden">
+        <PlannerLayoutContext.Provider value={useThreeColumnLayout}>
 
-        {layout.columns.flatMap((column) =>
+          {!useThreeColumnLayout ? (
 
-          column.panels.map((panelId) => {
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain">
 
-            const Panel = panelRegistry[panelId];
+              {layout.columns.flatMap((column) =>
 
-            if (!Panel) return null;
+                column.panels.map((panelId) => {
 
-            const wrapperClass = mobilePanelWrapperClass[panelId];
+                  const Panel = panelRegistry[panelId];
 
-            return wrapperClass ? (
-              <div key={panelId} className={wrapperClass}>
-                <Panel />
-              </div>
-            ) : (
-              <Panel key={panelId} />
-            );
+                  if (!Panel) return null;
 
-          }),
+                  const wrapperClass = mobilePanelWrapperClass[panelId];
 
-        )}
+                  return wrapperClass ? (
+                    <div key={panelId} className={wrapperClass}>
+                      <Panel />
+                    </div>
+                  ) : (
+                    <Panel key={panelId} />
+                  );
 
-      </div>
+                }),
 
+              )}
 
+            </div>
 
-      {/* Desktop: data-driven grid */}
+          ) : (
 
-      <div
+            <div
 
-        className={cn("hidden min-h-0 flex-1 gap-4 lg:grid")}
+              className="grid min-h-0 flex-1 gap-4"
 
-        style={{ gridTemplateColumns: desktopTemplate }}
+              style={{ gridTemplateColumns: desktopTemplate }}
 
-      >
+            >
 
-        {layout.columns.map((column, colIndex) => (
-          <div
-            key={colIndex}
-            className={cn(
-              "flex min-h-0 flex-col gap-4",
-              colIndex === 1 || colIndex === layout.columns.length - 1
-                ? "overflow-hidden"
-                : "overflow-y-auto overflow-x-hidden",
-            )}
-          >
-            {column.panels.map((panelId) => {
-              const Panel = panelRegistry[panelId];
-              const isFullHeight = panelId === "skill-trees" || panelId === "skill-trees-sidebar";
-
-              if (!Panel) {
-                return (
-                  <div
-                    key={panelId}
-                    className="rounded-lg border border-dashed border-[var(--color-border)] p-4 text-[var(--color-muted)]"
-                  >
-                    Unknown panel: {panelId}
-                  </div>
-                );
-              }
-
-              return (
+              {layout.columns.map((column, colIndex) => (
                 <div
-                  key={panelId}
-                  className={cn(isFullHeight && "flex min-h-0 flex-1 flex-col")}
+                  key={colIndex}
+                  className={cn(
+                    "flex min-h-0 flex-col gap-4",
+                    colIndex === 1 || colIndex === layout.columns.length - 1
+                      ? "overflow-hidden"
+                      : "overflow-y-auto overflow-x-hidden",
+                  )}
                 >
-                  <Panel />
+                  {column.panels.map((panelId) => {
+                    const Panel = panelRegistry[panelId];
+                    const isFullHeight = panelId === "skill-trees" || panelId === "skill-trees-sidebar";
+
+                    if (!Panel) {
+                      return (
+                        <div
+                          key={panelId}
+                          className="rounded-lg border border-dashed border-[var(--color-border)] p-4 text-[var(--color-muted)]"
+                        >
+                          Unknown panel: {panelId}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={panelId}
+                        className={cn(isFullHeight && "flex min-h-0 flex-1 flex-col")}
+                      >
+                        <Panel />
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        ))}
+              ))}
+
+            </div>
+
+          )}
+
+        </PlannerLayoutContext.Provider>
 
       </div>
 

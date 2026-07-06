@@ -15,9 +15,11 @@ import {
 import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
+import { usePlannerThreeColumnLayout } from "@/layout/plannerLayout";
 
 export function SkillTreesSidebarPanel() {
   const labels = usePanelLabels("skill-trees");
+  const useThreeColumnLayout = usePlannerThreeColumnLayout();
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const resetAllPerks = useBuildStore((s) => s.resetAllPerks);
@@ -50,8 +52,9 @@ export function SkillTreesSidebarPanel() {
         <div
           className={cn(
             "grid gap-1",
-            "max-lg:auto-rows-[minmax(5.5rem,auto)] max-lg:grid-cols-4 sm:max-lg:grid-cols-5",
-            "lg:h-full lg:min-h-0 lg:flex-1 lg:grid-cols-3 lg:grid-rows-6",
+            !useThreeColumnLayout &&
+              "auto-rows-[minmax(5.5rem,auto)] grid-cols-4 sm:grid-cols-5",
+            useThreeColumnLayout && "h-full min-h-0 flex-1 grid-cols-3 grid-rows-6",
           )}
         >
           {trees.map((tree) => {
@@ -76,7 +79,8 @@ export function SkillTreesSidebarPanel() {
                 type="button"
                 onClick={() => openSkillTree(tree.skillId)}
                 className={cn(
-                  "grid min-h-[5.5rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border p-1 text-left transition-colors lg:h-full lg:min-h-0",
+                  "grid min-h-[5.5rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border p-1 text-left transition-colors",
+                  useThreeColumnLayout && "h-full min-h-0",
                   hasProblem &&
                     "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
                   !hasProblem &&
