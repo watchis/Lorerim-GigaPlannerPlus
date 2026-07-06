@@ -36,8 +36,9 @@ writeFileSync(join(profileDir, "loadorder.txt"), "Alpha.esp\nGamma.esp\n");
 const fromProfile = readPluginsTxtFromPath(join(profileDir, "plugins.txt"));
 assert.deepEqual(fromProfile, ["Alpha.esp", "Gamma.esp"]);
 
-const resolved = resolvePluginLoadOrder(installDir, profileDir);
-assert.equal(resolved.source, "plugins.txt");
+writeFileSync(join(profileDir, "loadorder.txt"), "Alpha.esp\nGamma.esp\n");
+const resolved = resolvePluginLoadOrder(profileDir);
+assert.equal(resolved.source, "loadorder.txt");
 assert.deepEqual(resolved.loadOrder, ["Alpha.esp", "Gamma.esp"]);
 
 assert.equal(compareLoadOrderSources(["Alpha.esp", "Gamma.esp"], join(profileDir, "loadorder.txt")), null);
@@ -53,7 +54,7 @@ assert.equal(mismatch?.index, 0);
 const fallbackProfile = mkdtempSync(join(tmpdir(), "giga-loadorder-fallback-"));
 mkdirSync(fallbackProfile, { recursive: true });
 writeFileSync(join(fallbackProfile, "loadorder.txt"), "Only.esp\n");
-const fallback = resolvePluginLoadOrder(installDir, fallbackProfile);
+const fallback = resolvePluginLoadOrder(fallbackProfile);
 assert.equal(fallback.source, "loadorder.txt");
 assert.deepEqual(fallback.loadOrder, ["Only.esp"]);
 

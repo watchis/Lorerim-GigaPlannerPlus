@@ -112,21 +112,6 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
 
   console.log(`Install: ${install.installDir}`);
   console.log(`MO2 profile: ${install.profile}`);
-  console.log(`Load order source: ${install.loadOrderSource} (${install.loadOrderSourcePath})`);
-  if (install.loadOrderWarning) {
-    const warning = install.loadOrderWarning;
-    if (warning.kind === "count-mismatch") {
-      console.warn(
-        `Warning: plugins.txt has ${warning.pluginsTxtCount} enabled plugins but ` +
-          `loadorder.txt has ${warning.loadOrderCount}. Using plugins.txt.`,
-      );
-    } else {
-      console.warn(
-        `Warning: plugins.txt and loadorder.txt disagree at position ${warning.index + 1} ` +
-          `(${warning.pluginsTxt} vs ${warning.loadOrder}). Using plugins.txt.`,
-      );
-    }
-  }
   console.log(`Plugins in load order: ${formatCount(allPlugins.length)}`);
 
   progress.phase("Classifying plugins", 1, 5);

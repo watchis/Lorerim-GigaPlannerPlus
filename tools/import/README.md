@@ -35,9 +35,9 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 
 `import-lorerim.mjs` reads **Skyrim plugin files** (`.esp` / `.esm`) from your LoreRim install.
 
-1. **MO2 profile** — active profile from `ModOrganizer.ini` (`modlist.txt` + **`plugins.txt`** load order; falls back to `loadorder.txt` when `plugins.txt` is missing)
-2. **Plugin files** — each **enabled** plugin (`*` prefix in `plugins.txt`) is read from the winning MO2 mod folder (`modlist.txt`, bottom wins), except **`LoreRim - xEdit64 Output`** and **`LoreRim - Synthesis Output`**, which always override the same plugin name from upstream mods
-3. **Records** — when the same Editor ID appears in multiple plugins, the **last** plugin in load order wins (top → bottom in `plugins.txt`)
+1. **MO2 profile** — active profile from `ModOrganizer.ini` (`modlist.txt` + `loadorder.txt`)
+2. **Plugin files** — each plugin in load order is read from the winning MO2 mod folder (`modlist.txt`, bottom wins), except **`LoreRim - xEdit64 Output`** and **`LoreRim - Synthesis Output`**, which always override the same plugin name from upstream mods
+3. **Records** — when the same Editor ID appears in multiple plugins, the **last** plugin in `loadorder.txt` wins
 4. **Non-mechanics plugins** — plugins with no PERK/SPEL/RACE/MESG/QUST/AVIF/FLST/MGEF records (textures, meshes, etc.) are classified once and skipped on later runs via `tools/import/cache/non-mechanics-plugins.json`. Use `--rescan-plugins` to rebuild that cache.
 
 | Game source | Planner output |
@@ -64,10 +64,6 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 A full LoreRim load order is ~3,500 plugins. The importer classifies each plugin (quick record-type header scan), skips asset-only plugins using a persistent cache, then reads the remainder **once** (PERK, AVIF, SPEL, RACE, MESG, QUST, Wintersun MGEF, altar blessings, and trait FormList data in a single pass) with parallel I/O across up to 8 plugins at a time. Expect the scan to take **about one minute** on a fast SSD after the first run (subsequent runs are faster when most plugins are cached as non-mechanics).
 
 Set `IMPORT_PLUGIN_CONCURRENCY` to tune parallel plugin reads (default `8`). Set `IMPORT_CLASSIFY_CONCURRENCY` for the classification pass (default `16`).
-
-### Load order (`plugins.txt`)
-
-Enabled plugins are listed in the MO2 profile's `plugins.txt` (or `Stock Game/Data/plugins.txt`). Lines prefixed with `*` are active; load order is **top to bottom** — later plugins override earlier ones for the same Editor ID. If `plugins.txt` is missing, the importer falls back to `loadorder.txt` and prints a warning when the two lists disagree.
 
 ### Spriggit (optional)
 
@@ -150,7 +146,7 @@ tools/import/
     giga-planner-layout.json # static legacy layout coordinates
     import-progress.mjs    # CLI progress reporting helpers
     import-reset.mjs       # empty perk shells, hand-tuned overrides, layout preservation, stale file cleanup
-    lorerim-install.mjs    # MO2 discovery, plugins.txt load order, plugin paths
+    lorerim-install.mjs    # MO2 discovery, loadorder.txt, plugin paths
     lorerim-transform.mjs  # plugin records → planner JSON
     lorerim-version.mjs    # modpack version from Wabbajack + install fingerprints
     parse-bonus-effects.mjs # bonus text → structured effects (rule-based)

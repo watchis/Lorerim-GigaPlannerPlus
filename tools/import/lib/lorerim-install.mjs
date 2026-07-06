@@ -114,36 +114,13 @@ export function readPluginsTxtFromPath(pluginsTxtPath) {
   return parsePluginsTxtContent(readFileSync(pluginsTxtPath, "utf8"));
 }
 
-/**
- * Resolve plugin load order from plugins.txt (preferred) or loadorder.txt.
- * plugins.txt is checked in the MO2 profile, then Stock Game/Data.
- */
-export function resolvePluginLoadOrder(installDir, profileDir) {
-  const profilePluginsPath = join(profileDir, "plugins.txt");
-  const stockPluginsPath = join(installDir, "Stock Game", "Data", "plugins.txt");
-
-  const fromProfile = readPluginsTxtFromPath(profilePluginsPath);
-  if (fromProfile != null) {
-    return {
-      loadOrder: fromProfile,
-      source: "plugins.txt",
-      sourcePath: profilePluginsPath,
-    };
-  }
-
-  const fromStock = readPluginsTxtFromPath(stockPluginsPath);
-  if (fromStock != null) {
-    return {
-      loadOrder: fromStock,
-      source: "plugins.txt",
-      sourcePath: stockPluginsPath,
-    };
-  }
-
+/** Resolve plugin load order from MO2 profile loadorder.txt. */
+export function resolvePluginLoadOrder(profileDir) {
+  const sourcePath = join(profileDir, "loadorder.txt");
   return {
     loadOrder: readLoadOrder(profileDir),
     source: "loadorder.txt",
-    sourcePath: join(profileDir, "loadorder.txt"),
+    sourcePath,
   };
 }
 
@@ -241,17 +218,9 @@ export function discoverInstall(installPath) {
   const installDir = resolveLorerimInstall(installPath);
   const { profile, profileDir } = resolveActiveProfile(installDir);
   const { loadOrder, source: loadOrderSource, sourcePath: loadOrderSourcePath } =
-    resolvePluginLoadOrder(installDir, profileDir);
+    resolvePluginLoadOrder(profileDir);
   const enabledMods = readEnabledMods(profileDir);
   const plugins = resolvePluginPaths(loadOrder, installDir, enabledMods);
-
-  let loadOrderWarning = null;
-  if (loadOrderSource === "plugins.txt") {
-    loadOrderWarning = compareLoadOrderSources(
-      loadOrder,
-      join(profileDir, "loadorder.txt"),
-    );
-  }
 
   return {
     installDir,
@@ -260,7 +229,6 @@ export function discoverInstall(installPath) {
     loadOrder,
     loadOrderSource,
     loadOrderSourcePath,
-    loadOrderWarning,
     enabledMods,
     plugins,
   };

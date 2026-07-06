@@ -36,10 +36,6 @@ writeFileSync(
   "+LoreRim - xEdit64 Output\n+Ordinator - Perks of Skyrim\n",
 );
 writeFileSync(
-  join(profileDir, "plugins.txt"),
-  "*Ordinator - Perks of Skyrim.esp\n*LoreRim - Global Modifiers.esp\n",
-);
-writeFileSync(
   join(profileDir, "loadorder.txt"),
   "Ordinator - Perks of Skyrim.esp\nLoreRim - Global Modifiers.esp\n",
 );

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { classifyPluginMechanics } from "./plugin-classifier.mjs";
 import { formatCount } from "./import-progress.mjs";
 import { mapConcurrent } from "./plugin-io.mjs";
 
@@ -66,9 +67,7 @@ export async function filterPluginsForImport(plugins, options = {}) {
   const cache = rescanAll ? { version: 1, plugins: {} } : loadSkipCache(cachePath);
   const toScan = [];
   const skipped = [];
-  const classify =
-    classifyFn ??
-    (await import("./plugin-classifier.mjs")).classifyPluginMechanics;
+  const classify = classifyFn;
   const classifyProgress = progress?.pluginScan?.("Classifying plugins", plugins.length);
 
   const candidates = [];
