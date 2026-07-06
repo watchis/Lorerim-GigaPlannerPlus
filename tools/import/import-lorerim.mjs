@@ -255,7 +255,6 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   const summary = {
     installDir: install.installDir,
     profile: install.profile,
-    loadOrderSource: install.loadOrderSource,
     pluginsInLoadOrder: allPlugins.length,
     pluginsSkippedNonMechanics: skippedPlugins.length,
     pluginsScanned: plugins.length,

@@ -89,75 +89,6 @@ export function readLoadOrder(profileDir) {
     .filter((line) => line && !line.startsWith("#"));
 }
 
-/**
- * Parse plugins.txt lines. Active plugins are prefixed with `*` and listed
- * top-to-bottom (low → high priority; later entries override earlier ones).
- */
-export function parsePluginsTxtContent(content) {
-  const enabled = [];
-
-  for (const rawLine of content.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("#")) continue;
-
-    if (line.startsWith("*")) {
-      const pluginName = line.slice(1).trim();
-      if (pluginName) enabled.push(pluginName);
-    }
-  }
-
-  return enabled;
-}
-
-export function readPluginsTxtFromPath(pluginsTxtPath) {
-  if (!existsSync(pluginsTxtPath)) return null;
-  return parsePluginsTxtContent(readFileSync(pluginsTxtPath, "utf8"));
-}
-
-/** Resolve plugin load order from MO2 profile loadorder.txt. */
-export function resolvePluginLoadOrder(profileDir) {
-  const sourcePath = join(profileDir, "loadorder.txt");
-  return {
-    loadOrder: readLoadOrder(profileDir),
-    source: "loadorder.txt",
-    sourcePath,
-  };
-}
-
-/** Warn when MO2 loadorder.txt disagrees with the enabled plugins.txt order. */
-export function compareLoadOrderSources(pluginsTxtOrder, loadOrderPath) {
-  if (!existsSync(loadOrderPath)) return null;
-
-  const loadOrder = readFileSync(loadOrderPath, "utf8")
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"));
-
-  const pluginsLower = pluginsTxtOrder.map((name) => name.toLowerCase());
-  const loadLower = loadOrder.map((name) => name.toLowerCase());
-
-  if (pluginsLower.length !== loadLower.length) {
-    return {
-      kind: "count-mismatch",
-      pluginsTxtCount: pluginsTxtOrder.length,
-      loadOrderCount: loadOrder.length,
-    };
-  }
-
-  for (let index = 0; index < pluginsLower.length; index++) {
-    if (pluginsLower[index] !== loadLower[index]) {
-      return {
-        kind: "order-mismatch",
-        index,
-        pluginsTxt: pluginsTxtOrder[index],
-        loadOrder: loadOrder[index],
-      };
-    }
-  }
-
-  return null;
-}
-
 /** Enabled mods in MO2 list order (top = lowest file priority, bottom = wins conflicts). */
 export function readEnabledMods(profileDir) {
   const modlistPath = join(profileDir, "modlist.txt");
@@ -217,8 +148,7 @@ export function summarizePluginSources(plugins) {
 export function discoverInstall(installPath) {
   const installDir = resolveLorerimInstall(installPath);
   const { profile, profileDir } = resolveActiveProfile(installDir);
-  const { loadOrder, source: loadOrderSource, sourcePath: loadOrderSourcePath } =
-    resolvePluginLoadOrder(profileDir);
+  const loadOrder = readLoadOrder(profileDir);
   const enabledMods = readEnabledMods(profileDir);
   const plugins = resolvePluginPaths(loadOrder, installDir, enabledMods);
 
@@ -227,8 +157,6 @@ export function discoverInstall(installPath) {
     profile,
     profileDir,
     loadOrder,
-    loadOrderSource,
-    loadOrderSourcePath,
     enabledMods,
     plugins,
   };
