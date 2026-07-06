@@ -76,8 +76,8 @@
       "name": "War Mage",
       "skillReq": 100,
       "position": {
-        "x": 18,
-        "y": 11
+        "x": 3,
+        "y": 0
       },
       "prerequisites": [
         "heavy-armor-combat-meditation"
