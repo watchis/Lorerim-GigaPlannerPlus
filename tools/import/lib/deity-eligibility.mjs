@@ -307,20 +307,6 @@ function indexDeityMetadata(questData) {
   return byId;
 }
 
-function collectFailMessagesByAltarKey(mesgRecords) {
-  const byAltar = new Map();
-  for (const record of mesgRecords) {
-    const match = record.edid?.match(/^WSN_WorshipRequest_Message_(.+)_Fail/i);
-    if (!match) continue;
-    const altarKey = match[1];
-    const text = cleanDescription(record.description ?? "");
-    if (!text) continue;
-    if (!byAltar.has(altarKey)) byAltar.set(altarKey, []);
-    byAltar.get(altarKey).push(text);
-  }
-  return byAltar;
-}
-
 const ALTAR_KEY_TO_DEITY_NAME = {
   Herma: "Hermaeus Mora",
   Mehrunes: "Mehrunes Dagon",
@@ -336,12 +322,66 @@ const ALTAR_KEY_TO_DEITY_NAME = {
   BaanDar: "Baan Dar",
   Totems: "The Old Ways",
   Zen: "Z'en",
+  Almalexia: "Almalexia",
+  SothaSil: "Sotha Sil",
+  Sotha_Sil: "Sotha Sil",
+  Vivec: "Vivec",
 };
 
+const ALTAR_VARIANT_SUFFIX = /(?:_Gift|_Cloak|_BuffOnly|_NoAutocast)$/i;
+
+export function normalizeAltarKey(altarKey) {
+  return String(altarKey ?? "").replace(ALTAR_VARIANT_SUFFIX, "");
+}
+
+export function deityNameFromAltarKey(altarKey) {
+  const normalized = normalizeAltarKey(altarKey);
+  const shortName = normalized.split("_").pop() ?? normalized;
+
+  if (ALTAR_KEY_TO_DEITY_NAME[shortName]) {
+    return ALTAR_KEY_TO_DEITY_NAME[shortName];
+  }
+  if (ALTAR_KEY_TO_DEITY_NAME[normalized]) {
+    return ALTAR_KEY_TO_DEITY_NAME[normalized];
+  }
+
+  if (/^Tribunal_/i.test(normalized)) {
+    const tribunalPart = normalized.slice("Tribunal_".length);
+    if (ALTAR_KEY_TO_DEITY_NAME[tribunalPart]) {
+      return ALTAR_KEY_TO_DEITY_NAME[tribunalPart];
+    }
+    return tribunalPart.replace(/_/g, " ");
+  }
+
+  return shortName.replace(/_/g, " ");
+}
+
 function deityIdFromAltarKey(altarKey) {
-  const shortName = altarKey.split("_").pop() ?? altarKey;
-  const deityName = ALTAR_KEY_TO_DEITY_NAME[shortName] ?? shortName;
-  return deityIdFromName(deityName);
+  return deityIdFromName(deityNameFromAltarKey(altarKey));
+}
+
+export function collectWorshipAltarKeys(mesgRecords) {
+  const keys = new Set();
+  for (const record of mesgRecords) {
+    const match = record.edid?.match(/^WSN_WorshipRequest_Message_(.+)$/i);
+    if (!match || /_Fail$/i.test(match[1])) continue;
+    keys.add(normalizeAltarKey(match[1]));
+  }
+  return keys;
+}
+
+function collectFailMessagesByAltarKey(mesgRecords) {
+  const byAltar = new Map();
+  for (const record of mesgRecords) {
+    const match = record.edid?.match(/^WSN_WorshipRequest_Message_(.+)_Fail/i);
+    if (!match) continue;
+    const altarKey = normalizeAltarKey(match[1]);
+    const text = cleanDescription(record.description ?? "");
+    if (!text) continue;
+    if (!byAltar.has(altarKey)) byAltar.set(altarKey, []);
+    byAltar.get(altarKey).push(text);
+  }
+  return byAltar;
 }
 
 function collectAltarKeyToDeityId(spellRecords) {
@@ -349,10 +389,11 @@ function collectAltarKeyToDeityId(spellRecords) {
   for (const record of spellRecords) {
     if (!record.edid?.startsWith("WSN_AltarBlessing_") || !record.edid.endsWith("_Spell")) continue;
     if (/Gift|Cloak|BuffOnly|NoAutocast/i.test(record.edid)) continue;
-    const altarKey = record.edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+    const altarKey = normalizeAltarKey(
+      record.edid.slice("WSN_AltarBlessing_".length, -"_Spell".length),
+    );
     const match = cleanDescription(record.name).match(/^Blessing of (.+)$/i);
-    if (!match) continue;
-    byAltar.set(altarKey, deityIdFromName(match[1]));
+    byAltar.set(altarKey, match ? deityIdFromName(match[1]) : deityIdFromAltarKey(altarKey));
   }
   return byAltar;
 }
@@ -490,6 +531,7 @@ export function parseShrineLocations(lines, startIndex, endIndex) {
 
       const normalized = line.replace(/^-\s*/, "").trim();
       if (!normalized) continue;
+      if (/^#{1,6}\s/.test(normalized)) break;
       if (/^Temptation:/i.test(normalized)) break;
       if (/^Can follow /i.test(normalized)) break;
       if (
@@ -537,10 +579,24 @@ export function parseGuideDeityEligibility(content) {
     storeGuideEntry(byId, canFollowMatch[1], canFollowMatch[2], starting, shrineLocations);
   }
 
+  for (const [id, entry] of parseTribunalGuideSections(lines).entries()) {
+    if (!byId.has(id)) byId.set(id, entry);
+  }
+
   return byId;
 }
 
-function storeGuideEntry(byId, deityName, canFollowRaw, startingRaw, shrineLocations = []) {
+const TRIBUNAL_CAN_FOLLOW =
+  'Dunmer / Anyone who has completed "Ghosts of the Tribunal"';
+
+function storeGuideEntry(
+  byId,
+  deityName,
+  canFollowRaw,
+  startingRaw,
+  shrineLocations = [],
+  extra = {},
+) {
   const cleanedName = cleanDescription(deityName);
   if (!cleanedName) return;
 
@@ -555,7 +611,44 @@ function storeGuideEntry(byId, deityName, canFollowRaw, startingRaw, shrineLocat
       ? ""
       : startingRawClean.replace(/\s*\/\s*/g, " / ");
 
-  byId.set(deityIdFromName(cleanedName), { canFollow, starting, shrineLocations });
+  byId.set(deityIdFromName(cleanedName), {
+    canFollow,
+    starting,
+    shrineLocations,
+    ...extra,
+  });
+}
+
+function parseTribunalGuideSections(lines) {
+  const byId = new Map();
+  let inTribunal = false;
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    if (/^#\s*The Tribunal\b/i.test(line)) {
+      inTribunal = true;
+      continue;
+    }
+    if (!inTribunal) continue;
+    if (/^#\s+/.test(line) && !/^##\s+/.test(line)) break;
+
+    const deityHeading = line.match(/^##\s+(.+)$/);
+    if (!deityHeading) continue;
+
+    const deityName = cleanDescription(deityHeading[1]);
+    let endIndex = lines.length;
+    for (let lookAhead = index + 1; lookAhead < lines.length; lookAhead++) {
+      if (/^##\s+/.test(lines[lookAhead]) || /^#\s+/.test(lines[lookAhead])) {
+        endIndex = lookAhead;
+        break;
+      }
+    }
+
+    const shrineLocations = parseShrineLocations(lines, index, endIndex);
+    storeGuideEntry(byId, deityName, TRIBUNAL_CAN_FOLLOW, "", shrineLocations);
+  }
+
+  return byId;
 }
 
 export async function fetchGuideDeityEligibility() {

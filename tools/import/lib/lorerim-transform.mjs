@@ -26,7 +26,7 @@ import {
   appendMissingPerkNodes,
 } from "./append-missing-perks.mjs";
 import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
-import { resolveDeityEligibility } from "./deity-eligibility.mjs";
+import { collectWorshipAltarKeys, deityNameFromAltarKey, normalizeAltarKey, resolveDeityEligibility } from "./deity-eligibility.mjs";
 
 const DESTINY_SKILL_ID = "destiny";
 const DESTINY_COORD_SCALE = 2;
@@ -676,14 +676,18 @@ export function transformStandingStoneRecords(spellRecords, mesgRecords, birthsi
   return { birthsigns: none ? [none, ...birthsigns] : birthsigns };
 }
 
-function blessingIdFromName(spellName) {
+function blessingIdFromName(spellName, altarKey = "") {
   const match = cleanName(spellName).match(/^Blessing of (.+)$/i);
-  return slugify(match?.[1] ?? spellName);
+  if (match) return slugify(match[1]);
+  if (altarKey) return slugify(deityNameFromAltarKey(altarKey));
+  return slugify(spellName);
 }
 
-function blessingNameFromSpell(spellName) {
+function blessingNameFromSpell(spellName, altarKey = "") {
   const match = cleanName(spellName).match(/^Blessing of (.+)$/i);
-  return match?.[1] ?? cleanName(spellName);
+  if (match) return match[1];
+  if (altarKey) return deityNameFromAltarKey(altarKey);
+  return cleanName(spellName);
 }
 
 function parseWorshipMessage(description) {
@@ -754,8 +758,27 @@ function isAltarBlessingSpell(record) {
   );
 }
 
+function isVariantAltarBlessingSpell(record) {
+  return /Gift|Cloak|BuffOnly|NoAutocast/i.test(record.edid);
+}
+
 function altarKeyFromSpellEdid(edid) {
-  return edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+  const rawKey = edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+  return normalizeAltarKey(rawKey);
+}
+
+function buildAltarBlessingSpellIndex(spellRecords) {
+  const byAltarKey = new Map();
+
+  for (const record of spellRecords.filter(isAltarBlessingSpell)) {
+    const altarKey = altarKeyFromSpellEdid(record.edid);
+    const existing = byAltarKey.get(altarKey);
+    if (!existing || (isVariantAltarBlessingSpell(existing) && !isVariantAltarBlessingSpell(record))) {
+      byAltarKey.set(altarKey, record);
+    }
+  }
+
+  return byAltarKey;
 }
 
 function blessingEffectText(record, magnitude = null) {
@@ -776,14 +799,15 @@ export function transformDeityRecords(
   const existingById = new Map(existingEntries.map((deity) => [deity.id, deity]));
   const mgefByEdid = buildMgefLookup(mgefRecords);
   const mesgByEdid = new Map(mesgRecords.map((record) => [record.edid, record]));
+  const spellByAltarKey = buildAltarBlessingSpellIndex(spellRecords);
+  const altarKeys = new Set([...collectWorshipAltarKeys(mesgRecords), ...spellByAltarKey.keys()]);
 
   const deities = [];
-  const seenIds = new Set();
 
-  for (const record of spellRecords.filter(isAltarBlessingSpell)) {
-    const altarKey = altarKeyFromSpellEdid(record.edid);
-    const name = blessingNameFromSpell(record.name);
-    const id = blessingIdFromName(record.name);
+  for (const altarKey of altarKeys) {
+    const record = spellByAltarKey.get(altarKey);
+    const name = blessingNameFromSpell(record?.name ?? "", altarKey);
+    const id = blessingIdFromName(record?.name ?? "", altarKey);
     const prior = existingById.get(id);
 
     const worship = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}`);
@@ -828,7 +852,6 @@ export function transformDeityRecords(
       shrineLocations: eligibility.shrineLocations ?? prior?.shrineLocations ?? [],
       effects: parseBonusEffects(resolvedShrine),
     });
-    seenIds.add(id);
   }
 
   deities.sort((left, right) => left.name.localeCompare(right.name));

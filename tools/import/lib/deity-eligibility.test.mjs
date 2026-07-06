@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import {
+  collectWorshipAltarKeys,
+  deityNameFromAltarKey,
+  normalizeAltarKey,
   parseGuideDeityEligibility,
   parseShrineLocations,
   parseWorshipFailMessage,
@@ -99,5 +102,52 @@ const akatoshFollow = buildCanFollowFromInstall({
 });
 assert.equal(akatoshFollow.race, "All");
 assert.equal(akatoshFollow.requirement, "None");
+
+assert.equal(normalizeAltarKey("Tribunal_Almalexia_BuffOnly"), "Tribunal_Almalexia");
+assert.equal(deityNameFromAltarKey("Tribunal_Almalexia"), "Almalexia");
+assert.equal(deityNameFromAltarKey("Tribunal_SothaSil"), "Sotha Sil");
+assert.equal(deityNameFromAltarKey("Tribunal_Vivec"), "Vivec");
+
+const worshipKeys = collectWorshipAltarKeys([
+  { edid: "WSN_WorshipRequest_Message_Tribunal_Almalexia", description: "" },
+  { edid: "WSN_WorshipRequest_Message_Tribunal_Almalexia_Fail", description: "" },
+  { edid: "WSN_WorshipRequest_Message_Daedra_Azura", description: "" },
+]);
+assert.deepEqual([...worshipKeys].sort(), ["Daedra_Azura", "Tribunal_Almalexia"]);
+
+const shrineLinesWithHeaders = [
+  "Can follow Riddle'Thar: Khajit",
+  "Shrine locations:",
+  "Wilderness south of Saarthal",
+  "# The Tribunal",
+  "## Almalexia",
+];
+assert.deepEqual(parseShrineLocations(shrineLinesWithHeaders, 0, shrineLinesWithHeaders.length), [
+  "Wilderness south of Saarthal",
+]);
+
+const tribunalGuide = `
+# The Tribunal
+
+## Almalexia
+
+Tenets: Be generous to beggars and children.
+
+Shrine Blessing: +15 Health and Stamina
+
+## Sotha Sil
+
+Tenets: Uncover the secrets of Dwemer ruins.
+
+## Vivec
+
+Tenets: Fulfill your destiny by saving Tamriel.
+
+# Other Deities
+`;
+const tribunalEntries = parseGuideDeityEligibility(tribunalGuide);
+assert.equal(tribunalEntries.get("almalexia")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
+assert.equal(tribunalEntries.get("sotha-sil")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
+assert.equal(tribunalEntries.get("vivec")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 
 console.log("deity-eligibility tests passed");
