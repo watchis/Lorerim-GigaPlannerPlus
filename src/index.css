@@ -104,6 +104,10 @@ button {
   padding-bottom: max(5rem, calc(3.5rem + env(safe-area-inset-bottom)));
 }
 
+.planner-swipe-pane {
+  padding-bottom: 0.5rem;
+}
+
 @media (pointer: coarse) {
   .touch-target {
     min-height: 2.75rem;

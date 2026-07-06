@@ -5,6 +5,7 @@ import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getSkillGridColumnCount, useContainerSize } from "@/lib/useContainerSize";
 import {
   getBuildPlayerLevelWarnings,
   getOrderedPerkTrees,
@@ -58,6 +59,13 @@ export function SkillTreesSidebarPanel() {
   const skillReqConflicts = getSelectedPerksBelowSkillRequirement(gameData.game, build);
   const skillIncreaseConflictIds = new Set(skillIncreases.map((skill) => skill.skillId));
 
+  const { ref: gridContainerRef, width: gridWidth } = useContainerSize<HTMLDivElement>();
+  const responsiveColumns = getSkillGridColumnCount(gridWidth, {
+    minCellWidth: stackedLayout ? 120 : 100,
+    maxColumns: stackedLayout ? 3 : 4,
+  });
+  const gridColumns = useThreeColumnLayout ? 3 : responsiveColumns;
+
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <CardHeader
@@ -94,12 +102,18 @@ export function SkillTreesSidebarPanel() {
       >
         <ScrollArea className="min-h-0 flex-1">
           <div
+            ref={gridContainerRef}
             className={cn(
-              "grid grid-cols-3 gap-1 pr-1",
-              "auto-rows-[minmax(5.75rem,auto)]",
-              !useThreeColumnLayout && "sm:grid-cols-4",
-              compact && "gap-0.5",
+              "grid gap-1.5 pr-1",
+              useThreeColumnLayout && "h-full min-h-0",
+              compact && "gap-1",
             )}
+            style={{
+              gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+              ...(useThreeColumnLayout
+                ? { gridTemplateRows: "repeat(6, minmax(0, 1fr))" }
+                : { gridAutoRows: "minmax(6.5rem, auto)" }),
+            }}
           >
             {trees.map((tree) => {
               const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
@@ -128,8 +142,9 @@ export function SkillTreesSidebarPanel() {
                     }
                   }}
                   className={cn(
-                    "grid min-h-[5.75rem] grid-rows-[auto_minmax(0,1fr)] gap-0.5 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
-                    compact ? "p-0.5" : "p-1",
+                    "grid grid-rows-[auto_minmax(0,1fr)] gap-1 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
+                    useThreeColumnLayout ? "h-full min-h-0" : "min-h-[6.5rem]",
+                    compact ? "p-1" : "p-1.5",
                     hasProblem &&
                       "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
                     !hasProblem &&
@@ -156,7 +171,7 @@ export function SkillTreesSidebarPanel() {
                     <span
                       className={cn(
                         "min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]",
-                        compact || stackedLayout ? "text-[10px]" : "text-[11px]",
+                        gridColumns <= 2 ? "text-xs" : compact ? "text-[10px]" : "text-[11px]",
                       )}
                       title={tree.skillName}
                     >

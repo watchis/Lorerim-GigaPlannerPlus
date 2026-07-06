@@ -39,6 +39,8 @@ const EDITOR_BOUNDS_PADDING = 1.45;
 const GRID_UNIT_PX = 26;
 /** Shrink fitted trees so nodes sit inset from the render region edges. */
 const FIT_REGION_INSET_RATIO = 0.9;
+/** Minimum grid unit when panning a tree on narrow viewports. */
+const SCROLLABLE_GRID_UNIT_PX = 30;
 const DESTINY_SKILL_ID = "destiny";
 const BASE_NODE_DIAMETER_PX = 32;
 const NODE_DIAMETER_GRID_RATIO = BASE_NODE_DIAMETER_PX / GRID_UNIT_PX;
@@ -404,6 +406,8 @@ interface PerkTreeViewProps {
   showSkillRequirements?: boolean;
   /** Scale the tree to fit and center within the parent area. */
   fit?: boolean;
+  /** Render at readable scale inside a scrollable viewport (mobile). */
+  scrollable?: boolean;
   className?: string;
 }
 
@@ -454,6 +458,7 @@ function PerkTreeView({
   playerLevelConflictPerkIds = [],
   showSkillRequirements = true,
   fit = false,
+  scrollable = false,
   className,
 }: PerkTreeViewProps) {
   const gameData = useBuildStore((s) => s.gameData);
@@ -471,16 +476,28 @@ function PerkTreeView({
       getPerkTreeContentBounds(
         tree,
         EDITOR_NODE_EXTENT,
-        fit ? EDITOR_BOUNDS_PADDING + 0.6 : EDITOR_BOUNDS_PADDING,
+        fit && !scrollable ? EDITOR_BOUNDS_PADDING + 0.6 : EDITOR_BOUNDS_PADDING,
       ),
-    [tree, fit],
+    [tree, fit, scrollable],
   );
   const aspect = bounds.width / bounds.height;
-  const { areaRef, size: fitSize } = useFitContainSize(aspect, fit);
-  const { gridUnitPx, nodeDiameterPx } = useMemo(
-    () => getTreeLayoutMetrics(bounds, fit, fitSize),
-    [bounds, fit, fitSize],
-  );
+  const useFitLayout = fit && !scrollable;
+  const { areaRef, size: fitSize } = useFitContainSize(aspect, useFitLayout);
+  const scrollGridUnitPx = scrollable ? SCROLLABLE_GRID_UNIT_PX : GRID_UNIT_PX;
+  const scrollSize = scrollable
+    ? { width: bounds.width * scrollGridUnitPx, height: bounds.height * scrollGridUnitPx }
+    : null;
+  const { gridUnitPx, nodeDiameterPx } = useMemo(() => {
+    if (scrollable && scrollSize) {
+      const gridUnitPx = scrollGridUnitPx;
+      const nodeDiameterPx = Math.min(
+        BASE_NODE_DIAMETER_PX,
+        Math.max(22, gridUnitPx * NODE_DIAMETER_GRID_RATIO),
+      );
+      return { gridUnitPx, nodeDiameterPx };
+    }
+    return getTreeLayoutMetrics(bounds, useFitLayout, fitSize);
+  }, [bounds, useFitLayout, fitSize, scrollable, scrollSize, scrollGridUnitPx]);
   const nodeRadiusGrid = nodeDiameterPx / (2 * gridUnitPx);
 
   const edges = useMemo(
@@ -641,7 +658,23 @@ function PerkTreeView({
     </div>
   );
 
-  if (fit) {
+  if (scrollable && scrollSize) {
+    return (
+      <div
+        ref={areaRef}
+        className={cn("h-full min-h-0 w-full overflow-auto overscroll-contain", className)}
+      >
+        <div
+          className="relative mx-auto shrink-0 p-4"
+          style={{ width: scrollSize.width, height: scrollSize.height }}
+        >
+          {treeCanvas}
+        </div>
+      </div>
+    );
+  }
+
+  if (useFitLayout) {
     return (
       <div ref={areaRef} className={cn("h-full min-h-0 w-full", className)}>
         <div className="flex h-full w-full items-center justify-center">

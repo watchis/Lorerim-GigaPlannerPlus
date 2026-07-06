@@ -27,36 +27,33 @@ export interface PlannerLayoutState {
   centerWidth: number;
 }
 
-export const PlannerLayoutContext = createContext<PlannerLayoutState>({
-  useThreeColumnLayout: false,
-  scale: 1,
-  gridTemplateColumns: null,
-  sideWidths: null,
-  centerWidth: 0,
-});
+export const PlannerLayoutContext = createContext<PlannerLayoutState | null>(null);
 
-export function usePlannerLayoutState(): PlannerLayoutState {
+export function usePlannerLayoutState(): PlannerLayoutState | null {
   return useContext(PlannerLayoutContext);
 }
 
 export function usePlannerThreeColumnLayout(): boolean {
-  return useContext(PlannerLayoutContext).useThreeColumnLayout;
+  return useContext(PlannerLayoutContext)?.useThreeColumnLayout ?? false;
 }
 
 export function usePlannerLayoutScale(): number {
-  return useContext(PlannerLayoutContext).scale;
+  return useContext(PlannerLayoutContext)?.scale ?? 1;
 }
 
 export function usePlannerSideWidths(): { left: number; right: number } | null {
-  return useContext(PlannerLayoutContext).sideWidths;
+  return useContext(PlannerLayoutContext)?.sideWidths ?? null;
 }
 
 export function usePlannerStackedLayout(): boolean {
-  return !useContext(PlannerLayoutContext).useThreeColumnLayout;
+  const state = useContext(PlannerLayoutContext);
+  if (!state) return false;
+  return !state.useThreeColumnLayout;
 }
 
 export function usePlannerCompactUI(): boolean {
   const state = useContext(PlannerLayoutContext);
+  if (!state) return false;
   return !state.useThreeColumnLayout || state.centerWidth < PICKER_SIDE_BY_SIDE_MIN_WIDTH;
 }
 

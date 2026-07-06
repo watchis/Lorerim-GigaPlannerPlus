@@ -388,7 +388,7 @@ export function SkillTreePanel() {
           )}
         </div>
 
-        {!isTrainingMode && (
+        {!isTrainingMode && !stackedLayout && (
           <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
             <PerkLegend labels={labels} hasProblem={hasTreeProblem} />
             {!isDestinyTree && (
@@ -404,17 +404,12 @@ export function SkillTreePanel() {
             )}
           </div>
         )}
-        {stackedLayout && !isTrainingMode && (
-          <p className="mt-2 text-[10px] leading-snug text-[var(--color-muted)] md:hidden">
-            Tap to select · double-tap to force · long-press to remove
-          </p>
-        )}
       </div>
 
       <CardContent
         className={cn(
           "flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-4 sm:p-6",
-          stackedLayout && "p-3",
+          stackedLayout && "p-2",
         )}
       >
         {isTrainingMode ? (
@@ -426,7 +421,8 @@ export function SkillTreePanel() {
           />
         ) : (
           <PerkTreeView
-            fit
+            fit={!stackedLayout}
+            scrollable={stackedLayout}
             className="min-h-0 flex-1"
             tree={activeTree}
             labels={labels}
