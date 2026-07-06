@@ -6,6 +6,7 @@ import { buildIdentityToPerkName } from "./lib/avif-perk-tree.mjs";
 import { buildAvifMembershipIndex } from "./lib/avif-perk-membership.mjs";
 import { buildPerkMetadataIndex } from "./lib/perk-tree-metadata.mjs";
 import { discoverInstall, summarizePluginSources } from "./lib/lorerim-install.mjs";
+import { filterPluginsForImport } from "./lib/plugin-skip-cache.mjs";
 import {
   transformManifestFromInstall,
   transformDeityRecords,
@@ -34,6 +35,7 @@ function parseArgs(argv) {
     installPath: null,
     dryRun: false,
     pluginLimit: null,
+    rescanPlugins: false,
     help: false,
   };
 
@@ -51,6 +53,10 @@ function parseArgs(argv) {
     }
     if (arg === "--plugin-limit") {
       options.pluginLimit = Number(argv[++index]);
+      continue;
+    }
+    if (arg === "--rescan-plugins") {
+      options.rescanPlugins = true;
       continue;
     }
     if (arg === "--help" || arg === "-h") {
@@ -72,6 +78,7 @@ Options:
   --install, -i <path>   LoreRim install root (required; must contain ModOrganizer.exe)
   --dry-run              Parse and report without writing files
   --plugin-limit <n>     Only scan the first N plugins (debug)
+  --rescan-plugins       Reclassify all plugins (ignore non-mechanics skip cache)
   --help, -h             Show this help
 
 Example:
@@ -92,7 +99,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   }
 
   const install = discoverInstall(options.installPath);
-  const plugins =
+  const allPlugins =
     options.pluginLimit != null
       ? install.plugins.slice(0, options.pluginLimit)
       : install.plugins;
@@ -105,6 +112,19 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
 
   console.log(`Install: ${install.installDir}`);
   console.log(`MO2 profile: ${install.profile}`);
+  console.log(`Plugins in load order: ${formatCount(allPlugins.length)}`);
+
+  progress.phase("Classifying plugins", 1, 5);
+  const { toScan: plugins, skipped: skippedPlugins } = await filterPluginsForImport(
+    allPlugins,
+    { rescanAll: options.rescanPlugins, progress },
+  );
+  if (skippedPlugins.length > 0) {
+    console.log(
+      `Skipping ${formatCount(skippedPlugins.length)} non-mechanics plugins ` +
+        `(textures/meshes only; cache in tools/import/cache/)`,
+    );
+  }
   console.log(`Plugins to scan: ${formatCount(plugins.length)}`);
   const pluginSources = summarizePluginSources(plugins);
   const fromXEdit = plugins.filter((plugin) => plugin.modName === "LoreRim - xEdit64 Output").length;
@@ -117,7 +137,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     console.log(`Top plugin sources: ${topSources}`);
   }
 
-  progress.phase("Scanning plugin records", 1, 4);
+  progress.phase("Scanning plugin records", 2, 5);
   const {
     perkRecords,
     avifTrees,
@@ -149,7 +169,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
       `(MGEF/MESG from combined scan)`,
   );
 
-  progress.phase("Transforming game data", 2, 4);
+  progress.phase("Transforming game data", 3, 5);
   progress.step("Building perk trees…");
   const { trees, indexEntries, addedPerks, removedPerks } = transformPerkRecords(
     perkRecords,
@@ -214,7 +234,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   );
   progress.step(`Deities — ${formatCount(deities.deities.length)} entries`);
 
-  progress.phase("Resolving modpack version", 3, 4);
+  progress.phase("Resolving modpack version", 4, 5);
   const existingManifest = loadJsonIfExists(join(dataDir, "manifest.json"));
   const manifest = transformManifestFromInstall(existingManifest, install.installDir);
   const versionInfo = manifest.version
@@ -235,6 +255,8 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   const summary = {
     installDir: install.installDir,
     profile: install.profile,
+    pluginsInLoadOrder: allPlugins.length,
+    pluginsSkippedNonMechanics: skippedPlugins.length,
     pluginsScanned: plugins.length,
     pluginsFromXEditOutput: fromXEdit,
     pluginSourcesTop: pluginSources.slice(0, 8),
@@ -254,13 +276,13 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   };
 
   if (options.dryRun) {
-    progress.phase("Dry run complete", 4, 4);
+    progress.phase("Dry run complete", 5, 5);
     console.log(`Finished in ${progress.elapsed()} (no files written).`);
     console.log(JSON.stringify(summary, null, 2));
     return { ok: true, dryRun: true, summary };
   }
 
-  progress.phase("Writing planner JSON", 4, 4);
+  progress.phase("Writing planner JSON", 5, 5);
   const filesToWrite = [
     ["perks/index.json", indexEntries],
     ["traits.json", traits],
