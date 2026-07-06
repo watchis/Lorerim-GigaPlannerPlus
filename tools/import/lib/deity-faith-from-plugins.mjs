@@ -28,7 +28,8 @@ export function parseWorshipMessage(description) {
 
 function effectText(record, magnitude = null) {
   if (!record) return "";
-  return cleanWintersunEffectText(record.effectDescription || record.description, magnitude);
+  const resolvedMagnitude = magnitude ?? record.effectMagnitude ?? null;
+  return cleanWintersunEffectText(record.effectDescription || record.description, resolvedMagnitude);
 }
 
 export function indexDeityFaithMgef(mgefRecords) {
@@ -70,7 +71,9 @@ export function extractFaithEffectsFromPlugins({
   const key = normalizeAltarKey(altarKey);
   const worship = parseWorshipMessage(worshipDescription);
 
-  const shrine = effectText(mgefIndex.shrineByAltar.get(key), altarMagnitude);
+  const shrineRecord = mgefIndex.shrineByAltar.get(key);
+  const shrineMagnitude = altarMagnitude ?? shrineRecord?.effectMagnitude ?? null;
+  const shrine = effectText(shrineRecord, shrineMagnitude);
   const follower = effectText(mgefIndex.followerByAltar.get(key)) || worship.follower;
   const devotee = effectText(mgefIndex.devoteeByAltar.get(key)) || worship.devotee;
 

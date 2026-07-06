@@ -6,10 +6,7 @@ import { parsePerkRecordMetadata } from "./perk-record-parser.mjs";
 import { parseMasters, resolveFormIdentity } from "./formid.mjs";
 import { raceDataSkillScore } from "./race-data-parser.mjs";
 import { getRecordBufferAsync, mapConcurrent, visitAsync } from "./plugin-io.mjs";
-import {
-  TRAITS_ABILITY_LIST_EDID,
-  readFormIdsFromBuffer,
-} from "./trait-ability-list.mjs";
+import { normalizeAltarKey } from "./deity-eligibility.mjs";
 
 const IMPORT_RECORD_TYPES = ["PERK", "SPEL", "RACE", "MESG", "QUST"];
 const LORERIM_RACE_PLUGIN_PATTERN = /LoreRim - NPCs and Races/i;
@@ -123,8 +120,10 @@ function readEfitMagnitudes(recordBuffer) {
 
 function altarKeyFromSpellEdid(edid) {
   if (!edid.startsWith("WSN_AltarBlessing_") || !edid.endsWith("_Spell")) return null;
-  if (/Gift|Cloak|BuffOnly|NoAutocast/i.test(edid)) return null;
-  return edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+  if (/Gift|Cloak|NoAutocast/i.test(edid)) return null;
+
+  const rawKey = edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+  return normalizeAltarKey(rawKey);
 }
 
 function collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName) {
@@ -186,6 +185,13 @@ async function readPluginImportPayload({ pluginName, path }) {
 
       const parsed = parseRecord(buffer, ownerPluginLower, masters);
       if (!parsed) continue;
+
+      if (parsed.type === "MGEF") {
+        const magnitudes = readEfitMagnitudes(buffer).filter((value) => value > 0);
+        if (magnitudes.length > 0) {
+          parsed.effectMagnitude = magnitudes[0];
+        }
+      }
 
       if (type === "SPEL") {
         const altarBlessing = collectAltarBlessingFromSpellBuffer(buffer, parsed.edid, pluginName);

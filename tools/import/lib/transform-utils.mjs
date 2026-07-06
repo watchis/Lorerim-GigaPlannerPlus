@@ -27,7 +27,8 @@ export function cleanWintersunEffectText(text, magnitude = null) {
   let cleaned = String(text ?? "");
 
   if (magnitude != null) {
-    cleaned = cleaned.replace(/<mag>/gi, String(magnitude));
+    const formatted = formatEffectMagnitude(magnitude);
+    cleaned = cleaned.replace(/<mag>/gi, formatted);
   }
 
   cleaned = cleaned.replace(/<([^<>]+)>/g, "$1");
@@ -40,6 +41,14 @@ export function cleanWintersunEffectText(text, magnitude = null) {
     .trim();
 
   return cleaned;
+}
+
+function formatEffectMagnitude(magnitude) {
+  const value = Number(magnitude);
+  if (!Number.isFinite(value)) return String(magnitude);
+  const rounded = Math.round(value);
+  if (Math.abs(value - rounded) < 0.001) return String(rounded);
+  return String(value);
 }
 
 export function loadJsonIfExists(filePath) {

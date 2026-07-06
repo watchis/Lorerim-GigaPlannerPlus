@@ -74,6 +74,36 @@ assert.equal(oldWays.shrine, "15% Damage and Crit Against Animals");
 assert.match(oldWays.follower, /sacrifice 100 gold/i);
 assert.match(oldWays.devotee, /powers of a dragon/i);
 
+const tribunalShrine = extractFaithEffectsFromPlugins({
+  altarKey: "Tribunal_Almalexia",
+  mgefIndex: indexDeityFaithMgef([
+    {
+      edid: "WSN_AltarBlessing_Tribunal_Almalexia_Effect",
+      effectDescription: "Increases your Health and Stamina by <mag> points.",
+      effectMagnitude: 15,
+    },
+  ]),
+});
+assert.equal(
+  tribunalShrine.shrine,
+  "Increases your Health and Stamina by 15 points.",
+);
+
+const tribunalSpellMagnitude = extractFaithEffectsFromPlugins({
+  altarKey: "Tribunal_Almalexia",
+  mgefIndex: indexDeityFaithMgef([
+    {
+      edid: "WSN_AltarBlessing_Tribunal_Almalexia_Effect",
+      effectDescription: "Increases your Health and Stamina by <mag> points.",
+    },
+  ]),
+  altarMagnitude: 15,
+});
+assert.equal(
+  tribunalSpellMagnitude.shrine,
+  "Increases your Health and Stamina by 15 points.",
+);
+
 const fixtureCsv = readFileSync(join(__dirname, "deity-faith-effects.sample.csv"), "utf8");
 const fixtureRows = fixtureCsv
   .trim()
