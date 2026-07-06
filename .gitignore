@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Import tooling cache (non-mechanics plugin skip list)
+tools/import/cache/

@@ -285,8 +285,14 @@ export async function collectImportPluginData(plugins, progress = null, options 
   const scan = progress?.pluginScan?.("Scanning plugin records", plugins.length);
   const pluginPayloads = await mapConcurrent(plugins, concurrency, readPluginImportPayload);
 
+  // Merge in load-order sequence so later plugins override earlier ones.
+  const payloadsByName = new Map(pluginPayloads.map((payload) => [payload.pluginName, payload]));
+  const orderedPayloads = plugins
+    .map((plugin) => payloadsByName.get(plugin.pluginName))
+    .filter(Boolean);
+
   let recordCount = 0;
-  for (const payload of pluginPayloads) {
+  for (const payload of orderedPayloads) {
     mergePluginPayload(
       mergedByType,
       avifTrees,

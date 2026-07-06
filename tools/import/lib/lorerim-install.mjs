@@ -89,6 +89,98 @@ export function readLoadOrder(profileDir) {
     .filter((line) => line && !line.startsWith("#"));
 }
 
+/**
+ * Parse plugins.txt lines. Active plugins are prefixed with `*` and listed
+ * top-to-bottom (low → high priority; later entries override earlier ones).
+ */
+export function parsePluginsTxtContent(content) {
+  const enabled = [];
+
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+
+    if (line.startsWith("*")) {
+      const pluginName = line.slice(1).trim();
+      if (pluginName) enabled.push(pluginName);
+    }
+  }
+
+  return enabled;
+}
+
+export function readPluginsTxtFromPath(pluginsTxtPath) {
+  if (!existsSync(pluginsTxtPath)) return null;
+  return parsePluginsTxtContent(readFileSync(pluginsTxtPath, "utf8"));
+}
+
+/**
+ * Resolve plugin load order from plugins.txt (preferred) or loadorder.txt.
+ * plugins.txt is checked in the MO2 profile, then Stock Game/Data.
+ */
+export function resolvePluginLoadOrder(installDir, profileDir) {
+  const profilePluginsPath = join(profileDir, "plugins.txt");
+  const stockPluginsPath = join(installDir, "Stock Game", "Data", "plugins.txt");
+
+  const fromProfile = readPluginsTxtFromPath(profilePluginsPath);
+  if (fromProfile != null) {
+    return {
+      loadOrder: fromProfile,
+      source: "plugins.txt",
+      sourcePath: profilePluginsPath,
+    };
+  }
+
+  const fromStock = readPluginsTxtFromPath(stockPluginsPath);
+  if (fromStock != null) {
+    return {
+      loadOrder: fromStock,
+      source: "plugins.txt",
+      sourcePath: stockPluginsPath,
+    };
+  }
+
+  return {
+    loadOrder: readLoadOrder(profileDir),
+    source: "loadorder.txt",
+    sourcePath: join(profileDir, "loadorder.txt"),
+  };
+}
+
+/** Warn when MO2 loadorder.txt disagrees with the enabled plugins.txt order. */
+export function compareLoadOrderSources(pluginsTxtOrder, loadOrderPath) {
+  if (!existsSync(loadOrderPath)) return null;
+
+  const loadOrder = readFileSync(loadOrderPath, "utf8")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"));
+
+  const pluginsLower = pluginsTxtOrder.map((name) => name.toLowerCase());
+  const loadLower = loadOrder.map((name) => name.toLowerCase());
+
+  if (pluginsLower.length !== loadLower.length) {
+    return {
+      kind: "count-mismatch",
+      pluginsTxtCount: pluginsTxtOrder.length,
+      loadOrderCount: loadOrder.length,
+    };
+  }
+
+  for (let index = 0; index < pluginsLower.length; index++) {
+    if (pluginsLower[index] !== loadLower[index]) {
+      return {
+        kind: "order-mismatch",
+        index,
+        pluginsTxt: pluginsTxtOrder[index],
+        loadOrder: loadOrder[index],
+      };
+    }
+  }
+
+  return null;
+}
+
 /** Enabled mods in MO2 list order (top = lowest file priority, bottom = wins conflicts). */
 export function readEnabledMods(profileDir) {
   const modlistPath = join(profileDir, "modlist.txt");
@@ -148,15 +240,27 @@ export function summarizePluginSources(plugins) {
 export function discoverInstall(installPath) {
   const installDir = resolveLorerimInstall(installPath);
   const { profile, profileDir } = resolveActiveProfile(installDir);
-  const loadOrder = readLoadOrder(profileDir);
+  const { loadOrder, source: loadOrderSource, sourcePath: loadOrderSourcePath } =
+    resolvePluginLoadOrder(installDir, profileDir);
   const enabledMods = readEnabledMods(profileDir);
   const plugins = resolvePluginPaths(loadOrder, installDir, enabledMods);
+
+  let loadOrderWarning = null;
+  if (loadOrderSource === "plugins.txt") {
+    loadOrderWarning = compareLoadOrderSources(
+      loadOrder,
+      join(profileDir, "loadorder.txt"),
+    );
+  }
 
   return {
     installDir,
     profile,
     profileDir,
     loadOrder,
+    loadOrderSource,
+    loadOrderSourcePath,
+    loadOrderWarning,
     enabledMods,
     plugins,
   };
