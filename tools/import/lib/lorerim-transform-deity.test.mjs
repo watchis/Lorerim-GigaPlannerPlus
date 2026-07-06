@@ -51,7 +51,7 @@ const spellRecords = [
 
 const mgefRecords = [
   {
-    edid: "WSN_AltarBlessing_Tribunal_Almalexia_Effect",
+    edid: "WSN_AltarBlessing_Tribunal_Almalexia_BuffOnly_Effect_Ab",
     effectDescription: "Increases your Health and Stamina by <mag> points.",
   },
   {
@@ -59,11 +59,11 @@ const mgefRecords = [
     effectDescription: "Regenerate Stamina <mag>% faster.",
   },
   {
-    edid: "WSN_AltarBlessing_Tribunal_SothaSil_Effect",
+    edid: "WSN_AltarBlessing_Tribunal_SothaSil_Effect_Ab",
     effectDescription: "Increases your Health and Magicka by <mag> points.",
   },
   {
-    edid: "WSN_AltarBlessing_Tribunal_Vivec_Effect",
+    edid: "WSN_AltarBlessing_Tribunal_Vivec_Effect_Ab",
     effectDescription: "Increases your Magicka and Stamina by <mag> points.",
   },
   {
@@ -87,10 +87,10 @@ const mgefRecords = [
 ];
 
 const result = transformDeityRecords(spellRecords, mgefRecords, mesgRecords, deitiesPath, new Map([
-  ["Tribunal_Almalexia", { magnitude: 15 }],
-  ["Daedra_Hircine", { magnitude: 25 }],
-  ["Tribunal_SothaSil", { magnitude: 15 }],
-  ["Tribunal_Vivec", { magnitude: 15 }],
+  ["Tribunal_Almalexia", { magnitudes: [15], magnitude: 15 }],
+  ["Daedra_Hircine", { magnitudes: [25], magnitude: 25 }],
+  ["Tribunal_SothaSil", { magnitudes: [15], magnitude: 15 }],
+  ["Tribunal_Vivec", { magnitudes: [15], magnitude: 15 }],
 ]));
 const byId = new Map(result.deities.map((deity) => [deity.id, deity]));
 
@@ -106,6 +106,14 @@ assert.equal(
   "Increases your Health and Stamina by 15 points.",
 );
 assert.equal(byId.get("hircine")?.shrine, "Regenerate Stamina 25% faster.");
+assert.equal(
+  byId.get("sotha-sil")?.shrine,
+  "Increases your Health and Magicka by 15 points.",
+);
+assert.equal(
+  byId.get("vivec")?.shrine,
+  "Increases your Magicka and Stamina by 15 points.",
+);
 assert.match(byId.get("almalexia")?.follower ?? "", /blocking/i);
 assert.match(byId.get("almalexia")?.devotee ?? "", /Healing from most sources/i);
 assert.match(byId.get("almalexia")?.tenets ?? "", /beggars and children/);

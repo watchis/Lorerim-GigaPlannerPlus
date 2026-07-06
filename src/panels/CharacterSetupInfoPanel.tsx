@@ -169,6 +169,7 @@ export function CharacterSetupInfoPanel() {
                       devotee: labels.devoteeBonus,
                       startingRaces: labels.startingRaces,
                       shrineLocations: labels.shrineLocations,
+                      tenets: labels.tenets,
                     }}
                     hideHeader
                   />

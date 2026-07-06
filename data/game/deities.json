@@ -15,14 +15,21 @@
     {
       "id": "akatosh",
       "name": "Akatosh",
-      "shrine": "Learn all skills 15% faster.",
+      "shrine": "Increases Fire Resistance by 15%.",
       "follower": "Attacks, spells, scrolls, shouts and enchantments are up to 30% better against dragons. Able to craft a powerful amulet by using amulets of the Eight Divines.",
       "devotee": "Praying to Akatosh resets the cooldown of your most recently used shout and power. Craft a powerful amulet with 5 of each of the nine divines amulets.",
       "tenets": "Fulfill your destiny by saving Tamriel. Raise your character level. Absorb dragon souls. Never openly break the laws of Skyrim.",
       "race": "All",
       "starting": "Breton / Khajiit / Nord / Imperial",
       "requirement": "None",
-      "effects": [],
+      "effects": [
+        {
+          "type": "derivedStat",
+          "stat": "fireResist",
+          "value": 15,
+          "isPercent": true
+        }
+      ],
       "shrineLocations": [
         "North of Frostfruit Inn in Rorikstead",
         "Northeast of Twilight Sepulcher",
@@ -30,6 +37,19 @@
         "Fort Sungard, southeast of Rorikstead",
         "Skyborn Altar"
       ]
+    },
+    {
+      "id": "almalexia",
+      "name": "Almalexia",
+      "shrine": "Increases your Health and Stamina by 15 points.",
+      "follower": "Attacks deal up to 20% more damage to enemies who are facing you and take up to 20% less damage while blocking.",
+      "devotee": "Healing from most spells and potions is up to 20% better and wards are up to 30% cheaper to cast.",
+      "tenets": "Vanquish the threats facing Solstheim. Be generous to beggars and children. Receive the blessing of Lover's Comfort. Never openly break the laws of the Great Houses. Dark Elves are most deserving of my favor.",
+      "race": "Dunmer / Anyone who has completed \"Ghosts of the Tribunal\"",
+      "starting": "",
+      "requirement": "Almalexia does not accept outlanders who have not proven themselves.",
+      "shrineLocations": [],
+      "effects": []
     },
     {
       "id": "arkay",
@@ -90,7 +110,7 @@
       "id": "azura",
       "name": "Azura",
       "shrine": "Resist 10% of magic.",
-      "follower": "Foes within mag feet can absorb spells and suffer up to 20% reduced magic resistance, chameleon and blind spells are up to 25% cheaper",
+      "follower": "Foes within 100 feet can absorb spells and suffer up to 20% reduced magic resistance, chameleon and blind spells are up to 25% cheaper",
       "devotee": "Activate a target below 30% - 60% health (based on favor) to paralyze them with 1 Health. Soul trapping spells cost up to 40% less to cast.",
       "tenets": "Trap souls in my name. Explore new locations. Pray only at twilight, preferably outside. Dark Elves and those skilled in Illusion are most deserving of my favor.",
       "race": "Khajiit / Dunmer / Anyone who has completed \"The Dark Star\"",
@@ -203,7 +223,7 @@
       "name": "Ebonarm",
       "shrine": "Armor rating of heavy armor pieces is increased by 10%.",
       "follower": "One Handed raises damage blocked, Block raises armor rating and Heavy Armor raises attack damage. 15% at 100 of the corresponding skill level. These bonuses are doubled in an Oblivion Realm.",
-      "devotee": "Transfer armor of enemies within mag feet by up to 200. Doubled against daedra. Bonus to frost and shock resist when wearing Ebony Armor.",
+      "devotee": "Transfer armor of enemies within 40 feet by up to 200. Doubled against daedra. Bonus to frost and shock resist when wearing Ebony Armor.",
       "tenets": "Slay daedra. Defeat epic foes. Complete miscellaneous quests for the people of Skyrim. Those skilled in Block are most deserving of my favor.",
       "race": "Breton / Dunmer",
       "starting": "",
@@ -378,7 +398,7 @@
       "name": "Malacath",
       "shrine": "Your power attacks cost 10% less Stamina.",
       "follower": "Your power attacks are up to 15% stronger and cost up to 15% less stamina.",
-      "devotee": "When an enemy dies within mag feet, their killer is healed based on the amount of overkill damage dealt (scaling with favor with Malacath).",
+      "devotee": "When an enemy dies within 20 feet, their killer is healed based on the amount of overkill damage dealt (scaling with favor with Malacath).",
       "tenets": "Defeat epic foes. Improve weapons and armor. Never commit a crime against the strongholds. Orcs and those skilled in Smithing are most deserving of my favor.",
       "race": "Orsimer / Dunmer / Nord / Anyone who has completed \"The Cursed Tribe\"",
       "starting": "Orsimer / Dunmer",
@@ -400,8 +420,7 @@
       "requirement": "None",
       "effects": [],
       "shrineLocations": [
-        "Wilderness southwest of Witchmist Grove",
-        "Sai"
+        "Wilderness southwest of Witchmist Grove"
       ]
     },
     {
@@ -409,7 +428,7 @@
       "name": "Mara",
       "shrine": "Restoration spells cost 10% less to cast.",
       "follower": "While your hands are lowered, restore attributes 0.5 per second. Restoration spells are up to 20% stronger based on favor. Praying cures all diseases.",
-      "devotee": "Living allies within mag feet are healed up to 20 points of magicka and health per second. Take 25% less physical damage when your hands are lowered.",
+      "devotee": "Living allies within 100 feet are healed up to 20 points of magicka and health per second. Take 25% less physical damage when your hands are lowered.",
       "tenets": "Be married. Own one or more houses. Be generous to beggars and children. Receive the blessing of Lover's Comfort. Never openly break the laws of Skyrim.",
       "race": "All",
       "starting": "Breton / Nord / Bosmer / Imperial",
@@ -517,7 +536,7 @@
       "id": "namira",
       "name": "Namira",
       "shrine": "Increases Disease Resistance by 25%.",
-      "follower": "Reduces Poison Resist of all within mag feet by up to 40%. Grants strong stomach and strange meat on kills.",
+      "follower": "Reduces Poison Resist of all within 100 feet by up to 40%. Grants strong stomach and strange meat on kills.",
       "devotee": "Poisoning a person or putting a Human Heart, Flesh or Strange Meat into their inventory attracts insects, reducing armor by up to 20 and dealing up to 40 disease damage.",
       "tenets": "Murder the innocent. Poison your weapons. Eat the corpses of the dead with my Ring. Be generous to beggars.",
       "race": "Dunmer / everyone who completed \"The Taste of Death\"",
@@ -716,6 +735,19 @@
       ]
     },
     {
+      "id": "sotha-sil",
+      "name": "Sotha Sil",
+      "shrine": "Increases your Magicka and Health by 15 points.",
+      "follower": "Items are enchanted up to 15% stronger and telekentic and wind spells are up to 20% better.",
+      "devotee": "Using a filled soul gem or dynamo core, permanently summon a Dwarven automaton to fight for you (Max 1). Shock spells are up to 20% stronger based on favor.",
+      "tenets": "Uncover the secrets of Dwemer ruins. Create enchanted items. Master the skills of the Mage. Dark Elves and those skilled in Enchanting are most deserving of my favor.",
+      "race": "Dunmer / Anyone who has completed \"Ghosts of the Tribunal\"",
+      "starting": "",
+      "requirement": "Sotha Sil does not accept outlanders who have not proven themselves.",
+      "shrineLocations": [],
+      "effects": []
+    },
+    {
       "id": "st-alessia",
       "name": "St. Alessia",
       "shrine": "Followers within 50 feet gain 100 points of armor and 10% magic resistance.",
@@ -734,9 +766,7 @@
         }
       ],
       "shrineLocations": [
-        "Wilderness southeast of Eastmarch Imperial Camp",
-        "The Daedric Princes",
-        "Azura"
+        "Wilderness southeast of Eastmarch Imperial Camp"
       ]
     },
     {
@@ -807,7 +837,7 @@
       "name": "Talos",
       "shrine": "Time between shouts is reduced.",
       "follower": "Attacks and shouts against playable races, Snow Elves and Falmer are increased by up to 20%.",
-      "devotee": "Your remaining shout cooldown is halved whenever an enemy dies within mag feet.",
+      "devotee": "Your remaining shout cooldown is halved whenever an enemy dies within 20 feet.",
       "tenets": "Bring the Civil War to a conclusion. Learn the dragon tongue. Absorb dragon souls. Slay elves and the Thalmor. Never openly break the laws of Skyrim.",
       "race": "All",
       "starting": "Nord / Imperial",
@@ -849,21 +879,14 @@
     {
       "id": "the-hist",
       "name": "the Hist",
-      "shrine": "Resist 100% of fire damage.",
+      "shrine": "Tough scales increase armor by 100 points.",
       "follower": "Pray to gain up and to 50 point bonus to all attributes for up to 1000 seconds. Up to 100 when under the influence of Sleeping Tree Sap.",
       "devotee": "Absorb up to 40% stamina and magicka from nearby dead creatures and people. Sleeping tree sap lasts up to 20 times longer and is up to 100% stronger..",
       "tenets": "Explore new locations. Slay daedra. Pray only outdoors. Never summon a daedra.",
       "race": "Argonian",
       "starting": "Argonian",
       "requirement": "Race restricted",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "fireResist",
-          "value": 100,
-          "isPercent": true
-        }
-      ],
+      "effects": [],
       "shrineLocations": [
         "Location: The Sleeping Tree"
       ]
@@ -880,8 +903,7 @@
       "requirement": "Race restricted",
       "effects": [],
       "shrineLocations": [
-        "Hillcrown Yokudan Shrine, southwest of Rorikstead",
-        "Other Dieties"
+        "Hillcrown Yokudan Shrine, southwest of Rorikstead"
       ]
     },
     {
@@ -911,8 +933,7 @@
       "requirement": "The animal gods do not accept those who are not of Nord or Breton blood.",
       "effects": [],
       "shrineLocations": [
-        "Bromjunaar Sanctuary (in the past)",
-        "WEBSITE BY UNCGAMING & WHISPERDEALERGoogle SitesReport abusePage detailsPage updated Google SitesReport abuseDOCS_timing['cov']=new Date().getTime();"
+        "Bromjunaar Sanctuary (in the past)"
       ]
     },
     {
@@ -934,9 +955,7 @@
         }
       ],
       "shrineLocations": [
-        "Wilderness south of Saarthal",
-        "The Tribunal",
-        "Almalexia"
+        "Wilderness south of Saarthal"
       ]
     },
     {
@@ -966,7 +985,7 @@
       "id": "vaermina",
       "name": "Vaermina",
       "shrine": "Illusion spells cost 10% less to cast.",
-      "follower": "Mind affecting illusion spells work on targets up to 20 levels higher and cost up to 50% less magicka while out of combat.",
+      "follower": "Mind affecting illusion spells are up to 20% more effective and cost up to 50% less magicka while out of combat.",
       "devotee": "Activate a sleeping person to summon an illusion to accompany you for ten hours. Illusion spells are up to 10% stronger when not rested.",
       "tenets": "Witness the death of those under your mind affecting spells. Kill people in their sleep. Sleep to pray. Those skilled in Illusion are most deserving of my favor.",
       "race": "Dunmer / everyone who completed \"Waking Nightmare\"",
@@ -983,6 +1002,19 @@
       "shrineLocations": [
         "Nightcaller Temple"
       ]
+    },
+    {
+      "id": "vivec",
+      "name": "Vivec",
+      "shrine": "Increases your Magicka and Stamina by 15 points.",
+      "follower": "Speech and intimidate checks are up to 60% easier and light attacks deal up to 30% more damage (per favor with Vivec)",
+      "devotee": "Critical hits chance and damage is increased by up to 20% when not power attacking.. Your health, stamina and magicka attempt to reach equilibrium.",
+      "tenets": "Fulfill your destiny by saving Tamriel. Read the stories of others. Defeat epic foes. Never openly break the laws of the Great Houses. Dark Elves and those skilled in Speechcraft are most deserving of my favor.",
+      "race": "Dunmer / Anyone who has completed \"Ghosts of the Tribunal\"",
+      "starting": "",
+      "requirement": "Vivec does not accept outlanders who have not proven themselves.",
+      "shrineLocations": [],
+      "effects": []
     },
     {
       "id": "xarxes",
@@ -1019,8 +1051,7 @@
         }
       ],
       "shrineLocations": [
-        "Wilderness east of Dragon Bridge",
-        "The Yokudan Pantheon"
+        "Wilderness east of Dragon Bridge"
       ]
     },
     {
@@ -1038,8 +1069,7 @@
         "Northwest of Four Skull Lookout",
         "East of Gjukar's Monument",
         "Northeast of Riften Stables",
-        "Inside Whiterun, to the left of the Bannered Mare",
-        "Elven Ancestors"
+        "Inside Whiterun, to the left of the Bannered Mare"
       ]
     }
   ]

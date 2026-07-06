@@ -32,14 +32,19 @@ export function meaningfulEffectMagnitude(value) {
 
 export function cleanWintersunEffectText(text, magnitude = null) {
   let cleaned = String(text ?? "");
-  const usableMagnitude = meaningfulEffectMagnitude(magnitude);
+  const magnitudes = Array.isArray(magnitude)
+    ? magnitude.map((value) => meaningfulEffectMagnitude(value)).filter((value) => value != null)
+    : meaningfulEffectMagnitude(magnitude) != null
+      ? [meaningfulEffectMagnitude(magnitude)]
+      : [];
 
-  if (usableMagnitude != null) {
-    const formatted = formatEffectMagnitude(usableMagnitude);
-    cleaned = cleaned.replace(/<mag>/gi, formatted);
-  } else {
-    cleaned = cleaned.replace(/<mag>/gi, "");
+  if (magnitudes.length > 0) {
+    for (const formatted of magnitudes.map((value) => formatEffectMagnitude(value))) {
+      cleaned = cleaned.replace(/<mag>/i, formatted);
+    }
   }
+
+  cleaned = cleaned.replace(/<mag>/gi, "");
 
   cleaned = cleaned.replace(/<([^<>]+)>/g, "$1");
 

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   extractFaithEffectsFromPlugins,
   indexDeityFaithMgef,
+  parseShrineMgefAltarKey,
   parseWorshipMessage,
 } from "./deity-faith-from-plugins.mjs";
 
@@ -74,6 +75,66 @@ assert.equal(oldWays.shrine, "15% Damage and Crit Against Animals");
 assert.match(oldWays.follower, /sacrifice 100 gold/i);
 assert.match(oldWays.devotee, /powers of a dragon/i);
 
+assert.equal(parseShrineMgefAltarKey("WSN_AltarBlessing_Tribunal_Almalexia_Effect"), "Tribunal_Almalexia");
+assert.equal(parseShrineMgefAltarKey("WSN_AltarBlessing_Divine_Akatosh"), "Divine_Akatosh");
+assert.equal(
+  parseShrineMgefAltarKey("WSN_AltarBlessing_Tribunal_Almalexia_BuffOnly_Effect_Ab"),
+  "Tribunal_Almalexia",
+);
+assert.equal(parseShrineMgefAltarKey("WSN_Tribunal_Vivec_Effect_Ab"), "Tribunal_Vivec");
+assert.equal(parseShrineMgefAltarKey("WSN_Tribunal_Almalexia_Boon1_Effect_Ab"), null);
+
+const akatoshShrine = indexDeityFaithMgef([
+  {
+    edid: "WSN_AltarBlessing_Divine_Akatosh_BuffOnly_Effect_Ab",
+    effectDescription: "Learn all skills <mag>% faster.",
+  },
+  {
+    edid: "WSN_AltarBlessing_Divine_Akatosh_Effect",
+    effectDescription: "Resist <mag>% of fire damage.",
+  },
+]);
+
+const akatosh = extractFaithEffectsFromPlugins({
+  altarKey: "Divine_Akatosh",
+  mgefIndex: akatoshShrine,
+  altarMagnitudes: [15],
+  shrineMgefEdid: "WSN_AltarBlessing_Divine_Akatosh",
+});
+assert.equal(akatosh.shrine, "Resist 15% of fire damage.");
+
+const akatoshWrongIndex = extractFaithEffectsFromPlugins({
+  altarKey: "Divine_Akatosh",
+  mgefIndex: indexDeityFaithMgef([
+    {
+      edid: "WSN_AltarBlessing_Divine_Akatosh_Effect",
+      effectDescription: "Learn all skills <mag>% faster.",
+    },
+    {
+      edid: "WSN_AltarBlessing_Divine_Akatosh",
+      effectDescription: "Resist <mag>% of fire damage.",
+    },
+  ]),
+  altarMagnitudes: [15],
+  shrineMgefEdid: "WSN_AltarBlessing_Divine_Akatosh",
+});
+assert.equal(akatoshWrongIndex.shrine, "Resist 15% of fire damage.");
+
+const tribunalShrineFromAbilityMgef = extractFaithEffectsFromPlugins({
+  altarKey: "Tribunal_Almalexia",
+  mgefIndex: indexDeityFaithMgef([
+    {
+      edid: "WSN_AltarBlessing_Tribunal_Almalexia_BuffOnly_Effect_Ab",
+      effectDescription: "Increases your Health and Stamina by <mag> points.",
+    },
+  ]),
+  altarMagnitudes: [15],
+});
+assert.equal(
+  tribunalShrineFromAbilityMgef.shrine,
+  "Increases your Health and Stamina by 15 points.",
+);
+
 const tribunalShrine = extractFaithEffectsFromPlugins({
   altarKey: "Tribunal_Almalexia",
   mgefIndex: indexDeityFaithMgef([
@@ -97,7 +158,7 @@ const tribunalSpellMagnitude = extractFaithEffectsFromPlugins({
       effectDescription: "Increases your Health and Stamina by <mag> points.",
     },
   ]),
-  altarMagnitude: 15,
+  altarMagnitudes: [15],
 });
 assert.equal(
   tribunalSpellMagnitude.shrine,
@@ -112,7 +173,7 @@ const hircineShrine = extractFaithEffectsFromPlugins({
       effectDescription: "Regenerate Stamina <mag>% faster.",
     },
   ]),
-  altarMagnitude: 25,
+  altarMagnitudes: [25],
 });
 assert.equal(hircineShrine.shrine, "Regenerate Stamina 25% faster.");
 
@@ -125,7 +186,7 @@ const ignoredZeroMagnitude = extractFaithEffectsFromPlugins({
       effectMagnitude: 0,
     },
   ]),
-  altarMagnitude: 0,
+  altarMagnitudes: [0],
 });
 assert.equal(ignoredZeroMagnitude.shrine, "-", "zero magnitudes must not render as 0%");
 
@@ -139,6 +200,70 @@ const unresolvedMag = extractFaithEffectsFromPlugins({
   ]),
 });
 assert.equal(unresolvedMag.shrine, "-", "unresolved <mag> should not render literal 'mag'");
+
+const BOON_DISTANCE_FIXTURES = [
+  {
+    altarKey: "Daedra_Malacath",
+    boon: 2,
+    dnam: "When an enemy dies within <mag> feet, their killer is healed based on the amount of overkill damage dealt (scaling with favor with Malacath).",
+    magnitudes: [20],
+    expected: /within 20 feet/i,
+  },
+  {
+    altarKey: "Daedra_Azura",
+    boon: 1,
+    dnam: "Foes within <mag> feet can absorb spells and suffer up to <20>% reduced magic resistance, chameleon and blind spells are up to <25>% cheaper (based on favor with Azura)",
+    magnitudes: [100],
+    expected: /within 100 feet/i,
+  },
+  {
+    altarKey: "Divine_Mara",
+    boon: 2,
+    dnam: "Living allies within <mag> feet are healed up to <20> points of magicka and health per second (based on favor with Mara). Take <25>% less physical damage when your hands are lowered.",
+    magnitudes: [100],
+    expected: /within 100 feet/i,
+  },
+  {
+    altarKey: "Divine_Talos",
+    boon: 2,
+    dnam: "Your remaining shout cooldown is halved whenever an enemy dies within <mag> feet.",
+    magnitudes: [20],
+    expected: /within 20 feet/i,
+  },
+  {
+    altarKey: "Daedra_Namira",
+    boon: 1,
+    dnam: "Reduces Poison Resist of all within <mag> feet by up to <40>% (based on favor with Namira). Grants strong stomach and strange meat on kills.",
+    magnitudes: [100],
+    expected: /within 100 feet/i,
+  },
+  {
+    altarKey: "Misc_Ebonarm",
+    boon: 2,
+    dnam: "Transfer armor of enemies within <mag> feet by up to <200> (based on favor with Ebonarm). Doubled against daedra. Bonus to frost and shock resist when wearing Ebony Armor.",
+    magnitudes: [40],
+    expected: /within 40 feet/i,
+  },
+];
+
+for (const fixture of BOON_DISTANCE_FIXTURES) {
+  const edidSuffix = fixture.boon === 1 ? "Boon1" : "Boon2";
+  const indexed = indexDeityFaithMgef([
+    {
+      edid: `WSN_${fixture.altarKey}_${edidSuffix}_Effect_Ab`,
+      effectDescription: fixture.dnam,
+    },
+  ]);
+  const extracted = extractFaithEffectsFromPlugins({
+    altarKey: fixture.altarKey,
+    mgefIndex: indexed,
+    followerMagnitudes: fixture.boon === 1 ? fixture.magnitudes : null,
+    devoteeMagnitudes: fixture.boon === 2 ? fixture.magnitudes : null,
+  });
+  const text = fixture.boon === 1 ? extracted.follower : extracted.devotee;
+  assert.match(text, fixture.expected, `${fixture.altarKey} boon${fixture.boon} distance`);
+  assert.doesNotMatch(text, /within feet/i, `${fixture.altarKey} boon${fixture.boon} should not drop distance`);
+}
 
 const fixtureCsv = readFileSync(join(__dirname, "deity-faith-effects.sample.csv"), "utf8");
 const fixtureRows = fixtureCsv
@@ -158,6 +283,30 @@ for (const [name, shrine, follower, devotee] of fixtureRows) {
           ? "Tribunal_Almalexia"
           : null;
   if (!altarKey) continue;
+
+  if (name === "Almalexia") {
+    const indexed = indexDeityFaithMgef([
+      {
+        edid: `WSN_AltarBlessing_${altarKey}_Effect`,
+        effectDescription: "Increases your Health and Stamina by <mag> points.",
+      },
+      { edid: `WSN_${altarKey}_Boon1_Effect_Ab`, effectDescription: follower },
+      { edid: `WSN_${altarKey}_Boon2_Effect_Ab`, effectDescription: devotee },
+    ]);
+    const extracted = extractFaithEffectsFromPlugins({
+      altarKey,
+      mgefIndex: indexed,
+      altarMagnitudes: [15],
+    });
+    assert.equal(
+      extracted.shrine,
+      "Increases your Health and Stamina by 15 points.",
+      "Almalexia keeps in-game DNAM wording after magnitude substitution",
+    );
+    assert.equal(extracted.follower, follower, `${name} follower`);
+    assert.equal(extracted.devotee, devotee, `${name} devotee`);
+    continue;
+  }
 
   const indexed = indexDeityFaithMgef([
     { edid: `WSN_AltarBlessing_${altarKey}_Effect`, effectDescription: shrine },

@@ -493,23 +493,36 @@ function isIncompleteCanFollow(race, failMessages, guideEntry) {
   return !hasQuestPhrase && !hasRaces;
 }
 
+function stripInlineHtml(text) {
+  return String(text ?? "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function normalizeGuideText(content) {
   const text = String(content ?? "");
   if (!/<html|<body|<p[\s>]/i.test(text)) return text;
 
-  return text
+  let normalized = text
+    .replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, (_, inner) => `\n# ${stripInlineHtml(inner)}\n`)
+    .replace(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi, (_, inner) => `\n## ${stripInlineHtml(inner)}\n`)
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>/gi, "\n")
-    .replace(/<\/h2>/gi, "\n")
-    .replace(/<\/h1>/gi, "\n")
     .replace(/<[^>]+>/g, "")
     .replace(/[<>]/g, "")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, "&")
     .replace(/\u00a0/g, " ")
-    .replace(/\r/g, "")
-    .replace(/\n{3,}/g, "\n\n");
+    .replace(/\r/g, "");
+
+  return normalized.replace(/\n{3,}/g, "\n\n");
 }
 
 function sectionEndIndex(lines, startIndex) {

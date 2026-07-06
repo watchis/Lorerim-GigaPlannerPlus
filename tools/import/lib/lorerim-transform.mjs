@@ -17,7 +17,7 @@ import {
 } from "./import-reset.mjs";
 import { parseTraitBody } from "./parse-trait-body.mjs";
 import { collectTraitAbilitySpells } from "./trait-ability-list.mjs";
-import { cleanDescription, cleanName, cleanWintersunEffectText, meaningfulEffectMagnitude, slugify } from "./transform-utils.mjs";
+import { cleanDescription, cleanName, cleanWintersunEffectText, slugify } from "./transform-utils.mjs";
 import { parseBonusEffects, extractConditionalBonusDetails, mergeEffects } from "./parse-bonus-effects.mjs";
 import { parseRaceData } from "./race-data-parser.mjs";
 import { detectLorerimVersion } from "./lorerim-version.mjs";
@@ -790,6 +790,7 @@ export function transformDeityRecords(
   deitiesPath,
   altarMagnitudes = new Map(),
   deityEligibility = new Map(),
+  boonMagnitudes = new Map(),
 ) {
   const existing = JSON.parse(readFileSync(deitiesPath, "utf8"));
   const existingEntries = existing.deities ?? existing.blessings ?? [];
@@ -810,16 +811,23 @@ export function transformDeityRecords(
     const worship = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}`);
     const fail = mesgByEdid.get(`WSN_WorshipRequest_Message_${altarKey}_Fail`);
     const { requirement } = parseBlessingRequirement(fail?.description);
-    const shrineMagnitude = meaningfulEffectMagnitude(altarMagnitudes.get(altarKey)?.magnitude ?? null);
+    const altarBlessing = altarMagnitudes.get(altarKey);
+    const shrineMagnitudes = altarBlessing?.magnitudes ?? null;
+    const shrineMgefEdid = altarBlessing?.shrineMgefEdid ?? null;
+    const followerBlessing = boonMagnitudes.get(`${altarKey}:1`);
+    const devoteeBlessing = boonMagnitudes.get(`${altarKey}:2`);
     const faithEffects = extractFaithEffectsFromPlugins({
       altarKey,
       mgefIndex,
       worshipDescription: worship?.description,
-      altarMagnitude: shrineMagnitude,
+      altarMagnitudes: shrineMagnitudes,
+      shrineMgefEdid,
+      followerMagnitudes: followerBlessing?.magnitudes ?? null,
+      devoteeMagnitudes: devoteeBlessing?.magnitudes ?? null,
     });
     const eligibility = resolveDeityEligibility(id, name, deityEligibility);
 
-    const shrine = faithEffects.shrine !== "-" ? faithEffects.shrine : prior?.shrine || "-";
+    const shrine = faithEffects.shrine !== "-" ? faithEffects.shrine : "-";
     const follower = faithEffects.follower !== "-" ? faithEffects.follower : prior?.follower || "-";
     const devotee = faithEffects.devotee !== "-" ? faithEffects.devotee : prior?.devotee || "-";
 

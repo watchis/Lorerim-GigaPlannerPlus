@@ -148,6 +148,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     wintersunMgefRecords,
     wintersunMesgRecords,
     altarMagnitudes,
+    boonMagnitudes,
     lorerimRaceRecords,
     traitsFormList,
     mastersByPath,
@@ -231,6 +232,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     join(dataDir, "deities.json"),
     altarMagnitudes,
     deityEligibility,
+    boonMagnitudes,
   );
   progress.step(`Deities — ${formatCount(deities.deities.length)} entries`);
 

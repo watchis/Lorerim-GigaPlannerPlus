@@ -160,6 +160,33 @@ assert.deepEqual(parseShrineLocations(azuraShrineLines, 0, 4), [
   "Wilderness north of Talking Stone Camp",
 ]);
 
+const htmlGuideShrines = `
+<html><body>
+<p>Can follow Tall Papa: Redguard</p>
+<p>Shrine locations:</p>
+<p>- Hillcrown Yokudan Shrine, southwest of Rorikstead</p>
+<h2><span>The HoonDing</span></h2>
+<p><b>Can follow </b>The HoonDing: Redguard</p>
+<p>Shrine locations:</p>
+<p>- Hillcrown Yokudan Shrine, southwest of Rorikstead</p>
+<h1><span>Other Dieties</span></h1>
+<h2><span>Baan Dar</span></h2>
+<p><b>Can follow </b>Baan Dar: Khajit / Bosmer</p>
+<p>Shrine locations:</p>
+<p>- Wilderness northeast of the Apprentice Stone</p>
+</body></html>
+`;
+const htmlGuide = parseGuideDeityEligibility(htmlGuideShrines);
+assert.deepEqual(htmlGuide.get("tall-papa")?.shrineLocations, [
+  "Hillcrown Yokudan Shrine, southwest of Rorikstead",
+]);
+assert.deepEqual(htmlGuide.get("hoonding")?.shrineLocations, [
+  "Hillcrown Yokudan Shrine, southwest of Rorikstead",
+]);
+assert.deepEqual(htmlGuide.get("baan-dar")?.shrineLocations, [
+  "Wilderness northeast of the Apprentice Stone",
+]);
+
 const tribunalGuide = `
 # The Tribunal
 

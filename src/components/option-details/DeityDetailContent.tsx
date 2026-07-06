@@ -36,6 +36,7 @@ interface DeityDetailContentProps {
     devotee: string;
     startingRaces: string;
     shrineLocations: string;
+    tenets: string;
   };
   hideHeader?: boolean;
 }
@@ -47,14 +48,17 @@ export function DeityDetailContent({ deity, races, labels, hideHeader }: DeityDe
   const startingRaces = formatStartingRaces(deity.starting, races);
   const shrineLocationText =
     deity.shrineLocations.length > 0 ? deity.shrineLocations.join("\n") : "";
+  const tenetsText = deity.tenets?.trim();
+  const hasTenets = Boolean(tenetsText && tenetsText !== "-");
 
   const rows = [
     { label: labels.races, value: compatibleRaces },
     { label: labels.startingRaces, value: startingRaces },
-    { label: labels.shrineLocations, value: shrineLocationText },
+    ...(hasTenets ? [{ label: labels.tenets, value: tenetsText }] : []),
     { label: labels.shrine, value: deity.shrine },
     { label: labels.follower, value: deity.follower },
     { label: labels.devotee, value: deity.devotee },
+    { label: labels.shrineLocations, value: shrineLocationText },
   ].filter((row) => row.value && row.value !== "-");
 
   return (

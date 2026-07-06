@@ -1,9 +1,92 @@
 import { normalizeAltarKey } from "./deity-eligibility.mjs";
-import { cleanDescription, cleanWintersunEffectText, meaningfulEffectMagnitude } from "./transform-utils.mjs";
+import { cleanDescription, cleanWintersunEffectText } from "./transform-utils.mjs";
 
 const BOON1_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon1_Effect(?:_Ab)?$/i;
 const BOON2_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon2_Effect(?:_Ab)?$/i;
-const SHRINE_PATTERN = /^WSN_AltarBlessing_(.+)_Effect$/i;
+const FAITH_MGEF_VARIANT_PATTERN = /Gift|Cloak|BuffOnly|NoAutocast/i;
+
+export function isVariantFaithMgefEdid(edid) {
+  return FAITH_MGEF_VARIANT_PATTERN.test(String(edid ?? ""));
+}
+
+export function collectShrineMgefFormIds(mgefFormIdsByEdid, altarKey, { includeVariants = false } = {}) {
+  const normalizedKey = normalizeAltarKey(altarKey);
+  const formIds = new Set();
+
+  for (const [edid, formId] of mgefFormIdsByEdid) {
+    if (parseShrineMgefAltarKey(edid) !== normalizedKey) continue;
+    if (!includeVariants && isVariantFaithMgefEdid(edid)) continue;
+    formIds.add(formId);
+  }
+
+  if (formIds.size === 0 && !includeVariants) {
+    return collectShrineMgefFormIds(mgefFormIdsByEdid, altarKey, { includeVariants: true });
+  }
+
+  return formIds;
+}
+
+export function collectBoonMgefFormIds(
+  mgefFormIdsByEdid,
+  altarKey,
+  boonNumber,
+  { includeVariants = false } = {},
+) {
+  const normalizedKey = normalizeAltarKey(altarKey);
+  const pattern = boonNumber === 1 ? BOON1_PATTERN : BOON2_PATTERN;
+  const formIds = new Set();
+
+  for (const [edid, formId] of mgefFormIdsByEdid) {
+    const match = edid.match(pattern);
+    if (!match || normalizeAltarKey(match[1]) !== normalizedKey) continue;
+    if (!includeVariants && isVariantFaithMgefEdid(edid)) continue;
+    formIds.add(formId);
+  }
+
+  if (formIds.size === 0 && !includeVariants) {
+    return collectBoonMgefFormIds(mgefFormIdsByEdid, altarKey, boonNumber, { includeVariants: true });
+  }
+
+  return formIds;
+}
+
+function shouldReplaceFaithMgefRecord(existing, incoming) {
+  if (!existing) return true;
+  if (isVariantFaithMgefEdid(existing.edid) && !isVariantFaithMgefEdid(incoming.edid)) return true;
+  if (!isVariantFaithMgefEdid(existing.edid) && isVariantFaithMgefEdid(incoming.edid)) return false;
+  return true;
+}
+
+export function parseShrineMgefAltarKey(edid) {
+  if (!edid?.startsWith("WSN_") || /_old/i.test(edid)) return null;
+
+  const altarBlessingMatch = edid.match(/^WSN_AltarBlessing_(.+?)_Effect(?:_Ab)?$/i);
+  if (altarBlessingMatch) {
+    const rawKey = altarBlessingMatch[1];
+    if (/Boon[12]/i.test(rawKey)) return null;
+    return normalizeAltarKey(rawKey.replace(/_Unrestricted$/i, ""));
+  }
+
+  const altarBlessingBareMatch = edid.match(/^WSN_AltarBlessing_(.+)$/i);
+  if (altarBlessingBareMatch) {
+    const rawKey = altarBlessingBareMatch[1];
+    if (/Boon[12]|_Spell/i.test(rawKey)) return null;
+    return normalizeAltarKey(rawKey.replace(/_Unrestricted$/i, ""));
+  }
+
+  const tribunalMatch = edid.match(/^WSN_Tribunal_(Almalexia|SothaSil|Vivec)_Effect(?:_Ab)?$/i);
+  if (tribunalMatch) {
+    return normalizeAltarKey(`Tribunal_${tribunalMatch[1]}`);
+  }
+
+  return null;
+}
+
+export function isAltarBlessingMgefEdid(edid) {
+  if (!edid?.startsWith("WSN_AltarBlessing_") || /_old/i.test(edid)) return false;
+  if (/Boon[12]/i.test(edid)) return false;
+  return parseShrineMgefAltarKey(edid) != null;
+}
 
 export function parseWorshipMessage(description) {
   const text = String(description ?? "");
@@ -32,40 +115,66 @@ function isBrokenShrinePlaceholder(text) {
   return /\bby\s+points\b/i.test(cleaned) || /\bmag\s+points\b/i.test(cleaned) || /(?<!\d)\s*%/.test(cleaned);
 }
 
-function effectText(record, magnitude = null) {
+function effectText(record, magnitudes = null) {
   if (!record) return "";
-  const resolvedMagnitude = meaningfulEffectMagnitude(magnitude ?? record.effectMagnitude ?? null);
-  return cleanWintersunEffectText(record.effectDescription || record.description, resolvedMagnitude);
+  const template = record.effectDescription || record.description;
+  if (!/<mag>/i.test(template)) {
+    return cleanWintersunEffectText(template);
+  }
+
+  const resolvedMagnitudes = Array.isArray(magnitudes)
+    ? magnitudes
+    : magnitudes != null
+      ? [magnitudes]
+      : record.effectMagnitude != null
+        ? [record.effectMagnitude]
+        : null;
+
+  return cleanWintersunEffectText(template, resolvedMagnitudes);
 }
 
 export function indexDeityFaithMgef(mgefRecords) {
   const shrineByAltar = new Map();
   const followerByAltar = new Map();
   const devoteeByAltar = new Map();
+  const byEdid = new Map();
 
   for (const record of mgefRecords) {
     const edid = record.edid;
     if (!edid?.startsWith("WSN_") || /_old/i.test(edid)) continue;
 
-    const shrineMatch = edid.match(SHRINE_PATTERN);
-    if (shrineMatch) {
-      shrineByAltar.set(normalizeAltarKey(shrineMatch[1]), record);
+    byEdid.set(edid, record);
+
+    const shrineKey = parseShrineMgefAltarKey(edid);
+    if (shrineKey) {
+      const existing = shrineByAltar.get(shrineKey);
+      if (shouldReplaceFaithMgefRecord(existing, record)) {
+        shrineByAltar.set(shrineKey, record);
+      }
       continue;
     }
 
     const followerMatch = edid.match(BOON1_PATTERN);
     if (followerMatch) {
-      followerByAltar.set(normalizeAltarKey(followerMatch[1]), record);
+      const key = normalizeAltarKey(followerMatch[1]);
+      const existing = followerByAltar.get(key);
+      if (shouldReplaceFaithMgefRecord(existing, record)) {
+        followerByAltar.set(key, record);
+      }
       continue;
     }
 
     const devoteeMatch = edid.match(BOON2_PATTERN);
     if (devoteeMatch) {
-      devoteeByAltar.set(normalizeAltarKey(devoteeMatch[1]), record);
+      const key = normalizeAltarKey(devoteeMatch[1]);
+      const existing = devoteeByAltar.get(key);
+      if (shouldReplaceFaithMgefRecord(existing, record)) {
+        devoteeByAltar.set(key, record);
+      }
     }
   }
 
-  return { shrineByAltar, followerByAltar, devoteeByAltar };
+  return { shrineByAltar, followerByAltar, devoteeByAltar, byEdid };
 }
 
 export function extractFaithEffectsFromPlugins({
@@ -73,18 +182,33 @@ export function extractFaithEffectsFromPlugins({
   mgefIndex,
   worshipDescription = "",
   altarMagnitude = null,
+  altarMagnitudes = null,
+  shrineMgefEdid = null,
+  followerMagnitudes = null,
+  devoteeMagnitudes = null,
 }) {
   const key = normalizeAltarKey(altarKey);
   const worship = parseWorshipMessage(worshipDescription);
 
-  const shrineRecord = mgefIndex.shrineByAltar.get(key);
-  const shrineMagnitude = meaningfulEffectMagnitude(
-    altarMagnitude ?? shrineRecord?.effectMagnitude ?? null,
-  );
-  let shrine = effectText(shrineRecord, shrineMagnitude);
+  const shrineRecord =
+    (shrineMgefEdid ? mgefIndex.byEdid?.get(shrineMgefEdid) : null) ??
+    mgefIndex.shrineByAltar.get(key);
+  const resolvedMagnitudes = Array.isArray(altarMagnitudes)
+    ? altarMagnitudes
+    : Array.isArray(altarMagnitude)
+      ? altarMagnitude
+      : altarMagnitude != null
+        ? [altarMagnitude]
+        : shrineRecord?.effectMagnitude != null
+          ? [shrineRecord.effectMagnitude]
+          : null;
+
+  let shrine = effectText(shrineRecord, resolvedMagnitudes);
   if (isBrokenShrinePlaceholder(shrine)) shrine = "";
-  const follower = effectText(mgefIndex.followerByAltar.get(key)) || worship.follower;
-  const devotee = effectText(mgefIndex.devoteeByAltar.get(key)) || worship.devotee;
+  const follower =
+    effectText(mgefIndex.followerByAltar.get(key), followerMagnitudes) || worship.follower;
+  const devotee =
+    effectText(mgefIndex.devoteeByAltar.get(key), devoteeMagnitudes) || worship.devotee;
 
   return {
     shrine: shrine || "-",
