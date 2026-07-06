@@ -11,13 +11,21 @@ export interface PlannerLayoutState {
   useThreeColumnLayout: boolean;
   scale: number;
   gridTemplateColumns: string | null;
+  sideWidths: { left: number; right: number } | null;
+  centerWidth: number;
 }
 
 export const PlannerLayoutContext = createContext<PlannerLayoutState>({
   useThreeColumnLayout: false,
   scale: 1,
   gridTemplateColumns: null,
+  sideWidths: null,
+  centerWidth: 0,
 });
+
+export function usePlannerLayoutState(): PlannerLayoutState {
+  return useContext(PlannerLayoutContext);
+}
 
 export function usePlannerThreeColumnLayout(): boolean {
   return useContext(PlannerLayoutContext).useThreeColumnLayout;
@@ -25,6 +33,10 @@ export function usePlannerThreeColumnLayout(): boolean {
 
 export function usePlannerLayoutScale(): number {
   return useContext(PlannerLayoutContext).scale;
+}
+
+export function usePlannerSideWidths(): { left: number; right: number } | null {
+  return useContext(PlannerLayoutContext).sideWidths;
 }
 
 function parsePxWidth(width: string): number | null {

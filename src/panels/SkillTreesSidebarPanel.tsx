@@ -15,13 +15,23 @@ import {
 import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
-import { usePlannerLayoutScale, usePlannerThreeColumnLayout } from "@/layout/plannerLayout";
+import {
+  usePlannerLayoutScale,
+  usePlannerSideWidths,
+  usePlannerThreeColumnLayout,
+} from "@/layout/plannerLayout";
+
+const RESET_ICON_ONLY_MAX_WIDTH = 280;
 
 export function SkillTreesSidebarPanel() {
   const labels = usePanelLabels("skill-trees");
   const useThreeColumnLayout = usePlannerThreeColumnLayout();
   const layoutScale = usePlannerLayoutScale();
+  const sideWidths = usePlannerSideWidths();
   const compact = useThreeColumnLayout && layoutScale < 0.75;
+  const iconOnlyReset =
+    useThreeColumnLayout &&
+    (sideWidths?.right ?? Number.POSITIVE_INFINITY) < RESET_ICON_ONLY_MAX_WIDTH;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const resetAllPerks = useBuildStore((s) => s.resetAllPerks);
@@ -49,11 +59,23 @@ export function SkillTreesSidebarPanel() {
           compact ? "gap-2 px-2 py-2" : "px-3",
         )}
       >
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className={cn("min-w-0 flex-1 truncate", compact ? "text-sm" : "text-base")}>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2">
+          <CardTitle
+            className={cn(
+              "col-start-1 row-start-1 min-w-0 leading-snug [overflow-wrap:anywhere]",
+              compact ? "text-sm" : "text-base",
+            )}
+          >
             {labels.title}
           </CardTitle>
-          <ResetPerksButton onClick={resetAllPerks}>{labels.resetAll}</ResetPerksButton>
+          <ResetPerksButton
+            className="col-start-2 row-start-1"
+            iconOnly={iconOnlyReset}
+            ariaLabel={labels.resetAll}
+            onClick={resetAllPerks}
+          >
+            {labels.resetAll}
+          </ResetPerksButton>
         </div>
         <BuildVariantsDropdown />
       </CardHeader>

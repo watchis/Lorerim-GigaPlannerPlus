@@ -10,7 +10,13 @@ import { getTraitLimit } from "@/engine/buildEngine";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
-import { usePlannerLayoutScale, usePlannerThreeColumnLayout } from "@/layout/plannerLayout";
+import {
+  usePlannerLayoutScale,
+  usePlannerSideWidths,
+  usePlannerThreeColumnLayout,
+} from "@/layout/plannerLayout";
+
+const COMPACT_ATTRIBUTES_MAX_WIDTH = 240;
 interface SelectedChip {
   id: string;
   label: string;
@@ -188,7 +194,11 @@ export function CharacterSetupPanel() {
   const toggleCharacterOptions = useUiStore((s) => s.toggleCharacterOptions);
   const useThreeColumnLayout = usePlannerThreeColumnLayout();
   const layoutScale = usePlannerLayoutScale();
+  const sideWidths = usePlannerSideWidths();
   const compact = useThreeColumnLayout && layoutScale < 0.75;
+  const compactAttributes =
+    useThreeColumnLayout &&
+    (sideWidths?.left ?? Number.POSITIVE_INFINITY) < COMPACT_ATTRIBUTES_MAX_WIDTH;
 
   if (!gameData) return null;
 
@@ -295,7 +305,7 @@ export function CharacterSetupPanel() {
           />
         </div>
         <div className="border-y border-[var(--color-border)]/70 py-3">
-          <AttributesAllocator embedded />
+          <AttributesAllocator embedded compact={compactAttributes} />
         </div>
         <div className="space-y-1.5">
           <SetupPickerRow
