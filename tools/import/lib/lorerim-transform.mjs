@@ -12,6 +12,8 @@ import {
   loadPerkGraphSnapshots,
   loadPerkHandTunedOverrides,
   loadPerkLayoutOverrides,
+  loadPerkPlayerLevelReqsByGraphKey,
+  mergePerkPlayerLevelReqs,
 } from "./import-reset.mjs";
 import { parseTraitBody } from "./parse-trait-body.mjs";
 import { collectTraitAbilitySpells } from "./trait-ability-list.mjs";
@@ -294,6 +296,7 @@ export function transformPerkRecords(
   const handTunedOverrides = loadPerkHandTunedOverrides(perksDir);
   const layoutOverrides = loadPerkLayoutOverrides(perksDir);
   const graphSnapshots = loadPerkGraphSnapshots(perksDir);
+  const existingLevelReqsByGraphKey = loadPerkPlayerLevelReqsByGraphKey(perksDir);
   const { trees, indexEntries } = createEmptyPerkTrees();
   const { treePerkRecords } = buildPerkLookups(perkRecords, membership);
 
@@ -321,7 +324,11 @@ export function transformPerkRecords(
   for (const tree of Object.values(trees)) {
     normalizeStackPrerequisites(tree);
   }
-  const playerLevelReqs = buildPerkPlayerLevelReqs(trees);
+  const playerLevelReqs = mergePerkPlayerLevelReqs(
+    trees,
+    buildPerkPlayerLevelReqs(trees),
+    existingLevelReqsByGraphKey,
+  );
 
   return { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs };
 }

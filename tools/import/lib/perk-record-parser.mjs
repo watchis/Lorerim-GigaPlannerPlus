@@ -1,6 +1,6 @@
 /** Skyrim condition function indices (stored value = wiki index + 4096). */
 export const GET_BASE_ACTOR_VALUE = 4373;
-export const GET_LEVEL = 4110;
+export const GET_LEVEL = 4176;
 export const GET_IS_ID = 4544;
 
 const SKILL_REQ_EDID_PATTERN = /_(\d{3})_/;

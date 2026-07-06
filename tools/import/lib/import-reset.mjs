@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { canonicalPerkName, removeDanglingPrerequisites } from "./perk-import-filter.mjs";
 import { repositionOutOfGridPerks, resizeGridToFit } from "./append-missing-perks.mjs";
 import { SKILL_IDS, SKILL_NAMES } from "./skill-constants.mjs";
+import { loadJsonIfExists } from "./transform-utils.mjs";
 
 export function createEmptyPerkTrees() {
   const trees = {};
@@ -145,6 +146,63 @@ export function perkGraphKey(perk) {
   const rankMatch = String(perk.id ?? "").match(/-r(\d+)$/);
   const rankPart = rankMatch ? `r${rankMatch[1]}` : `s${perk.skillReq ?? 0}`;
   return `${canonicalPerkName(perk.name)}:${rankPart}`;
+}
+
+/** Map pre-import perk graph keys to player level reqs so ids can change across rebuilds. */
+export function loadPerkPlayerLevelReqsByGraphKey(perksDir) {
+  const reqs = loadJsonIfExists(join(perksDir, "..", "perk-player-level-reqs.json"));
+  if (!reqs || typeof reqs !== "object") return new Map();
+
+  const byGraphKey = new Map();
+  if (!existsSync(perksDir)) return byGraphKey;
+
+  for (const filename of readdirSync(perksDir)) {
+    if (!filename.endsWith(".json") || filename === "index.json") continue;
+
+    let tree;
+    try {
+      tree = JSON.parse(readFileSync(join(perksDir, filename), "utf8"));
+    } catch {
+      continue;
+    }
+
+    for (const perk of tree.perks ?? []) {
+      const level = reqs[perk.id];
+      if (typeof level === "number" && level > 0) {
+        byGraphKey.set(perkGraphKey(perk), level);
+      }
+    }
+  }
+
+  return byGraphKey;
+}
+
+export function mergePerkPlayerLevelReqs(trees, importedReqs, existingByGraphKey) {
+  const idByGraphKey = new Map();
+  const validIds = new Set();
+
+  for (const tree of Object.values(trees)) {
+    for (const perk of tree.perks ?? []) {
+      validIds.add(perk.id);
+      idByGraphKey.set(perkGraphKey(perk), perk.id);
+    }
+  }
+
+  const merged = {};
+  for (const [id, level] of Object.entries(importedReqs)) {
+    if (validIds.has(id) && typeof level === "number" && level > 0) {
+      merged[id] = level;
+    }
+  }
+
+  for (const [graphKey, level] of existingByGraphKey) {
+    const id = idByGraphKey.get(graphKey);
+    if (id && merged[id] == null && level > 0) {
+      merged[id] = level;
+    }
+  }
+
+  return Object.fromEntries(Object.keys(merged).sort().map((id) => [id, merged[id]]));
 }
 
 export function loadExistingPerkTree(perksDir, filename) {

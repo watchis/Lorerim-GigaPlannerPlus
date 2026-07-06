@@ -12,7 +12,7 @@ const consumeLifePrereqHex =
 const destructionSkillHex =
   "600000000000c8421501000014000000000000000000000000000000ffffffff";
 const playerLevelHex =
-  "60000000000020410e0000140000000000000000000000000000000000ffffffff";
+  "6000000000002041500000140000000000000000000000000000ffffffff";
 
 assert.equal(parseSkillReqFromEdid("REQ_Destruction_BloodMagic_100_BloodMastery"), 100);
 assert.equal(parseSkillReqFromEdid("REQ_Destruction_BloodMagic_075_ConsumeLife"), 75);
