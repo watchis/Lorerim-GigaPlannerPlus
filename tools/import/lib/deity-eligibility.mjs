@@ -66,7 +66,7 @@ const DEITY_DA_QUEST_EDID = {
   meridia: "DA09",
   "molag-bal": "DA10",
   namira: "DA11",
-  nocturnal: "DA13",
+  nocturnal: "TG09",
   peryite: "DA13",
   sanguine: "DA14",
   sheogorath: "DA15",
@@ -307,20 +307,6 @@ function indexDeityMetadata(questData) {
   return byId;
 }
 
-function collectFailMessagesByAltarKey(mesgRecords) {
-  const byAltar = new Map();
-  for (const record of mesgRecords) {
-    const match = record.edid?.match(/^WSN_WorshipRequest_Message_(.+)_Fail/i);
-    if (!match) continue;
-    const altarKey = match[1];
-    const text = cleanDescription(record.description ?? "");
-    if (!text) continue;
-    if (!byAltar.has(altarKey)) byAltar.set(altarKey, []);
-    byAltar.get(altarKey).push(text);
-  }
-  return byAltar;
-}
-
 const ALTAR_KEY_TO_DEITY_NAME = {
   Herma: "Hermaeus Mora",
   Mehrunes: "Mehrunes Dagon",
@@ -336,12 +322,66 @@ const ALTAR_KEY_TO_DEITY_NAME = {
   BaanDar: "Baan Dar",
   Totems: "The Old Ways",
   Zen: "Z'en",
+  Almalexia: "Almalexia",
+  SothaSil: "Sotha Sil",
+  Sotha_Sil: "Sotha Sil",
+  Vivec: "Vivec",
 };
 
+const ALTAR_VARIANT_SUFFIX = /(?:_Gift|_Cloak|_BuffOnly|_NoAutocast)$/i;
+
+export function normalizeAltarKey(altarKey) {
+  return String(altarKey ?? "").replace(ALTAR_VARIANT_SUFFIX, "");
+}
+
+export function deityNameFromAltarKey(altarKey) {
+  const normalized = normalizeAltarKey(altarKey);
+  const shortName = normalized.split("_").pop() ?? normalized;
+
+  if (ALTAR_KEY_TO_DEITY_NAME[shortName]) {
+    return ALTAR_KEY_TO_DEITY_NAME[shortName];
+  }
+  if (ALTAR_KEY_TO_DEITY_NAME[normalized]) {
+    return ALTAR_KEY_TO_DEITY_NAME[normalized];
+  }
+
+  if (/^Tribunal_/i.test(normalized)) {
+    const tribunalPart = normalized.slice("Tribunal_".length);
+    if (ALTAR_KEY_TO_DEITY_NAME[tribunalPart]) {
+      return ALTAR_KEY_TO_DEITY_NAME[tribunalPart];
+    }
+    return tribunalPart.replace(/_/g, " ");
+  }
+
+  return shortName.replace(/_/g, " ");
+}
+
 function deityIdFromAltarKey(altarKey) {
-  const shortName = altarKey.split("_").pop() ?? altarKey;
-  const deityName = ALTAR_KEY_TO_DEITY_NAME[shortName] ?? shortName;
-  return deityIdFromName(deityName);
+  return deityIdFromName(deityNameFromAltarKey(altarKey));
+}
+
+export function collectWorshipAltarKeys(mesgRecords) {
+  const keys = new Set();
+  for (const record of mesgRecords) {
+    const match = record.edid?.match(/^WSN_WorshipRequest_Message_(.+)$/i);
+    if (!match || /_Fail$/i.test(match[1])) continue;
+    keys.add(normalizeAltarKey(match[1]));
+  }
+  return keys;
+}
+
+function collectFailMessagesByAltarKey(mesgRecords) {
+  const byAltar = new Map();
+  for (const record of mesgRecords) {
+    const match = record.edid?.match(/^WSN_WorshipRequest_Message_(.+)_Fail/i);
+    if (!match) continue;
+    const altarKey = normalizeAltarKey(match[1]);
+    const text = cleanDescription(record.description ?? "");
+    if (!text) continue;
+    if (!byAltar.has(altarKey)) byAltar.set(altarKey, []);
+    byAltar.get(altarKey).push(text);
+  }
+  return byAltar;
 }
 
 function collectAltarKeyToDeityId(spellRecords) {
@@ -349,10 +389,11 @@ function collectAltarKeyToDeityId(spellRecords) {
   for (const record of spellRecords) {
     if (!record.edid?.startsWith("WSN_AltarBlessing_") || !record.edid.endsWith("_Spell")) continue;
     if (/Gift|Cloak|BuffOnly|NoAutocast/i.test(record.edid)) continue;
-    const altarKey = record.edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+    const altarKey = normalizeAltarKey(
+      record.edid.slice("WSN_AltarBlessing_".length, -"_Spell".length),
+    );
     const match = cleanDescription(record.name).match(/^Blessing of (.+)$/i);
-    if (!match) continue;
-    byAltar.set(altarKey, deityIdFromName(match[1]));
+    byAltar.set(altarKey, match ? deityIdFromName(match[1]) : deityIdFromAltarKey(altarKey));
   }
   return byAltar;
 }
@@ -452,30 +493,116 @@ function isIncompleteCanFollow(race, failMessages, guideEntry) {
   return !hasQuestPhrase && !hasRaces;
 }
 
+function decodeGuideEntities(text) {
+  return String(text ?? "")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/\u00a0/g, " ");
+}
+
+function parseHtmlTag(rawTag) {
+  const normalized = String(rawTag ?? "")
+    .trim()
+    .replace(/\/$/, "")
+    .trim()
+    .toLowerCase();
+  if (!normalized) return { name: "", closing: false };
+  if (normalized.startsWith("/")) {
+    const tagName = normalized.slice(1).split(/\s+/, 1)[0];
+    return { name: tagName, closing: true };
+  }
+  return { name: normalized.split(/\s+/, 1)[0], closing: false };
+}
+
+function stripInlineHtml(text) {
+  const source = String(text ?? "");
+  let output = "";
+  for (let index = 0; index < source.length; index++) {
+    if (source[index] !== "<") {
+      output += source[index];
+      continue;
+    }
+
+    const closeIndex = source.indexOf(">", index + 1);
+    if (closeIndex === -1) break;
+
+    const { name, closing } = parseHtmlTag(source.slice(index + 1, closeIndex));
+    if (!closing && (name === "br" || name === "p")) {
+      output += " ";
+    }
+    index = closeIndex;
+  }
+
+  return decodeGuideEntities(output).replace(/\s+/g, " ").trim();
+}
+
 export function normalizeGuideText(content) {
   const text = String(content ?? "");
   if (!/<html|<body|<p[\s>]/i.test(text)) return text;
 
-  return text
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<\/h2>/gi, "\n")
-    .replace(/<\/h1>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/[<>]/g, "")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, "&")
-    .replace(/\u00a0/g, " ")
-    .replace(/\r/g, "")
-    .replace(/\n{3,}/g, "\n\n");
+  let normalized = "";
+  for (let index = 0; index < text.length; index++) {
+    if (text[index] !== "<") {
+      normalized += text[index];
+      continue;
+    }
+
+    const closeIndex = text.indexOf(">", index + 1);
+    if (closeIndex === -1) break;
+
+    const { name, closing } = parseHtmlTag(text.slice(index + 1, closeIndex));
+    if (!closing && name === "h1") {
+      normalized += "\n# ";
+    } else if (closing && name === "h1") {
+      normalized += "\n";
+    } else if (!closing && name === "h2") {
+      normalized += "\n## ";
+    } else if (closing && name === "h2") {
+      normalized += "\n";
+    } else if (!closing && (name === "br" || name === "p")) {
+      normalized += "\n";
+    } else if (closing && name === "p") {
+      normalized += "\n";
+    }
+    index = closeIndex;
+  }
+
+  normalized = decodeGuideEntities(normalized).replace(/\r/g, "");
+
+  return normalized.replace(/\n{3,}/g, "\n\n");
 }
 
 function sectionEndIndex(lines, startIndex) {
   for (let index = startIndex + 1; index < lines.length; index++) {
-    if (/^Can follow /i.test(lines[index])) return index;
+    const line = lines[index];
+    if (/^Can follow /i.test(line)) return index;
+    if (/^##\s+/.test(line)) return index;
+    if (/^#\s+/.test(line) && !/^##\s+/.test(line)) return index;
+    if (/^Page updated$/i.test(line)) return index;
+    if (/Google Sites/i.test(line)) return index;
   }
   return lines.length;
+}
+
+const SHRINE_LOCATION_FOOTER = /Google Sites|Report abuse|DOCS_timing|WEBSITE BY|Page updated|Page details/i;
+const SHRINE_LOCATION_SECTION_BREAK =
+  /^(Can follow |#{1,6}\s|Temptation:|Tenets:|Follower:|Devotee:|Shrine Blessing:|Racial starting deity for:|Shrine locations:)/i;
+
+function isShrineLocationLine(line) {
+  const trimmed = String(line ?? "").trim();
+  if (!trimmed) return false;
+  if (SHRINE_LOCATION_SECTION_BREAK.test(trimmed)) return false;
+  if (SHRINE_LOCATION_FOOTER.test(trimmed)) return false;
+  if (/^-\s*/.test(trimmed)) {
+    const content = trimmed.replace(/^-\s*/, "").trim();
+    if (SHRINE_LOCATION_SECTION_BREAK.test(content)) return false;
+    if (SHRINE_LOCATION_FOOTER.test(content)) return false;
+    return content.length > 0;
+  }
+  if (/^Location:/i.test(trimmed)) return true;
+  if (!/\s/.test(trimmed) && trimmed.length < 24) return false;
+  return trimmed.length > 3;
 }
 
 export function parseShrineLocations(lines, startIndex, endIndex) {
@@ -488,23 +615,15 @@ export function parseShrineLocations(lines, startIndex, endIndex) {
       const line = lines[lookAhead];
       if (!line) continue;
 
-      const normalized = line.replace(/^-\s*/, "").trim();
-      if (!normalized) continue;
-      if (/^Temptation:/i.test(normalized)) break;
-      if (/^Can follow /i.test(normalized)) break;
-      if (
-        /^(Tenets|Follower|Devotee|Shrine Blessing|Racial starting deity for):/i.test(normalized)
-      ) {
-        break;
-      }
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (/^#{1,6}\s/.test(trimmed)) break;
+      if (/^##\s+/.test(trimmed)) break;
+      if (SHRINE_LOCATION_FOOTER.test(trimmed)) break;
+      if (SHRINE_LOCATION_SECTION_BREAK.test(trimmed)) break;
+      if (!isShrineLocationLine(trimmed)) break;
 
-      const nextLine = lines[lookAhead + 1];
-      const nextCanFollow = nextLine?.match(/^Can follow (.+):/i);
-      if (nextCanFollow && deityIdFromName(nextCanFollow[1]) === deityIdFromName(normalized)) {
-        break;
-      }
-
-      locations.push(normalized);
+      locations.push(trimmed.replace(/^-\s*/, "").trim());
     }
     break;
   }
@@ -537,10 +656,24 @@ export function parseGuideDeityEligibility(content) {
     storeGuideEntry(byId, canFollowMatch[1], canFollowMatch[2], starting, shrineLocations);
   }
 
+  for (const [id, entry] of parseTribunalGuideSections(lines).entries()) {
+    if (!byId.has(id)) byId.set(id, entry);
+  }
+
   return byId;
 }
 
-function storeGuideEntry(byId, deityName, canFollowRaw, startingRaw, shrineLocations = []) {
+const TRIBUNAL_CAN_FOLLOW =
+  'Dunmer / Anyone who has completed "Ghosts of the Tribunal"';
+
+function storeGuideEntry(
+  byId,
+  deityName,
+  canFollowRaw,
+  startingRaw,
+  shrineLocations = [],
+  extra = {},
+) {
   const cleanedName = cleanDescription(deityName);
   if (!cleanedName) return;
 
@@ -555,7 +688,44 @@ function storeGuideEntry(byId, deityName, canFollowRaw, startingRaw, shrineLocat
       ? ""
       : startingRawClean.replace(/\s*\/\s*/g, " / ");
 
-  byId.set(deityIdFromName(cleanedName), { canFollow, starting, shrineLocations });
+  byId.set(deityIdFromName(cleanedName), {
+    canFollow,
+    starting,
+    shrineLocations,
+    ...extra,
+  });
+}
+
+function parseTribunalGuideSections(lines) {
+  const byId = new Map();
+  let inTribunal = false;
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    if (/^#\s*The Tribunal\b/i.test(line)) {
+      inTribunal = true;
+      continue;
+    }
+    if (!inTribunal) continue;
+    if (/^#\s+/.test(line) && !/^##\s+/.test(line)) break;
+
+    const deityHeading = line.match(/^##\s+(.+)$/);
+    if (!deityHeading) continue;
+
+    const deityName = cleanDescription(deityHeading[1]);
+    let endIndex = lines.length;
+    for (let lookAhead = index + 1; lookAhead < lines.length; lookAhead++) {
+      if (/^##\s+/.test(lines[lookAhead]) || /^#\s+/.test(lines[lookAhead])) {
+        endIndex = lookAhead;
+        break;
+      }
+    }
+
+    const shrineLocations = parseShrineLocations(lines, index, endIndex);
+    storeGuideEntry(byId, deityName, TRIBUNAL_CAN_FOLLOW, "", shrineLocations);
+  }
+
+  return byId;
 }
 
 export async function fetchGuideDeityEligibility() {

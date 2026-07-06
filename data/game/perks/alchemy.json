@@ -77,7 +77,9 @@
         "x": 16,
         "y": 19
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "alchemy-improved-elixirs"
+      ],
       "description": "You've perfected the catalyst. Thereby, you can craft double the amount of mixtures with the same amount of ingredients.",
       "effects": [],
       "prerequisitesAny": []

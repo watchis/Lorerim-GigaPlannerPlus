@@ -130,7 +130,9 @@
         "x": 10,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
       "description": "Your fire spells burn with almost otherworldly heat and consume earth and flesh with terrifying ease. [1.25x magnitude, 0.9x cost for fire spells]",
       "effects": [
         {
@@ -233,7 +235,9 @@
         "x": 13,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
       "description": "Your ice spells freeze even air in a trice and make the harsh winters of Skyrim look like a refreshing breeze. [1.25x magnitude, 0.9x cost for frost spells]",
       "effects": [
         {
@@ -336,7 +340,9 @@
         "x": 16,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
       "description": "Compared to your lightning spells, the worst tempests would look like a mild summer breeze. [1.25x magnitude, 0.9x cost for shock spells]",
       "effects": [
         {
@@ -469,7 +475,9 @@
         "x": 8,
         "y": 24
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
       "description": "Your Arcane spells are more powerful and you can cast them more efficiently. [1.25x magnitude, 0.9x cost for arcane spells]",
       "effects": [
         {
@@ -538,7 +546,9 @@
         "x": 5,
         "y": 26
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
       "description": "Your Entropic spells are more powerful and you can cast them more efficiently. [1.2x magnitude, 0.8x cost for entropic spells]",
       "effects": [
         {
@@ -644,7 +654,9 @@
         "x": 2,
         "y": 29
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "destruction-novice-destruction"
+      ],
       "description": "You can absorb even more energy from targets with greater efficiency. [1.25x magnitude, 0.9x cost for absorb spells]",
       "effects": [
         {

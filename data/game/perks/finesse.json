@@ -327,7 +327,9 @@
         "x": 16,
         "y": 8
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "finesse-pocket-sand"
+      ],
       "description": "Your pocket sand now deals physical damage over time.",
       "effects": [],
       "prerequisitesAny": []

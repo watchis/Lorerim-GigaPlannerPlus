@@ -88,7 +88,7 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | Default layout for newly added perks (curated coords from `data/game/perks` via `giga-planner-layout.json`, or prerequisite graph) | Perk `position` and `grid` per skill tree (matched by skill + perk name; multi-rank stacks share one cell) |
 | Multiple AVIF parents for one perk → `prerequisitesAny` (OR) | Stable perk `id`, `prerequisites` / `prerequisitesAny` wiring, explicit `costsPerkPoint: true`, and hand-tuned `effects` (matched by skill + name + `skillReq`) |
 | All traits from `Traits_AbilityList` (base FormList + FLM additions) | — |
-| Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA` | `race-effects.json`, race `speedBonus` / `attributeBonus` when not in `DATA` |
+| Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA`, parsed race `effects` in `race-effects.json` | race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
 | Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
 | `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
@@ -101,7 +101,8 @@ Perk metadata enrichment uses plugin `PERK` conditions and `AVIF` links:
 
 - **Skill requirement** — `REQ_*` Editor IDs with `_025_` / `_050_` / `_075_` / `_100_` tiers, else top-level `PERK` conditions (`GetBaseActorValue >= N`). A multi-rank perk's base rank keeps its own record skill requirement (the by-name metadata can't distinguish ranks).
 - **Prerequisites** — `GetIsID` perk checks on top-level `PERK` conditions when present; otherwise parent links from the final `AVIF` perk tree for that skill. AVIF links are not merged on top of `GetIsID` results. When multiple prerequisites remain, same-tier siblings from AVIF layout noise are dropped in favor of lower `skillReq` gates (e.g. Apprentice Restoration keeps Novice only, not Mental Acuity). Self-referential prerequisites (a higher rank's `GetIsID` on its own lower rank) are dropped.
-- **Multi-rank perks** — the game shows one `AVIF` node per perk but tracks ranks via the `PERK` `NNAM` (Next Perk) chain. The importer follows that chain and emits one node per rank, all sharing the base node's grid cell, with each rank's own skill requirement (the engine orders a stack by ascending `skillReq`). Higher ranks carry no prerequisites — the stack mechanism gates them. `DATA.numRanks` is ignored because repurposed vanilla forms (e.g. Stealth) leave it stale.
+- **Multi-rank perks** — the game shows one `AVIF` node per perk but tracks ranks via the `PERK` `NNAM` (Next Perk) chain. The importer follows that chain and emits one node per rank, all sharing the base node's grid cell, with each rank's own skill requirement (the engine orders a stack by ascending `skillReq`, then `playerLevelReq`, then rank suffix). Higher ranks inherit rank 1 prerequisites only (not in-chain `GetIsID` gates on lower ranks). `DATA.numRanks` is ignored because repurposed vanilla forms (e.g. Stealth) leave it stale.
+- **Player level requirements** — top-level `PERK` `GetLevel` conditions are written to `data/game/perk-player-level-reqs.json` (one entry per rank id).
 - **Position** — curated coordinates from `data/game/perks` (vendored in `lib/giga-planner-layout.json`; regenerate with `node tools/import/sync-giga-planner-layout.mjs`) when perk names match and no saved position exists; otherwise a prerequisite-depth layout with the same spacing conventions. Ranks of the same perk are laid out as one unit so they stay co-located. **Saved positions from the existing `data/game/perks/*.json` are restored after import** so manual layout edits survive rebuilds. Destiny keeps its config-based layout, with ids and effects preserved from the previous `destiny.json` when present.
 
 After metadata enrichment, **unanchored perks are removed** from each tree: nodes with no skill requirement, no prerequisites, no player-level requirement, not referenced as a prerequisite by any other perk, and **not** in that skill's merged `AVIF` tree. Starter nodes (e.g. Novice Destruction) are kept when other perks depend on them; leaf perks shown in `AVIF` (e.g. Gourmet, Metamagic) are kept even when they have no skill gate in plugin data.
@@ -112,10 +113,12 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 
 - `data/game/mechanics.json`
 
-### Never overwritten
+### Imported with perks
 
-- `data/game/perk-player-level-reqs.json`
-- `data/game/race-effects.json`
+- `data/game/perk-player-level-reqs.json` — player level gates from `PERK` `GetLevel` conditions (one entry per rank id)
+- `data/game/race-effects.json` — structured effects parsed from race ability bonus text
+
+### Never overwritten
 - `data/game/stats.json`
 - `data/game/skills.json`
 - `data/game/character-options.json`
@@ -135,6 +138,7 @@ tools/import/
     avif-perk-tree.mjs     # AVIF perk tree parser (player-visible layout)
     avif-perk-membership.mjs # AVIF membership index + planner diff helpers
     deity-eligibility.mjs  # Wintersun deity follow rules from plugins + guide
+    deity-faith-from-plugins.mjs # Wintersun MGEF + worship MESG faith effect extraction
     destiny-config.mjs     # Subclasses of Skyrim destiny tree layout parser
     esp-reader.mjs         # Skyrim plugin record parser (single-pass batch scan)
     formid.mjs             # TES4 master list + plugin-local form ID → global identity

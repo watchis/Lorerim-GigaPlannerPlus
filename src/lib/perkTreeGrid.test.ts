@@ -64,7 +64,23 @@ describe("perkTreeGrid", () => {
   it("picks the front perk as the next unselected tier", () => {
     const stack = [makePerk("rank-50", 50), makePerk("rank-25", 25)];
     expect(getFrontPerkIdAtPosition(stack, [])).toBe("rank-25");
+    expect(getFrontPerkIdAtPosition(stack, ["rank-25"])).toBe("rank-50");
     expect(getFrontPerkIdAtPosition(stack, ["rank-25", "rank-50"])).toBe("rank-50");
+  });
+
+  it("orders level-gated stacks by player level then rank suffix", () => {
+    const stack = [
+      { ...makePerk("alchemy-herbalist-r2", 0), playerLevelReq: 20 },
+      { ...makePerk("alchemy-herbalist", 0), playerLevelReq: 10 },
+    ];
+
+    expect(sortPerkStack(stack).map((perk) => perk.id)).toEqual([
+      "alchemy-herbalist",
+      "alchemy-herbalist-r2",
+    ]);
+    expect(getFrontPerkIdAtPosition(stack, [])).toBe("alchemy-herbalist");
+    expect(getFrontPerkIdAtPosition(stack, ["alchemy-herbalist"])).toBe("alchemy-herbalist-r2");
+    expect(getNextRankInStack(stack, ["alchemy-herbalist"])?.id).toBe("alchemy-herbalist-r2");
   });
 
   it("parses SVG view boxes", () => {

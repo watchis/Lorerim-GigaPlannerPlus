@@ -6,14 +6,22 @@ import { parsePerkRecordMetadata } from "./perk-record-parser.mjs";
 import { parseMasters, resolveFormIdentity } from "./formid.mjs";
 import { raceDataSkillScore } from "./race-data-parser.mjs";
 import { getRecordBufferAsync, mapConcurrent, visitAsync } from "./plugin-io.mjs";
+import { normalizeAltarKey } from "./deity-eligibility.mjs";
 import {
-  TRAITS_ABILITY_LIST_EDID,
-  readFormIdsFromBuffer,
-} from "./trait-ability-list.mjs";
+  collectBoonMgefFormIds,
+  isAltarBlessingMgefEdid,
+  parseShrineMgefAltarKey,
+} from "./deity-faith-from-plugins.mjs";
+import {
+  meaningfulSpellMagnitudes,
+  readSpellEfitMagnitudes,
+  readSpellFaithEffectEntries,
+  readSpellMagnitudesForFormIds,
+} from "./spell-magnitude.mjs";
 
 const IMPORT_RECORD_TYPES = ["PERK", "SPEL", "RACE", "MESG", "QUST"];
 const LORERIM_RACE_PLUGIN_PATTERN = /LoreRim - NPCs and Races/i;
-const WINTERSUN_PLUGIN_PATTERN = /Wintersun/i;
+export const WINTERSUN_FAITH_PLUGIN_PATTERN = /Wintersun|Tribunal Integration/i;
 const DEFAULT_PLUGIN_CONCURRENCY =
   Number(process.env.IMPORT_PLUGIN_CONCURRENCY) > 0
     ? Number(process.env.IMPORT_PLUGIN_CONCURRENCY)
@@ -46,6 +54,7 @@ function buildPerkMeta(buffer, edid, ownerPluginLower, masters) {
   return {
     formIdentity: resolveFormIdentity(ownerPluginLower, masters, meta.rawFormId),
     skillReq: meta.skillReq,
+    playerLevelReq: meta.playerLevelReq,
     prerequisiteIdentities: meta.prerequisiteRawFormIds.map((rawFormId) =>
       resolveFormIdentity(ownerPluginLower, masters, rawFormId),
     ),
@@ -106,43 +115,234 @@ function mergeCollectedRecord(existing, incoming) {
   return incomingScore >= existingScore ? incoming : existing;
 }
 
-function readEfitMagnitudes(recordBuffer) {
-  const magnitudes = [];
-  let index = 0;
+/**
+ * Skyrim SPEL effects use EFID (MGEF FormID) + EFIT (magnitude, area, duration).
+ * Re-exported for tests and callers that read altar blessing magnitudes.
+ */
+export { meaningfulSpellMagnitudes, readSpellEfitMagnitudes } from "./spell-magnitude.mjs";
 
-  while ((index = recordBuffer.indexOf("EFIT", index)) !== -1) {
-    const size = recordBuffer.readUInt16LE(index + 4);
-    const data = recordBuffer.subarray(index + 6, index + 6 + size);
-    if (data.length >= 4) magnitudes.push(data.readFloatLE(0));
-    index += 4;
+function parseFaithMgefLookupArg(lookupArg, pluginName = "", masters = []) {
+  if (!lookupArg) {
+    return {
+      formIdsByEdid: new Map(),
+      edidByFormIdentity: new Map(),
+      ownerPluginLower: pluginName.toLowerCase(),
+      masters,
+    };
   }
 
-  return magnitudes;
+  if (lookupArg instanceof Map) {
+    return {
+      formIdsByEdid: lookupArg,
+      edidByFormIdentity: new Map(),
+      ownerPluginLower: pluginName.toLowerCase(),
+      masters,
+    };
+  }
+
+  return {
+    formIdsByEdid: lookupArg.formIdsByEdid ?? new Map(),
+    edidByFormIdentity: lookupArg.edidByFormIdentity ?? new Map(),
+    ownerPluginLower: lookupArg.ownerPluginLower ?? pluginName.toLowerCase(),
+    masters: lookupArg.masters ?? masters,
+  };
+}
+
+function resolveFaithMgefEdid(formId, lookup) {
+  if (formId == null || !lookup) return null;
+
+  const { formIdsByEdid, edidByFormIdentity, ownerPluginLower, masters } = lookup;
+  if (edidByFormIdentity?.size && masters?.length) {
+    const identity = resolveFormIdentity(ownerPluginLower, masters, formId);
+    const byIdentity = edidByFormIdentity.get(identity);
+    if (byIdentity) return byIdentity;
+  }
+
+  for (const [edid, mappedFormId] of formIdsByEdid ?? []) {
+    if (mappedFormId === formId) return edid;
+  }
+
+  return null;
+}
+
+function hasFaithMgefLookup(lookup) {
+  return lookup?.formIdsByEdid?.size > 0 || lookup?.edidByFormIdentity?.size > 0;
+}
+
+function collectShrineEffectsFromSpell(buffer, lookup) {
+  return readSpellFaithEffectEntries(buffer)
+    .map((entry) => ({
+      ...entry,
+      mgefEdid: resolveFaithMgefEdid(entry.formId, lookup),
+    }))
+    .filter((entry) => entry.magnitude != null && isAltarBlessingMgefEdid(entry.mgefEdid));
+}
+
+function resolveAltarBlessingFromSpellEffects(buffer, lookup) {
+  if (!hasFaithMgefLookup(lookup)) return null;
+
+  const shrineEffects = collectShrineEffectsFromSpell(buffer, lookup);
+  if (shrineEffects.length === 0) return null;
+
+  const altarKey = parseShrineMgefAltarKey(shrineEffects[0].mgefEdid);
+  if (!altarKey) return null;
+
+  return {
+    altarKey,
+    magnitudes: shrineEffects.map((entry) => entry.magnitude),
+    shrineMgefEdid: shrineEffects[0].mgefEdid,
+  };
+}
+
+function pickAltarBlessingMagnitudes(buffer, altarKey, lookup) {
+  const resolved = resolveAltarBlessingFromSpell(buffer, altarKey, lookup);
+  return resolved?.magnitudes ?? [];
+}
+
+function resolveAltarBlessingFromSpell(buffer, altarKey, lookup) {
+  if (hasFaithMgefLookup(lookup)) {
+    const shrineEffects = collectShrineEffectsFromSpell(buffer, lookup);
+    if (shrineEffects.length === 0) return null;
+
+    return {
+      magnitudes: shrineEffects.map((entry) => entry.magnitude),
+      shrineMgefEdid: shrineEffects[0].mgefEdid,
+    };
+  }
+
+  const magnitudes = meaningfulSpellMagnitudes(buffer);
+  if (magnitudes.length === 0) return null;
+  return { magnitudes, shrineMgefEdid: null };
+}
+
+function pickBoonMagnitudes(buffer, altarKey, boonNumber, lookup) {
+  if (hasFaithMgefLookup(lookup)) {
+    const boonFormIds = collectBoonMgefFormIds(lookup.formIdsByEdid ?? new Map(), altarKey, boonNumber);
+    const boonEdids = new Set();
+    for (const [edid, formId] of lookup.formIdsByEdid ?? []) {
+      if (boonFormIds.has(formId)) boonEdids.add(edid);
+    }
+
+    if (boonEdids.size > 0) {
+      const magnitudes = [];
+      for (const entry of readSpellFaithEffectEntries(buffer)) {
+        if (entry.magnitude == null) continue;
+        const edid = resolveFaithMgefEdid(entry.formId, lookup);
+        if (edid && boonEdids.has(edid)) magnitudes.push(entry.magnitude);
+      }
+      if (magnitudes.length > 0) return magnitudes;
+    }
+
+    const magnitudes = readSpellMagnitudesForFormIds(buffer, boonFormIds);
+    if (magnitudes.length > 0) return magnitudes;
+
+    return [];
+  }
+
+  return meaningfulSpellMagnitudes(buffer);
+}
+
+function spellBufferHasAltarBlessingEffect(buffer, lookup) {
+  if (!hasFaithMgefLookup(lookup)) return false;
+  return collectShrineEffectsFromSpell(buffer, lookup).length > 0;
+}
+
+function isVariantAltarBlessingSpellEdid(edid) {
+  return /Gift|Cloak|BuffOnly|NoAutocast/i.test(edid);
+}
+
+function shouldReplaceAltarMagnitude(existing, incoming) {
+  if (!existing) return true;
+  if (existing.isVariant && !incoming.isVariant) return true;
+  if (!existing.isVariant && incoming.isVariant) return false;
+  if (incoming.magnitudes.length === 0) return false;
+  if (existing.magnitudes.length === 0) return true;
+  if (incoming.shrineMgefEdid && !existing.shrineMgefEdid) return true;
+  if (!incoming.shrineMgefEdid && existing.shrineMgefEdid) return false;
+  return true;
 }
 
 function altarKeyFromSpellEdid(edid) {
   if (!edid.startsWith("WSN_AltarBlessing_") || !edid.endsWith("_Spell")) return null;
-  if (/Gift|Cloak|BuffOnly|NoAutocast/i.test(edid)) return null;
-  return edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+
+  const rawKey = edid.slice("WSN_AltarBlessing_".length, -"_Spell".length);
+  return normalizeAltarKey(rawKey);
 }
 
-function collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName) {
+export function collectAltarBlessingFromSpellBuffer(buffer, edid, pluginName, lookupArg = null) {
+  const lookup = parseFaithMgefLookupArg(lookupArg, pluginName);
   const altarKey = altarKeyFromSpellEdid(edid);
-  if (!altarKey) return null;
+  const resolved = altarKey
+    ? resolveAltarBlessingFromSpell(buffer, altarKey, lookup)
+    : resolveAltarBlessingFromSpellEffects(buffer, lookup);
 
-  const effectMagnitudes = readEfitMagnitudes(buffer).filter((value) => value > 0);
-  if (effectMagnitudes.length === 0) return null;
+  if (!resolved || resolved.magnitudes.length === 0) return null;
 
   return {
-    altarKey,
-    magnitude: effectMagnitudes[0],
+    altarKey: altarKey ?? resolved.altarKey,
+    magnitudes: resolved.magnitudes,
+    magnitude: Math.max(...resolved.magnitudes),
+    shrineMgefEdid: resolved.shrineMgefEdid,
     plugin: pluginName,
+    isVariant: altarKey ? isVariantAltarBlessingSpellEdid(edid) : false,
+  };
+}
+
+const BOON_SPELL_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon([12])_Spell/i;
+
+function boonMagnitudeKey(altarKey, boonNumber) {
+  return `${normalizeAltarKey(altarKey)}:${boonNumber}`;
+}
+
+function parseBoonSpellEdid(edid) {
+  const match = edid.match(BOON_SPELL_PATTERN);
+  if (!match) return null;
+
+  return {
+    altarKey: normalizeAltarKey(match[1]),
+    boonNumber: Number(match[2]),
+  };
+}
+
+function isVariantBoonSpellEdid(edid) {
+  return !/_Spell_Ab$/i.test(edid);
+}
+
+function shouldReplaceBoonMagnitude(existing, incoming) {
+  if (!existing) return true;
+  if (existing.isVariant && !incoming.isVariant) return true;
+  if (!existing.isVariant && incoming.isVariant) return false;
+  // Same spell tier: later plugin in load order wins.
+  return true;
+}
+
+export function collectBoonFromSpellBuffer(buffer, edid, pluginName, lookupArg = null) {
+  const parsed = parseBoonSpellEdid(edid);
+  if (!parsed) return null;
+
+  const lookup = parseFaithMgefLookupArg(lookupArg, pluginName);
+  const magnitudes = pickBoonMagnitudes(
+    buffer,
+    parsed.altarKey,
+    parsed.boonNumber,
+    lookup,
+  );
+  if (magnitudes.length === 0) return null;
+
+  return {
+    key: boonMagnitudeKey(parsed.altarKey, parsed.boonNumber),
+    altarKey: parsed.altarKey,
+    boonNumber: parsed.boonNumber,
+    magnitudes,
+    magnitude: Math.max(...magnitudes),
+    plugin: pluginName,
+    isVariant: isVariantBoonSpellEdid(edid),
   };
 }
 
 function wantedTypesForPlugin(pluginName) {
   const wanted = new Set([...IMPORT_RECORD_TYPES, "AVIF", "FLST"]);
-  if (WINTERSUN_PLUGIN_PATTERN.test(pluginName)) wanted.add("MGEF");
+  if (WINTERSUN_FAITH_PLUGIN_PATTERN.test(pluginName)) wanted.add("MGEF");
   return wanted;
 }
 
@@ -158,8 +358,28 @@ async function readPluginImportPayload({ pluginName, path }) {
   const records = [];
   const avifRecords = [];
   let traitsFormListFormIds = null;
-  const altarBlessings = [];
+  const faithSpellCandidates = [];
   const lorerimRaceRecords = [];
+  const pluginMgefFormIds = new Map();
+  const pluginMgefIdentities = new Map();
+
+  for (const [offset, type] of offsets) {
+    if (type !== "MGEF" || !wanted.has(type)) continue;
+
+    try {
+      const buffer = await getRecordBufferAsync(fh.fd, offset);
+      const parsed = parseRecord(buffer, ownerPluginLower, masters);
+      if (parsed?.edid && parsed.formId != null) {
+        pluginMgefFormIds.set(parsed.edid, parsed.formId);
+        pluginMgefIdentities.set(
+          resolveFormIdentity(ownerPluginLower, masters, parsed.formId),
+          parsed.edid,
+        );
+      }
+    } catch {
+      // Skip malformed MGEF records.
+    }
+  }
 
   for (const [offset, type] of offsets) {
     if (!wanted.has(type)) continue;
@@ -187,8 +407,20 @@ async function readPluginImportPayload({ pluginName, path }) {
       if (!parsed) continue;
 
       if (type === "SPEL") {
-        const altarBlessing = collectAltarBlessingFromSpellBuffer(buffer, parsed.edid, pluginName);
-        if (altarBlessing) altarBlessings.push(altarBlessing);
+        const spellEdid = parsed.edid;
+        const pluginFaithLookup = {
+          formIdsByEdid: pluginMgefFormIds,
+          edidByFormIdentity: pluginMgefIdentities,
+          ownerPluginLower,
+          masters,
+        };
+        if (
+          spellEdid.startsWith("WSN_AltarBlessing_") ||
+          BOON_SPELL_PATTERN.test(spellEdid) ||
+          spellBufferHasAltarBlessingEffect(buffer, pluginFaithLookup)
+        ) {
+          faithSpellCandidates.push({ edid: spellEdid, buffer: Buffer.from(buffer) });
+        }
       }
 
       records.push(parsed);
@@ -209,7 +441,9 @@ async function readPluginImportPayload({ pluginName, path }) {
     records,
     avifRecords,
     traitsFormListFormIds,
-    altarBlessings,
+    faithSpellCandidates,
+    pluginMgefFormIds,
+    pluginMgefIdentities,
     lorerimRaceRecords,
   };
 }
@@ -217,14 +451,20 @@ async function readPluginImportPayload({ pluginName, path }) {
 function mergePluginPayload(
   mergedByType,
   avifTrees,
-  altarMagnitudes,
   lorerimRaceByEdid,
   traitsFormList,
   mastersByPath,
   payload,
 ) {
-  const { pluginName, path, masters, records, avifRecords, traitsFormListFormIds, altarBlessings, lorerimRaceRecords } =
-    payload;
+  const {
+    pluginName,
+    path,
+    masters,
+    records,
+    avifRecords,
+    traitsFormListFormIds,
+    lorerimRaceRecords,
+  } = payload;
 
   mastersByPath.set(path, masters);
 
@@ -240,13 +480,6 @@ function mergePluginPayload(
     avifTrees.set(tree.skillId, tree);
   }
 
-  for (const blessing of altarBlessings) {
-    altarMagnitudes.set(blessing.altarKey, {
-      magnitude: blessing.magnitude,
-      plugin: blessing.plugin,
-    });
-  }
-
   for (const record of lorerimRaceRecords) {
     const existing = lorerimRaceByEdid.get(record.edid);
     lorerimRaceByEdid.set(record.edid, existing ? mergeCollectedRecord(existing, record) : record);
@@ -256,6 +489,82 @@ function mergePluginPayload(
     traitsFormList.formIds = traitsFormListFormIds;
     traitsFormList.sourcePlugin = { pluginName, path };
   }
+}
+
+function buildFaithMgefLookup(orderedPayloads) {
+  const formIdsByEdid = new Map();
+  const edidByFormIdentity = new Map();
+
+  for (const payload of orderedPayloads) {
+    if (!WINTERSUN_FAITH_PLUGIN_PATTERN.test(payload.pluginName)) continue;
+    for (const [edid, formId] of payload.pluginMgefFormIds ?? []) {
+      formIdsByEdid.set(edid, formId);
+    }
+    for (const [identity, edid] of payload.pluginMgefIdentities ?? []) {
+      edidByFormIdentity.set(identity, edid);
+    }
+  }
+
+  return { formIdsByEdid, edidByFormIdentity };
+}
+
+function collectFaithSpellMagnitudes(orderedPayloads) {
+  const altarMagnitudes = new Map();
+  const boonMagnitudes = new Map();
+  const globalLookup = buildFaithMgefLookup(orderedPayloads);
+
+  for (const payload of orderedPayloads) {
+    if (!WINTERSUN_FAITH_PLUGIN_PATTERN.test(payload.pluginName)) continue;
+
+    const lookup = {
+      ...globalLookup,
+      ownerPluginLower: (payload.pluginName || "").toLowerCase(),
+      masters: payload.masters ?? [],
+    };
+
+    for (const candidate of payload.faithSpellCandidates ?? []) {
+      const altarBlessing = collectAltarBlessingFromSpellBuffer(
+        candidate.buffer,
+        candidate.edid,
+        payload.pluginName,
+        lookup,
+      );
+      if (altarBlessing) {
+        const existing = altarMagnitudes.get(altarBlessing.altarKey);
+        if (shouldReplaceAltarMagnitude(existing, altarBlessing)) {
+          altarMagnitudes.set(altarBlessing.altarKey, {
+            magnitudes: altarBlessing.magnitudes,
+            magnitude: altarBlessing.magnitude,
+            shrineMgefEdid: altarBlessing.shrineMgefEdid ?? null,
+            plugin: altarBlessing.plugin,
+            isVariant: altarBlessing.isVariant,
+          });
+        }
+      }
+
+      const boonBlessing = collectBoonFromSpellBuffer(
+        candidate.buffer,
+        candidate.edid,
+        payload.pluginName,
+        lookup,
+      );
+      if (boonBlessing) {
+        const existing = boonMagnitudes.get(boonBlessing.key);
+        if (shouldReplaceBoonMagnitude(existing, boonBlessing)) {
+          boonMagnitudes.set(boonBlessing.key, {
+            altarKey: boonBlessing.altarKey,
+            boonNumber: boonBlessing.boonNumber,
+            magnitudes: boonBlessing.magnitudes,
+            magnitude: boonBlessing.magnitude,
+            plugin: boonBlessing.plugin,
+            isVariant: boonBlessing.isVariant,
+          });
+        }
+      }
+    }
+  }
+
+  return { altarMagnitudes, boonMagnitudes };
 }
 
 function createEmptyMergeBuckets() {
@@ -277,7 +586,6 @@ export async function collectImportPluginData(plugins, progress = null, options 
   const concurrency = options.concurrency ?? DEFAULT_PLUGIN_CONCURRENCY;
   const mergedByType = createEmptyMergeBuckets();
   const avifTrees = new Map();
-  const altarMagnitudes = new Map();
   const lorerimRaceByEdid = new Map();
   const traitsFormList = { formIds: null, sourcePlugin: null };
   const mastersByPath = new Map();
@@ -296,7 +604,6 @@ export async function collectImportPluginData(plugins, progress = null, options 
     mergePluginPayload(
       mergedByType,
       avifTrees,
-      altarMagnitudes,
       lorerimRaceByEdid,
       traitsFormList,
       mastersByPath,
@@ -309,8 +616,12 @@ export async function collectImportPluginData(plugins, progress = null, options 
     );
   }
 
+  const { altarMagnitudes, boonMagnitudes } = collectFaithSpellMagnitudes(orderedPayloads);
+
   const wintersunPluginNames = new Set(
-    plugins.filter((plugin) => WINTERSUN_PLUGIN_PATTERN.test(plugin.pluginName)).map((plugin) => plugin.pluginName),
+    plugins
+      .filter((plugin) => WINTERSUN_FAITH_PLUGIN_PATTERN.test(plugin.pluginName))
+      .map((plugin) => plugin.pluginName),
   );
 
   scan?.finish(
@@ -331,6 +642,7 @@ export async function collectImportPluginData(plugins, progress = null, options 
       wintersunPluginNames.has(record.plugin),
     ),
     altarMagnitudes,
+    boonMagnitudes,
     lorerimRaceRecords: [...lorerimRaceByEdid.values()],
     traitsFormList,
     mastersByPath,

@@ -163,8 +163,10 @@
         "x": 0,
         "y": 19
       },
-      "prerequisites": [],
-      "description": "Your light armor has become second nature while casting spells and now makes them more potent. [10% stronger and longer lasting spells when cast while wearing light armor]",
+      "prerequisites": [
+        "evasion-agility"
+      ],
+      "description": "Your light armor has become second nature while casting spells and now makes them more potent. [10% stronger and longer lasting spells when cast while wearing 3 or more pieces of light armor]",
       "effects": [],
       "prerequisitesAny": []
     },
@@ -191,6 +193,21 @@
       "prerequisitesAny": []
     },
     {
+      "id": "evasion-unarmored-r2",
+      "name": "Unarmored",
+      "skillReq": 50,
+      "position": {
+        "x": 0,
+        "y": 28
+      },
+      "prerequisites": [
+        "evasion-agility"
+      ],
+      "description": "Your mastery of being unarmored grants you the ability to strike harder and better cast spells. [Deal 10% more physical damage and cast 10% stronger or longer lasting spells when wearing no armor]",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
       "id": "evasion-athletics",
       "name": "Athletics",
       "skillReq": 25,
@@ -213,7 +230,9 @@
         "x": 6,
         "y": 13
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "evasion-light-armor-training"
+      ],
       "description": "You are more agile and can recover from exhaustion faster. [+10% movement speed and +50% stamina regeneration when not wearing heavy armor]",
       "effects": [],
       "prerequisitesAny": []
@@ -241,7 +260,9 @@
         "x": 7,
         "y": 7
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "evasion-athletics"
+      ],
       "description": "You take 20% less attack damage from enemies with full Health if not wearing heavy armor",
       "effects": [],
       "prerequisitesAny": []

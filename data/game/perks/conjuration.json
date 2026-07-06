@@ -117,7 +117,9 @@
         "x": 6,
         "y": 8
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "conjuration-empowered-conjuration"
+      ],
       "description": "You have mastered the art of Cognitive Flexibility, a trait of only the most accomplished Summoners throughout history. You can now control three summons, of any type, simultaneously.",
       "effects": [],
       "prerequisitesAny": []

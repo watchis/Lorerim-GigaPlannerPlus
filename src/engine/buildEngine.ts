@@ -30,6 +30,7 @@ import {
   resolvePerkTakeTarget,
   sortPerkStack,
 } from "@/lib/perkTreeGrid";
+import { meaningfulPlayerLevelReq } from "@/lib/perkRequirements";
 
 export type { TrainingTierDefinition } from "@/lib/skillTraining";
 export {
@@ -635,8 +636,9 @@ export function getRequiredPlayerLevelFromPerks(game: GameData, state: BuildStat
 
   for (const perkId of state.selectedPerkIds) {
     const perk = getPerkById(game, perkId);
-    if (perk?.playerLevelReq) {
-      required = Math.max(required, perk.playerLevelReq);
+    const playerLevelReq = meaningfulPlayerLevelReq(perk?.playerLevelReq);
+    if (playerLevelReq) {
+      required = Math.max(required, playerLevelReq);
     }
   }
 
@@ -959,7 +961,9 @@ export function getPerksRequiringHigherPlayerLevel(
 ): Perk[] {
   return state.selectedPerkIds.flatMap((perkId) => {
     const perk = getPerkById(game, perkId);
-    if (!perk?.playerLevelReq || perk.playerLevelReq <= playerLevel) return [];
+    if (!perk) return [];
+    const playerLevelReq = meaningfulPlayerLevelReq(perk.playerLevelReq);
+    if (!playerLevelReq || playerLevelReq <= playerLevel) return [];
     return [perk];
   });
 }
@@ -1398,7 +1402,7 @@ function allocatePerkAfterRequirements(
   const { baseLevel } = game.mechanics.leveling;
   const requiredPlayerLevel = clampPlayerLevel(
     game,
-    Math.max(next.playerLevel, perk.playerLevelReq ?? baseLevel),
+    Math.max(next.playerLevel, meaningfulPlayerLevelReq(perk.playerLevelReq) ?? baseLevel),
   );
 
   return reconcileBuild(
@@ -1764,7 +1768,8 @@ export function canSelectPerk(game: GameData, state: BuildState, perkId: string)
   if (!perk) return false;
   if (state.selectedPerkIds.includes(perkId)) return true;
   if (!arePrerequisitesMet(game, state, perk)) return false;
-  if (perk.playerLevelReq != null && state.playerLevel < perk.playerLevelReq) return false;
+  const playerLevelReq = meaningfulPlayerLevelReq(perk.playerLevelReq);
+  if (playerLevelReq != null && state.playerLevel < playerLevelReq) return false;
 
   const skillId = getPerkSkillId(game, perkId);
   if (skillId === DESTINY_SKILL_ID) {

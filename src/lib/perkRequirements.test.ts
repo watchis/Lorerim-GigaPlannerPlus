@@ -36,4 +36,10 @@ describe("perkRequirements", () => {
     expect(requirements).toEqual({ skillReq: 50, playerLevelReq: 10 });
     expect(formatPerkNodeRequirementLabel(requirements)).toBe("Lv 10 · 50");
   });
+
+  it("treats level 1 player requirements as ungated", () => {
+    const requirements = getPerkNodeRequirements(makePerk({ playerLevelReq: 1 }));
+    expect(requirements).toEqual({ skillReq: null, playerLevelReq: null });
+    expect(formatPerkNodeRequirementLabel(requirements)).toBeNull();
+  });
 });

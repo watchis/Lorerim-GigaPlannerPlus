@@ -490,7 +490,7 @@
       "id": "good-natured",
       "name": "Good Natured",
       "description": "You have a good heart.",
-      "bonus": "Deal 20% less damage with weapons and Destruction spells. However, while wearing an amulet of the divines beneficial spells and potions last 20% longer and you take 20% less damage.",
+      "bonus": "Deal 20% less damage with weapons and Destruction spells. However, while wearing an amulet of the divines beneficial spells and potions are 20% stronger and you take 20% less damage.",
       "effects": [
         {
           "type": "derivedStat",
@@ -512,7 +512,7 @@
         }
       ],
       "bonusDetails": [
-        "While wearing an amulet of the divines beneficial spells and potions last 20% longer and you take 20% less damage."
+        "While wearing an amulet of the divines beneficial spells and potions are 20% stronger and you take 20% less damage."
       ]
     },
     {
@@ -548,10 +548,10 @@
       "id": "introvert",
       "name": "Introvert",
       "description": "You thrive in solitude but falter in the crowd.",
-      "bonus": "When facing three or fewer enemies, you deal 15% more damage, whether with weapons or Destruction magic. Against four or more, your nerves get the better of you, and you deal 10% less.",
+      "bonus": "When facing three or fewer enemies, you deal 15% more damage with weapons and magic. Against four or more, your nerves get the better of you, and you deal 10% less.",
       "effects": [],
       "bonusDetails": [
-        "When facing three or fewer enemies, you deal 15% more damage, whether with weapons or Destruction magic.",
+        "When facing three or fewer enemies, you deal 15% more damage with weapons and magic.",
         "Against four or more.",
         "You deal 10% less."
       ]

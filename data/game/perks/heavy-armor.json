@@ -72,17 +72,17 @@
       "prerequisitesAny": []
     },
     {
-      "id": "heavy-armor-battle-mage",
-      "name": "Battle Mage",
+      "id": "heavy-armor-war-mage",
+      "name": "War Mage",
       "skillReq": 100,
       "position": {
-        "x": 3,
-        "y": 0
+        "x": 18,
+        "y": 11
       },
       "prerequisites": [
         "heavy-armor-combat-meditation"
       ],
-      "description": "You have mastered spellcasting while wearing heavy armor. [No spell cost penalty for casting Master spells and 15% stronger and longer lasting spells, scrolsl and enchantments while wearing heavy armor]",
+      "description": "You have mastered spellcasting while wearing heavy armor. [No spell cost penalty for casting Master spells and 10% stronger and longer lasting spells, scrolls and enchantments while wearing 3 or more pieces of heavy armor]",
       "effects": [],
       "prerequisitesAny": []
     },

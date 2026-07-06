@@ -224,7 +224,9 @@
         "x": 10,
         "y": 28
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "enchanting-enchanter-s-insight"
+      ],
       "description": "Your understanding of enchantments allow you to use them more effectively and efficiently. [Staves and Scrolls are 20% more powerful, enchantments cost 20% less charges]",
       "effects": [
         {
@@ -250,7 +252,9 @@
         "x": 10,
         "y": 28
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "enchanting-enchanter-s-insight"
+      ],
       "description": "Your understanding of enchantments allow you to use them more effectively and efficiently. [Staves and Scrolls are 30% more powerful, enchantments cost 30% less charges]",
       "effects": [
         {
@@ -291,7 +295,9 @@
         "x": 13,
         "y": 23
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "enchanting-arcane-artificery"
+      ],
       "description": "You can use your staff to empower your own spells and cast them more efficiently. [While holding a staff, spells are 20% more powerful]",
       "effects": [],
       "prerequisitesAny": []

@@ -212,7 +212,9 @@
         "x": 3,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "become an advanced battle axe and halberd fighter. [Attacks deal 40-120 extra damage over 20 seconds scaling with weapon skill, +20% armor penetration]",
       "effects": [
         {
@@ -238,7 +240,9 @@
         "x": 3,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "You've become a master of battle axe and halberd combat. [Attacks deal 60-180 extra damage over 20 seconds scaling with weapon skill, +30% armor penetration]",
       "effects": [
         {
@@ -286,7 +290,9 @@
         "x": 15,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "You've acquired the advanced techniques of using greatswords and pikes. [Attacks reduce target's melee damage by 22% for 10 seconds, +22% critical hit chance]",
       "effects": [
         {
@@ -306,7 +312,9 @@
         "x": 15,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "You've become a master of using greatswords and pikes. [Attacks reduce target's melee damage by 33% for 10 seconds, +33% critical hit chance]",
       "effects": [
         {
@@ -354,7 +362,9 @@
         "x": 18,
         "y": 21
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "You've become an advanced warhammer fighter and know how to find weak spots in enemy armor. [6% more attack damage, +30% armor penetration]",
       "effects": [
         {
@@ -380,7 +390,9 @@
         "x": 18,
         "y": 21
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "You've become a masterly warhammer fighter, rendering armor almost useless. [10% more attack damage, +40% armor penetration]",
       "effects": [
         {
@@ -421,7 +433,9 @@
         "x": 0,
         "y": 21
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "You've acquired the advanced techniques of quarterstaff combat. [Power attacks cost 40% less stamina, +20% damage when not power attacking",
       "effects": [],
       "prerequisitesAny": []
@@ -434,7 +448,9 @@
         "x": 0,
         "y": 21
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "two-handed-barbaric-might"
+      ],
       "description": "You've become a master of quarterstaff combat. [Power attacks cost 60% less stamina, +30% damage when not power attacking]",
       "effects": [],
       "prerequisitesAny": []

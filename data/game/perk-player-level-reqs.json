@@ -1,16 +1,17 @@
 {
+  "alchemy-drunken-combat": 10,
+  "alchemy-drunken-combat-r2": 20,
+  "alchemy-gourmet": 10,
+  "alchemy-herbalist": 10,
+  "alchemy-herbalist-r2": 20,
+  "alteration-metamagic": 10,
+  "alteration-unskilled-spellcasting-r2": 10,
+  "alteration-unskilled-spellcasting-r3": 20,
   "heavy-armor-mounted-combat": 10,
   "marksman-hunter": 10,
   "marksman-hunter-r2": 20,
   "speech-shout-focus": 10,
   "speech-shout-focus-r2": 20,
   "speech-shout-focus-r3": 30,
-  "alchemy-drunken-combat": 10,
-  "alchemy-drunken-combat-r2": 20,
-  "alchemy-gourmet": 10,
-  "alchemy-herbalist": 10,
-  "alchemy-herbalist-r2": 20,
-  "alteration-unskilled-spellcasting-r2": 10,
-  "alteration-unskilled-spellcasting-r3": 20,
-  "alteration-metamagic": 10
+  "wayfarer-hunter-r2": 20
 }

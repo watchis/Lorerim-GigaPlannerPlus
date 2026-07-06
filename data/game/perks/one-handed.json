@@ -183,7 +183,9 @@
         "x": 7,
         "y": 19
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "You've become an advanced war axe fighter. [Attacks deal 20-60 extra damage over 20 seconds scaling with weapon skill, +20% armor penetration]",
       "effects": [
         {
@@ -209,7 +211,9 @@
         "x": 7,
         "y": 19
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "You've become a master of war axe combat. [Attacks deal 30-90 extra damage over 20 seconds scaling with weapon skill, +30% armor penetration]",
       "effects": [
         {
@@ -269,7 +273,9 @@
         "x": 15,
         "y": 19
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "You've become an advanced mace fighter and know how to find weak spots in enemy armor. [10% more power attack damage, +30% armor penetration]",
       "effects": [
         {
@@ -301,7 +307,9 @@
         "x": 15,
         "y": 19
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "You've become a masterly mace fighter, rendering armor almost useless. [15% more power attack damage, +45% armor penetration]",
       "effects": [
         {
@@ -355,7 +363,9 @@
         "x": 18,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "You've acquired the advanced techniques of using 1 handed swords and spears. [Attacks reduce target's melee damage by 22% for 10 seconds, +22% critical hit chance]",
       "effects": [
         {
@@ -375,7 +385,9 @@
         "x": 18,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "You've become a master of using 1 handed swords and spears. [Attacks reduce target's melee damage by 33% for 10 seconds, +33% critical hit chance]",
       "effects": [
         {
@@ -417,7 +429,9 @@
         "x": 22,
         "y": 24
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-weapon-mastery"
+      ],
       "description": "When fighting with dual or single one-handed weapons or fists, you're able to hit enemy weak points even better. [+20% critical hit chance and critical damage]",
       "effects": [
         {
@@ -494,7 +508,9 @@
         "x": 4,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "A dagger or tanto in your hand turns into a deadly weapon. [+40% damage from behind, 3x irresistible sneak attack damage, +10% critical hit chance]",
       "effects": [
         {
@@ -514,7 +530,9 @@
         "x": 4,
         "y": 20
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "one-handed-penetrating-strikes"
+      ],
       "description": "You have mastered the deadly art of daggers and tantos. [+60% damage from behind, 4x irresistible sneak attack damage, +15% critical hit chance]",
       "effects": [
         {

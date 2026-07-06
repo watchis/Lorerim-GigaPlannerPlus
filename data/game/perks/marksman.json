@@ -286,8 +286,7 @@
       "description": "You are more adapted to the wildlife, and better understand its inhabitants. [Do 20% more damage to animals and take 10% less damage from animals, +10% poison and disease resistance]",
       "effects": [],
       "prerequisitesAny": [],
-      "costsPerkPoint": true,
-      "playerLevelReq": 10
+      "costsPerkPoint": true
     },
     {
       "id": "marksman-hunter-r2",
@@ -301,8 +300,7 @@
       "description": "You are more adapted to the wildlife, and better understand its inhabitants. [Do 40% more damage to animals and take 20% less damage from animals, +20% poison and disease resistance]",
       "effects": [],
       "prerequisitesAny": [],
-      "costsPerkPoint": true,
-      "playerLevelReq": 20
+      "costsPerkPoint": true
     },
     {
       "id": "marksman-bow-strike",

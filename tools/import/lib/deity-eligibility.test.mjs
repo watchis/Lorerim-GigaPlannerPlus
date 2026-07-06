@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import {
+  collectWorshipAltarKeys,
+  deityNameFromAltarKey,
+  normalizeAltarKey,
   parseGuideDeityEligibility,
   parseShrineLocations,
   parseWorshipFailMessage,
@@ -99,5 +102,143 @@ const akatoshFollow = buildCanFollowFromInstall({
 });
 assert.equal(akatoshFollow.race, "All");
 assert.equal(akatoshFollow.requirement, "None");
+
+const nocturnalFollow = buildCanFollowFromInstall({
+  deityId: "nocturnal",
+  deityName: "Nocturnal",
+  altarKey: "Daedra_Nocturnal",
+  failMessages: ["Nocturnal does not accept those who have not served her."],
+  deityMeta: null,
+  startingRaces: ["Dunmer"],
+  questByEdid: new Map([
+    ["TG09", "Darkness Returns"],
+    ["DA13", "The Only Cure"],
+  ]),
+});
+assert.match(nocturnalFollow.race, /Darkness Returns/);
+assert.doesNotMatch(nocturnalFollow.race, /The Only Cure/);
+
+const peryiteFollow = buildCanFollowFromInstall({
+  deityId: "peryite",
+  deityName: "Peryite",
+  altarKey: "Daedra_Peryite",
+  failMessages: ["Peryite does not accept those who have not served him."],
+  deityMeta: null,
+  startingRaces: [],
+  questByEdid: new Map([
+    ["TG09", "Darkness Returns"],
+    ["DA13", "The Only Cure"],
+  ]),
+});
+assert.match(peryiteFollow.race, /The Only Cure/);
+assert.doesNotMatch(peryiteFollow.race, /Darkness Returns/);
+
+assert.equal(normalizeAltarKey("Tribunal_Almalexia_BuffOnly"), "Tribunal_Almalexia");
+assert.equal(deityNameFromAltarKey("Tribunal_Almalexia"), "Almalexia");
+assert.equal(deityNameFromAltarKey("Tribunal_SothaSil"), "Sotha Sil");
+assert.equal(deityNameFromAltarKey("Tribunal_Vivec"), "Vivec");
+
+const worshipKeys = collectWorshipAltarKeys([
+  { edid: "WSN_WorshipRequest_Message_Tribunal_Almalexia", description: "" },
+  { edid: "WSN_WorshipRequest_Message_Tribunal_Almalexia_Fail", description: "" },
+  { edid: "WSN_WorshipRequest_Message_Daedra_Azura", description: "" },
+]);
+assert.deepEqual([...worshipKeys].sort(), ["Daedra_Azura", "Tribunal_Almalexia"]);
+
+const shrineLinesWithHeaders = [
+  "Can follow Riddle'Thar: Khajit",
+  "Shrine locations:",
+  "Wilderness south of Saarthal",
+  "# The Tribunal",
+  "## Almalexia",
+];
+assert.deepEqual(parseShrineLocations(shrineLinesWithHeaders, 0, shrineLinesWithHeaders.length), [
+  "Wilderness south of Saarthal",
+]);
+
+const mannimarcoShrineLines = [
+  "Can follow Mannimarco: Everyone",
+  "Shrine locations:",
+  "- Wilderness southwest of Witchmist Grove",
+  "Sai",
+  "Shrine Blessing: 10% Light Armor Rating",
+];
+assert.deepEqual(parseShrineLocations(mannimarcoShrineLines, 0, 4), [
+  "Wilderness southwest of Witchmist Grove",
+]);
+
+const oldWaysShrineLines = [
+  "Can follow The Old Ways: Breton / Nord",
+  "Shrine locations:",
+  "- Bromjunaar Sanctuary (in the past)",
+  "Page updated",
+  "Google Sites",
+];
+assert.deepEqual(parseShrineLocations(oldWaysShrineLines, 0, oldWaysShrineLines.length), [
+  "Bromjunaar Sanctuary (in the past)",
+]);
+
+const azuraShrineLines = [
+  "Can follow Azura: Dunmer",
+  "Shrine locations:",
+  "Raven Rock Temple",
+  "Wilderness north of Talking Stone Camp",
+  "Can follow Boethiah: Dunmer",
+];
+assert.deepEqual(parseShrineLocations(azuraShrineLines, 0, 4), [
+  "Raven Rock Temple",
+  "Wilderness north of Talking Stone Camp",
+]);
+
+const htmlGuideShrines = `
+<html><body>
+<p>Can follow Tall Papa: Redguard</p>
+<p>Shrine locations:</p>
+<p>- Hillcrown Yokudan Shrine, southwest of Rorikstead</p>
+<h2><span>The HoonDing</span></h2>
+<p><b>Can follow </b>The HoonDing: Redguard</p>
+<p>Shrine locations:</p>
+<p>- Hillcrown Yokudan Shrine, southwest of Rorikstead</p>
+<h1><span>Other Dieties</span></h1>
+<h2><span>Baan Dar</span></h2>
+<p><b>Can follow </b>Baan Dar: Khajit / Bosmer</p>
+<p>Shrine locations:</p>
+<p>- Wilderness northeast of the Apprentice Stone</p>
+</body></html>
+`;
+const htmlGuide = parseGuideDeityEligibility(htmlGuideShrines);
+assert.deepEqual(htmlGuide.get("tall-papa")?.shrineLocations, [
+  "Hillcrown Yokudan Shrine, southwest of Rorikstead",
+]);
+assert.deepEqual(htmlGuide.get("hoonding")?.shrineLocations, [
+  "Hillcrown Yokudan Shrine, southwest of Rorikstead",
+]);
+assert.deepEqual(htmlGuide.get("baan-dar")?.shrineLocations, [
+  "Wilderness northeast of the Apprentice Stone",
+]);
+
+const tribunalGuide = `
+# The Tribunal
+
+## Almalexia
+
+Tenets: Be generous to beggars and children.
+
+Shrine Blessing: +15 Health and Stamina
+
+## Sotha Sil
+
+Tenets: Uncover the secrets of Dwemer ruins.
+
+## Vivec
+
+Tenets: Fulfill your destiny by saving Tamriel.
+
+# Other Deities
+`;
+const tribunalEntries = parseGuideDeityEligibility(tribunalGuide);
+assert.equal(tribunalEntries.get("almalexia")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
+assert.equal(tribunalEntries.get("sotha-sil")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
+assert.equal(tribunalEntries.get("vivec")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 
 console.log("deity-eligibility tests passed");

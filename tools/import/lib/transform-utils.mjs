@@ -23,12 +23,28 @@ export function cleanDescription(description) {
     .trim();
 }
 
+export function meaningfulEffectMagnitude(value) {
+  if (value == null || !Number.isFinite(value) || value <= 0) return null;
+  const rounded = Math.round(value);
+  if (rounded <= 0) return null;
+  return value;
+}
+
 export function cleanWintersunEffectText(text, magnitude = null) {
   let cleaned = String(text ?? "");
+  const magnitudes = Array.isArray(magnitude)
+    ? magnitude.map((value) => meaningfulEffectMagnitude(value)).filter((value) => value != null)
+    : meaningfulEffectMagnitude(magnitude) != null
+      ? [meaningfulEffectMagnitude(magnitude)]
+      : [];
 
-  if (magnitude != null) {
-    cleaned = cleaned.replace(/<mag>/gi, String(magnitude));
+  if (magnitudes.length > 0) {
+    for (const formatted of magnitudes.map((value) => formatEffectMagnitude(value))) {
+      cleaned = cleaned.replace(/<mag>/i, formatted);
+    }
   }
+
+  cleaned = cleaned.replace(/<mag>/gi, "");
 
   cleaned = cleaned.replace(/<([^<>]+)>/g, "$1");
 
@@ -39,7 +55,19 @@ export function cleanWintersunEffectText(text, magnitude = null) {
     .replace(/\s{2,}/g, " ")
     .trim();
 
+  if (/\bby\s+points\b/i.test(cleaned) || /\bmag\s+points\b/i.test(cleaned)) {
+    return "";
+  }
+
   return cleaned;
+}
+
+function formatEffectMagnitude(magnitude) {
+  const value = Number(magnitude);
+  if (!Number.isFinite(value)) return String(magnitude);
+  const rounded = Math.round(value);
+  if (Math.abs(value - rounded) < 0.001) return String(rounded);
+  return String(value);
 }
 
 export function loadJsonIfExists(filePath) {

@@ -510,9 +510,10 @@ function PerkTreeView({
           ? { ...badgeRequirements, skillReq: null }
           : badgeRequirements;
 
-        const meetsPlayerLevelReq =
-          takeTargetPerk.playerLevelReq == null ||
-          build.playerLevel >= takeTargetPerk.playerLevelReq;
+        const meetsPlayerLevelReq = (() => {
+          const playerLevelReq = getPerkNodeRequirements(takeTargetPerk).playerLevelReq;
+          return playerLevelReq == null || build.playerLevel >= playerLevelReq;
+        })();
 
         const meetsPerkReq =
           meetsPlayerLevelReq &&

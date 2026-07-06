@@ -13,20 +13,37 @@ function isFiniteInt(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && Number.isInteger(value);
 }
 
-function perkLevel(perk: PerkNodeLike): number {
-  if (isFiniteInt(perk.skillReq)) return perk.skillReq;
-  if (isFiniteInt(perk.playerLevelReq)) return perk.playerLevelReq;
-  return 0;
-}
-
 export function getPerkPositionKey(perk: PerkNodeLike): string {
   const x = isFiniteInt(perk.position?.x) ? perk.position.x : 0;
   const y = isFiniteInt(perk.position?.y) ? perk.position.y : 0;
   return `${x},${y}`;
 }
 
+function stackRankFromPerkId(id: string): number {
+  const match = id.match(/-r(\d+)$/);
+  return match ? Number(match[1]) : 1;
+}
+
+function comparePerkStackOrder(left: PerkNodeLike, right: PerkNodeLike): number {
+  const leftSkill = isFiniteInt(left.skillReq) ? left.skillReq : 0;
+  const rightSkill = isFiniteInt(right.skillReq) ? right.skillReq : 0;
+  const skillDiff = leftSkill - rightSkill;
+  if (skillDiff !== 0) return skillDiff;
+
+  const leftLevel = isFiniteInt(left.playerLevelReq) ? left.playerLevelReq : 0;
+  const rightLevel = isFiniteInt(right.playerLevelReq) ? right.playerLevelReq : 0;
+  const levelDiff = leftLevel - rightLevel;
+  if (levelDiff !== 0) return levelDiff;
+
+  const rankDiff =
+    stackRankFromPerkId(String(left.id ?? "")) - stackRankFromPerkId(String(right.id ?? ""));
+  if (rankDiff !== 0) return rankDiff;
+
+  return String(left.id ?? "").localeCompare(String(right.id ?? ""));
+}
+
 export function sortPerkStack(perks: PerkNodeLike[]): PerkNodeLike[] {
-  return [...perks].sort((a, b) => perkLevel(a) - perkLevel(b));
+  return [...perks].sort(comparePerkStackOrder);
 }
 
 export function groupPerksByPosition(perks: PerkNodeLike[]): Map<string, PerkNodeLike[]> {

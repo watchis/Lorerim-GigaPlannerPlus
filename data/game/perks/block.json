@@ -229,7 +229,9 @@
         "x": 18,
         "y": 9
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "block-powerful-bashes"
+      ],
       "description": "You can use your shield more offensively, using it as a deadly weapon. [100% more shield bash damage, double damage when not wearing heavy armor, 50% less shield bash stamina cost]",
       "effects": [
         {
@@ -298,7 +300,9 @@
         "x": 9,
         "y": 15
       },
-      "prerequisites": [],
+      "prerequisites": [
+        "block-improved-blocking"
+      ],
       "description": "You have rejected mastering one specific weapon type. Instead, you use have begun to master versatility. [30% more damage]",
       "effects": [
         {

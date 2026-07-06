@@ -41,6 +41,7 @@ import {
   enrichTrait,
 } from "@/lib/enrichGameData";
 import { mergeEffects } from "@/lib/resolveOptionEffects";
+import { meaningfulPlayerLevelReq } from "@/lib/perkRequirements";
 
 function parse<T>(schema: { parse: (data: unknown) => T }, data: unknown, name: string): T {
   try {
@@ -101,9 +102,9 @@ export function loadAppData(): AppData {
     perkTrees[skillId] = {
       ...tree,
       perks: tree.perks.map((perk) => {
-        const playerLevelReq = playerLevelReqs[perk.id];
+        const playerLevelReq = meaningfulPlayerLevelReq(playerLevelReqs[perk.id]);
         const withLevel =
-          playerLevelReq !== undefined ? { ...perk, playerLevelReq } : perk;
+          playerLevelReq !== null ? { ...perk, playerLevelReq } : perk;
         return enrichPerk(withLevel);
       }),
     };

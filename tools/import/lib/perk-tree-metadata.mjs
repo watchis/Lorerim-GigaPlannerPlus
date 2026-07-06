@@ -159,16 +159,30 @@ function sameNameSiblings(perk, tree) {
   );
 }
 
+function stackRankFromPerkId(id) {
+  const match = String(id ?? "").match(/-r(\d+)$/);
+  return match ? Number(match[1]) : 1;
+}
+
+export { stackRankFromPerkId };
+
+export function isHigherStackRank(perk, tree) {
+  const rank = stackRankFromPerkId(perk.id);
+  if (rank > 1) return true;
+
+  const siblings = sameNameSiblings(perk, tree);
+  return siblings.some((sibling) => stackRankFromPerkId(sibling.id) < rank);
+}
+
 export function applyPerkMetadata(perk, tree, metadataIndex) {
   const metadata = metadataIndex.get(perkMetadataKey(tree.skillId, perk.name));
   if (!metadata) return perk;
 
   const siblings = sameNameSiblings(perk, tree);
   const inStack = siblings.length > 0;
-  const isHigherTier = siblings.some((s) => (s.skillReq ?? 0) < (perk.skillReq ?? 0));
 
-  // Higher stack tiers are gated by the stack mechanism (position + skillReq), not metadata.
-  if (isHigherTier) return perk;
+  // Higher stack tiers are gated by the stack mechanism (position + rank), not metadata.
+  if (isHigherStackRank(perk, tree)) return perk;
 
   const ownCanonical = canonicalPerkName(perk.name);
   const prerequisiteNames = filterSpuriousPrerequisites(
