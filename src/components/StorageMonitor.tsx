@@ -46,7 +46,7 @@ export function StorageMonitor() {
   });
 
   return (
-    <Card className="min-w-0 overflow-hidden">
+    <Card className="min-w-0 shrink-0 overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
