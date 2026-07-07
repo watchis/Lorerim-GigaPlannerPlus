@@ -3,10 +3,12 @@ import type { Perk, PerkTree } from "@/data/schemas";
 import {
   computePerkTreeEdges,
   getFrontPerkIdAtPosition,
+  getMinDistinctPerkCenterDistanceGrid,
   getNextRankInStack,
   getPerkStackRank,
   getPerkTreeGridBounds,
   parseSvgViewBox,
+  resolvePerkNodeDiameterPx,
   sortPerkStack,
 } from "@/lib/perkTreeGrid";
 
@@ -109,5 +111,24 @@ describe("perkTreeGrid", () => {
     expect(edges).toHaveLength(2);
     expect(edges.find((edge) => edge.kind === "all")).toBeDefined();
     expect(edges.find((edge) => edge.kind === "any")).toBeDefined();
+  });
+
+  it("measures the shortest distance between distinct perk positions", () => {
+    const perks = [
+      makePerk("a", 0),
+      { ...makePerk("b", 0), position: { x: 2, y: 1 } },
+      { ...makePerk("c", 0), position: { x: 2, y: 2 } },
+    ];
+
+    expect(getMinDistinctPerkCenterDistanceGrid(perks)).toBe(1);
+  });
+
+  it("shrinks node diameter only when adjacent perks would overlap", () => {
+    const adjacentPerks = [makePerk("a", 0), { ...makePerk("b", 0), position: { x: 2, y: 1 } }];
+
+    expect(resolvePerkNodeDiameterPx(30, getMinDistinctPerkCenterDistanceGrid(adjacentPerks))).toBe(
+      30,
+    );
+    expect(resolvePerkNodeDiameterPx(30, Number.POSITIVE_INFINITY)).toBe(32);
   });
 });

@@ -350,6 +350,63 @@ export function getPerkPositionKey(position: GridPoint): string {
   return `${position.x},${position.y}`;
 }
 
+const DEFAULT_PERK_NODE_DIAMETER_PX = 32;
+const DEFAULT_PERK_NODE_GRID_UNIT_PX = 26;
+const MIN_PERK_NODE_DIAMETER_PX = 14;
+
+/** Shortest center-to-center distance in grid units between distinct perk positions. */
+export function getMinDistinctPerkCenterDistanceGrid(perks: Perk[]): number {
+  const centersByKey = new Map<string, GridPoint>();
+  for (const perk of perks) {
+    const key = getPerkPositionKey(perk.position);
+    if (!centersByKey.has(key)) {
+      centersByKey.set(key, getPerkGridCenter(perk.position));
+    }
+  }
+
+  const centers = [...centersByKey.values()];
+  if (centers.length < 2) return Number.POSITIVE_INFINITY;
+
+  let minDistance = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < centers.length; i++) {
+    for (let j = i + 1; j < centers.length; j++) {
+      const distance = Math.hypot(centers[i].x - centers[j].x, centers[i].y - centers[j].y);
+      if (distance > 0) minDistance = Math.min(minDistance, distance);
+    }
+  }
+
+  return minDistance;
+}
+
+export interface ResolvePerkNodeDiameterOptions {
+  baseDiameterPx?: number;
+  gridUnitReferencePx?: number;
+  minDiameterPx?: number;
+}
+
+/** Prefer the default node size, shrinking only when adjacent nodes would overlap. */
+export function resolvePerkNodeDiameterPx(
+  gridUnitPx: number,
+  minCenterDistanceGrid: number,
+  options: ResolvePerkNodeDiameterOptions = {},
+): number {
+  const baseDiameterPx = options.baseDiameterPx ?? DEFAULT_PERK_NODE_DIAMETER_PX;
+  const gridUnitReferencePx = options.gridUnitReferencePx ?? DEFAULT_PERK_NODE_GRID_UNIT_PX;
+  const minDiameterPx = options.minDiameterPx ?? MIN_PERK_NODE_DIAMETER_PX;
+
+  const preferredDiameter = Math.min(
+    baseDiameterPx,
+    Math.max(minDiameterPx, gridUnitPx * (baseDiameterPx / gridUnitReferencePx)),
+  );
+
+  if (!Number.isFinite(minCenterDistanceGrid) || minCenterDistanceGrid <= 0) {
+    return preferredDiameter;
+  }
+
+  const maxDiameterForSpacing = minCenterDistanceGrid * gridUnitPx;
+  return Math.max(minDiameterPx, Math.min(preferredDiameter, maxDiameterForSpacing));
+}
+
 export function parseSvgViewBox(viewBox: string): PerkTreeContentBounds {
   const [x, y, width, height] = viewBox.split(/\s+/).map(Number);
   return { x, y, width, height };

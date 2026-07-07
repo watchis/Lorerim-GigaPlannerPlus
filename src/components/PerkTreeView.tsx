@@ -28,8 +28,10 @@ import {
   getPerkPositionKey,
   getPerkStackRank,
   getPerkTreeContentBounds,
+  getMinDistinctPerkCenterDistanceGrid,
   getVisiblePerksForTree,
   groupPerksByPosition,
+  resolvePerkNodeDiameterPx,
   resolvePerkTakeTarget,
 } from "@/lib/perkTreeGrid";
 import { useBuildStore } from "@/store/buildStore";
@@ -43,21 +45,29 @@ const FIT_REGION_INSET_RATIO = 0.9;
 const SCROLLABLE_GRID_UNIT_PX = 30;
 const DESTINY_SKILL_ID = "destiny";
 const BASE_NODE_DIAMETER_PX = 32;
-const NODE_DIAMETER_GRID_RATIO = BASE_NODE_DIAMETER_PX / GRID_UNIT_PX;
+const MIN_NODE_DIAMETER_PX = 14;
+/** Extra padding between perk tree content and the viewport edge in full-tree view. */
+const TREE_VIEW_EDGE_PADDING_PX = 12;
 
 function getTreeLayoutMetrics(
   bounds: { width: number; height: number },
   fit: boolean,
   fitSize: { width: number; height: number } | null,
+  visiblePerks: Perk[],
 ): { gridUnitPx: number; nodeDiameterPx: number } {
   const gridUnitPx =
     fit && fitSize
       ? Math.min(fitSize.width / bounds.width, fitSize.height / bounds.height)
       : GRID_UNIT_PX;
 
-  const nodeDiameterPx = Math.min(
-    BASE_NODE_DIAMETER_PX,
-    Math.max(14, gridUnitPx * NODE_DIAMETER_GRID_RATIO),
+  const nodeDiameterPx = resolvePerkNodeDiameterPx(
+    gridUnitPx,
+    getMinDistinctPerkCenterDistanceGrid(visiblePerks),
+    {
+      baseDiameterPx: BASE_NODE_DIAMETER_PX,
+      gridUnitReferencePx: GRID_UNIT_PX,
+      minDiameterPx: MIN_NODE_DIAMETER_PX,
+    },
   );
 
   return { gridUnitPx, nodeDiameterPx };
@@ -553,6 +563,10 @@ function PerkTreeView({
   const aspect = bounds.width / bounds.height;
   const useFitLayout = fit && !scrollable;
   const { areaRef, size: fitSize } = useFitContainSize(aspect, useFitLayout);
+  const visiblePerks = useMemo(
+    () => getVisiblePerksForTree(tree, build.selectedPerkIds),
+    [tree, build.selectedPerkIds],
+  );
   const scrollGridUnitPx = scrollable ? SCROLLABLE_GRID_UNIT_PX : GRID_UNIT_PX;
   const scrollSize = scrollable
     ? { width: bounds.width * scrollGridUnitPx, height: bounds.height * scrollGridUnitPx }
@@ -560,15 +574,29 @@ function PerkTreeView({
   const { gridUnitPx, nodeDiameterPx } = useMemo(() => {
     if (scrollable && scrollSize) {
       const gridUnitPx = scrollGridUnitPx;
-      const nodeDiameterPx = Math.min(
-        BASE_NODE_DIAMETER_PX,
-        Math.max(22, gridUnitPx * NODE_DIAMETER_GRID_RATIO),
+      const nodeDiameterPx = resolvePerkNodeDiameterPx(
+        gridUnitPx,
+        getMinDistinctPerkCenterDistanceGrid(visiblePerks),
+        {
+          baseDiameterPx: BASE_NODE_DIAMETER_PX,
+          gridUnitReferencePx: SCROLLABLE_GRID_UNIT_PX,
+          minDiameterPx: MIN_NODE_DIAMETER_PX,
+        },
       );
       return { gridUnitPx, nodeDiameterPx };
     }
-    return getTreeLayoutMetrics(bounds, useFitLayout, fitSize);
-  }, [bounds, useFitLayout, fitSize, scrollable, scrollSize, scrollGridUnitPx]);
+    return getTreeLayoutMetrics(bounds, useFitLayout, fitSize, visiblePerks);
+  }, [
+    bounds,
+    useFitLayout,
+    fitSize,
+    scrollable,
+    scrollSize,
+    scrollGridUnitPx,
+    visiblePerks,
+  ]);
   const nodeRadiusGrid = nodeDiameterPx / (2 * gridUnitPx);
+  const treeEdgePaddingPx = Math.ceil(nodeDiameterPx / 2) + TREE_VIEW_EDGE_PADDING_PX;
 
   const edges = useMemo(
     () =>
@@ -579,11 +607,6 @@ function PerkTreeView({
   );
 
   const stacksByPosition = useMemo(() => groupPerksByPosition(tree), [tree]);
-
-  const visiblePerks = useMemo(
-    () => getVisiblePerksForTree(tree, build.selectedPerkIds),
-    [tree, build.selectedPerkIds],
-  );
 
   const paintOrderedPerks = useMemo(
     () =>
@@ -729,8 +752,6 @@ function PerkTreeView({
   );
 
   if (scrollable && scrollSize) {
-    const canvasInset = Math.ceil(nodeDiameterPx / 2) + 8;
-
     return (
       <div className={cn("relative h-full min-h-0 w-full", className)}>
         <div
@@ -740,9 +761,9 @@ function PerkTreeView({
           <div
             className="relative mx-auto shrink-0"
             style={{
-              width: scrollSize.width + canvasInset * 2,
-              height: scrollSize.height + canvasInset * 2,
-              padding: canvasInset,
+              width: scrollSize.width + treeEdgePaddingPx * 2,
+              height: scrollSize.height + treeEdgePaddingPx * 2,
+              padding: treeEdgePaddingPx,
             }}
           >
             <div
@@ -763,10 +784,14 @@ function PerkTreeView({
         <div className="flex h-full w-full items-center justify-center">
           {fitSize ? (
             <div
-              className="relative shrink-0"
-              style={{ width: fitSize.width, height: fitSize.height }}
+              className="relative shrink-0 box-border"
+              style={{
+                width: fitSize.width,
+                height: fitSize.height,
+                padding: treeEdgePaddingPx,
+              }}
             >
-              {treeCanvas}
+              <div className="relative h-full w-full">{treeCanvas}</div>
             </div>
           ) : null}
         </div>
