@@ -1,9 +1,13 @@
+// @vitest-environment jsdom
+
 import { describe, expect, it } from "vitest";
 
 import {
   estimateBadgeStackRectForPlacement,
   layoutPerkBadgePlacements,
   resolveBestPerkBadgePlacement,
+  resolvePerkBadgeLayoutBounds,
+  resolvePerkBadgeLayoutBoundsContainer,
 } from "@/lib/perkBadgeLayout";
 import { overlapArea } from "@/lib/perkTreeViewLayout";
 
@@ -37,6 +41,50 @@ describe("perkBadgeLayout", () => {
     ]);
 
     expect(["left", "right"]).toContain(placement.side);
+  });
+
+  it("resolves layout bounds from the perk tree view window", () => {
+    const viewport = document.createElement("div");
+    viewport.setAttribute("data-perk-tree-viewport", "");
+    Object.defineProperty(viewport, "getBoundingClientRect", {
+      value: () =>
+        ({
+          top: 0,
+          left: 0,
+          right: 500,
+          bottom: 500,
+          x: 0,
+          y: 0,
+          width: 500,
+          height: 500,
+          toJSON: () => ({}),
+        }) as DOMRect,
+    });
+
+    const tree = document.createElement("div");
+    Object.defineProperty(tree, "getBoundingClientRect", {
+      value: () =>
+        ({
+          top: 100,
+          left: 100,
+          right: 300,
+          bottom: 300,
+          x: 100,
+          y: 100,
+          width: 200,
+          height: 200,
+          toJSON: () => ({}),
+        }) as DOMRect,
+    });
+    viewport.appendChild(tree);
+
+    expect(resolvePerkBadgeLayoutBoundsContainer(tree)).toBe(viewport);
+    expect(resolvePerkBadgeLayoutBounds(tree)).toEqual({
+      top: 0,
+      left: 0,
+      right: 500,
+      bottom: 500,
+    });
   });
 
   it("lays out dense vertical chains without badge-on-circle overlap", () => {

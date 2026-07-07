@@ -210,6 +210,17 @@ export function layoutPerkBadgePlacements(input: PerkBadgeLayoutInput): Map<stri
   return result;
 }
 
+export function resolvePerkBadgeLayoutBoundsContainer(nodesContainer: HTMLElement): HTMLElement {
+  const viewport = nodesContainer.closest("[data-perk-tree-viewport]");
+  return viewport instanceof HTMLElement ? viewport : nodesContainer;
+}
+
+export function resolvePerkBadgeLayoutBounds(nodesContainer: HTMLElement): AxisRect {
+  return domRectToAxisRect(
+    resolvePerkBadgeLayoutBoundsContainer(nodesContainer).getBoundingClientRect(),
+  );
+}
+
 export function collectPerkBadgeLayoutNodes(container: HTMLElement): PerkBadgeLayoutNode[] {
   const nodes: PerkBadgeLayoutNode[] = [];
 

@@ -4,9 +4,9 @@ import {
   collectPerkBadgeLayoutNodes,
   layoutPerkBadgePlacements,
   perkBadgePlacementsEqual,
+  resolvePerkBadgeLayoutBounds,
   type PerkBadgePlacement,
 } from "@/lib/perkBadgeLayout";
-import { domRectToAxisRect } from "@/lib/perkTreeViewLayout";
 
 export function usePerkBadgePlacements(
   containerRef: RefObject<HTMLElement | null>,
@@ -26,7 +26,7 @@ export function usePerkBadgePlacements(
 
     const next = layoutPerkBadgePlacements({
       nodes,
-      bounds: domRectToAxisRect(container.getBoundingClientRect()),
+      bounds: resolvePerkBadgeLayoutBounds(container),
     });
 
     setPlacements((current) => (perkBadgePlacementsEqual(current, next) ? current : next));
