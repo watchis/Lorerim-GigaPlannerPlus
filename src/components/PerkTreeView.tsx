@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -50,6 +51,35 @@ const MIN_NODE_DIAMETER_PX = 14;
 const TREE_VIEW_EDGE_PADDING_PX = 12;
 const MIN_TREE_ZOOM = 1;
 const MAX_TREE_ZOOM = 2.5;
+const PERK_BADGE_ROW_HEIGHT_PX = 16;
+const PERK_BADGE_GAP_PX = 2;
+const PERK_BADGE_EDGE_MARGIN_PX = 4;
+
+function estimatePerkBadgeStackHeight(badgeCount: number): number {
+  if (badgeCount <= 0) return 0;
+  return (
+    badgeCount * PERK_BADGE_ROW_HEIGHT_PX +
+    (badgeCount - 1) * PERK_BADGE_GAP_PX +
+    PERK_BADGE_EDGE_MARGIN_PX
+  );
+}
+
+function resolvePerkBadgePlacement(
+  circleTop: number,
+  circleBottom: number,
+  stackHeight: number,
+  bounds?: { top: number; bottom: number },
+): boolean {
+  const bottomLimit =
+    bounds?.bottom ?? (typeof window !== "undefined" ? window.innerHeight : 0);
+  const topLimit = bounds?.top ?? 0;
+  const spaceBelow = bottomLimit - circleBottom;
+  const spaceAbove = circleTop - topLimit;
+  const margin = PERK_BADGE_EDGE_MARGIN_PX;
+
+  if (spaceBelow >= stackHeight + margin) return false;
+  return spaceAbove >= spaceBelow;
+}
 
 interface TreeViewTransform {
   zoom: number;
@@ -332,6 +362,7 @@ interface PerkNodeProps {
   labels: Record<string, string>;
   showSkillRequirements: boolean;
   tooltipScale?: number;
+  badgeLayoutRevision?: string;
 }
 
 function PerkNode({
@@ -356,9 +387,13 @@ function PerkNode({
   labels,
   showSkillRequirements,
   tooltipScale = 1,
+  badgeLayoutRevision = "",
 }: PerkNodeProps) {
   const supportsHover = useSupportsHover();
   const longPressTimerRef = useRef<number | null>(null);
+  const circleRef = useRef<HTMLSpanElement>(null);
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const [badgesAbove, setBadgesAbove] = useState(() => position.y >= 75);
   const longPressTriggeredRef = useRef(false);
   const singleTapTimerRef = useRef<number | null>(null);
   const lastTapRef = useRef(0);
@@ -564,6 +599,54 @@ function PerkNode({
   );
 
   const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements);
+  const badgeCount =
+    (showSkillRequirements && requirementLabel ? 1 : 0) + (stackRank ? 1 : 0);
+
+  const updateBadgePlacement = useCallback(() => {
+    if (badgeCount === 0) {
+      setBadgesAbove(false);
+      return;
+    }
+
+    const circle = circleRef.current;
+    if (!circle) return;
+
+    const circleRect = circle.getBoundingClientRect();
+    const viewport = circle.closest("[data-perk-tree-viewport]");
+    const viewportRect = viewport instanceof HTMLElement ? viewport.getBoundingClientRect() : null;
+    const stackHeight =
+      badgeRef.current?.getBoundingClientRect().height ??
+      estimatePerkBadgeStackHeight(badgeCount);
+    const preferAbove = resolvePerkBadgePlacement(
+      circleRect.top,
+      circleRect.bottom,
+      stackHeight,
+      viewportRect ?? undefined,
+    );
+
+    setBadgesAbove((current) => (current === preferAbove ? current : preferAbove));
+  }, [badgeCount]);
+
+  useLayoutEffect(() => {
+    updateBadgePlacement();
+    if (badgeCount === 0) return;
+
+    const frame = requestAnimationFrame(updateBadgePlacement);
+    return () => cancelAnimationFrame(frame);
+  }, [
+    updateBadgePlacement,
+    badgeLayoutRevision,
+    showSkillRequirements,
+    requirementLabel,
+    stackRank,
+    nodeDiameterPx,
+  ]);
+
+  useEffect(() => {
+    window.addEventListener("resize", updateBadgePlacement);
+    return () => window.removeEventListener("resize", updateBadgePlacement);
+  }, [updateBadgePlacement]);
+
   const requirementBadgeClassName = cn(
     "whitespace-nowrap rounded border px-1 py-px text-[10px] font-semibold tabular-nums leading-none shadow-[0_1px_4px_rgba(0,0,0,0.45)]",
     "border-[var(--color-border)] bg-[var(--color-surface)]",
@@ -659,13 +742,20 @@ function PerkNode({
         className="group relative touch-manipulation border-0 bg-transparent p-0"
       >
         <span
+          ref={circleRef}
           className={circleClassName}
           style={{ width: nodeDiameterPx, height: nodeDiameterPx, fontSize: labelFontPx }}
         >
           <span className="leading-none">{perkAbbreviation(perk.name)}</span>
         </span>
-        {(showSkillRequirements && requirementLabel) || stackRank ? (
-          <div className="absolute left-1/2 top-full mt-0.5 flex -translate-x-1/2 flex-col items-center gap-0.5">
+        {badgeCount > 0 ? (
+          <div
+            ref={badgeRef}
+            className={cn(
+              "absolute left-1/2 flex -translate-x-1/2 flex-col items-center gap-0.5",
+              badgesAbove ? "bottom-full mb-0.5 flex-col-reverse" : "top-full mt-0.5",
+            )}
+          >
             {showSkillRequirements && requirementLabel && (
               <span className={requirementBadgeClassName}>{requirementLabel}</span>
             )}
@@ -957,6 +1047,20 @@ function PerkTreeView({
       ),
     [nodeDiameterPx, containerSize],
   );
+  const badgeLayoutRevision = useMemo(
+    () =>
+      [
+        viewTransform.zoom,
+        viewTransform.panX,
+        viewTransform.panY,
+        containerSize?.width ?? 0,
+        containerSize?.height ?? 0,
+        fitSize?.width ?? 0,
+        fitSize?.height ?? 0,
+        treeEdgePaddingPx,
+      ].join(":"),
+    [viewTransform, containerSize, fitSize, treeEdgePaddingPx],
+  );
 
   clampContextRef.current =
     containerSize && fitSize
@@ -1018,6 +1122,7 @@ function PerkTreeView({
 
   const treeCanvas = (
     <div
+      data-perk-tree-viewport={fit ? undefined : true}
       className={cn("relative h-full w-full", !fit && "overflow-hidden")}
       style={
         fit
@@ -1114,6 +1219,7 @@ function PerkTreeView({
             labels={labels}
             showSkillRequirements={showSkillRequirements}
             tooltipScale={tooltipScale}
+            badgeLayoutRevision={badgeLayoutRevision}
           />
         );
       })}
@@ -1125,6 +1231,7 @@ function PerkTreeView({
       <div ref={areaRef} className={cn("h-full min-h-0 w-full", className)}>
         <div
           ref={viewportRef}
+          data-perk-tree-viewport
           className={cn(
             "h-full w-full touch-none overflow-hidden",
             isPanning
