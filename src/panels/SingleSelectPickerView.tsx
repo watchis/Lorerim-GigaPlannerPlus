@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
+import { MobileSingleSelectPickerView } from "@/components/picker/MobileSingleSelectPickerView";
 import {
   PickerDetailPanel,
   PickerListItem,
   PickerListPanel,
 } from "@/components/picker/PickerListItem";
 import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearchInput";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { usePlannerCompactUI, usePlannerStackedLayout } from "@/layout/plannerLayout";
@@ -28,7 +28,8 @@ interface SingleSelectPickerViewProps {
   searchPlaceholder?: string;
   noMatchesLabel?: string;
   selectedLabel?: string;
-  /** On touch layouts, tap list rows to preview; confirm selection from the detail panel. */
+  backToListLabel?: string;
+  /** On touch layouts, use full-screen list/detail flow instead of split panes. */
   touchPreviewSelect?: boolean;
 }
 
@@ -39,12 +40,13 @@ export function SingleSelectPickerView({
   searchPlaceholder = "Search...",
   noMatchesLabel = "No matches",
   selectedLabel = "Selected",
+  backToListLabel = "Options",
   touchPreviewSelect = false,
 }: SingleSelectPickerViewProps) {
   const stackedLayout = usePlannerStackedLayout();
   const compactUI = usePlannerCompactUI();
   const sideBySide = !compactUI;
-  const useTouchPreview = stackedLayout && touchPreviewSelect;
+  const useMobileFlow = stackedLayout && touchPreviewSelect;
 
   const [query, setQuery] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(
@@ -70,6 +72,20 @@ export function SingleSelectPickerView({
 
   const previewOption =
     filteredOptions.find((option) => option.id === previewId) ?? filteredOptions[0];
+
+  if (useMobileFlow) {
+    return (
+      <MobileSingleSelectPickerView
+        options={options}
+        selectedId={selectedId}
+        emptyDetail={emptyDetail}
+        searchPlaceholder={searchPlaceholder}
+        noMatchesLabel={noMatchesLabel}
+        selectedLabel={selectedLabel}
+        backToListLabel={backToListLabel}
+      />
+    );
+  }
 
   return (
     <div
@@ -107,7 +123,6 @@ export function SingleSelectPickerView({
                   isEnabled={option.isEnabled}
                   onSelect={option.onSelect}
                   onPreview={() => setPreviewId(option.id)}
-                  touchPreviewOnly={useTouchPreview}
                   leading={option.leading}
                 />
               ))
@@ -132,19 +147,6 @@ export function SingleSelectPickerView({
             <ScrollArea className="min-h-0 flex-1">
               <div className="px-4 py-3">{previewOption.detail}</div>
             </ScrollArea>
-            {useTouchPreview && (
-              <div className="shrink-0 border-t border-[var(--color-border)]/70 p-3">
-                <Button
-                  type="button"
-                  className="h-11 w-full"
-                  variant={previewOption.isSelected ? "outline" : "default"}
-                  disabled={previewOption.isEnabled === false && !previewOption.isSelected}
-                  onClick={previewOption.onSelect}
-                >
-                  {previewOption.isSelected ? selectedLabel : `Select ${previewOption.name}`}
-                </Button>
-              </div>
-            )}
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center p-8 text-sm text-[var(--color-muted)]">

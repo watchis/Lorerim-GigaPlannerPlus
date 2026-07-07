@@ -12,6 +12,7 @@ interface PickerListItemProps {
   /** When true, row tap previews instead of selecting (touch layouts). */
   touchPreviewOnly?: boolean;
   leading?: ReactNode;
+  trailing?: ReactNode;
 }
 
 export function PickerListItem({
@@ -23,6 +24,7 @@ export function PickerListItem({
   onPreview,
   touchPreviewOnly = false,
   leading,
+  trailing,
 }: PickerListItemProps) {
   const handleClick = () => {
     if (touchPreviewOnly && onPreview) {
@@ -58,7 +60,7 @@ export function PickerListItem({
       >
         {name}
       </span>
-      {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-[var(--color-accent)]" />}
+      {trailing ?? (isSelected ? <Check className="h-3.5 w-3.5 shrink-0 text-[var(--color-accent)]" /> : null)}
     </button>
   );
 }

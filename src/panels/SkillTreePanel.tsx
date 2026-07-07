@@ -353,14 +353,18 @@ export function SkillTreePanel() {
                   {labels.trainingMode}
                 </Button>
               </div>
-              <div
-                className={cn(
-                  "ml-auto inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
-                  hasSkillLevelProblem
-                    ? "border-[var(--color-error)]/70"
-                    : "border-[var(--color-border)]",
-                )}
-              >
+              <div className="ml-auto flex items-center gap-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                  {labels.skillLevel}
+                </span>
+                <div
+                  className={cn(
+                    "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
+                    hasSkillLevelProblem
+                      ? "border-[var(--color-error)]/70"
+                      : "border-[var(--color-border)]",
+                  )}
+                >
                 <Button
                   variant="ghost"
                   size="icon"
@@ -389,6 +393,7 @@ export function SkillTreePanel() {
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </Button>
+                </div>
               </div>
             </>
           ) : (

@@ -300,6 +300,7 @@ export function SetupPickerPanel() {
             searchPlaceholder={labels.search}
             noMatchesLabel={labels.noMatches}
             selectedLabel={labels.selected}
+            backToListLabel={labels.backToOverview ?? "Options"}
             touchPreviewSelect={
               stackedLayout &&
               (setupPicker === "race" ||
