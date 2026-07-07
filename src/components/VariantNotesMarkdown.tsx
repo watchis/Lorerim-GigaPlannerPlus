@@ -8,7 +8,66 @@ interface VariantNotesMarkdownProps {
   className?: string;
 }
 
-const headingClassName = "mb-2 font-semibold leading-snug last:mb-0";
+const headingBase = "font-[family-name:var(--font-heading)] leading-snug last:mb-0";
+
+const headingStyles = {
+  h1: cn(
+    headingBase,
+    "mb-3 border-b border-[var(--color-accent)]/25 pb-1.5 text-lg font-bold tracking-wide text-[var(--color-foreground)]",
+  ),
+  h2: cn(
+    headingBase,
+    "mb-2.5 text-base font-semibold tracking-wide text-[var(--color-accent)]",
+  ),
+  h3: cn(
+    headingBase,
+    "mb-2 border-l-2 border-[var(--color-accent-muted)] pl-2.5 text-sm font-semibold text-[var(--color-foreground)]",
+  ),
+  h4: cn(headingBase, "mb-2 text-sm font-semibold text-[var(--color-accent-muted)]"),
+  h5: cn(
+    headingBase,
+    "mb-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]",
+  ),
+  h6: cn(
+    headingBase,
+    "mb-1.5 text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-muted)]",
+  ),
+} as const;
+
+const imageClassName =
+  "max-h-64 max-w-full rounded-[var(--radius-md)] border border-[var(--color-border)] object-contain transition-colors group-hover:border-[var(--color-accent-muted)] group-hover:shadow-[var(--shadow-glow)]";
+
+function MarkdownImage({
+  src,
+  alt,
+  title,
+}: {
+  src?: string | null;
+  alt?: string | null;
+  title?: string | null;
+}) {
+  const label = alt?.trim() || "image";
+
+  if (!src) {
+    return <img alt={label} title={title ?? undefined} className={cn("my-2", imageClassName)} />;
+  }
+
+  return (
+    <a
+      href={src}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title ?? `Open ${label} in a new tab`}
+      className="group my-2 inline-flex max-w-full rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40"
+    >
+      <img
+        src={src}
+        alt={label}
+        className={cn(imageClassName, "group-active:scale-[0.99]")}
+      />
+    </a>
+  );
+}
 
 export function VariantNotesMarkdown({ content, className }: VariantNotesMarkdownProps) {
   return (
@@ -38,30 +97,13 @@ export function VariantNotesMarkdown({ content, className }: VariantNotesMarkdow
               {children}
             </a>
           ),
-          img: ({ src, alt, title }) => (
-            <img
-              src={src}
-              alt={alt ?? ""}
-              title={title}
-              className="my-2 max-h-64 max-w-full rounded-[var(--radius-md)] border border-[var(--color-border)] object-contain"
-            />
-          ),
-          h1: ({ children }) => <h1 className={cn(headingClassName, "text-lg")}>{children}</h1>,
-          h2: ({ children }) => <h2 className={cn(headingClassName, "text-base")}>{children}</h2>,
-          h3: ({ children }) => <h3 className={cn(headingClassName, "text-sm")}>{children}</h3>,
-          h4: ({ children }) => (
-            <h4 className={cn(headingClassName, "text-sm font-medium")}>{children}</h4>
-          ),
-          h5: ({ children }) => (
-            <h5 className={cn(headingClassName, "text-xs font-medium uppercase tracking-wide")}>
-              {children}
-            </h5>
-          ),
-          h6: ({ children }) => (
-            <h6 className={cn(headingClassName, "text-xs font-medium text-[var(--color-muted)]")}>
-              {children}
-            </h6>
-          ),
+          img: ({ src, alt, title }) => <MarkdownImage src={src} alt={alt} title={title} />,
+          h1: ({ children }) => <h1 className={headingStyles.h1}>{children}</h1>,
+          h2: ({ children }) => <h2 className={headingStyles.h2}>{children}</h2>,
+          h3: ({ children }) => <h3 className={headingStyles.h3}>{children}</h3>,
+          h4: ({ children }) => <h4 className={headingStyles.h4}>{children}</h4>,
+          h5: ({ children }) => <h5 className={headingStyles.h5}>{children}</h5>,
+          h6: ({ children }) => <h6 className={headingStyles.h6}>{children}</h6>,
           code: ({ className: codeClassName, children }) => {
             const isBlock = codeClassName?.includes("language-");
             if (isBlock) {
