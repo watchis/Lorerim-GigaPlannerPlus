@@ -16,9 +16,14 @@ import {
   transformTraitRecords,
 } from "./lib/lorerim-transform.mjs";
 import { loadJsonIfExists } from "./lib/transform-utils.mjs";
-import { removeStalePerkFiles } from "./lib/import-reset.mjs";
+import { removeStalePerkFiles, findStalePerkFiles } from "./lib/import-reset.mjs";
 import { createImportReporter, formatCount, printImportSummary } from "./lib/import-progress.mjs";
 import { buildDeityEligibilityIndex } from "./lib/deity-eligibility.mjs";
+import {
+  countDiffFiles,
+  formatDryRunDiff,
+  serializePlannerJson,
+} from "./lib/import-dry-run-diff.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..", "..");
@@ -27,7 +32,31 @@ const perksDir = join(dataDir, "perks");
 
 function writeJson(filePath, value) {
   mkdirSync(dirname(filePath), { recursive: true });
-  writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+  writeFileSync(filePath, serializePlannerJson(value));
+}
+
+function buildFilesToWrite({
+  indexEntries,
+  playerLevelReqs,
+  traits,
+  races,
+  raceEffects,
+  birthsigns,
+  deities,
+  manifest,
+  trees,
+}) {
+  return [
+    ["perks/index.json", indexEntries],
+    ["perk-player-level-reqs.json", playerLevelReqs],
+    ["traits.json", traits],
+    ["races.json", races],
+    ["race-effects.json", raceEffects],
+    ["birthsigns.json", birthsigns],
+    ["deities.json", deities],
+    ["manifest.json", manifest],
+    ...Object.entries(trees).map(([filename, tree]) => [`perks/${filename}`, tree]),
+  ];
 }
 
 function parseArgs(argv) {
@@ -76,7 +105,7 @@ Parse game data from a local LoreRim MO2 install and update planner JSON.
 
 Options:
   --install, -i <path>   LoreRim install root (required; must contain ModOrganizer.exe)
-  --dry-run              Parse and report without writing files
+  --dry-run              Parse and report a git-style diff without writing files
   --plugin-limit <n>     Only scan the first N plugins (debug)
   --rescan-plugins       Reclassify all plugins (ignore non-mechanics skip cache)
   --help, -h             Show this help
@@ -259,25 +288,54 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
 
   if (options.dryRun) {
     progress.phase("Dry run complete", 5, 5);
+    const filesToWrite = buildFilesToWrite({
+      indexEntries,
+      playerLevelReqs,
+      traits,
+      races,
+      raceEffects,
+      birthsigns,
+      deities,
+      manifest,
+      trees,
+    });
+    const staleFiles = findStalePerkFiles(perksDir, Object.keys(trees));
+    const diffText = formatDryRunDiff({
+      filesToWrite,
+      staleFiles,
+      dataDir,
+      perksDir,
+      repoRoot: root,
+    });
+
+    if (diffText) {
+      progress.step(`Changes detected in ${formatCount(
+        diffText.split(/^diff --git /m).length - 1,
+      )} file(s):`);
+      console.log(diffText);
+    } else {
+      progress.step("No changes detected.");
+    }
+
     printImportSummary(progress, summary, {
       elapsed: progress.elapsed(),
       dryRun: true,
     });
-    return { ok: true, dryRun: true, summary };
+    return { ok: true, dryRun: true, summary, diff: diffText };
   }
 
   progress.phase("Writing planner JSON", 5, 5);
-  const filesToWrite = [
-    ["perks/index.json", indexEntries],
-    ["perk-player-level-reqs.json", playerLevelReqs],
-    ["traits.json", traits],
-    ["races.json", races],
-    ["race-effects.json", raceEffects],
-    ["birthsigns.json", birthsigns],
-    ["deities.json", deities],
-    ["manifest.json", manifest],
-    ...Object.entries(trees).map(([filename, tree]) => [`perks/${filename}`, tree]),
-  ];
+  const filesToWrite = buildFilesToWrite({
+    indexEntries,
+    playerLevelReqs,
+    traits,
+    races,
+    raceEffects,
+    birthsigns,
+    deities,
+    manifest,
+    trees,
+  });
 
   const writeProgress = progress.track("Writing output files", filesToWrite.length);
   for (const [relativePath, payload] of filesToWrite) {
