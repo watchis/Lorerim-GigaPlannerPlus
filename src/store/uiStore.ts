@@ -32,6 +32,8 @@ interface UiStore {
   setupPicker: SetupPicker | null;
   characterOptionsOpen: boolean;
   variantsManagerOpen: boolean;
+  variantsManagerInitialPane: "manage" | "notes";
+  variantsManagerInitialVariantId: string | null;
   middleView: MiddleWorkspaceView;
   activeSkillTreeId: string | null;
   skillWorkspaceMode: SkillWorkspaceMode;
@@ -42,6 +44,7 @@ interface UiStore {
   closeCharacterOptions: () => void;
   toggleCharacterOptions: () => void;
   openVariantsManager: () => void;
+  openVariantNotes: (variantId: string | null) => void;
   closeVariantsManager: () => void;
   setMiddleView: (view: MiddleWorkspaceView) => void;
   setActiveSkillTreeId: (skillId: string | null) => void;
@@ -59,6 +62,8 @@ export const useUiStore = create<UiStore>((set, get) => ({
   setupPicker: null,
   characterOptionsOpen: false,
   variantsManagerOpen: false,
+  variantsManagerInitialPane: "manage",
+  variantsManagerInitialVariantId: null,
   middleView: "character-info",
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
@@ -100,6 +105,8 @@ export const useUiStore = create<UiStore>((set, get) => ({
       variantsManagerOpen: true,
       setupPicker: null,
       characterOptionsOpen: false,
+      variantsManagerInitialPane: "manage",
+      variantsManagerInitialVariantId: null,
     });
     requestAnimationFrame(() => {
       document.getElementById("middle-workspace")?.scrollIntoView({
@@ -108,7 +115,27 @@ export const useUiStore = create<UiStore>((set, get) => ({
       });
     });
   },
-  closeVariantsManager: () => set({ variantsManagerOpen: false }),
+  openVariantNotes: (variantId) => {
+    set({
+      variantsManagerOpen: true,
+      setupPicker: null,
+      characterOptionsOpen: false,
+      variantsManagerInitialPane: "notes",
+      variantsManagerInitialVariantId: variantId,
+    });
+    requestAnimationFrame(() => {
+      document.getElementById("middle-workspace")?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    });
+  },
+  closeVariantsManager: () =>
+    set({
+      variantsManagerOpen: false,
+      variantsManagerInitialPane: "manage",
+      variantsManagerInitialVariantId: null,
+    }),
   setMiddleView: (view) =>
     set({
       middleView: view,

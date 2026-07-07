@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import {
   getDefaultVariantName,
   listBuildVariants,
@@ -14,6 +15,7 @@ import {
 import { useBuildStore } from "@/store/buildStore";
 import { useUiStore } from "@/store/uiStore";
 import { useThemeConfig } from "@/theme/ThemeProvider";
+import { StickyNote } from "lucide-react";
 
 const DEFAULT_VALUE = "default";
 const MANAGE_VALUE = "__manage__";
@@ -54,6 +56,7 @@ export function BuildVariantsDropdown() {
   const activeBuildId = useBuildStore((s) => s.activeBuildId);
   const selectMilestone = useBuildStore((s) => s.selectMilestone);
   const openVariantsManager = useUiStore((s) => s.openVariantsManager);
+  const openVariantNotes = useUiStore((s) => s.openVariantNotes);
 
   const entry = savedBuilds
     .map((build) => normalizeSavedBuild(build))
@@ -106,11 +109,29 @@ export function BuildVariantsDropdown() {
               value={variant.id ?? DEFAULT_VALUE}
               className={variantItemClassName}
             >
-              <VariantOption
-                name={variant.name}
-                level={variant.level}
-                levelLabel={variantLabels.levelShort}
-              />
+              <span className="flex w-full min-w-0 items-center justify-between gap-2">
+                <span className="min-w-0 flex-1">
+                  <VariantOption
+                    name={variant.name}
+                    level={variant.level}
+                    levelLabel={variantLabels.levelShort}
+                  />
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openVariantNotes(variant.id);
+                  }}
+                  aria-label={labels.panels["variants-manager"]?.notes ?? "Notes"}
+                >
+                  <StickyNote className="h-3.5 w-3.5" />
+                </Button>
+              </span>
             </SelectItem>
           ))}
 

@@ -415,6 +415,8 @@ export function VariantsManagerPanel() {
   const { labels: allLabels } = useThemeConfig();
   const variantLabels = allLabels.milestones;
   const closeVariantsManager = useUiStore((s) => s.closeVariantsManager);
+  const initialPane = useUiStore((s) => s.variantsManagerInitialPane);
+  const initialVariantId = useUiStore((s) => s.variantsManagerInitialVariantId);
   const gameData = useBuildStore((s) => s.gameData);
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
   const activeBuildId = useBuildStore((s) => s.activeBuildId);
@@ -435,9 +437,9 @@ export function VariantsManagerPanel() {
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [notesVariantId, setNotesVariantId] = useState<string | null>(null);
+  const [notesVariantId, setNotesVariantId] = useState<string | null>(initialVariantId);
   const [notesDraft, setNotesDraft] = useState("");
-  const [activePane, setActivePane] = useState<"manage" | "notes">("manage");
+  const [activePane, setActivePane] = useState<"manage" | "notes">(initialPane);
 
   const entry = savedBuilds
     .map((build) => normalizeSavedBuild(build))
@@ -453,6 +455,9 @@ export function VariantsManagerPanel() {
   const backupExtension = allLabels.panels["build-library"].backupExtension;
 
   const notesVariant = useMemo(() => {
+    if (notesVariantId === null) {
+      return variants.find((variant) => variant.id === null) ?? variants[0] ?? null;
+    }
     return variants.find((variant) => variant.id === notesVariantId) ?? variants[0] ?? null;
   }, [notesVariantId, variants]);
   const persistedNotes = notesVariant ? getVariantNotes(entry, notesVariant.id) : "";

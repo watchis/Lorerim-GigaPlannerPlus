@@ -34,6 +34,7 @@ import {
   getVariantBuild,
   getVariantCount,
   getVariantName,
+  getVariantNotes,
   migrateLegacyStorage,
   nextBuildName,
   nextMilestoneName,
@@ -789,10 +790,11 @@ export const useBuildStore = create<BuildStore>()(
 
           const sourceName = getVariantName(entry, variantId);
           const milestoneName = nextVariantCopyName(sourceName, entry);
+          const sourceNotes = getVariantNotes(entry, variantId);
           const milestone = createMilestone(
             milestoneName,
             reconcileBuild(gameData.game, getVariantBuild(entry, variantId)),
-            "",
+            sourceNotes,
           );
 
           const nextEntry: SavedBuild = {
