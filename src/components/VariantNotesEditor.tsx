@@ -63,8 +63,10 @@ export function commitVariantNotesFormat(
 }
 
 function ToolbarDivider() {
-  return <div className="mx-0.5 h-4 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
+  return <div className="mx-0.5 h-5 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
 }
+
+const toolbarIconClass = "h-4 w-4";
 
 function ToolbarButton({
   label,
@@ -86,7 +88,7 @@ function ToolbarButton({
       type="button"
       variant="ghost"
       size="icon"
-      className="h-7 w-7 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+      className="h-8 w-8 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
       onClick={onClick}
       disabled={disabled}
       aria-label={title}
@@ -129,11 +131,11 @@ function VariantNotesToolbarControls({
     <>
       <Select key={headingSelectKey} onValueChange={applyHeading} disabled={disabled}>
         <SelectTrigger
-          className="h-7 w-7 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)]"
+          className="h-8 w-8 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)]"
           aria-label="Text style"
           title="Text style"
         >
-          <Heading className="h-3 w-3 shrink-0" />
+          <Heading className={cn(toolbarIconClass, "shrink-0")} />
         </SelectTrigger>
         <SelectContent
           position="popper"
@@ -158,7 +160,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("bold")}
         disabled={disabled}
       >
-        <Bold className="h-3 w-3" />
+        <Bold className={toolbarIconClass} />
       </ToolbarButton>
       <ToolbarButton
         label="Italic"
@@ -166,14 +168,14 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("italic")}
         disabled={disabled}
       >
-        <Italic className="h-3 w-3" />
+        <Italic className={toolbarIconClass} />
       </ToolbarButton>
       <ToolbarButton
         label="Bold and italic"
         onClick={() => applyFormat("boldItalic")}
         disabled={disabled}
       >
-        <span className="text-[10px] font-bold italic">B</span>
+        <span className="text-[11px] font-bold italic">B</span>
       </ToolbarButton>
       <ToolbarButton
         label="Strikethrough"
@@ -181,7 +183,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("strikethrough")}
         disabled={disabled}
       >
-        <Strikethrough className="h-3 w-3" />
+        <Strikethrough className={toolbarIconClass} />
       </ToolbarButton>
 
       <ToolbarDivider />
@@ -192,7 +194,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("code")}
         disabled={disabled}
       >
-        <Code className="h-3 w-3" />
+        <Code className={toolbarIconClass} />
       </ToolbarButton>
       <ToolbarButton
         label="Code block"
@@ -200,7 +202,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("codeBlock")}
         disabled={disabled}
       >
-        <span className="font-mono text-[9px]">{"{ }"}</span>
+        <span className="font-mono text-[10px]">{"{ }"}</span>
       </ToolbarButton>
       <ToolbarButton
         label="Link"
@@ -208,10 +210,10 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("link")}
         disabled={disabled}
       >
-        <Link className="h-3 w-3" />
+        <Link className={toolbarIconClass} />
       </ToolbarButton>
       <ToolbarButton label="Image" onClick={() => applyFormat("image")} disabled={disabled}>
-        <Image className="h-3 w-3" />
+        <Image className={toolbarIconClass} />
       </ToolbarButton>
 
       <ToolbarDivider />
@@ -222,7 +224,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("list")}
         disabled={disabled}
       >
-        <List className="h-3 w-3" />
+        <List className={toolbarIconClass} />
       </ToolbarButton>
       <ToolbarButton
         label="Numbered list"
@@ -230,7 +232,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("orderedList")}
         disabled={disabled}
       >
-        <ListOrdered className="h-3 w-3" />
+        <ListOrdered className={toolbarIconClass} />
       </ToolbarButton>
       <ToolbarButton
         label="Blockquote"
@@ -238,14 +240,14 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("blockquote")}
         disabled={disabled}
       >
-        <Quote className="h-3 w-3" />
+        <Quote className={toolbarIconClass} />
       </ToolbarButton>
       <ToolbarButton
         label="Horizontal rule"
         onClick={() => applyFormat("horizontalRule")}
         disabled={disabled}
       >
-        <Minus className="h-3 w-3" />
+        <Minus className={toolbarIconClass} />
       </ToolbarButton>
     </>
   );
