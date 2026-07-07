@@ -158,6 +158,7 @@ export function CursorTooltip({
   onOpenChange,
   touchAnchor,
   contentScale = 1,
+  contentClassName,
 }: {
   children: ReactNode;
   content: ReactNode;
@@ -168,6 +169,7 @@ export function CursorTooltip({
   onOpenChange?: (open: boolean) => void;
   touchAnchor?: { x: number; y: number } | null;
   contentScale?: number;
+  contentClassName?: string;
 }) {
   const [hoverOpen, setHoverOpen] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0 });
@@ -271,6 +273,7 @@ export function CursorTooltip({
             className={cn(
               tooltipSurfaceClassName,
               "pointer-events-none fixed max-w-xs animate-in fade-in-0 zoom-in-95",
+              contentClassName,
             )}
             style={tooltipStyle}
           >

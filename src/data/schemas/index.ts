@@ -59,6 +59,7 @@ export const mechanicsSchema = z
     leveling: z.object({
       baseLevel: z.number(),
       maxPlayerLevel: z.number().int().positive(),
+      standardMaxPlayerLevel: z.number().int().positive(),
       maxSkillLevel: z.number().int().positive(),
       skillPointsPerLevel: z.number().int().positive(),
       perkPointsPerLevel: z.number().int().positive(),
@@ -95,7 +96,13 @@ export const mechanicsSchema = z
     ),
   })
   .superRefine((mechanics, ctx) => {
-    const { maxSkillLevel, maxTrainingSkillLevel, skillLevelCosts } = mechanics.leveling;
+    const {
+      maxSkillLevel,
+      maxTrainingSkillLevel,
+      maxPlayerLevel,
+      standardMaxPlayerLevel,
+      skillLevelCosts,
+    } = mechanics.leveling;
     const tierMax = Math.max(...skillLevelCosts.map((tier) => tier.maxLevel));
     if (maxSkillLevel < tierMax) {
       ctx.addIssue({
@@ -109,6 +116,13 @@ export const mechanicsSchema = z
         code: z.ZodIssueCode.custom,
         message: `leveling.maxTrainingSkillLevel (${maxTrainingSkillLevel}) must be <= maxSkillLevel (${maxSkillLevel})`,
         path: ["leveling", "maxTrainingSkillLevel"],
+      });
+    }
+    if (standardMaxPlayerLevel > maxPlayerLevel) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `leveling.standardMaxPlayerLevel (${standardMaxPlayerLevel}) must be <= maxPlayerLevel (${maxPlayerLevel})`,
+        path: ["leveling", "standardMaxPlayerLevel"],
       });
     }
   });
@@ -443,11 +457,14 @@ export const labelsSchema = z.object({
     playerLevelWarningMixed: z.string(),
     playerLevelAttributeOverBudgetSingle: z.string(),
     playerLevelAttributeOverBudgetMultiple: z.string(),
-    buildIssuesAlert: z.string(),
+    buildIssuesAlertMobile: z.string(),
+    buildIssuesAlertDesktop: z.string(),
+    buildIssuesAndMore: z.string(),
     setToMinimumLevel: z.string(),
     setToMinimumLevelInfo: z.string(),
     ensurePlayerLevel: z.string(),
     ensurePlayerLevelInfo: z.string(),
+    easyModeLevelWarning: z.string(),
   }),
   panels: z.record(z.string(), z.record(z.string(), z.string())),
   errors: z.record(z.string(), z.string()),

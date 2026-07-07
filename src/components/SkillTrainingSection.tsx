@@ -3,7 +3,6 @@ import { NumericLevelInput } from "@/components/NumericLevelInput";
 import { Button } from "@/components/ui/button";
 import {
   getMaxTrainingSkillLevel,
-  getRemainingTrainingLevels,
   getSkillFloor,
   getSkillTrainingRanges,
   getStoredSkillTraining,
@@ -47,7 +46,6 @@ export function SkillTrainingSection({
   const trainedOnSkill = getStoredSkillTraining(game, build, skillId);
   const maxTrainingSkillLevel = getMaxTrainingSkillLevel(game);
   const maxOnSkill = Math.max(0, maxTrainingSkillLevel - floor);
-  const globalRemaining = getRemainingTrainingLevels(game, build);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain">
@@ -94,8 +92,7 @@ export function SkillTrainingSection({
           const canIncrease =
             count < tier.tierCapacity &&
             trainedOnSkill < maxOnSkill &&
-            otherTotal + count < maxOnSkill &&
-            globalRemaining > 0;
+            otherTotal + count < maxOnSkill;
 
           return (
             <div

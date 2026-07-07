@@ -624,7 +624,6 @@ export function getRequiredPlayerLevelFromSkills(game: GameData, state: BuildSta
     required = Math.max(required, level - maxSkillAbovePlayerLevel);
   }
 
-  required = Math.max(required, getRequiredPlayerLevelFromTraining(game, state));
   required = Math.max(required, getRequiredPlayerLevelFromSkillLevelIncreases(game, state));
 
   return clampPlayerLevel(game, required);
@@ -701,6 +700,7 @@ export function getMinimumPlayerLevelForBuild(game: GameData, state: BuildState)
     game,
     Math.max(
       getRequiredPlayerLevel(game, state),
+      getRequiredPlayerLevelFromTraining(game, state),
       getRequiredPlayerLevelFromAttributeChoices(game, state),
       getRequiredPlayerLevelFromSkillPointBudget(game, state),
       getRequiredPlayerLevelFromPerkPointBudget(game, state),
@@ -765,10 +765,6 @@ export function applySkillTrainingRangeChange(
 ): BuildState {
   const floor = getSkillFloor(game, build, skillId);
   const currentRanges = getSkillTrainingRanges(game, build, skillId);
-  const currentTotal = getTotalTrainingUsed(game, build);
-  const globalRemaining = options?.ignoreTrainingCap
-    ? Number.POSITIVE_INFINITY
-    : getEarnedTrainingLevels(game, build) - currentTotal + currentRanges[tierIndex];
 
   const nextCount = clampTrainingRangeCount(
     game,
@@ -778,7 +774,6 @@ export function applySkillTrainingRangeChange(
     count,
     floor,
     currentRanges,
-    globalRemaining,
   );
 
   const newRanges = [...currentRanges];
@@ -1055,13 +1050,9 @@ export function getTrainingBudgetConflict(
 export function normalizeSkillTraining(
   game: GameData,
   build: BuildState,
-  options?: BuildReconcileOptions,
+  _options?: BuildReconcileOptions,
 ): BuildState {
-  const earned = options?.ignoreTrainingCap
-    ? Number.POSITIVE_INFINITY
-    : getEarnedTrainingLevels(game, build);
   const skillTrainingRanges: Record<string, number[]> = {};
-  let totalUsed = 0;
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
@@ -1069,12 +1060,9 @@ export function normalizeSkillTraining(
     const floor = getSkillFloor(game, build, skillId);
     const maxOnSkill = getMaxTrainingOnSkill(game, build, skillId, floor);
     const storedRanges = getSkillTrainingRanges(game, build, skillId);
-    const skillBudget = Math.min(maxOnSkill, earned - totalUsed);
-    const ranges = trimTrainingRangesToBudget(game, storedRanges, skillBudget);
-    const training = sumTrainingRanges(ranges);
-    totalUsed += training;
+    const ranges = trimTrainingRangesToBudget(game, storedRanges, maxOnSkill);
 
-    if (training > 0) {
+    if (sumTrainingRanges(ranges) > 0) {
       skillTrainingRanges[skillId] = ranges;
     }
   }

@@ -120,7 +120,6 @@ export function clampTrainingRangeCount(
   count: number,
   floor: number,
   currentRanges: number[],
-  globalRemaining: number,
 ): number {
   const tiers = getTrainingTierDefinitions(game);
   const tier = tiers[tierIndex];
@@ -135,7 +134,6 @@ export function clampTrainingRangeCount(
     Math.max(0, Math.floor(count)),
     tier.tierCapacity,
     maxOnSkill - otherTotal,
-    globalRemaining,
   );
 }
 
