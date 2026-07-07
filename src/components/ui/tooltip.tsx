@@ -3,6 +3,7 @@ import { Info } from "lucide-react";
 import {
   forwardRef,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -58,6 +59,25 @@ export function useSupportsHover(): boolean {
   return supportsHover;
 }
 
+type ActiveTouchTooltipListener = (activeId: string | null) => void;
+
+let activeTouchTooltipId: string | null = null;
+const activeTouchTooltipListeners = new Set<ActiveTouchTooltipListener>();
+
+function setActiveTouchTooltipId(next: string | null) {
+  if (activeTouchTooltipId === next) return;
+  activeTouchTooltipId = next;
+  for (const listener of activeTouchTooltipListeners) {
+    listener(activeTouchTooltipId);
+  }
+}
+
+function subscribeActiveTouchTooltipId(listener: ActiveTouchTooltipListener) {
+  activeTouchTooltipListeners.add(listener);
+  listener(activeTouchTooltipId);
+  return () => activeTouchTooltipListeners.delete(listener);
+}
+
 type HoverTapTooltipProps = {
   children: ReactNode;
   content: ReactNode;
@@ -78,7 +98,37 @@ export function HoverTapTooltip({
 }: HoverTapTooltipProps) {
   const supportsHover = useSupportsHover();
   const [open, setOpen] = useState(false);
+  const id = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
+  const ignoreNextClickRef = useRef(false);
+
+  useEffect(() => {
+    if (supportsHover) return;
+    return subscribeActiveTouchTooltipId((activeId) => {
+      if (activeId !== id) {
+        setOpen(false);
+      }
+    });
+  }, [supportsHover, id]);
+
+  useEffect(() => {
+    if (supportsHover) return;
+    if (open) {
+      setActiveTouchTooltipId(id);
+      return;
+    }
+    if (activeTouchTooltipId === id) {
+      setActiveTouchTooltipId(null);
+    }
+  }, [open, supportsHover, id]);
+
+  useEffect(() => {
+    return () => {
+      if (activeTouchTooltipId === id) {
+        setActiveTouchTooltipId(null);
+      }
+    };
+  }, [id]);
 
   useEffect(() => {
     if (!open || supportsHover) return;
@@ -95,6 +145,10 @@ export function HoverTapTooltip({
 
   const handleTap = (event: MouseEvent<HTMLSpanElement>) => {
     if (supportsHover) return;
+    if (ignoreNextClickRef.current) {
+      ignoreNextClickRef.current = false;
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     setOpen((value) => !value);
@@ -109,6 +163,14 @@ export function HoverTapTooltip({
         <span
           ref={triggerRef}
           className={cn("inline-flex", triggerClassName)}
+          onPointerUp={(event) => {
+            if (supportsHover) return;
+            if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+            ignoreNextClickRef.current = true;
+            event.preventDefault();
+            event.stopPropagation();
+            setOpen((value) => !value);
+          }}
           onClick={handleTap}
         >
           {children}
