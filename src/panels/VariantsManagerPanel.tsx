@@ -9,6 +9,7 @@ import {
   GripVertical,
   Pencil,
   Plus,
+  StickyNote,
   Trash2,
   Upload,
   X,
@@ -31,6 +32,7 @@ import {
   getVariantBuild,
   getVariantCount,
   getVariantName,
+  getVariantNotes,
   listBuildVariants,
   normalizeSavedBuild,
 } from "@/store/savedBuilds";
@@ -199,22 +201,29 @@ interface VariantRowProps {
     name: string;
     level: number;
     perkCount: number;
+    notes: string;
   };
   isActive: boolean;
   isRenaming: boolean;
   isDragging: boolean;
   isDragOver: boolean;
+  isNotesOpen: boolean;
   renameValue: string;
+  notesValue: string;
   canDelete: boolean;
   canReorder: boolean;
   labels: Record<string, string>;
   variantLabels: Record<string, string>;
   onRenameValueChange: (value: string) => void;
+  onNotesValueChange: (value: string) => void;
   onCommitRename: () => void;
   onCancelRename: () => void;
   onSelect: () => void;
   onCopy: () => void;
   onStartRename: () => void;
+  onToggleNotes: () => void;
+  onCommitNotes: () => void;
+  onCancelNotes: () => void;
   onExport: () => void;
   onDelete: () => void;
   onDragStart: () => void;
@@ -230,17 +239,23 @@ function VariantRow({
   isRenaming,
   isDragging,
   isDragOver,
+  isNotesOpen,
   renameValue,
+  notesValue,
   canDelete,
   canReorder,
   labels,
   variantLabels,
   onRenameValueChange,
+  onNotesValueChange,
   onCommitRename,
   onCancelRename,
   onSelect,
   onCopy,
   onStartRename,
+  onToggleNotes,
+  onCommitNotes,
+  onCancelNotes,
   onExport,
   onDelete,
   onDragStart,
@@ -317,82 +332,114 @@ function VariantRow({
   }
 
   return (
-    <div
-      draggable={canReorder}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      onClick={handleSelect}
-      onKeyDown={(event) => {
-        if (isActive || event.key !== "Enter") return;
-        event.preventDefault();
-        handleSelect();
-      }}
-      role={isActive ? undefined : "button"}
-      tabIndex={isActive ? undefined : 0}
-      className={cn(
-        "relative flex items-center gap-2 transition-all",
-        isDragging && "opacity-40",
-        isDragOver && "z-10 ring-1 ring-inset ring-[var(--color-accent)]/50",
-        isActive && "bg-[var(--color-accent)]/[0.04]",
-        canReorder && "cursor-grab active:cursor-grabbing",
-        !isActive && !isDragging && "hover:bg-[var(--color-surface-elevated)]/80",
-      )}
-    >
-      {isActive && (
-        <div className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--color-accent)]" />
-      )}
-
+    <div>
       <div
+        draggable={canReorder}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onClick={handleSelect}
+        onKeyDown={(event) => {
+          if (isActive || event.key !== "Enter") return;
+          event.preventDefault();
+          handleSelect();
+        }}
+        role={isActive ? undefined : "button"}
+        tabIndex={isActive ? undefined : 0}
         className={cn(
-          "flex shrink-0 touch-none items-center px-2 text-[var(--color-muted)]",
-          canReorder ? "cursor-grab active:cursor-grabbing" : "opacity-30",
+          "relative flex items-center gap-2 transition-all",
+          isDragging && "opacity-40",
+          isDragOver && "z-10 ring-1 ring-inset ring-[var(--color-accent)]/50",
+          isActive && "bg-[var(--color-accent)]/[0.04]",
+          canReorder && "cursor-grab active:cursor-grabbing",
+          !isActive && !isDragging && "hover:bg-[var(--color-surface-elevated)]/80",
         )}
-        aria-hidden
       >
-        <GripVertical className="h-4 w-4" />
-      </div>
+        {isActive && (
+          <div className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--color-accent)]" />
+        )}
 
-      <div className="min-w-0 flex-1 py-3 pr-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h4 className="truncate text-sm font-semibold text-[var(--color-foreground)]">
-            {variant.name}
-          </h4>
-          {isActive && (
-            <span className="rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
-              {labels.activeBadge}
-            </span>
+        <div
+          className={cn(
+            "flex shrink-0 touch-none items-center px-2 text-[var(--color-muted)]",
+            canReorder ? "cursor-grab active:cursor-grabbing" : "opacity-30",
           )}
+          aria-hidden
+        >
+          <GripVertical className="h-4 w-4" />
         </div>
-        <p className="mt-1 text-xs text-[var(--color-muted)]">
-          {formatLabel(variantLabels.stepMeta, {
-            level: variant.level,
-            perks: variant.perkCount,
-          })}
-        </p>
+
+        <div className="min-w-0 flex-1 py-3 pr-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="truncate text-sm font-semibold text-[var(--color-foreground)]">
+              {variant.name}
+            </h4>
+            {variant.notes.trim() && (
+              <span className="rounded-full bg-[var(--color-surface-elevated)]/70 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                {labels["notesBadge"] ?? "Notes"}
+              </span>
+            )}
+            {isActive && (
+              <span className="rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
+                {labels.activeBadge}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-[var(--color-muted)]">
+            {formatLabel(variantLabels.stepMeta, {
+              level: variant.level,
+              perks: variant.perkCount,
+            })}
+          </p>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-0.5 pr-2" onClick={stopPropagation}>
+          <VariantAction label={labels.copy} onClick={onCopy}>
+            <Copy className="h-3.5 w-3.5" />
+          </VariantAction>
+          <VariantAction label={labels.rename} onClick={onStartRename}>
+            <Pencil className="h-3.5 w-3.5" />
+          </VariantAction>
+          <VariantAction label={labels["notes"] ?? "Notes"} onClick={onToggleNotes}>
+            <StickyNote className="h-3.5 w-3.5" />
+          </VariantAction>
+          <VariantAction label={labels.export} onClick={onExport}>
+            <Download className="h-3.5 w-3.5" />
+          </VariantAction>
+          <VariantAction
+            label={labels.delete}
+            disabledLabel={labels.deleteOnlyVariant}
+            onClick={onDelete}
+            disabled={!canDelete}
+            destructive
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </VariantAction>
+        </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-0.5 pr-2" onClick={stopPropagation}>
-        <VariantAction label={labels.copy} onClick={onCopy}>
-          <Copy className="h-3.5 w-3.5" />
-        </VariantAction>
-        <VariantAction label={labels.rename} onClick={onStartRename}>
-          <Pencil className="h-3.5 w-3.5" />
-        </VariantAction>
-        <VariantAction label={labels.export} onClick={onExport}>
-          <Download className="h-3.5 w-3.5" />
-        </VariantAction>
-        <VariantAction
-          label={labels.delete}
-          disabledLabel={labels.deleteOnlyVariant}
-          onClick={onDelete}
-          disabled={!canDelete}
-          destructive
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </VariantAction>
-      </div>
+      {isNotesOpen && (
+        <div className="border-t border-[var(--color-border)]/50 bg-[var(--color-surface-elevated)]/15 px-3 py-3">
+          <textarea
+            value={notesValue}
+            onChange={(event) => onNotesValueChange(event.target.value)}
+            placeholder={
+              labels["notesPlaceholder"] ?? "Add notes for this variant (gear, goals, next perks...)"
+            }
+            rows={3}
+            className="w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 px-3 py-2 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30"
+          />
+          <div className="mt-2 flex justify-end gap-2">
+            <Button variant="outline" size="sm" className="h-8" onClick={onCancelNotes}>
+              {labels["cancelNotes"] ?? "Cancel"}
+            </Button>
+            <Button size="sm" className="h-8" onClick={onCommitNotes}>
+              {labels["saveNotes"] ?? "Save"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -412,6 +459,7 @@ export function VariantsManagerPanel() {
   const deleteVariant = useBuildStore((s) => s.deleteVariant);
   const renameVariant = useBuildStore((s) => s.renameVariant);
   const reorderVariants = useBuildStore((s) => s.reorderVariants);
+  const setVariantNotes = useBuildStore((s) => s.setVariantNotes);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [renamingKey, setRenamingKey] = useState<string | null>(null);
@@ -421,6 +469,8 @@ export function VariantsManagerPanel() {
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [notesKeyOpen, setNotesKeyOpen] = useState<string | null>(null);
+  const [notesValue, setNotesValue] = useState("");
 
   const entry = savedBuilds
     .map((build) => normalizeSavedBuild(build))
@@ -466,7 +516,7 @@ export function VariantsManagerPanel() {
       }
 
       const exported = parseExportedVariant(data);
-      importVariant(exported.build, exported.name);
+      importVariant(exported.build, exported.name, exported.notes);
       showImportSuccess(labels.importedVariant);
     } catch (error) {
       setImportError(error instanceof Error ? error.message : labels.importError);
@@ -484,10 +534,32 @@ export function VariantsManagerPanel() {
   const handleExportVariant = (variantId: string | null) => {
     const name = getVariantName(entry, variantId);
     const build = getVariantBuild(entry, variantId);
+    const notes = getVariantNotes(entry, variantId);
     downloadBackupFile(
       buildBackupFilename(name),
-      createExportedVariant(name, build, modpackVersion),
+      createExportedVariant(name, build, modpackVersion, notes),
     );
+  };
+
+  const toggleNotes = (variantId: string | null) => {
+    const key = variantKey(variantId);
+    if (notesKeyOpen === key) {
+      setNotesKeyOpen(null);
+      return;
+    }
+    setNotesKeyOpen(key);
+    setNotesValue(getVariantNotes(entry, variantId));
+  };
+
+  const cancelNotes = () => {
+    setNotesKeyOpen(null);
+    setNotesValue("");
+  };
+
+  const commitNotes = (variantId: string | null) => {
+    setVariantNotes(variantId, notesValue);
+    setNotesKeyOpen(null);
+    setNotesValue("");
   };
 
   const handleVariantDrop = (fromIndex: number, toIndex: number) => {
@@ -561,6 +633,8 @@ export function VariantsManagerPanel() {
                 const key = variantKey(variant.id);
                 const isActive = activeVariantId === variant.id;
                 const isRenaming = renamingKey === key;
+                const notes = getVariantNotes(entry, variant.id);
+                const isNotesOpen = notesKeyOpen === key;
 
                 return (
                   <div
@@ -569,22 +643,28 @@ export function VariantsManagerPanel() {
                   >
                     <VariantRow
                       index={index}
-                      variant={variant}
+                      variant={{ ...variant, notes }}
                       isActive={isActive}
                       isRenaming={isRenaming}
                       isDragging={draggedIndex === index}
                       isDragOver={dragOverIndex === index && draggedIndex !== index}
+                      isNotesOpen={isNotesOpen}
                       renameValue={renameValue}
+                      notesValue={isNotesOpen ? notesValue : notes}
                       canDelete={canDeleteVariant}
                       canReorder={canReorderVariants}
                       labels={labels}
                       variantLabels={variantLabels}
                       onRenameValueChange={setRenameValue}
+                      onNotesValueChange={setNotesValue}
                       onCommitRename={() => commitRename(variant.id)}
                       onCancelRename={cancelRename}
                       onSelect={() => selectMilestone(variant.id)}
                       onCopy={() => copyVariant(variant.id)}
                       onStartRename={() => startRename(variant.id, variant.name)}
+                      onToggleNotes={() => toggleNotes(variant.id)}
+                      onCommitNotes={() => commitNotes(variant.id)}
+                      onCancelNotes={cancelNotes}
                       onExport={() => handleExportVariant(variant.id)}
                       onDelete={() => deleteVariant(variant.id)}
                       onDragStart={() => setDraggedIndex(index)}

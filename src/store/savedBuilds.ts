@@ -5,6 +5,7 @@ export interface BuildMilestone {
   id: string;
   name: string;
   build: BuildState;
+  notes?: string;
 }
 
 export const DEFAULT_VARIANT_NAME = "Default";
@@ -14,6 +15,7 @@ export interface SavedBuild {
   name: string;
   build: BuildState;
   defaultVariantName: string;
+  defaultVariantNotes?: string;
   milestones: BuildMilestone[];
   activeMilestoneId: string | null;
   updatedAt: number;
@@ -35,11 +37,12 @@ export function defaultBuildName(index: number): string {
   return `Build ${index}`;
 }
 
-export function createMilestone(name: string, build: BuildState): BuildMilestone {
+export function createMilestone(name: string, build: BuildState, notes: string = ""): BuildMilestone {
   return {
     id: createBuildId(),
     name,
     build,
+    notes,
   };
 }
 
@@ -106,6 +109,7 @@ export function createSavedBuild(
     name,
     build,
     defaultVariantName: defaultVariantName.trim() || DEFAULT_VARIANT_NAME,
+    defaultVariantNotes: "",
     milestones,
     activeMilestoneId: null,
     updatedAt: Date.now(),
@@ -116,9 +120,16 @@ export function normalizeSavedBuild(entry: SavedBuild): SavedBuild {
   return {
     ...entry,
     defaultVariantName: entry.defaultVariantName?.trim() || DEFAULT_VARIANT_NAME,
+    defaultVariantNotes: entry.defaultVariantNotes ?? "",
     milestones: entry.milestones ?? [],
     activeMilestoneId: entry.activeMilestoneId ?? null,
   };
+}
+
+export function getVariantNotes(entry: SavedBuild, variantId: string | null): string {
+  const normalized = normalizeSavedBuild(entry);
+  if (variantId === null) return normalized.defaultVariantNotes ?? "";
+  return normalized.milestones.find((item) => item.id === variantId)?.notes ?? "";
 }
 
 export function getDefaultVariantName(entry: SavedBuild): string {
@@ -144,6 +155,7 @@ export function promoteMilestoneToDefault(entry: SavedBuild, milestoneId: string
     ...entry,
     build: milestone.build,
     defaultVariantName: milestone.name,
+    defaultVariantNotes: milestone.notes ?? "",
     milestones: entry.milestones.filter((m) => m.id !== milestoneId),
     activeMilestoneId: wasActive ? null : entry.activeMilestoneId,
   };
@@ -211,11 +223,13 @@ export function reorderVariantsInEntry(
       id: null as string | null,
       name: getDefaultVariantName(normalized),
       build: normalized.build,
+      notes: normalized.defaultVariantNotes ?? "",
     },
     ...normalized.milestones.map((milestone) => ({
       id: milestone.id,
       name: milestone.name,
       build: milestone.build,
+      notes: milestone.notes ?? "",
     })),
   ];
 
@@ -239,12 +253,14 @@ export function reorderVariantsInEntry(
     id: slot.id ?? createBuildId(),
     name: slot.name,
     build: slot.build,
+    notes: slot.notes ?? "",
   }));
 
   return {
     ...normalized,
     build: defaultSlot.build,
     defaultVariantName: defaultSlot.name,
+    defaultVariantNotes: defaultSlot.notes ?? "",
     milestones,
     activeMilestoneId: nextActiveIndex === 0 ? null : milestones[nextActiveIndex - 1]?.id ?? null,
   };

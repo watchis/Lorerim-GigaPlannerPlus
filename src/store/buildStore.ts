@@ -130,15 +130,17 @@ interface BuildStore {
   importBuildAsSlot: (
     build: BuildState,
     name?: string,
-    milestones?: Array<{ name: string; build: BuildState }>,
+    milestones?: Array<{ name: string; build: BuildState; notes?: string }>,
     defaultVariantName?: string,
+    defaultVariantNotes?: string,
   ) => void;
   importBuildLibrary: (
     entries: Array<{
       name: string;
       build: BuildState;
-      milestones?: Array<{ name: string; build: BuildState }>;
+      milestones?: Array<{ name: string; build: BuildState; notes?: string }>;
       defaultVariantName?: string;
+      defaultVariantNotes?: string;
       updatedAt?: number;
     }>,
   ) => void;
@@ -146,12 +148,13 @@ interface BuildStore {
   selectMilestone: (milestoneId: string | null) => void;
   createVariant: (name?: string) => void;
   copyVariant: (variantId: string | null) => void;
-  importVariant: (build: BuildState, name?: string) => void;
+  importVariant: (build: BuildState, name?: string, notes?: string) => void;
   deleteActiveVariant: () => void;
   renameActiveVariant: (name: string) => void;
   deleteVariant: (variantId: string | null) => void;
   renameVariant: (variantId: string | null, name: string) => void;
   reorderVariants: (fromIndex: number, toIndex: number) => void;
+  setVariantNotes: (variantId: string | null, notes: string) => void;
 }
 
 function getActiveEntry(savedBuilds: SavedBuild[], activeBuildId: string): SavedBuild | undefined {
@@ -633,13 +636,19 @@ export const useBuildStore = create<BuildStore>()(
           activateBuild(set, get, id, syncedBuilds);
         },
 
-        importBuildAsSlot: (importedBuild, name, importedMilestones = [], defaultVariantName) => {
+        importBuildAsSlot: (
+          importedBuild,
+          name,
+          importedMilestones = [],
+          defaultVariantName,
+          defaultVariantNotes,
+        ) => {
           const { savedBuilds, build, activeBuildId, gameData } = get();
           if (!gameData) return;
 
           const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
           const milestones = importedMilestones.map((entry) =>
-            createMilestone(entry.name, reconcileBuild(gameData.game, entry.build)),
+            createMilestone(entry.name, reconcileBuild(gameData.game, entry.build), entry.notes ?? ""),
           );
           const newEntry = createSavedBuild(
             name?.trim() || nextBuildName(syncedBuilds),
@@ -647,6 +656,9 @@ export const useBuildStore = create<BuildStore>()(
             milestones,
             defaultVariantName,
           );
+          if (defaultVariantNotes != null) {
+            newEntry.defaultVariantNotes = defaultVariantNotes;
+          }
 
           set({
             savedBuilds: [...syncedBuilds, newEntry],
@@ -665,6 +677,7 @@ export const useBuildStore = create<BuildStore>()(
               createMilestone(
                 milestone.name,
                 reconcileBuild(gameData.game, milestone.build),
+                milestone.notes ?? "",
               ),
             );
             return createSavedBuild(
@@ -679,6 +692,12 @@ export const useBuildStore = create<BuildStore>()(
               imported[i] = {
                 ...imported[i],
                 defaultVariantName: entries[i].defaultVariantName!.trim() || imported[i].defaultVariantName,
+              };
+            }
+            if (entries[i]?.defaultVariantNotes != null) {
+              imported[i] = {
+                ...imported[i],
+                defaultVariantNotes: entries[i].defaultVariantNotes ?? "",
               };
             }
             if (entries[i]?.updatedAt) {
@@ -771,6 +790,7 @@ export const useBuildStore = create<BuildStore>()(
           const milestone = createMilestone(
             milestoneName,
             reconcileBuild(gameData.game, getVariantBuild(entry, variantId)),
+            "",
           );
 
           const nextEntry: SavedBuild = {
@@ -788,7 +808,7 @@ export const useBuildStore = create<BuildStore>()(
           });
         },
 
-        importVariant: (importedBuild, name) => {
+        importVariant: (importedBuild, name, notes) => {
           const { gameData, savedBuilds, activeBuildId, build } = get();
           if (!gameData) return;
 
@@ -804,7 +824,7 @@ export const useBuildStore = create<BuildStore>()(
               reconciled.playerLevel,
               getDefaultVariantName(entry),
             );
-          const milestone = createMilestone(milestoneName, reconciled);
+          const milestone = createMilestone(milestoneName, reconciled, notes ?? "");
 
           const nextEntry: SavedBuild = {
             ...entry,
@@ -818,6 +838,25 @@ export const useBuildStore = create<BuildStore>()(
             savedBuilds: nextBuilds,
             build: milestone.build,
             computed: recompute(gameData, milestone.build),
+          });
+        },
+
+        setVariantNotes: (variantId, notes) => {
+          const { savedBuilds, activeBuildId } = get();
+          set({
+            savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) => {
+              if (variantId === null) {
+                return { ...current, defaultVariantNotes: notes, updatedAt: Date.now() };
+              }
+
+              return {
+                ...current,
+                milestones: current.milestones.map((milestone) =>
+                  milestone.id === variantId ? { ...milestone, notes } : milestone,
+                ),
+                updatedAt: Date.now(),
+              };
+            }),
           });
         },
 

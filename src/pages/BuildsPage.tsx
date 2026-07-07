@@ -747,6 +747,7 @@ export function BuildsPage() {
           exported.name,
           exported.milestones,
           exported.defaultVariantName,
+          exported.defaultVariantNotes,
         );
         showSuccess(labels.importedAsNew, "file");
       }
@@ -794,6 +795,7 @@ export function BuildsPage() {
         modpackVersion,
         entry?.milestones ?? [],
         entry ? getDefaultVariantName(entry) : undefined,
+        entry?.defaultVariantNotes,
       ),
     );
   };
