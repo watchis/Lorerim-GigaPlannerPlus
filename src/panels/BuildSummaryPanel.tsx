@@ -74,9 +74,9 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
             </code>
             <Copy className="h-4 w-4 shrink-0 text-[var(--color-muted)] group-hover:text-[var(--color-accent)]" />
           </button>
-          <p className="text-xs text-[var(--color-muted)]">
-            {copied ? labels.copied : labels.copyCode}
-          </p>
+          {copied && (
+            <p className="text-xs text-[var(--color-muted)]">{labels.copied}</p>
+          )}
         </div>
 
         <div className="space-y-2">

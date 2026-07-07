@@ -296,7 +296,7 @@ export function SetupPickerPanel() {
             key={setupPicker}
             options={sortPickerOptions(detailOptions)}
             selectedId={focusId}
-            emptyDetail="Select an option to view details."
+            emptyDetail={labels.noneSelected}
             searchPlaceholder={labels.search}
             noMatchesLabel={labels.noMatches}
             selectedLabel={labels.selected}

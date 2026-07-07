@@ -331,7 +331,6 @@ function VariantRow({
       }}
       role={isActive ? undefined : "button"}
       tabIndex={isActive ? undefined : 0}
-      aria-label={canReorder ? labels.dragToReorder : undefined}
       className={cn(
         "relative flex items-center gap-2 transition-all",
         isDragging && "opacity-40",

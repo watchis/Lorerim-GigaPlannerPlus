@@ -592,7 +592,6 @@ function SavedBuildCard({
       }}
       role={isActive ? undefined : "button"}
       tabIndex={isActive ? undefined : 0}
-      aria-label={canReorder ? labels.dragToReorder : undefined}
       className={cn(
         "relative flex items-center gap-2 pl-3 transition-all",
         isDragging && "opacity-40",
@@ -830,7 +829,7 @@ export function BuildsPage() {
             {labels.title}
           </h1>
           <p className="mt-1.5 text-sm text-[var(--color-muted)]">
-            {formatLabel(labels.buildCount, { count: savedBuilds.length })} · {labels.autoSaveHint}
+            {formatLabel(labels.buildCount, { count: savedBuilds.length })}
           </p>
         </div>
         <Button asChild variant="outline" className="w-full shrink-0 sm:w-auto sm:self-start">

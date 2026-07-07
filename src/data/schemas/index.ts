@@ -444,7 +444,6 @@ export const labelsSchema = z.object({
     playerLevelAttributeOverBudgetSingle: z.string(),
     playerLevelAttributeOverBudgetMultiple: z.string(),
     buildIssuesAlert: z.string(),
-    buildIssuesAlertTouch: z.string(),
     setToMinimumLevel: z.string(),
     setToMinimumLevelInfo: z.string(),
     ensurePlayerLevel: z.string(),
