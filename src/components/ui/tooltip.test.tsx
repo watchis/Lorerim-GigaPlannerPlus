@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { TooltipProvider, HoverTapTooltip, CursorTooltip } from "@/components/ui/tooltip";
+import { claimExclusiveTouchOverlay } from "@/components/ui/tooltip";
 
 function mockMatchMedia(matchesForQuery: (query: string) => boolean) {
   Object.defineProperty(window, "matchMedia", {
@@ -218,6 +219,58 @@ describe("HoverTapTooltip (touch)", () => {
     });
 
     expect(document.body.textContent).toContain("banner tooltip");
+  });
+
+  it("closes an open CursorTooltip when another exclusive touch overlay claims focus", () => {
+    mockMatchMedia((query) => query === "(hover: hover) and (pointer: fine)" ? false : false);
+
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    function Fixture() {
+      const [open, setOpen] = useState(false);
+      return (
+        <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+          <CursorTooltip
+            open={open}
+            onOpenChange={setOpen}
+            touchAnchor={{ x: 10, y: 10 }}
+            content="banner tooltip"
+          >
+            <button type="button" aria-label="banner" onClick={() => setOpen(true)}>
+              banner
+            </button>
+          </CursorTooltip>
+          <button
+            type="button"
+            aria-label="wallet"
+            onClick={() => claimExclusiveTouchOverlay("budget-dropdown")}
+          >
+            wallet
+          </button>
+        </TooltipProvider>
+      );
+    }
+
+    act(() => {
+      root?.render(<Fixture />);
+    });
+
+    const bannerButton = document.querySelector('button[aria-label="banner"]');
+    const walletButton = document.querySelector('button[aria-label="wallet"]');
+    expect(bannerButton).toBeTruthy();
+    expect(walletButton).toBeTruthy();
+
+    act(() => {
+      bannerButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.body.textContent).toContain("banner tooltip");
+
+    act(() => {
+      walletButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.body.textContent).not.toContain("banner tooltip");
   });
 });
 

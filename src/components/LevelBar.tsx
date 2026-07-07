@@ -10,6 +10,8 @@ import {
   CursorTooltip,
   HoverTapTooltip,
   InfoTooltipButton,
+  claimExclusiveTouchOverlay,
+  releaseExclusiveTouchOverlay,
   useSupportsHover,
 } from "@/components/ui/tooltip";
 import {
@@ -494,10 +496,17 @@ function BudgetDropdown({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const overlayId = "budget-dropdown";
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(
     null,
   );
   const hasIssue = perkOverBudget || skillOverBudget || trainingOverBudget;
+
+  useEffect(() => {
+    if (!open) return;
+    claimExclusiveTouchOverlay(overlayId);
+    return () => releaseExclusiveTouchOverlay(overlayId);
+  }, [open]);
 
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) {
@@ -602,7 +611,14 @@ function BudgetDropdown({
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label={barLabels.budgetSummaryTitle ?? "Build budget"}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() =>
+          setOpen((value) => {
+            const next = !value;
+            if (next) claimExclusiveTouchOverlay(overlayId);
+            else releaseExclusiveTouchOverlay(overlayId);
+            return next;
+          })
+        }
       >
         <Wallet className="h-4 w-4" />
       </Button>

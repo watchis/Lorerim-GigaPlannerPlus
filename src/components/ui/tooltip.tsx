@@ -78,6 +78,16 @@ function subscribeActiveTouchTooltipId(listener: ActiveTouchTooltipListener) {
   return () => activeTouchTooltipListeners.delete(listener);
 }
 
+export function claimExclusiveTouchOverlay(id: string) {
+  setActiveTouchTooltipId(id);
+}
+
+export function releaseExclusiveTouchOverlay(id: string) {
+  if (activeTouchTooltipId === id) {
+    setActiveTouchTooltipId(null);
+  }
+}
+
 type HoverTapTooltipProps = {
   children: ReactNode;
   content: ReactNode;
