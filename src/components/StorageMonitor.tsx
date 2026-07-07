@@ -1,5 +1,6 @@
 import { HardDrive } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   formatStorageSize,
   getAppLocalStorageUsage,
@@ -28,11 +29,7 @@ function progressBarClassName(level: StorageUsageLevel): string {
   }
 }
 
-interface StorageMonitorProps {
-  className?: string;
-}
-
-export function StorageMonitor({ className }: StorageMonitorProps) {
+export function StorageMonitor() {
   const labels = usePanelLabels("build-library");
   const savedBuilds = useBuildStore((state) => state.savedBuilds);
   const activeBuildId = useBuildStore((state) => state.activeBuildId);
@@ -49,26 +46,29 @@ export function StorageMonitor({ className }: StorageMonitorProps) {
   });
 
   return (
-    <div
-      className={cn(
-        "rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/30 px-3 py-2.5",
-        className,
-      )}
-      aria-label={usageLabel}
-    >
-      <div className="flex items-center gap-2">
-        <HardDrive className="h-3.5 w-3.5 shrink-0 text-[var(--color-muted)]" aria-hidden />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <p className="text-xs font-medium text-[var(--color-foreground)]">
-              {labels.storageMonitorTitle}
+    <Card className="min-w-0 overflow-hidden">
+      <CardHeader className="pb-2">
+        <div className="flex gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
+            <HardDrive className="h-4 w-4" aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <CardTitle className="text-base">{labels.storageMonitorTitle}</CardTitle>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="space-y-2">
+          <div className="flex min-w-0 items-baseline justify-between gap-2">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
+              {labels.storageUsageLabel}
             </p>
-            <p className="shrink-0 font-mono text-[11px] tabular-nums text-[var(--color-muted)]">
+            <p className="shrink-0 font-mono text-xs tabular-nums text-[var(--color-foreground)]">
               {usageLabel}
             </p>
           </div>
           <div
-            className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--color-border)]/60"
+            className="h-2 overflow-hidden rounded-full bg-[var(--color-border)]/60"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={usage.quotaBytes}
@@ -83,7 +83,7 @@ export function StorageMonitor({ className }: StorageMonitorProps) {
           {usage.level !== "normal" && (
             <p
               className={cn(
-                "mt-1 text-[11px] leading-snug",
+                "text-xs leading-relaxed",
                 usage.level === "critical"
                   ? "text-[var(--color-error)]"
                   : "text-[var(--color-accent)]",
@@ -93,7 +93,7 @@ export function StorageMonitor({ className }: StorageMonitorProps) {
             </p>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

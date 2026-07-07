@@ -314,6 +314,7 @@ function TransferSidebar({
 
   return (
     <div className="min-w-0 space-y-3">
+      <StorageMonitor />
       <Card className="min-w-0 overflow-hidden">
         <PanelHeader
           icon={Link2}
@@ -832,7 +833,6 @@ export function BuildsPage() {
           <p className="mt-1.5 text-sm text-[var(--color-muted)]">
             {formatLabel(labels.buildCount, { count: savedBuilds.length })}
           </p>
-          <StorageMonitor className="mt-3 max-w-md" />
         </div>
         <Button asChild variant="outline" className="w-full shrink-0 sm:w-auto sm:self-start">
           <Link to="/planner">
