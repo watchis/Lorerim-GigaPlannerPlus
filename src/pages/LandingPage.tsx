@@ -100,7 +100,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-7 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+    <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-7 overflow-y-auto px-4 pt-5 sm:px-6 sm:pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <section>
         <h2 className="mb-3 font-[family-name:var(--font-heading)] text-lg font-semibold text-[var(--color-accent)]">
           {landing.howItWorksTitle}
@@ -276,7 +276,7 @@ export function LandingPage() {
         </Card>
       </section>
 
-      <footer className="mt-auto flex items-center justify-center gap-1 border-t border-[var(--color-border)]/50 pt-4">
+      <footer className="mt-auto flex items-center justify-center gap-1 border-t border-[var(--color-border)]/50 pt-4 pb-1">
         <Button asChild variant="ghost" size="icon" className="text-[var(--color-muted)] hover:text-[var(--color-foreground)]">
           <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <GithubIcon className="h-4 w-4" />
