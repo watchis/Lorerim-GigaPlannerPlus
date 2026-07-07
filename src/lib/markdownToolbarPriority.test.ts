@@ -33,9 +33,45 @@ describe("markdownToolbarPriority", () => {
       containerWidth: fullWidth - 1,
     });
 
-    expect(hidden.has("horizontalRule")).toBe(true);
+    expect(hidden.has("blockquote")).toBe(true);
     expect(hidden.has("bold")).toBe(false);
     expect(hidden.has("italic")).toBe(false);
+  });
+
+  it("drops code block and blockquote before image and horizontal rule", () => {
+    const blockquoteHidden = computeHiddenMarkdownToolbarItems({
+      ...baseMetrics,
+      containerWidth: measureMarkdownToolbarWidth(baseMetrics, new Set()) - 1,
+    });
+    expect(blockquoteHidden.has("codeBlock")).toBe(false);
+    expect(blockquoteHidden.has("horizontalRule")).toBe(false);
+    expect(blockquoteHidden.has("image")).toBe(false);
+
+    const codeBlockHidden = computeHiddenMarkdownToolbarItems({
+      ...baseMetrics,
+      containerWidth: measureMarkdownToolbarWidth(baseMetrics, new Set(["blockquote"])) - 1,
+    });
+    expect(codeBlockHidden.has("codeBlock")).toBe(true);
+    expect(codeBlockHidden.has("horizontalRule")).toBe(false);
+    expect(codeBlockHidden.has("image")).toBe(false);
+
+    let hidden = new Set<MarkdownToolbarItemId>();
+    for (const itemId of ["blockquote", "codeBlock", "orderedList", "strikethrough", "link", "code", "heading", "list"] as const) {
+      hidden = new Set(
+        computeHiddenMarkdownToolbarItems({
+          ...baseMetrics,
+          containerWidth: measureMarkdownToolbarWidth(baseMetrics, hidden) - 1,
+        }),
+      );
+      expect(hidden.has(itemId)).toBe(true);
+    }
+
+    const beforeStructural = computeHiddenMarkdownToolbarItems({
+      ...baseMetrics,
+      containerWidth: measureMarkdownToolbarWidth(baseMetrics, hidden) - 1,
+    });
+    expect(beforeStructural.has("horizontalRule")).toBe(true);
+    expect(beforeStructural.has("image")).toBe(false);
   });
 
   it("removes items in priority order as the container shrinks", () => {
@@ -62,7 +98,7 @@ describe("markdownToolbarPriority", () => {
   });
 
   it("counts dividers only between groups that still have visible items", () => {
-    const hidden = new Set(["horizontalRule", "image", "codeBlock", "blockquote", "orderedList"]);
+    const hidden = new Set(["blockquote", "codeBlock", "orderedList", "horizontalRule", "image"]);
 
     expect(
       countMarkdownToolbarDividers([

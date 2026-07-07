@@ -6,16 +6,16 @@
  * formats stay visible the longest.
  *
  * Removal order (first hidden → last hidden):
- * 1. Horizontal rule
- * 2. Image
- * 3. Code block
- * 4. Blockquote
- * 5. Numbered list
- * 6. Strikethrough
- * 7. Link
- * 8. Inline code
- * 9. Bullet list
- * 10. Heading
+ * 1. Blockquote
+ * 2. Code block
+ * 3. Numbered list
+ * 4. Strikethrough
+ * 5. Link
+ * 6. Inline code
+ * 7. Heading
+ * 8. Bullet list
+ * 9. Horizontal rule
+ * 10. Image
  * 11. Italic
  * 12. Bold (kept until everything else is gone)
  */
@@ -34,16 +34,16 @@ export type MarkdownToolbarItemId =
   | "horizontalRule";
 
 export const MARKDOWN_TOOLBAR_REMOVAL_ORDER: readonly MarkdownToolbarItemId[] = [
-  "horizontalRule",
-  "image",
-  "codeBlock",
   "blockquote",
+  "codeBlock",
   "orderedList",
   "strikethrough",
   "link",
   "code",
-  "list",
   "heading",
+  "list",
+  "horizontalRule",
+  "image",
   "italic",
   "bold",
 ] as const;
