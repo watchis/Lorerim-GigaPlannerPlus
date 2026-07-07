@@ -36,6 +36,7 @@ import {
   getVariantName,
   migrateLegacyStorage,
   nextBuildName,
+  uniqueBuildName,
   nextMilestoneName,
   nextVariantCopyName,
   normalizeSavedBuild,
@@ -579,7 +580,7 @@ export const useBuildStore = create<BuildStore>()(
           const newEntry = createSavedBuildFromPackage(
             gameData.game,
             decoded,
-            decoded.shared.name.trim() || nextBuildName(syncedBuilds),
+            uniqueBuildName(decoded.shared.name, syncedBuilds),
           );
 
           set({
@@ -661,7 +662,7 @@ export const useBuildStore = create<BuildStore>()(
             createMilestone(entry.name, reconcileBuild(gameData.game, entry.build)),
           );
           const newEntry = createSavedBuild(
-            name?.trim() || nextBuildName(syncedBuilds),
+            uniqueBuildName(name ?? "", syncedBuilds),
             importedBuild,
             milestones,
             defaultVariantName,

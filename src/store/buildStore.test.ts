@@ -113,4 +113,24 @@ describe("buildStore shared build import", () => {
     expect(state.activeBuildId).toBe(importedSlot?.id);
     expect(state.build.description).toBe("Baseline");
   });
+
+  it("importSharedBuild renames imported builds that collide with existing names", () => {
+    const importedBuild = createTestBuildState({
+      raceId: "breton",
+      description: "Imported duplicate name",
+    });
+    const importedEntry = createSavedBuild("My Build", importedBuild);
+    const sharedDecoded = decodeBuildPackage(encodeSavedBuild(importedEntry, game), game);
+
+    useBuildStore.getState().importSharedBuild(sharedDecoded);
+
+    const state = useBuildStore.getState();
+    const names = state.savedBuilds.map((entry) => entry.name);
+
+    expect(names.filter((name) => name === "My Build")).toHaveLength(1);
+    expect(names).toContain("My Build copy");
+    expect(state.activeBuildId).toBe(
+      state.savedBuilds.find((entry) => entry.name === "My Build copy")?.id,
+    );
+  });
 });

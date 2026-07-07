@@ -259,6 +259,23 @@ export function nextBuildName(builds: SavedBuild[]): string {
   return defaultBuildName(index);
 }
 
+export function uniqueBuildName(desiredName: string, builds: SavedBuild[]): string {
+  const trimmed = desiredName.trim();
+  if (!trimmed) return nextBuildName(builds);
+
+  const used = new Set(builds.map((build) => build.name));
+  if (!used.has(trimmed)) return trimmed;
+
+  const base = `${trimmed} copy`;
+  if (!used.has(base)) return base;
+
+  let index = 2;
+  while (used.has(`${base} ${index}`)) {
+    index += 1;
+  }
+  return `${base} ${index}`;
+}
+
 export function touchSavedBuild(saved: SavedBuild, build: BuildState): SavedBuild {
   return { ...saved, build, updatedAt: Date.now() };
 }
