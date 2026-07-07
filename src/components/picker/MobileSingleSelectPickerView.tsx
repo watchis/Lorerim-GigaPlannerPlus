@@ -62,17 +62,13 @@ export function MobileSingleSelectPickerView({
   if (mode === "detail" && previewOption) {
     return (
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border)]/70 px-2 py-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={() => setMode("list")}
-            aria-label={backToListLabel}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
+        <button
+          type="button"
+          onClick={() => setMode("list")}
+          aria-label={backToListLabel}
+          className="flex w-full shrink-0 items-center gap-2 border-b border-[var(--color-border)]/70 px-2 py-2 text-left transition-colors hover:bg-[var(--color-surface-elevated)]/40 active:bg-[var(--color-surface-elevated)]/60"
+        >
+          <ChevronLeft className="h-5 w-5 shrink-0 text-[var(--color-muted)]" aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="truncate font-[family-name:var(--font-heading)] text-sm font-semibold text-[var(--color-foreground)]">
               {previewOption.name}
@@ -81,7 +77,7 @@ export function MobileSingleSelectPickerView({
               <p className="text-[10px] font-medium text-[var(--color-accent)]">{selectedLabel}</p>
             )}
           </div>
-        </div>
+        </button>
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-3 py-3">{previewOption.detail}</div>
         </ScrollArea>

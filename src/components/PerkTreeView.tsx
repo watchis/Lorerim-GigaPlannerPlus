@@ -7,7 +7,6 @@ import {
   type MutableRefObject,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Minus, Plus, RotateCcw } from "lucide-react";
 import {
   arePrerequisitesMet,
   computeDestinyPerkPointsSpent,
@@ -16,8 +15,7 @@ import {
   getStoredSkillLevel,
 } from "@/engine/buildEngine";
 import type { Perk, PerkTree } from "@/data/schemas";
-import { Button } from "@/components/ui/button";
-import { CursorTooltip } from "@/components/ui/tooltip";
+import { CursorTooltip, useSupportsHover } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   formatPerkNodeRequirementLabel,
@@ -35,23 +33,17 @@ import {
   resolvePerkTakeTarget,
 } from "@/lib/perkTreeGrid";
 import { useBuildStore } from "@/store/buildStore";
-import { useUiStore } from "@/store/uiStore";
 
 const EDITOR_NODE_EXTENT = 1.25;
 const EDITOR_BOUNDS_PADDING = 1.45;
 const GRID_UNIT_PX = 26;
 /** Shrink fitted trees so nodes sit inset from the render region edges. */
 const FIT_REGION_INSET_RATIO = 0.9;
-/** Minimum grid unit when panning a tree on narrow viewports. */
+/** Minimum grid unit when scrolling a tree on narrow viewports. */
 const SCROLLABLE_GRID_UNIT_PX = 30;
-const MIN_TREE_ZOOM = 0.5;
-const MAX_TREE_ZOOM = 2.5;
-const TREE_ZOOM_STEP = 0.25;
 const DESTINY_SKILL_ID = "destiny";
 const BASE_NODE_DIAMETER_PX = 32;
 const NODE_DIAMETER_GRID_RATIO = BASE_NODE_DIAMETER_PX / GRID_UNIT_PX;
-/** Extra draggable margin around the tree as a multiple of viewport size. */
-const PAN_CANVAS_VIEWPORT_MARGIN = 1.25;
 
 function getTreeLayoutMetrics(
   bounds: { width: number; height: number },
@@ -153,12 +145,16 @@ function PerkNode({
   labels,
   showSkillRequirements,
 }: PerkNodeProps) {
+  const supportsHover = useSupportsHover();
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const singleTapTimerRef = useRef<number | null>(null);
   const lastTapRef = useRef(0);
-  const suppressTooltipClearRef = useRef<number | null>(null);
-  const [suppressTooltip, setSuppressTooltip] = useState(false);
+  const touchInteractionRef = useRef(false);
+  const touchClearRef = useRef<number | null>(null);
+  const pointerAnchorRef = useRef({ x: 0, y: 0 });
+  const [touchTooltipOpen, setTouchTooltipOpen] = useState(false);
+  const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
 
   const clearLongPressTimer = () => {
     if (longPressTimerRef.current !== null) {
@@ -174,22 +170,43 @@ function PerkNode({
     }
   };
 
-  const scheduleTooltipSuppressionClear = () => {
-    if (suppressTooltipClearRef.current !== null) {
-      window.clearTimeout(suppressTooltipClearRef.current);
+  const markTouchInteraction = () => {
+    touchInteractionRef.current = true;
+    if (touchClearRef.current !== null) {
+      window.clearTimeout(touchClearRef.current);
     }
-    suppressTooltipClearRef.current = window.setTimeout(() => {
-      setSuppressTooltip(false);
-      suppressTooltipClearRef.current = null;
-    }, 400);
+    touchClearRef.current = window.setTimeout(() => {
+      touchInteractionRef.current = false;
+      touchClearRef.current = null;
+    }, 500);
   };
 
-  const clearTooltipSuppressionClear = () => {
-    if (suppressTooltipClearRef.current !== null) {
-      window.clearTimeout(suppressTooltipClearRef.current);
-      suppressTooltipClearRef.current = null;
+  const clearTouchInteraction = () => {
+    if (touchClearRef.current !== null) {
+      window.clearTimeout(touchClearRef.current);
+      touchClearRef.current = null;
     }
+    touchInteractionRef.current = false;
   };
+
+  const showTouchTooltip = (x: number, y: number) => {
+    if (supportsHover) return;
+    setTouchAnchor({ x, y });
+    setTouchTooltipOpen(true);
+  };
+
+  useEffect(() => {
+    if (!touchTooltipOpen || supportsHover) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (target instanceof Element && target.closest("[data-perk-node]")) return;
+      setTouchTooltipOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [touchTooltipOpen, supportsHover]);
 
   const handleForceAllocate = () => {
     if (!isInteractive || tookPerkWithLastClickRef.current) return false;
@@ -200,6 +217,10 @@ function PerkNode({
 
   const handleMouseDown = (event: MouseEvent<HTMLButtonElement>) => {
     if (!isInteractive) return;
+    if (touchInteractionRef.current) {
+      event.preventDefault();
+      return;
+    }
 
     window.getSelection()?.removeAllRanges();
 
@@ -231,17 +252,18 @@ function PerkNode({
       return;
     }
 
-    if (!isSelected) {
-      clearTooltipSuppressionClear();
-      setSuppressTooltip(true);
-    }
+    markTouchInteraction();
+    pointerAnchorRef.current = { x: event.clientX, y: event.clientY };
 
     longPressTimerRef.current = window.setTimeout(() => {
       longPressTriggeredRef.current = true;
       if (isSelected) {
         onRemove(perk.id);
       } else {
-        handleForceAllocate();
+        const selected = handleForceAllocate();
+        if (selected) {
+          showTouchTooltip(pointerAnchorRef.current.x, pointerAnchorRef.current.y);
+        }
       }
     }, 500);
   };
@@ -250,48 +272,53 @@ function PerkNode({
     if (event.pointerType === "mouse") return;
 
     clearLongPressTimer();
-    if (!isSelected) {
-      scheduleTooltipSuppressionClear();
+    if (!isInteractive || longPressTriggeredRef.current) {
+      if (longPressTriggeredRef.current) {
+        longPressTriggeredRef.current = false;
+      }
+      return;
     }
-    if (!isInteractive || longPressTriggeredRef.current) return;
 
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
       clearSingleTapTimer();
       lastTapRef.current = 0;
       handleForceAllocate();
+      showTouchTooltip(event.clientX, event.clientY);
       return;
     }
 
     lastTapRef.current = now;
     clearSingleTapTimer();
+    const anchor = { x: event.clientX, y: event.clientY };
     singleTapTimerRef.current = window.setTimeout(() => {
       singleTapTimerRef.current = null;
       tookPerkWithLastClickRef.current = onTryTake(takeTargetId);
+      showTouchTooltip(anchor.x, anchor.y);
     }, 300);
   };
 
   const handlePointerCancel = () => {
     clearLongPressTimer();
     clearSingleTapTimer();
-    if (!isSelected) {
-      scheduleTooltipSuppressionClear();
-    }
     longPressTriggeredRef.current = false;
+    clearTouchInteraction();
   };
 
   useEffect(
     () => () => {
       clearLongPressTimer();
       clearSingleTapTimer();
-      clearTooltipSuppressionClear();
+      clearTouchInteraction();
     },
     [],
   );
 
   const handleDoubleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    if (touchInteractionRef.current) return;
     handleForceAllocate();
+    showTouchTooltip(event.clientX, event.clientY);
   };
 
   const isPartialRank =
@@ -397,7 +424,9 @@ function PerkNode({
   return (
     <CursorTooltip
       content={tooltipContent}
-      disabled={!isSelected && suppressTooltip}
+      open={supportsHover ? undefined : touchTooltipOpen}
+      onOpenChange={supportsHover ? undefined : setTouchTooltipOpen}
+      touchAnchor={touchAnchor}
       className={cn(
         "absolute -translate-x-1/2 -translate-y-1/2 select-none",
         !isInteractive && "pointer-events-none",
@@ -406,6 +435,7 @@ function PerkNode({
     >
       <button
         type="button"
+        data-perk-node
         aria-label={perk.name}
         onMouseDown={handleMouseDown}
         onPointerDown={handlePointerDown}
@@ -491,119 +521,6 @@ function useFitContainSize(aspect: number, enabled: boolean) {
   return { areaRef, size };
 }
 
-function getTouchDistance(touches: { length: number; 0?: Touch; 1?: Touch }): number {
-  if (touches.length < 2 || !touches[0] || !touches[1]) return 0;
-  const dx = touches[0].clientX - touches[1].clientX;
-  const dy = touches[0].clientY - touches[1].clientY;
-  return Math.hypot(dx, dy);
-}
-
-function clampTreeZoom(value: number): number {
-  return Math.min(MAX_TREE_ZOOM, Math.max(MIN_TREE_ZOOM, value));
-}
-
-interface ScrollableTreeLayout {
-  treeWidth: number;
-  treeHeight: number;
-  canvasInset: number;
-  panMarginX: number;
-  panMarginY: number;
-  canvasWidth: number;
-  canvasHeight: number;
-  treeLeft: number;
-  treeTop: number;
-}
-
-function getScrollableTreeLayout(
-  bounds: { width: number; height: number },
-  zoom: number,
-  nodeDiameterPx: number,
-  viewport: { width: number; height: number },
-): ScrollableTreeLayout {
-  const gridUnitPx = SCROLLABLE_GRID_UNIT_PX * zoom;
-  const treeWidth = bounds.width * gridUnitPx;
-  const treeHeight = bounds.height * gridUnitPx;
-  const canvasInset = Math.ceil(nodeDiameterPx / 2) + 8;
-  const panMarginX = Math.max(viewport.width * PAN_CANVAS_VIEWPORT_MARGIN, treeWidth);
-  const panMarginY = Math.max(viewport.height * PAN_CANVAS_VIEWPORT_MARGIN, treeHeight);
-  const canvasWidth = treeWidth + canvasInset * 2 + panMarginX * 2;
-  const canvasHeight = treeHeight + canvasInset * 2 + panMarginY * 2;
-  const treeLeft = panMarginX + canvasInset;
-  const treeTop = panMarginY + canvasInset;
-
-  return {
-    treeWidth,
-    treeHeight,
-    canvasInset,
-    panMarginX,
-    panMarginY,
-    canvasWidth,
-    canvasHeight,
-    treeLeft,
-    treeTop,
-  };
-}
-
-function getCenteredPanOffset(
-  viewport: { width: number; height: number },
-  layout: Pick<ScrollableTreeLayout, "treeLeft" | "treeTop" | "treeWidth" | "treeHeight">,
-): { x: number; y: number } {
-  return {
-    x: viewport.width / 2 - (layout.treeLeft + layout.treeWidth / 2),
-    y: viewport.height / 2 - (layout.treeTop + layout.treeHeight / 2),
-  };
-}
-
-function adjustPanForZoomChange(
-  pan: { x: number; y: number },
-  oldLayout: ScrollableTreeLayout,
-  newLayout: ScrollableTreeLayout,
-  pivotX: number,
-  pivotY: number,
-): { x: number; y: number } {
-  const canvasX = pivotX - pan.x;
-  const canvasY = pivotY - pan.y;
-  const relX = oldLayout.treeWidth > 0 ? (canvasX - oldLayout.treeLeft) / oldLayout.treeWidth : 0.5;
-  const relY = oldLayout.treeHeight > 0 ? (canvasY - oldLayout.treeTop) / oldLayout.treeHeight : 0.5;
-  const newCanvasX = newLayout.treeLeft + relX * newLayout.treeWidth;
-  const newCanvasY = newLayout.treeTop + relY * newLayout.treeHeight;
-  return {
-    x: pivotX - newCanvasX,
-    y: pivotY - newCanvasY,
-  };
-}
-
-function isPerkTreeInteractiveTarget(target: EventTarget | null): boolean {
-  return target instanceof Element && Boolean(target.closest("button"));
-}
-
-function useViewportSize(enabled: boolean) {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ width: 0, height: 0 });
-
-  useEffect(() => {
-    if (!enabled) {
-      setSize({ width: 0, height: 0 });
-      return;
-    }
-
-    const element = viewportRef.current;
-    if (!element) return;
-
-    const update = () => {
-      setSize({ width: element.clientWidth, height: element.clientHeight });
-    };
-
-    const observer = new ResizeObserver(update);
-    observer.observe(element);
-    update();
-
-    return () => observer.disconnect();
-  }, [enabled]);
-
-  return { viewportRef, size };
-}
-
 function PerkTreeView({
   tree,
   labels,
@@ -620,28 +537,7 @@ function PerkTreeView({
   const tryTakePerk = useBuildStore((s) => s.tryTakePerk);
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
-  const zoom = useUiStore((s) => s.perkTreeZoom);
-  const setPerkTreeZoom = useUiStore((s) => s.setPerkTreeZoom);
-  const panOffset = useUiStore((s) => s.perkTreePanOffsets[tree.skillId]);
-  const setPerkTreePanOffset = useUiStore((s) => s.setPerkTreePanOffset);
-  const clearPerkTreePanOffset = useUiStore((s) => s.clearPerkTreePanOffset);
   const tookPerkWithLastClickRef = useRef(false);
-  const pinchStateRef = useRef<{
-    distance: number;
-    zoom: number;
-    pivotX: number;
-    pivotY: number;
-    pan: { x: number; y: number };
-  } | null>(null);
-  const panDragRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    startPanX: number;
-    startPanY: number;
-  } | null>(null);
-  const [isPanning, setIsPanning] = useState(false);
-  const { viewportRef: scrollViewportRef, size: viewportSize } = useViewportSize(scrollable);
 
   const isDestinyTree = tree.skillId === DESTINY_SKILL_ID;
 
@@ -657,7 +553,7 @@ function PerkTreeView({
   const aspect = bounds.width / bounds.height;
   const useFitLayout = fit && !scrollable;
   const { areaRef, size: fitSize } = useFitContainSize(aspect, useFitLayout);
-  const scrollGridUnitPx = scrollable ? SCROLLABLE_GRID_UNIT_PX * zoom : GRID_UNIT_PX;
+  const scrollGridUnitPx = scrollable ? SCROLLABLE_GRID_UNIT_PX : GRID_UNIT_PX;
   const scrollSize = scrollable
     ? { width: bounds.width * scrollGridUnitPx, height: bounds.height * scrollGridUnitPx }
     : null;
@@ -671,59 +567,8 @@ function PerkTreeView({
       return { gridUnitPx, nodeDiameterPx };
     }
     return getTreeLayoutMetrics(bounds, useFitLayout, fitSize);
-  }, [bounds, useFitLayout, fitSize, scrollable, scrollSize, scrollGridUnitPx, zoom]);
+  }, [bounds, useFitLayout, fitSize, scrollable, scrollSize, scrollGridUnitPx]);
   const nodeRadiusGrid = nodeDiameterPx / (2 * gridUnitPx);
-
-  const scrollableLayout =
-    scrollable && scrollSize && viewportSize.width > 0 && viewportSize.height > 0
-      ? getScrollableTreeLayout(bounds, zoom, nodeDiameterPx, viewportSize)
-      : null;
-
-  const applyZoom = (
-    nextZoom: number,
-    pivotX: number,
-    pivotY: number,
-    currentPan = panOffset,
-  ) => {
-    if (!scrollableLayout || !viewportSize.width) {
-      setPerkTreeZoom(nextZoom);
-      return;
-    }
-
-    const nextNodeDiameter = Math.min(
-      BASE_NODE_DIAMETER_PX,
-      Math.max(22, SCROLLABLE_GRID_UNIT_PX * nextZoom * NODE_DIAMETER_GRID_RATIO),
-    );
-    const nextLayout = getScrollableTreeLayout(bounds, nextZoom, nextNodeDiameter, viewportSize);
-    const nextPan =
-      currentPan != null
-        ? adjustPanForZoomChange(currentPan, scrollableLayout, nextLayout, pivotX, pivotY)
-        : getCenteredPanOffset(viewportSize, nextLayout);
-
-    setPerkTreeZoom(nextZoom);
-    setPerkTreePanOffset(tree.skillId, nextPan);
-  };
-
-  useEffect(() => {
-    if (!scrollable || !scrollableLayout || viewportSize.width === 0) return;
-    if (panOffset != null) return;
-    setPerkTreePanOffset(tree.skillId, getCenteredPanOffset(viewportSize, scrollableLayout));
-  }, [
-    scrollable,
-    scrollableLayout,
-    viewportSize.width,
-    viewportSize.height,
-    panOffset,
-    tree.skillId,
-    setPerkTreePanOffset,
-  ]);
-
-  useEffect(() => {
-    return () => {
-      panDragRef.current = null;
-      pinchStateRef.current = null;
-    };
-  }, [tree.skillId]);
 
   const edges = useMemo(
     () =>
@@ -883,188 +728,29 @@ function PerkTreeView({
     </div>
   );
 
-  if (scrollable && scrollSize && scrollableLayout) {
-    const pan = panOffset ?? getCenteredPanOffset(viewportSize, scrollableLayout);
-    const pivotX = viewportSize.width / 2;
-    const pivotY = viewportSize.height / 2;
-
-    const handleViewportPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (event.pointerType === "mouse" && event.button !== 0) return;
-      if (isPerkTreeInteractiveTarget(event.target)) return;
-
-      panDragRef.current = {
-        pointerId: event.pointerId,
-        startX: event.clientX,
-        startY: event.clientY,
-        startPanX: pan.x,
-        startPanY: pan.y,
-      };
-      setIsPanning(true);
-      event.currentTarget.setPointerCapture(event.pointerId);
-    };
-
-    const handleViewportPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (pinchStateRef.current?.distance && event.pointerType === "touch") return;
-      const drag = panDragRef.current;
-      if (!drag || drag.pointerId !== event.pointerId) return;
-
-      setPerkTreePanOffset(tree.skillId, {
-        x: drag.startPanX + (event.clientX - drag.startX),
-        y: drag.startPanY + (event.clientY - drag.startY),
-      });
-    };
-
-    const endPanDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-      const drag = panDragRef.current;
-      if (!drag || drag.pointerId !== event.pointerId) return;
-      panDragRef.current = null;
-      setIsPanning(false);
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    };
-
-    const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-      if (event.touches.length === 2) {
-        const rect = event.currentTarget.getBoundingClientRect();
-        const pivotX = (event.touches[0].clientX + event.touches[1].clientX) / 2 - rect.left;
-        const pivotY = (event.touches[0].clientY + event.touches[1].clientY) / 2 - rect.top;
-        pinchStateRef.current = {
-          distance: getTouchDistance(event.touches),
-          zoom,
-          pivotX,
-          pivotY,
-          pan,
-        };
-      }
-    };
-
-    const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-      if (event.touches.length !== 2 || !pinchStateRef.current || viewportSize.width === 0) return;
-      const distance = getTouchDistance(event.touches);
-      if (!distance || !pinchStateRef.current.distance) return;
-      const pinchZoom = pinchStateRef.current.zoom;
-      const nextZoom = clampTreeZoom(pinchZoom * (distance / pinchStateRef.current.distance));
-      if (nextZoom === zoom) return;
-      const pinchNodeDiameter = Math.min(
-        BASE_NODE_DIAMETER_PX,
-        Math.max(22, SCROLLABLE_GRID_UNIT_PX * pinchZoom * NODE_DIAMETER_GRID_RATIO),
-      );
-      const nextNodeDiameter = Math.min(
-        BASE_NODE_DIAMETER_PX,
-        Math.max(22, SCROLLABLE_GRID_UNIT_PX * nextZoom * NODE_DIAMETER_GRID_RATIO),
-      );
-      const oldLayout = getScrollableTreeLayout(
-        bounds,
-        pinchZoom,
-        pinchNodeDiameter,
-        viewportSize,
-      );
-      const nextLayout = getScrollableTreeLayout(
-        bounds,
-        nextZoom,
-        nextNodeDiameter,
-        viewportSize,
-      );
-      const nextPan = adjustPanForZoomChange(
-        pinchStateRef.current.pan,
-        oldLayout,
-        nextLayout,
-        pinchStateRef.current.pivotX,
-        pinchStateRef.current.pivotY,
-      );
-      setPerkTreeZoom(nextZoom);
-      setPerkTreePanOffset(tree.skillId, nextPan);
-    };
-
-    const handleTouchEnd = () => {
-      pinchStateRef.current = null;
-    };
-
-    const handleResetZoom = () => {
-      setPerkTreeZoom(1);
-      clearPerkTreePanOffset(tree.skillId);
-      if (viewportSize.width > 0) {
-        const resetLayout = getScrollableTreeLayout(bounds, 1, nodeDiameterPx, viewportSize);
-        setPerkTreePanOffset(tree.skillId, getCenteredPanOffset(viewportSize, resetLayout));
-      }
-    };
+  if (scrollable && scrollSize) {
+    const canvasInset = Math.ceil(nodeDiameterPx / 2) + 8;
 
     return (
       <div className={cn("relative h-full min-h-0 w-full", className)}>
         <div
-          ref={scrollViewportRef}
-          className={cn(
-            "relative h-full min-h-0 w-full touch-none overflow-hidden",
-            isPanning ? "cursor-grabbing" : "cursor-grab",
-          )}
-          onPointerDown={handleViewportPointerDown}
-          onPointerMove={handleViewportPointerMove}
-          onPointerUp={endPanDrag}
-          onPointerCancel={endPanDrag}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchEnd}
+          ref={areaRef}
+          className="h-full min-h-0 w-full touch-pan-x touch-pan-y overflow-auto overscroll-contain"
         >
           <div
-            className="absolute left-0 top-0"
+            className="relative mx-auto shrink-0"
             style={{
-              width: scrollableLayout.canvasWidth,
-              height: scrollableLayout.canvasHeight,
-              transform: `translate(${pan.x}px, ${pan.y}px)`,
+              width: scrollSize.width + canvasInset * 2,
+              height: scrollSize.height + canvasInset * 2,
+              padding: canvasInset,
             }}
           >
             <div
-              className="absolute"
-              style={{
-                left: scrollableLayout.treeLeft,
-                top: scrollableLayout.treeTop,
-                width: scrollableLayout.treeWidth,
-                height: scrollableLayout.treeHeight,
-              }}
+              className="relative"
+              style={{ width: scrollSize.width, height: scrollSize.height }}
             >
               {treeCanvas}
             </div>
-          </div>
-        </div>
-
-        <div className="pointer-events-none absolute inset-x-2 top-2 z-[120] flex justify-end">
-          <div className="pointer-events-auto flex items-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--color-border)]/80 bg-[var(--color-surface)]/95 p-0.5 shadow-[var(--shadow-panel)] backdrop-blur-sm">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              aria-label="Zoom out"
-              disabled={zoom <= MIN_TREE_ZOOM}
-              onClick={() => applyZoom(clampTreeZoom(zoom - TREE_ZOOM_STEP), pivotX, pivotY)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="min-w-[2.75rem] text-center text-[10px] font-medium tabular-nums text-[var(--color-muted)]">
-              {Math.round(zoom * 100)}%
-            </span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              aria-label="Zoom in"
-              disabled={zoom >= MAX_TREE_ZOOM}
-              onClick={() => applyZoom(clampTreeZoom(zoom + TREE_ZOOM_STEP), pivotX, pivotY)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              aria-label="Reset zoom"
-              disabled={zoom === 1}
-              onClick={handleResetZoom}
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-            </Button>
           </div>
         </div>
       </div>

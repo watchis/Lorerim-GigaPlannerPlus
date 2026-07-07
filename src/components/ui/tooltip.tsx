@@ -170,21 +170,41 @@ export function CursorTooltip({
   className,
   style,
   disabled = false,
+  open: controlledOpen,
+  onOpenChange,
+  touchAnchor,
 }: {
   children: ReactNode;
   content: ReactNode;
   className?: string;
   style?: CSSProperties;
   disabled?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  touchAnchor?: { x: number; y: number } | null;
 }) {
-  const [open, setOpen] = useState(false);
+  const [hoverOpen, setHoverOpen] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const isTouchControlled = controlledOpen !== undefined;
+  const open = isTouchControlled ? controlledOpen && !disabled : hoverOpen && !disabled;
 
   useEffect(() => {
-    if (disabled) setOpen(false);
-  }, [disabled]);
+    if (disabled) {
+      if (isTouchControlled) onOpenChange?.(false);
+      else setHoverOpen(false);
+    }
+  }, [disabled, isTouchControlled, onOpenChange]);
+
+  useEffect(() => {
+    if (touchAnchor) {
+      setAnchor({
+        x: touchAnchor.x + TOOLTIP_OFFSET,
+        y: touchAnchor.y + TOOLTIP_OFFSET,
+      });
+    }
+  }, [touchAnchor]);
 
   const updateAnchor = (event: MouseEvent) => {
     setAnchor({
@@ -219,16 +239,16 @@ export function CursorTooltip({
         className={className}
         style={style}
         onMouseEnter={(event) => {
-          if (disabled) return;
+          if (disabled || isTouchControlled) return;
           updateAnchor(event);
-          setOpen(true);
+          setHoverOpen(true);
         }}
         onMouseLeave={() => {
-          if (disabled) return;
-          setOpen(false);
+          if (disabled || isTouchControlled) return;
+          setHoverOpen(false);
         }}
         onMouseMove={(event) => {
-          if (disabled) return;
+          if (disabled || isTouchControlled) return;
           updateAnchor(event);
         }}
       >

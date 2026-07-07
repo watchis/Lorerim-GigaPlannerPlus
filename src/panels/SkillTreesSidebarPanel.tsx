@@ -70,8 +70,8 @@ export function SkillTreesSidebarPanel() {
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <CardHeader
         className={cn(
-          "flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50 py-3",
-          compact ? "gap-2 px-2 py-2" : "px-3",
+          "flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50",
+          stackedLayout ? "px-3 py-2.5" : compact ? "gap-2 px-2 py-2" : "px-3 py-3",
         )}
       >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2">

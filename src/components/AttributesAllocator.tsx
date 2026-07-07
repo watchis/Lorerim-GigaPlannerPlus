@@ -204,10 +204,7 @@ export function AttributesAllocator({ embedded = false, compact = false }: Attri
     <div className={cn(compact || embedded ? "space-y-2" : "space-y-3")}>
       <div
         className={cn(
-          "gap-2 px-0.5",
-          compact
-            ? "flex flex-col items-stretch"
-            : "flex items-center justify-between",
+          "flex items-center justify-between gap-2 px-0.5",
         )}
       >
         {!embedded && (
@@ -218,19 +215,17 @@ export function AttributesAllocator({ embedded = false, compact = false }: Attri
             {labels.title}
           </span>
         )}
-        <div className={cn("flex items-center gap-2", compact && "justify-between")}>
-          <span
-            className={cn(
-              "rounded-full border bg-[var(--color-background)]/60 tabular-nums",
-              compact || embedded ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-xs",
-              overBudget
-                ? "border-[var(--color-error)]/40 text-[var(--color-error)]"
-                : "border-[var(--color-border)]/50 text-[var(--color-muted)]",
-            )}
-          >
-            {remaining} {labels.remainingShort ?? "left"}
-          </span>
-        </div>
+        <span
+          className={cn(
+            "shrink-0 rounded-full border bg-[var(--color-background)]/60 tabular-nums",
+            compact || embedded ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-xs",
+            overBudget
+              ? "border-[var(--color-error)]/40 text-[var(--color-error)]"
+              : "border-[var(--color-border)]/50 text-[var(--color-muted)]",
+          )}
+        >
+          {remaining} {labels.remainingShort ?? "left"}
+        </span>
       </div>
 
       <div className="divide-y divide-[var(--color-border)]/50 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/35">

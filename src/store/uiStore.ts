@@ -26,13 +26,6 @@ export function isSkillTreeOpenInMiddlePane(state: {
 
 export type SkillWorkspaceMode = "perks" | "training";
 
-const MIN_PERK_TREE_ZOOM = 0.5;
-const MAX_PERK_TREE_ZOOM = 2.5;
-
-function clampPerkTreeZoom(value: number): number {
-  return Math.min(MAX_PERK_TREE_ZOOM, Math.max(MIN_PERK_TREE_ZOOM, value));
-}
-
 interface UiStore {
   setupPicker: SetupPicker | null;
   characterOptionsOpen: boolean;
@@ -41,8 +34,6 @@ interface UiStore {
   activeSkillTreeId: string | null;
   skillWorkspaceMode: SkillWorkspaceMode;
   showPerkSkillRequirements: boolean;
-  perkTreeZoom: number;
-  perkTreePanOffsets: Record<string, { x: number; y: number }>;
   setSetupPicker: (picker: SetupPicker | null) => void;
   toggleSetupPicker: (picker: SetupPicker) => void;
   openCharacterOptions: () => void;
@@ -55,9 +46,6 @@ interface UiStore {
   openSkillTree: (skillId: string) => void;
   setSkillWorkspaceMode: (mode: SkillWorkspaceMode) => void;
   setShowPerkSkillRequirements: (show: boolean) => void;
-  setPerkTreeZoom: (zoom: number) => void;
-  setPerkTreePanOffset: (skillId: string, offset: { x: number; y: number }) => void;
-  clearPerkTreePanOffset: (skillId: string) => void;
 }
 
 export const useUiStore = create<UiStore>((set, get) => ({
@@ -68,8 +56,6 @@ export const useUiStore = create<UiStore>((set, get) => ({
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
   showPerkSkillRequirements: true,
-  perkTreeZoom: 1,
-  perkTreePanOffsets: {},
   setSetupPicker: (picker) =>
     set({ setupPicker: picker, characterOptionsOpen: false, variantsManagerOpen: false }),
   toggleSetupPicker: (picker) => {
@@ -144,15 +130,4 @@ export const useUiStore = create<UiStore>((set, get) => ({
   },
   setSkillWorkspaceMode: (mode) => set({ skillWorkspaceMode: mode }),
   setShowPerkSkillRequirements: (show) => set({ showPerkSkillRequirements: show }),
-  setPerkTreeZoom: (zoom) => set({ perkTreeZoom: clampPerkTreeZoom(zoom) }),
-  setPerkTreePanOffset: (skillId, offset) =>
-    set((state) => ({
-      perkTreePanOffsets: { ...state.perkTreePanOffsets, [skillId]: offset },
-    })),
-  clearPerkTreePanOffset: (skillId) =>
-    set((state) => {
-      const next = { ...state.perkTreePanOffsets };
-      delete next[skillId];
-      return { perkTreePanOffsets: next };
-    }),
 }));
