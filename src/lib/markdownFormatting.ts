@@ -12,7 +12,6 @@ export interface TextEditResult {
 export type MarkdownFormat =
   | "bold"
   | "italic"
-  | "boldItalic"
   | "strikethrough"
   | "code"
   | "codeBlock"
@@ -99,6 +98,138 @@ function findFencedCodeBlockAt(
     match = pattern.exec(text);
   }
   return null;
+}
+
+type EmphasisKind = "italic" | "bold" | "boldItalic";
+
+interface EmphasisContext {
+  kind: EmphasisKind;
+  wrapStart: number;
+  wrapEnd: number;
+  contentStart: number;
+  contentEnd: number;
+}
+
+function isValidSingleAsteriskDelimiter(text: string, index: number): boolean {
+  const before = index > 0 ? text[index - 1] : "";
+  const after = index + 1 < text.length ? text[index + 1] : "";
+  return before !== "*" && after !== "*";
+}
+
+function isValidDoubleAsteriskDelimiter(text: string, index: number): boolean {
+  const before = index > 0 ? text[index - 1] : "";
+  const after = index + 2 < text.length ? text[index + 2] : "";
+  return before !== "*" && after !== "*";
+}
+
+function findEmphasisDelimiter(
+  text: string,
+  fromIndex: number,
+  delimiter: string,
+  direction: "before" | "after",
+  maxIndex: number,
+): number {
+  const step = delimiter.length;
+  if (direction === "before") {
+    let index = text.lastIndexOf(delimiter, fromIndex);
+    while (index !== -1) {
+      if (delimiter === "*" && !isValidSingleAsteriskDelimiter(text, index)) {
+        index = text.lastIndexOf(delimiter, index - 1);
+        continue;
+      }
+      if (delimiter === "**" && !isValidDoubleAsteriskDelimiter(text, index)) {
+        index = text.lastIndexOf(delimiter, index - 1);
+        continue;
+      }
+      return index;
+    }
+    return -1;
+  }
+
+  let index = text.indexOf(delimiter, fromIndex);
+  while (index !== -1 && index <= maxIndex) {
+    if (delimiter === "*" && !isValidSingleAsteriskDelimiter(text, index)) {
+      index = text.indexOf(delimiter, index + step);
+      continue;
+    }
+    if (delimiter === "**" && !isValidDoubleAsteriskDelimiter(text, index)) {
+      index = text.indexOf(delimiter, index + step);
+      continue;
+    }
+    return index;
+  }
+  return -1;
+}
+
+function findEmphasisContext(text: string, selection: TextSelection): EmphasisContext | null {
+  const { start, end } = selection;
+  const probe = start === end ? start : Math.floor((start + end) / 2);
+
+  const patterns: Array<{ kind: EmphasisKind; open: string; close: string }> = [
+    { kind: "boldItalic", open: "***", close: "***" },
+    { kind: "bold", open: "**", close: "**" },
+    { kind: "italic", open: "*", close: "*" },
+    { kind: "italic", open: "_", close: "_" },
+  ];
+
+  for (const pattern of patterns) {
+    const openIndex = findEmphasisDelimiter(text, probe, pattern.open, "before", probe);
+    if (openIndex === -1) continue;
+
+    const contentStart = openIndex + pattern.open.length;
+    const closeIndex = findEmphasisDelimiter(text, Math.max(contentStart, probe), pattern.close, "after", text.length);
+    if (closeIndex === -1 || closeIndex < contentStart) continue;
+
+    if (probe < contentStart || probe > closeIndex) continue;
+
+    return {
+      kind: pattern.kind,
+      wrapStart: openIndex,
+      wrapEnd: closeIndex + pattern.close.length,
+      contentStart,
+      contentEnd: closeIndex,
+    };
+  }
+
+  return null;
+}
+
+function replaceEmphasisWrap(
+  text: string,
+  context: EmphasisContext,
+  replacement: string,
+): TextEditResult {
+  const value = `${text.slice(0, context.wrapStart)}${replacement}${text.slice(context.wrapEnd)}`;
+  const leadingMarkers =
+    replacement.startsWith("***") ? 3 : replacement.startsWith("**") ? 2 : replacement.startsWith("*") ? 1 : 0;
+  const trailingMarkers =
+    replacement.endsWith("***") ? 3 : replacement.endsWith("**") ? 2 : replacement.endsWith("*") ? 1 : 0;
+  const contentLength = replacement.length - leadingMarkers - trailingMarkers;
+  const selectionStart = context.wrapStart + leadingMarkers;
+  const selectionEnd = selectionStart + contentLength;
+
+  return { value, selectionStart, selectionEnd };
+}
+
+export function applyMarkdownItalic(
+  text: string,
+  selection: TextSelection,
+  placeholder = "italic",
+): TextEditResult {
+  const context = findEmphasisContext(text, selection);
+  if (context) {
+    const content = text.slice(context.contentStart, context.contentEnd);
+    switch (context.kind) {
+      case "boldItalic":
+        return replaceEmphasisWrap(text, context, `**${content}**`);
+      case "bold":
+        return replaceEmphasisWrap(text, context, `***${content}***`);
+      case "italic":
+        return replaceEmphasisWrap(text, context, content);
+    }
+  }
+
+  return applyMarkdownWrap(text, selection, "*", "*", placeholder);
 }
 
 function tryUnwrapWrappedSelection(
@@ -444,9 +575,7 @@ export function applyVariantNotesFormat(
     case "bold":
       return applyMarkdownWrap(text, selection, "**", "**", "bold");
     case "italic":
-      return applyMarkdownWrap(text, selection, "*", "*", "italic");
-    case "boldItalic":
-      return applyMarkdownWrap(text, selection, "***", "***", "text");
+      return applyMarkdownItalic(text, selection);
     case "strikethrough":
       return applyMarkdownWrap(text, selection, "~~", "~~", "strike");
     case "code":

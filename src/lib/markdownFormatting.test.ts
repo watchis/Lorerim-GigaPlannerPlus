@@ -4,6 +4,7 @@ import {
   applyMarkdownHeading,
   applyMarkdownHorizontalRule,
   applyMarkdownImage,
+  applyMarkdownItalic,
   applyMarkdownLinePrefix,
   applyMarkdownLink,
   applyMarkdownNormalText,
@@ -168,5 +169,34 @@ describe("markdownFormatting", () => {
       end: wrapped.selectionEnd,
     });
     expect(unwrapped.value).toBe("text");
+  });
+
+  it("adds italics to bold text without breaking bold markers", () => {
+    const inner = applyMarkdownItalic("**bold**", { start: 2, end: 6 });
+    expect(inner.value).toBe("***bold***");
+    expect(inner.selectionStart).toBe(3);
+    expect(inner.selectionEnd).toBe(7);
+
+    const cursor = applyMarkdownItalic("**bold**", { start: 3, end: 3 });
+    expect(cursor.value).toBe("***bold***");
+  });
+
+  it("removes italics from bold+italic text while keeping bold", () => {
+    const result = applyMarkdownItalic("***bold***", { start: 3, end: 7 });
+    expect(result.value).toBe("**bold**");
+    expect(result.selectionStart).toBe(2);
+    expect(result.selectionEnd).toBe(6);
+  });
+
+  it("removes plain italics when reapplied", () => {
+    const result = applyMarkdownItalic("*italic*", { start: 1, end: 7 });
+    expect(result.value).toBe("italic");
+    expect(result.selectionStart).toBe(0);
+    expect(result.selectionEnd).toBe(6);
+  });
+
+  it("routes italic formatting through applyVariantNotesFormat on bold text", () => {
+    const result = applyVariantNotesFormat("italic", "**word**", { start: 2, end: 6 });
+    expect(result.value).toBe("***word***");
   });
 });
