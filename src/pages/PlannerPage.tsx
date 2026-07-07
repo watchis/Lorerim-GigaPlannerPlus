@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { BugReportButton } from "@/components/BugReportButton";
 import { LevelBar } from "@/components/LevelBar";
 import { LayoutRenderer } from "@/layout/LayoutRenderer";
-import { clearBuildFromUrl, decodeBuildPackage, getBuildFromUrl } from "@/engine/buildCodec";
+import { applyUrlBuildImport } from "@/lib/urlBuildImport";
 import { useBuildStore } from "@/store/buildStore";
 
 export function PlannerPage() {
@@ -11,15 +11,8 @@ export function PlannerPage() {
   const importSharedBuild = useBuildStore((s) => s.importSharedBuild);
 
   useEffect(() => {
-    const urlBuild = getBuildFromUrl();
-    if (!urlBuild || !game) return;
-
-    try {
-      importSharedBuild(decodeBuildPackage(urlBuild, game));
-      clearBuildFromUrl();
-    } catch {
-      // ignore invalid URL build codes
-    }
+    if (!game) return;
+    applyUrlBuildImport(game, importSharedBuild);
   }, [game, importSharedBuild]);
   if (!layout) return null;
 

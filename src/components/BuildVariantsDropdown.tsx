@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { StickyNote } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -6,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import {
   getDefaultVariantName,
   listBuildVariants,
@@ -50,10 +53,13 @@ function VariantOption({
 export function BuildVariantsDropdown() {
   const { labels } = useThemeConfig();
   const variantLabels = labels.milestones;
+  const notesLabel = labels.panels["variants-manager"]?.notes ?? "Notes";
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
   const activeBuildId = useBuildStore((s) => s.activeBuildId);
   const selectMilestone = useBuildStore((s) => s.selectMilestone);
   const openVariantsManager = useUiStore((s) => s.openVariantsManager);
+  const openVariantNotes = useUiStore((s) => s.openVariantNotes);
+  const [open, setOpen] = useState(false);
 
   const entry = savedBuilds
     .map((build) => normalizeSavedBuild(build))
@@ -79,13 +85,18 @@ export function BuildVariantsDropdown() {
     selectMilestone(value === DEFAULT_VALUE ? null : value);
   };
 
+  const handleOpenNotes = (variantId: string | null) => {
+    setOpen(false);
+    openVariantNotes(variantId);
+  };
+
   return (
     <div className="space-y-1.5">
       <span className="text-xs font-medium tracking-wide text-[var(--color-muted)]">
         {variantLabels.title}
       </span>
 
-      <Select value={selectValue} onValueChange={handleSelect}>
+      <Select open={open} onOpenChange={setOpen} value={selectValue} onValueChange={handleSelect}>
         <SelectTrigger className="h-9 gap-2 px-3 text-sm">
           <SelectValue className="min-w-0 flex-1">
             <VariantOption
@@ -101,17 +112,31 @@ export function BuildVariantsDropdown() {
           className="w-[var(--radix-select-trigger-width)] text-sm [&>div]:p-1"
         >
           {variants.map((variant) => (
-            <SelectItem
+            <div
               key={variant.id ?? DEFAULT_VALUE}
-              value={variant.id ?? DEFAULT_VALUE}
-              className={variantItemClassName}
+              className="flex w-full items-center gap-0.5 pr-1"
             >
-              <VariantOption
-                name={variant.name}
-                level={variant.level}
-                levelLabel={variantLabels.levelShort}
-              />
-            </SelectItem>
+              <SelectItem
+                value={variant.id ?? DEFAULT_VALUE}
+                className={`min-w-0 flex-1 ${variantItemClassName}`}
+              >
+                <VariantOption
+                  name={variant.name}
+                  level={variant.level}
+                  levelLabel={variantLabels.levelShort}
+                />
+              </SelectItem>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+                onClick={() => handleOpenNotes(variant.id)}
+                aria-label={notesLabel}
+              >
+                <StickyNote className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           ))}
 
           <SelectSeparator className="my-1" />

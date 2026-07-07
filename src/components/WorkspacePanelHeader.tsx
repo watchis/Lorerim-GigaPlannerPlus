@@ -9,6 +9,7 @@ interface WorkspacePanelHeaderProps {
   title?: ReactNode;
   titleRow?: ReactNode;
   subtitle?: ReactNode;
+  headerDropdown?: ReactNode;
   back?: {
     label: string;
     onClick: () => void;
@@ -24,6 +25,7 @@ export function WorkspacePanelHeader({
   title,
   titleRow,
   subtitle,
+  headerDropdown,
   back,
   forward,
   className,
@@ -45,19 +47,22 @@ export function WorkspacePanelHeader({
             <p className="mt-1 text-xs text-[var(--color-muted)]">{subtitle}</p>
           )}
         </div>
-        {nav && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 shrink-0 px-2 md:-mr-2"
-            onClick={nav.onClick}
-            aria-label={nav.label}
-          >
-            {back && <ChevronLeft className="h-4 w-4 shrink-0" />}
-            <span className="hidden sm:inline">{nav.label}</span>
-            {forward && <ChevronRight className="h-4 w-4 shrink-0" />}
-          </Button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {headerDropdown}
+          {nav && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 shrink-0 px-2 md:-mr-2"
+              onClick={nav.onClick}
+              aria-label={nav.label}
+            >
+              {back && <ChevronLeft className="h-4 w-4 shrink-0" />}
+              <span className="hidden sm:inline">{nav.label}</span>
+              {forward && <ChevronRight className="h-4 w-4 shrink-0" />}
+            </Button>
+          )}
+        </div>
       </div>
     </CardHeader>
   );

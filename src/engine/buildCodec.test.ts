@@ -91,14 +91,18 @@ describe("buildCodec", () => {
       [createMilestone("Level 25", milestoneBuild)],
       "Baseline",
     );
+    entry.defaultVariantNotes = "Default notes";
+    entry.milestones[0]!.notes = "Milestone notes";
     entry.activeMilestoneId = entry.milestones[0]!.id;
 
     const decoded = decodeBuildPackage(encodeSavedBuild(entry, game), game);
 
     expect(decoded.shared?.name).toBe("Two-Handed Tank");
     expect(decoded.shared?.defaultVariantName).toBe("Baseline");
+    expect(decoded.shared?.defaultVariantNotes).toBe("Default notes");
     expect(decoded.shared?.milestones).toHaveLength(1);
     expect(decoded.shared?.milestones[0]?.name).toBe("Level 25");
+    expect(decoded.shared?.milestones[0]?.notes).toBe("Milestone notes");
     expect(decoded.shared?.milestones[0]?.build.playerLevel).toBe(25);
     expect(decoded.shared?.milestones[0]?.build.selectedPerkIds).toEqual([
       "block-improved-blocking",
