@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+import { STACKED_LAYOUT_MAX_WIDTH } from "@/layout/plannerLayout";
+
 export type SetupPicker =
   | "race"
   | "birthsign"
@@ -48,6 +50,11 @@ interface UiStore {
   setShowPerkSkillRequirements: (show: boolean) => void;
 }
 
+function getDefaultShowPerkSkillRequirements(): boolean {
+  if (typeof window === "undefined") return true;
+  return window.innerWidth >= STACKED_LAYOUT_MAX_WIDTH;
+}
+
 export const useUiStore = create<UiStore>((set, get) => ({
   setupPicker: null,
   characterOptionsOpen: false,
@@ -55,7 +62,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
   middleView: "character-info",
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
-  showPerkSkillRequirements: true,
+  showPerkSkillRequirements: getDefaultShowPerkSkillRequirements(),
   setSetupPicker: (picker) =>
     set({ setupPicker: picker, characterOptionsOpen: false, variantsManagerOpen: false }),
   toggleSetupPicker: (picker) => {
