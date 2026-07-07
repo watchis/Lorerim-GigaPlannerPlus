@@ -526,8 +526,8 @@ function PerkNode({
     const now = Date.now();
     if (now - lastTapRef.current < PERK_DOUBLE_TAP_MS) {
       lastTapRef.current = 0;
+      onCloseTouchTooltip();
       handleForceAllocate(true);
-      showTouchTooltip();
       return;
     }
 
