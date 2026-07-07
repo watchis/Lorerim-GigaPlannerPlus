@@ -628,7 +628,7 @@ function SavedBuildCard({
             </span>
           )}
           {isSavedBuildImported(entry) && (
-            <ImportedBuildBadge label={labels.importedBadge} title={labels.importedBadgeHint} />
+            <ImportedBuildBadge label={labels.importedBadge} />
           )}
         </div>
         <p className="mt-1 text-xs text-[var(--color-muted)]">

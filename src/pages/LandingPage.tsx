@@ -207,10 +207,7 @@ export function LandingPage() {
                           </span>
                         )}
                         {isSavedBuildImported(entry) && (
-                          <ImportedBuildBadge
-                            label={buildLibraryLabels.importedBadge}
-                            title={buildLibraryLabels.importedBadgeHint}
-                          />
+                          <ImportedBuildBadge label={buildLibraryLabels.importedBadge} />
                         )}
                       </div>
                       <p className="mt-0.5 text-xs text-[var(--color-muted)]">
