@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
 import {
   AlertCircle,
   Archive,
@@ -417,6 +417,7 @@ export function VariantsManagerPanel() {
   const closeVariantsManager = useUiStore((s) => s.closeVariantsManager);
   const initialPane = useUiStore((s) => s.variantsManagerInitialPane);
   const initialVariantId = useUiStore((s) => s.variantsManagerInitialVariantId);
+  const variantNotesRequestId = useUiStore((s) => s.variantNotesRequestId);
   const gameData = useBuildStore((s) => s.gameData);
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
   const activeBuildId = useBuildStore((s) => s.activeBuildId);
@@ -440,6 +441,12 @@ export function VariantsManagerPanel() {
   const [notesVariantId, setNotesVariantId] = useState<string | null>(initialVariantId);
   const [notesDraft, setNotesDraft] = useState("");
   const [activePane, setActivePane] = useState<"manage" | "notes">(initialPane);
+  const notesDraftRef = useRef(notesDraft);
+  const notesVariantIdRef = useRef(notesVariantId);
+  const activePaneRef = useRef(activePane);
+  notesDraftRef.current = notesDraft;
+  notesVariantIdRef.current = notesVariantId;
+  activePaneRef.current = activePane;
 
   const entry = savedBuilds
     .map((build) => normalizeSavedBuild(build))
@@ -461,6 +468,35 @@ export function VariantsManagerPanel() {
     return variants.find((variant) => variant.id === notesVariantId) ?? variants[0] ?? null;
   }, [notesVariantId, variants]);
   const persistedNotes = notesVariant ? getVariantNotes(entry, notesVariant.id) : "";
+
+  useEffect(() => {
+    if (variantNotesRequestId === 0) return;
+
+    const targetVariantId = initialVariantId;
+    const { savedBuilds, activeBuildId } = useBuildStore.getState();
+    const currentEntry = savedBuilds
+      .map((build) => normalizeSavedBuild(build))
+      .find((build) => build.id === activeBuildId);
+    if (!currentEntry) return;
+
+    if (activePaneRef.current === "notes") {
+      const currentVariantId = notesVariantIdRef.current;
+      const currentPersisted = getVariantNotes(currentEntry, currentVariantId);
+      if (notesDraftRef.current !== currentPersisted) {
+        setVariantNotes(currentVariantId, notesDraftRef.current);
+      }
+    }
+
+    const refreshedEntry = useBuildStore
+      .getState()
+      .savedBuilds.map((build) => normalizeSavedBuild(build))
+      .find((build) => build.id === activeBuildId);
+    if (!refreshedEntry) return;
+
+    setActivePane("notes");
+    setNotesVariantId(targetVariantId);
+    setNotesDraft(getVariantNotes(refreshedEntry, targetVariantId));
+  }, [variantNotesRequestId, initialVariantId, setVariantNotes]);
 
   const startRename = (id: string | null, name: string) => {
     setRenamingKey(variantKey(id));
@@ -519,6 +555,13 @@ export function VariantsManagerPanel() {
   };
 
   const openNotes = (variantId: string | null) => {
+    if (activePane === "notes" && notesVariant && notesVariant.id !== variantId) {
+      const currentPersisted = getVariantNotes(entry, notesVariant.id);
+      if (notesDraft !== currentPersisted) {
+        setVariantNotes(notesVariant.id, notesDraft);
+      }
+    }
+
     setNotesVariantId(variantId);
     setNotesDraft(getVariantNotes(entry, variantId));
     setActivePane("notes");

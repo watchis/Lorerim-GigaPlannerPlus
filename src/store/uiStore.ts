@@ -34,6 +34,7 @@ interface UiStore {
   variantsManagerOpen: boolean;
   variantsManagerInitialPane: "manage" | "notes";
   variantsManagerInitialVariantId: string | null;
+  variantNotesRequestId: number;
   middleView: MiddleWorkspaceView;
   activeSkillTreeId: string | null;
   skillWorkspaceMode: SkillWorkspaceMode;
@@ -64,6 +65,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
   variantsManagerOpen: false,
   variantsManagerInitialPane: "manage",
   variantsManagerInitialVariantId: null,
+  variantNotesRequestId: 0,
   middleView: "character-info",
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
@@ -116,13 +118,14 @@ export const useUiStore = create<UiStore>((set, get) => ({
     });
   },
   openVariantNotes: (variantId) => {
-    set({
+    set((state) => ({
       variantsManagerOpen: true,
       setupPicker: null,
       characterOptionsOpen: false,
       variantsManagerInitialPane: "notes",
       variantsManagerInitialVariantId: variantId,
-    });
+      variantNotesRequestId: state.variantNotesRequestId + 1,
+    }));
     requestAnimationFrame(() => {
       document.getElementById("middle-workspace")?.scrollIntoView({
         behavior: "smooth",
@@ -135,6 +138,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
       variantsManagerOpen: false,
       variantsManagerInitialPane: "manage",
       variantsManagerInitialVariantId: null,
+      variantNotesRequestId: 0,
     }),
   setMiddleView: (view) =>
     set({
