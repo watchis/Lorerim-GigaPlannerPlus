@@ -1,4 +1,4 @@
-import { AlertCircle, Minus, Plus, RotateCcw, ChevronLeft, ListFilter } from "lucide-react";
+import { AlertCircle, Minus, Plus, RotateCcw, ListFilter } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { SkillTrainingSection } from "@/components/SkillTrainingSection";
@@ -264,15 +264,6 @@ export function SkillTreePanel() {
       <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-surface)]">
         <header className="shrink-0 border-b border-[var(--color-border)]/50 px-3 py-2.5">
           <div className="flex items-start gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => setMiddleView("character-info")}
-              aria-label={setupLabels.backToOverview ?? setupLabels.title}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-2">
                 <SkillIcon

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 
 interface WorkspacePanelHeaderProps {
   title?: ReactNode;
@@ -27,7 +28,8 @@ export function WorkspacePanelHeader({
   forward,
   className,
 }: WorkspacePanelHeaderProps) {
-  const nav = back ?? forward;
+  const stackedLayout = usePlannerStackedLayout();
+  const nav = !stackedLayout ? (back ?? forward) : undefined;
 
   return (
     <CardHeader

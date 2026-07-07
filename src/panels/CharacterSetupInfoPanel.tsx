@@ -13,6 +13,7 @@ import {
   getRemainingAttributePoints,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
+import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 import { DerivedStatsPanel } from "@/panels/DerivedStatsPanel";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
@@ -68,6 +69,7 @@ export function CharacterSetupInfoPanel() {
   const derivedLabels = usePanelLabels("derived-stats");
   const setMiddleView = useUiStore((s) => s.setMiddleView);
   const setActiveSkillTreeId = useUiStore((s) => s.setActiveSkillTreeId);
+  const stackedLayout = usePlannerStackedLayout();
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const computed = useBuildStore((s) => s.computed);
@@ -111,14 +113,18 @@ export function CharacterSetupInfoPanel() {
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <WorkspacePanelHeader
-        forward={{
-          label: skillLabels.title,
-          onClick: () => {
-            const firstTreeId = getOrderedPerkTrees(gameData.game)[0]?.skillId;
-            if (firstTreeId) setActiveSkillTreeId(firstTreeId);
-            setMiddleView("skill-trees");
-          },
-        }}
+        forward={
+          stackedLayout
+            ? undefined
+            : {
+                label: skillLabels.title,
+                onClick: () => {
+                  const firstTreeId = getOrderedPerkTrees(gameData.game)[0]?.skillId;
+                  if (firstTreeId) setActiveSkillTreeId(firstTreeId);
+                  setMiddleView("skill-trees");
+                },
+              }
+        }
         title={labels.overviewTitle ?? labels.title}
       />
       <CardContent className="min-h-0 flex-1 overflow-hidden p-0">

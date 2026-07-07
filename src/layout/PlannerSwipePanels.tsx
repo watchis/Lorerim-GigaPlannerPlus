@@ -61,8 +61,13 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
   activeIndexRef.current = activeIndex;
 
   const setupPicker = useUiStore((s) => s.setupPicker);
+  const setSetupPicker = useUiStore((s) => s.setSetupPicker);
   const characterOptionsOpen = useUiStore((s) => s.characterOptionsOpen);
+  const closeCharacterOptions = useUiStore((s) => s.closeCharacterOptions);
   const variantsManagerOpen = useUiStore((s) => s.variantsManagerOpen);
+  const closeVariantsManager = useUiStore((s) => s.closeVariantsManager);
+  const setMiddleView = useUiStore((s) => s.setMiddleView);
+  const setActiveSkillTreeId = useUiStore((s) => s.setActiveSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
 
   const goToPane = useCallback(
@@ -74,6 +79,29 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
     },
     [panelIds.length],
   );
+
+  const goToCharacterOverview = useCallback(() => {
+    setSetupPicker(null);
+    closeCharacterOptions();
+    closeVariantsManager();
+    setMiddleView("character-info");
+    setActiveSkillTreeId(null);
+    goToPane(CENTER_PANE_INDEX);
+  }, [
+    closeCharacterOptions,
+    closeVariantsManager,
+    goToPane,
+    setActiveSkillTreeId,
+    setMiddleView,
+    setSetupPicker,
+  ]);
+
+  const isCharacterOverviewActive =
+    activeIndex === CENTER_PANE_INDEX &&
+    !setupPicker &&
+    !characterOptionsOpen &&
+    !variantsManagerOpen &&
+    !skillTreeOpen;
 
   useEffect(() => {
     if (setupPicker || characterOptionsOpen || variantsManagerOpen || skillTreeOpen) {
@@ -152,13 +180,13 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
                     id={`planner-swipe-tab-${panelId}`}
                     type="button"
                     role="tab"
-                    aria-selected={isActive}
+                    aria-selected={isCharacterOverviewActive}
                     aria-label={ariaLabel}
                     aria-controls={`planner-swipe-pane-${panelId}`}
-                    onClick={() => goToPane(index)}
+                    onClick={goToCharacterOverview}
                     className={cn(
                       "relative z-10 -mt-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-[var(--color-surface)] shadow-[0_6px_20px_rgba(0,0,0,0.4)] transition-colors duration-200",
-                      isActive
+                      isCharacterOverviewActive
                         ? "border-[var(--color-accent)] text-[var(--color-accent)]"
                         : "border-[var(--color-border)] text-[var(--color-muted)]",
                     )}
