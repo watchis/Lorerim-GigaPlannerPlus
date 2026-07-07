@@ -1,8 +1,14 @@
 import type { Perk } from "@/data/schemas";
+import type { PerkBadgeVisibility } from "@/store/uiStore";
 
 export interface PerkNodeRequirements {
   skillReq: number | null;
   playerLevelReq: number | null;
+}
+
+export interface FormatPerkNodeRequirementLabelOptions {
+  visibility: PerkBadgeVisibility;
+  skillName?: string;
 }
 
 /** Level 1 is the default player level and is not shown or enforced as a perk gate. */
@@ -17,13 +23,24 @@ export function getPerkNodeRequirements(perk: Perk): PerkNodeRequirements {
   };
 }
 
-export function formatPerkNodeRequirementLabel(requirements: PerkNodeRequirements): string | null {
+export function formatPerkNodeRequirementLabel(
+  requirements: PerkNodeRequirements,
+  options?: FormatPerkNodeRequirementLabelOptions,
+): string | null {
+  const visibility = options?.visibility ?? {
+    playerLevelReq: true,
+    skillLevelReq: true,
+    skillName: false,
+  };
   const parts: string[] = [];
 
-  if (requirements.playerLevelReq !== null) {
+  if (visibility.playerLevelReq && requirements.playerLevelReq !== null) {
     parts.push(`Lv ${requirements.playerLevelReq}`);
   }
-  if (requirements.skillReq !== null) {
+  if (visibility.skillName && options?.skillName && requirements.skillReq !== null) {
+    parts.push(options.skillName);
+  }
+  if (visibility.skillLevelReq && requirements.skillReq !== null) {
     parts.push(String(requirements.skillReq));
   }
 

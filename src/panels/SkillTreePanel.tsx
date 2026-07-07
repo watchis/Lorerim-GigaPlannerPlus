@@ -1,4 +1,5 @@
-import { AlertCircle, Minus, Plus, RotateCcw, ListFilter } from "lucide-react";
+import { AlertCircle, Minus, Plus, RotateCcw } from "lucide-react";
+import { PerkBadgeVisibilityDropdown } from "@/components/PerkBadgeVisibilityDropdown";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { SkillTrainingSection } from "@/components/SkillTrainingSection";
@@ -127,8 +128,6 @@ export function SkillTreePanel() {
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillWorkspaceMode = useUiStore((s) => s.skillWorkspaceMode);
   const setSkillWorkspaceMode = useUiStore((s) => s.setSkillWorkspaceMode);
-  const setShowPerkSkillRequirements = useUiStore((s) => s.setShowPerkSkillRequirements);
-  const showPerkSkillRequirements = useUiStore((s) => s.showPerkSkillRequirements);
   const stackedLayout = usePlannerStackedLayout();
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
@@ -292,16 +291,7 @@ export function SkillTreePanel() {
             {!isDestinyTree && (
               <div className="flex shrink-0 items-center gap-0.5">
                 {!isTrainingMode && (
-                  <Button
-                    variant={showPerkSkillRequirements ? "default" : "ghost"}
-                    size="icon"
-                    className="h-9 w-9"
-                    onClick={() => setShowPerkSkillRequirements(!showPerkSkillRequirements)}
-                    aria-label={labels.showSkillRequirements}
-                    aria-pressed={showPerkSkillRequirements}
-                  >
-                    <ListFilter className="h-4 w-4" />
-                  </Button>
+                  <PerkBadgeVisibilityDropdown labels={labels} />
                 )}
                 <Button
                   variant="ghost"
@@ -569,15 +559,7 @@ export function SkillTreePanel() {
           <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
             <PerkLegend labels={labels} hasProblem={hasTreeProblem} />
             {!isDestinyTree && (
-              <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 text-[11px] text-[var(--color-muted)]">
-                <input
-                  type="checkbox"
-                  checked={showPerkSkillRequirements}
-                  onChange={(event) => setShowPerkSkillRequirements(event.target.checked)}
-                  className="h-4 w-4 shrink-0 accent-[var(--color-accent)] md:h-3.5 md:w-3.5"
-                />
-                {labels.showSkillRequirements}
-              </label>
+              <PerkBadgeVisibilityDropdown labels={labels} className="h-7 w-7" iconClassName="h-3.5 w-3.5" />
             )}
           </div>
         )}

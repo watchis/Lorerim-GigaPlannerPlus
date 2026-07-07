@@ -253,7 +253,8 @@
       "destinyOverBudgetMultiple": "{count} selected destiny perks exceed your destiny point budget at level {playerLevel}. Raise your level or remove perks.",
       "buildProblemLegend": "Problem",
       "skillTreeWarning": "View skill tree warnings",
-      "showSkillRequirements": "Skill requirements"
+      "showSkillRequirements": "Skill requirements",
+      "showSkillName": "Skill name"
     },
     "derived-stats": {
       "title": "Character Bonuses",

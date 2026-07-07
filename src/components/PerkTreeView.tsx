@@ -113,7 +113,7 @@ function PerkTreeView({
   const tryTakePerk = useBuildStore((s) => s.tryTakePerk);
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
-  const showSkillRequirements = useUiStore((s) => s.showPerkSkillRequirements);
+  const perkBadgeVisibility = useUiStore((s) => s.perkBadgeVisibility);
   const tookPerkWithLastClickRef = useRef(false);
   const supportsHover = useSupportsHover();
   const [touchTooltip, setTouchTooltip] = useState<{
@@ -515,7 +515,8 @@ function PerkTreeView({
             onForceTake={allocatePerk}
             onRemove={removePerk}
             labels={labels}
-            showSkillRequirements={showSkillRequirements}
+            badgeVisibility={perkBadgeVisibility}
+            skillName={tree.skillName}
             tooltipScale={tooltipScale}
             badgeLayoutRevision={badgeLayoutRevision}
             touchTooltipOpen={touchTooltip?.positionKey === positionKey}

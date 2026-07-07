@@ -23,6 +23,7 @@ import {
   resolvePerkBadgePlacement,
 } from "@/lib/perkTreeViewLayout";
 import { cn } from "@/lib/utils";
+import type { PerkBadgeVisibility } from "@/store/uiStore";
 
 function renderNextRankSection(nextRank: Perk, labels: Record<string, string>) {
   const nextRankRequirements = getPerkNodeRequirements(nextRank);
@@ -72,7 +73,8 @@ export interface PerkNodeProps {
   onForceTake: (perkId: string) => boolean;
   onRemove: (perkId: string) => void;
   labels: Record<string, string>;
-  showSkillRequirements: boolean;
+  badgeVisibility: PerkBadgeVisibility;
+  skillName: string;
   tooltipScale?: number;
   badgeLayoutRevision?: string;
   touchTooltipOpen?: boolean;
@@ -101,7 +103,8 @@ export function PerkNode({
   onForceTake,
   onRemove,
   labels,
-  showSkillRequirements,
+  badgeVisibility,
+  skillName,
   tooltipScale = 1,
   badgeLayoutRevision = "",
   touchTooltipOpen = false,
@@ -310,9 +313,11 @@ export function PerkNode({
       "border-[var(--color-perk-locked)] bg-[var(--color-surface)]/80 text-[var(--color-muted)] opacity-55 group-hover:opacity-80",
   );
 
-  const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements);
-  const badgeCount =
-    (showSkillRequirements && requirementLabel ? 1 : 0) + (stackRank ? 1 : 0);
+  const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements, {
+    visibility: badgeVisibility,
+    skillName,
+  });
+  const badgeCount = (requirementLabel ? 1 : 0) + (stackRank ? 1 : 0);
 
   const updateBadgePlacement = useCallback(() => {
     if (badgeCount === 0) {
@@ -348,7 +353,7 @@ export function PerkNode({
   }, [
     updateBadgePlacement,
     badgeLayoutRevision,
-    showSkillRequirements,
+    badgeVisibility,
     requirementLabel,
     stackRank,
     nodeDiameterPx,
@@ -474,7 +479,7 @@ export function PerkNode({
               badgesAbove ? "bottom-full mb-0.5 flex-col-reverse" : "top-full mt-0.5",
             )}
           >
-            {showSkillRequirements && requirementLabel && (
+            {requirementLabel && (
               <span className={requirementBadgeClassName}>{requirementLabel}</span>
             )}
             {stackRank && (

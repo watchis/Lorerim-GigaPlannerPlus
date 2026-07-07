@@ -28,6 +28,18 @@ export function isSkillTreeOpenInMiddlePane(state: {
 
 export type SkillWorkspaceMode = "perks" | "training";
 
+export type PerkBadgeVisibilityKey = "playerLevelReq" | "skillLevelReq" | "skillName";
+
+export interface PerkBadgeVisibility {
+  playerLevelReq: boolean;
+  skillLevelReq: boolean;
+  skillName: boolean;
+}
+
+export function hasAnyPerkBadgeVisibility(visibility: PerkBadgeVisibility): boolean {
+  return visibility.playerLevelReq || visibility.skillLevelReq || visibility.skillName;
+}
+
 interface UiStore {
   setupPicker: SetupPicker | null;
   characterOptionsOpen: boolean;
@@ -35,7 +47,7 @@ interface UiStore {
   middleView: MiddleWorkspaceView;
   activeSkillTreeId: string | null;
   skillWorkspaceMode: SkillWorkspaceMode;
-  showPerkSkillRequirements: boolean;
+  perkBadgeVisibility: PerkBadgeVisibility;
   setSetupPicker: (picker: SetupPicker | null) => void;
   toggleSetupPicker: (picker: SetupPicker) => void;
   openCharacterOptions: () => void;
@@ -47,12 +59,18 @@ interface UiStore {
   setActiveSkillTreeId: (skillId: string | null) => void;
   openSkillTree: (skillId: string) => void;
   setSkillWorkspaceMode: (mode: SkillWorkspaceMode) => void;
-  setShowPerkSkillRequirements: (show: boolean) => void;
+  setPerkBadgeVisibility: (visibility: PerkBadgeVisibility) => void;
+  togglePerkBadgeVisibility: (key: PerkBadgeVisibilityKey) => void;
 }
 
-function getDefaultShowPerkSkillRequirements(): boolean {
-  if (typeof window === "undefined") return true;
-  return window.innerWidth >= STACKED_LAYOUT_MAX_WIDTH;
+function getDefaultPerkBadgeVisibility(): PerkBadgeVisibility {
+  const showRequirements =
+    typeof window === "undefined" || window.innerWidth >= STACKED_LAYOUT_MAX_WIDTH;
+  return {
+    playerLevelReq: showRequirements,
+    skillLevelReq: showRequirements,
+    skillName: false,
+  };
 }
 
 export const useUiStore = create<UiStore>((set, get) => ({
@@ -62,7 +80,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
   middleView: "character-info",
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
-  showPerkSkillRequirements: getDefaultShowPerkSkillRequirements(),
+  perkBadgeVisibility: getDefaultPerkBadgeVisibility(),
   setSetupPicker: (picker) =>
     set({ setupPicker: picker, characterOptionsOpen: false, variantsManagerOpen: false }),
   toggleSetupPicker: (picker) => {
@@ -136,5 +154,12 @@ export const useUiStore = create<UiStore>((set, get) => ({
     });
   },
   setSkillWorkspaceMode: (mode) => set({ skillWorkspaceMode: mode }),
-  setShowPerkSkillRequirements: (show) => set({ showPerkSkillRequirements: show }),
+  setPerkBadgeVisibility: (visibility) => set({ perkBadgeVisibility: visibility }),
+  togglePerkBadgeVisibility: (key) =>
+    set((state) => ({
+      perkBadgeVisibility: {
+        ...state.perkBadgeVisibility,
+        [key]: !state.perkBadgeVisibility[key],
+      },
+    })),
 }));

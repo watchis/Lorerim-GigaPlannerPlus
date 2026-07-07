@@ -4,18 +4,35 @@ import { useUiStore } from "@/store/uiStore";
 
 describe("uiStore", () => {
   beforeEach(() => {
-    // Reset relevant UI state between tests (zustand store is a singleton).
-    useUiStore.setState({ showPerkSkillRequirements: true });
+    useUiStore.setState({
+      perkBadgeVisibility: {
+        playerLevelReq: true,
+        skillLevelReq: true,
+        skillName: false,
+      },
+    });
   });
 
-  it("stores perk skill requirements visibility as a single global flag", () => {
-    expect(useUiStore.getState().showPerkSkillRequirements).toBe(true);
+  it("stores perk badge visibility as independent global toggles", () => {
+    expect(useUiStore.getState().perkBadgeVisibility).toEqual({
+      playerLevelReq: true,
+      skillLevelReq: true,
+      skillName: false,
+    });
 
-    useUiStore.getState().setShowPerkSkillRequirements(false);
-    expect(useUiStore.getState().showPerkSkillRequirements).toBe(false);
+    useUiStore.getState().togglePerkBadgeVisibility("skillLevelReq");
+    expect(useUiStore.getState().perkBadgeVisibility.skillLevelReq).toBe(false);
+    expect(useUiStore.getState().perkBadgeVisibility.playerLevelReq).toBe(true);
 
-    useUiStore.getState().setShowPerkSkillRequirements(true);
-    expect(useUiStore.getState().showPerkSkillRequirements).toBe(true);
+    useUiStore.getState().setPerkBadgeVisibility({
+      playerLevelReq: false,
+      skillLevelReq: false,
+      skillName: true,
+    });
+    expect(useUiStore.getState().perkBadgeVisibility).toEqual({
+      playerLevelReq: false,
+      skillLevelReq: false,
+      skillName: true,
+    });
   });
 });
-
