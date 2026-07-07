@@ -2,9 +2,8 @@ import { useEffect } from "react";
 import { BugReportButton } from "@/components/BugReportButton";
 import { LevelBar } from "@/components/LevelBar";
 import { LayoutRenderer } from "@/layout/LayoutRenderer";
-import { clearBuildFromUrl, decodeBuildPackage, getBuildFromUrl } from "@/engine/buildCodec";
+import { applyUrlBuildImport } from "@/lib/urlBuildImport";
 import { useBuildStore } from "@/store/buildStore";
-import { LIBRARY_STORAGE_KEY } from "@/store/savedBuilds";
 
 export function PlannerPage() {
   const layout = useBuildStore((s) => s.gameData?.ui.layout);
@@ -12,19 +11,8 @@ export function PlannerPage() {
   const importSharedBuild = useBuildStore((s) => s.importSharedBuild);
 
   useEffect(() => {
-    const urlBuild = getBuildFromUrl();
-    if (!urlBuild || !game) return;
-
-    // A persisted library is the source of truth on refresh. Re-applying the URL
-    // build would replace the active slot with the share code (often without notes).
-    if (localStorage.getItem(LIBRARY_STORAGE_KEY)) return;
-
-    try {
-      importSharedBuild(decodeBuildPackage(urlBuild, game));
-      clearBuildFromUrl();
-    } catch {
-      // ignore invalid URL build codes
-    }
+    if (!game) return;
+    applyUrlBuildImport(game, importSharedBuild);
   }, [game, importSharedBuild]);
   if (!layout) return null;
 

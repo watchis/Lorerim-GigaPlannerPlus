@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Copy, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { decodeBuildPackage, encodeSavedBuild, setBuildInUrl } from "@/engine/buildCodec";
+import { decodeBuildPackage, encodeSavedBuild } from "@/engine/buildCodec";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import { normalizeSavedBuild, updateSavedBuildInList } from "@/store/savedBuilds";
@@ -37,7 +37,6 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(buildCode);
-      setBuildInUrl(buildCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -49,7 +48,6 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
     try {
       const decoded = decodeBuildPackage(codeInput.trim(), gameData.game);
       loadSharedBuild(decoded);
-      setBuildInUrl(codeInput.trim());
       setError(null);
     } catch {
       setError(allLabels.errors.invalidBuildCode);
