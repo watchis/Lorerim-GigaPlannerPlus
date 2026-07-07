@@ -313,9 +313,9 @@ function TransferSidebar({
   const fileFeedback = importFeedback?.context === "file" ? importFeedback : null;
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
+    <div className="min-w-0 space-y-3">
       <StorageMonitor />
-      <Card className="min-w-0 shrink-0 overflow-hidden">
+      <Card className="min-w-0 overflow-hidden">
         <PanelHeader
           icon={Link2}
           title={labels.shareCodeTitle}
@@ -374,17 +374,17 @@ function TransferSidebar({
         </CardContent>
       </Card>
 
-      <Card className="flex min-w-0 flex-col overflow-hidden max-lg:min-h-0 max-lg:flex-1">
+      <Card className="min-w-0 overflow-hidden">
         <PanelHeader
           icon={Archive}
           title={labels.backupTitle}
           description={formatLabel(labels.backupDescription, { extension: labels.backupExtension })}
           compact
         />
-        <CardContent className="flex flex-col space-y-3 max-lg:min-h-0 max-lg:flex-1">
-          <div className="flex flex-col space-y-2 max-lg:min-h-0 max-lg:flex-1">
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
             <SectionLabel>{labels.backupImportTitle}</SectionLabel>
-            <div className="flex flex-col gap-2 max-lg:min-h-0 max-lg:flex-1">
+            <div className="flex flex-col gap-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -396,7 +396,7 @@ function TransferSidebar({
                   e.target.value = "";
                 }}
               />
-              <div className="flex flex-col max-lg:min-h-0 max-lg:flex-1">
+              <div>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -404,7 +404,7 @@ function TransferSidebar({
                   onDragLeave={onFileDragLeave}
                   onDrop={onFileDrop}
                   className={cn(
-                    "flex w-full flex-col items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-dashed px-3 text-center transition-colors max-lg:min-h-32 max-lg:flex-1",
+                    "flex w-full flex-col items-center gap-1.5 rounded-[var(--radius-md)] border border-dashed px-3 text-center transition-colors",
                     fileFeedback ? "py-2.5" : "py-4",
                     fileFeedback?.type === "error"
                       ? "border-[var(--color-error)] bg-[var(--color-error)]/5 text-[var(--color-foreground)]"
@@ -426,7 +426,7 @@ function TransferSidebar({
             </div>
           </div>
 
-          <div className="shrink-0 space-y-2 border-t border-[var(--color-border)]/60 pt-3">
+          <div className="space-y-2 border-t border-[var(--color-border)]/60 pt-3">
             <SectionLabel>{labels.backupExportTitle}</SectionLabel>
             <div className="grid gap-2">
               <button
@@ -818,18 +818,10 @@ export function BuildsPage() {
   return (
     <div
       className={cn(
-        "page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 px-4 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4",
-        mobileTab === "transfer"
-          ? "max-lg:overflow-hidden max-lg:py-3 lg:py-4"
-          : "overflow-y-auto py-5 lg:py-4",
+        "page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4",
       )}
     >
-      <header
-        className={cn(
-          "flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4",
-          mobileTab === "transfer" && "hidden lg:flex",
-        )}
-      >
+      <header className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
           <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-[var(--color-accent-muted)]">
             {labels.eyebrow}
@@ -852,7 +844,6 @@ export function BuildsPage() {
       <div
         className={cn(
           "flex flex-col gap-3",
-          mobileTab === "transfer" && "min-h-0 flex-1 overflow-hidden max-lg:overflow-hidden",
           "lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch lg:gap-6 lg:overflow-hidden",
         )}
       >
@@ -945,10 +936,10 @@ export function BuildsPage() {
 
         <aside
           className={cn(
-            "min-h-0 min-w-0",
+            "min-h-0 min-w-0 pr-1",
             mobileTab !== "transfer" && "hidden lg:block",
-            mobileTab === "transfer" && "flex flex-1 flex-col max-lg:min-h-0 lg:flex-none",
-            "overflow-y-auto overscroll-y-contain pr-1",
+            mobileTab === "transfer" && "flex-1 lg:flex-none",
+            "lg:overflow-y-auto lg:overscroll-y-contain",
           )}
         >
           <TransferSidebar
