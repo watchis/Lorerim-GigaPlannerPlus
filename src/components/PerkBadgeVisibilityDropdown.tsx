@@ -19,7 +19,7 @@ const OVERLAY_ID = "perk-badge-visibility-dropdown";
 const VISIBILITY_OPTIONS: PerkBadgeVisibilityKey[] = [
   "skillLevelReq",
   "playerLevelReq",
-  "skillName",
+  "perkName",
 ];
 
 type PerkBadgeVisibilityDropdownProps = {
@@ -49,7 +49,7 @@ export function PerkBadgeVisibilityDropdown({
   const optionLabels: Record<PerkBadgeVisibilityKey, string> = {
     skillLevelReq: labels.skillReq,
     playerLevelReq: labels.playerLevelReq,
-    skillName: labels.showSkillName,
+    perkName: labels.showPerkName,
   };
 
   useEffect(() => {

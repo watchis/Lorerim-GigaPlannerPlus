@@ -74,7 +74,7 @@ export interface PerkNodeProps {
   onRemove: (perkId: string) => void;
   labels: Record<string, string>;
   badgeVisibility: PerkBadgeVisibility;
-  skillName: string;
+  badgePerkName: string;
   tooltipScale?: number;
   badgeLayoutRevision?: string;
   touchTooltipOpen?: boolean;
@@ -104,7 +104,7 @@ export function PerkNode({
   onRemove,
   labels,
   badgeVisibility,
-  skillName,
+  badgePerkName,
   tooltipScale = 1,
   badgeLayoutRevision = "",
   touchTooltipOpen = false,
@@ -315,7 +315,7 @@ export function PerkNode({
 
   const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements, {
     visibility: badgeVisibility,
-    skillName,
+    perkName: badgePerkName,
   });
   const badgeCount = (requirementLabel ? 1 : 0) + (stackRank ? 1 : 0);
 

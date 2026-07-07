@@ -8,7 +8,7 @@ describe("uiStore", () => {
       perkBadgeVisibility: {
         playerLevelReq: true,
         skillLevelReq: true,
-        skillName: false,
+        perkName: false,
       },
     });
   });
@@ -17,7 +17,7 @@ describe("uiStore", () => {
     expect(useUiStore.getState().perkBadgeVisibility).toEqual({
       playerLevelReq: true,
       skillLevelReq: true,
-      skillName: false,
+      perkName: false,
     });
 
     useUiStore.getState().togglePerkBadgeVisibility("skillLevelReq");
@@ -27,12 +27,12 @@ describe("uiStore", () => {
     useUiStore.getState().setPerkBadgeVisibility({
       playerLevelReq: false,
       skillLevelReq: false,
-      skillName: true,
+      perkName: true,
     });
     expect(useUiStore.getState().perkBadgeVisibility).toEqual({
       playerLevelReq: false,
       skillLevelReq: false,
-      skillName: true,
+      perkName: true,
     });
   });
 });

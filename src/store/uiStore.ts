@@ -28,16 +28,16 @@ export function isSkillTreeOpenInMiddlePane(state: {
 
 export type SkillWorkspaceMode = "perks" | "training";
 
-export type PerkBadgeVisibilityKey = "playerLevelReq" | "skillLevelReq" | "skillName";
+export type PerkBadgeVisibilityKey = "playerLevelReq" | "skillLevelReq" | "perkName";
 
 export interface PerkBadgeVisibility {
   playerLevelReq: boolean;
   skillLevelReq: boolean;
-  skillName: boolean;
+  perkName: boolean;
 }
 
 export function hasAnyPerkBadgeVisibility(visibility: PerkBadgeVisibility): boolean {
-  return visibility.playerLevelReq || visibility.skillLevelReq || visibility.skillName;
+  return visibility.playerLevelReq || visibility.skillLevelReq || visibility.perkName;
 }
 
 interface UiStore {
@@ -69,7 +69,7 @@ function getDefaultPerkBadgeVisibility(): PerkBadgeVisibility {
   return {
     playerLevelReq: showRequirements,
     skillLevelReq: showRequirements,
-    skillName: false,
+    perkName: false,
   };
 }
 

@@ -516,7 +516,7 @@ function PerkTreeView({
             onRemove={removePerk}
             labels={labels}
             badgeVisibility={perkBadgeVisibility}
-            skillName={tree.skillName}
+            badgePerkName={badgePerk.name}
             tooltipScale={tooltipScale}
             badgeLayoutRevision={badgeLayoutRevision}
             touchTooltipOpen={touchTooltip?.positionKey === positionKey}

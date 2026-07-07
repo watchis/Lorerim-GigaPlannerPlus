@@ -47,7 +47,7 @@ describe("perkRequirements", () => {
         visibility: {
           playerLevelReq: true,
           skillLevelReq: false,
-          skillName: false,
+          perkName: false,
         },
       }),
     ).toBe("Lv 10");
@@ -56,11 +56,21 @@ describe("perkRequirements", () => {
         visibility: {
           playerLevelReq: false,
           skillLevelReq: true,
-          skillName: true,
+          perkName: true,
         },
-        skillName: "Smithing",
+        perkName: "Stealth Archer",
       }),
-    ).toBe("Smithing · 50");
+    ).toBe("Stealth Archer · 50");
+    expect(
+      formatPerkNodeRequirementLabel(requirements, {
+        visibility: {
+          playerLevelReq: false,
+          skillLevelReq: false,
+          perkName: true,
+        },
+        perkName: "Stealth Archer",
+      }),
+    ).toBe("Stealth Archer");
   });
 
   it("treats level 1 player requirements as ungated", () => {

@@ -254,7 +254,7 @@
       "buildProblemLegend": "Problem",
       "skillTreeWarning": "View skill tree warnings",
       "showSkillRequirements": "Skill requirements",
-      "showSkillName": "Skill name"
+      "showPerkName": "Perk name"
     },
     "derived-stats": {
       "title": "Character Bonuses",

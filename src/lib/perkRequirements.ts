@@ -8,7 +8,7 @@ export interface PerkNodeRequirements {
 
 export interface FormatPerkNodeRequirementLabelOptions {
   visibility: PerkBadgeVisibility;
-  skillName?: string;
+  perkName?: string;
 }
 
 /** Level 1 is the default player level and is not shown or enforced as a perk gate. */
@@ -30,15 +30,15 @@ export function formatPerkNodeRequirementLabel(
   const visibility = options?.visibility ?? {
     playerLevelReq: true,
     skillLevelReq: true,
-    skillName: false,
+    perkName: false,
   };
   const parts: string[] = [];
 
   if (visibility.playerLevelReq && requirements.playerLevelReq !== null) {
     parts.push(`Lv ${requirements.playerLevelReq}`);
   }
-  if (visibility.skillName && options?.skillName && requirements.skillReq !== null) {
-    parts.push(options.skillName);
+  if (visibility.perkName && options?.perkName) {
+    parts.push(options.perkName);
   }
   if (visibility.skillLevelReq && requirements.skillReq !== null) {
     parts.push(String(requirements.skillReq));
