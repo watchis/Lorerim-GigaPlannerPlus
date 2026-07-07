@@ -17,6 +17,10 @@ import {
 import { useBuildStore } from "@/store/buildStore";
 import { useUiStore } from "@/store/uiStore";
 import { VariantOption, variantSelectItemClassName } from "@/components/VariantOption";
+import {
+  VariantSelectField,
+  variantSelectTriggerClassName,
+} from "@/components/VariantSelectField";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 
 const DEFAULT_VALUE = "default";
@@ -70,13 +74,9 @@ export function BuildVariantsDropdown() {
   };
 
   return (
-    <div className="space-y-1.5">
-      <span className="text-xs font-medium tracking-wide text-[var(--color-muted)]">
-        {variantLabels.title}
-      </span>
-
+    <VariantSelectField label={variantLabels.title}>
       <Select open={open} onOpenChange={setOpen} value={selectValue} onValueChange={handleSelect}>
-        <SelectTrigger className="h-9 min-w-0 gap-2 overflow-hidden px-3 text-sm">
+        <SelectTrigger className={variantSelectTriggerClassName}>
           <SelectValue className="min-w-0 flex-1 overflow-hidden">
             <VariantOption
               name={currentName}
@@ -123,6 +123,6 @@ export function BuildVariantsDropdown() {
           </SelectItem>
         </SelectContent>
       </Select>
-    </div>
+    </VariantSelectField>
   );
 }

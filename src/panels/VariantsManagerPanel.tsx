@@ -16,6 +16,10 @@ import {
 } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { VariantOption, variantSelectItemClassName } from "@/components/VariantOption";
+import {
+  VariantSelectField,
+  variantSelectTriggerClassName,
+} from "@/components/VariantSelectField";
 import { VariantNotesEditor } from "@/components/VariantNotesEditor";
 import { VariantNotesMarkdown } from "@/components/VariantNotesMarkdown";
 import { Button } from "@/components/ui/button";
@@ -708,45 +712,6 @@ export function VariantsManagerPanel() {
             </div>
           ) : undefined
         }
-        headerDropdown={
-          activePane === "notes" ? (
-            <Select value={notesVariantSelectValue} onValueChange={switchNotesVariant}>
-              <SelectTrigger className="h-8 min-w-0 w-[min(12rem,40vw)] gap-2 overflow-hidden px-2 text-xs">
-                <SelectValue
-                  className="min-w-0 flex-1 overflow-hidden"
-                  placeholder={labels["notesVariant"] ?? "Variant"}
-                >
-                  {notesVariant ? (
-                    <VariantOption
-                      name={notesVariant.name}
-                      levelText={formatLabel(variantLabels.levelShort, {
-                        level: notesVariant.level,
-                      })}
-                    />
-                  ) : null}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent
-                position="popper"
-                sideOffset={5}
-                className="w-[var(--radix-select-trigger-width)] text-sm [&>div]:p-1"
-              >
-                {variants.map((variant, index) => (
-                  <SelectItem
-                    key={variantKey(variant.id)}
-                    value={String(index)}
-                    className={variantSelectItemClassName}
-                  >
-                    <VariantOption
-                      name={variant.name}
-                      levelText={formatLabel(variantLabels.levelShort, { level: variant.level })}
-                    />
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : undefined
-        }
       />
 
       <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
@@ -839,12 +804,52 @@ export function VariantsManagerPanel() {
           </>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4">
-            <div className="flex shrink-0 items-center justify-end px-1">
+            <div className="flex shrink-0 items-end gap-3">
+              <VariantSelectField label={variantLabels.title} className="min-w-0 flex-1">
+                <Select value={notesVariantSelectValue} onValueChange={switchNotesVariant}>
+                  <SelectTrigger className={variantSelectTriggerClassName}>
+                    <SelectValue
+                      className="min-w-0 flex-1 overflow-hidden"
+                      placeholder={labels["notesVariant"] ?? "Variant"}
+                    >
+                      {notesVariant ? (
+                        <VariantOption
+                          name={notesVariant.name}
+                          levelText={formatLabel(variantLabels.levelShort, {
+                            level: notesVariant.level,
+                          })}
+                        />
+                      ) : null}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    sideOffset={5}
+                    className="w-[var(--radix-select-trigger-width)] text-sm [&>div]:p-1"
+                  >
+                    {variants.map((variant, index) => (
+                      <SelectItem
+                        key={variantKey(variant.id)}
+                        value={String(index)}
+                        className={variantSelectItemClassName}
+                      >
+                        <VariantOption
+                          name={variant.name}
+                          levelText={formatLabel(variantLabels.levelShort, {
+                            level: variant.level,
+                          })}
+                        />
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </VariantSelectField>
+
               {notesEditing ? (
                 <Button
                   type="button"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   disabled={!notesVariant}
                   onClick={finishNotesEditing}
                   aria-label={labels["doneNotes"] ?? "Done editing"}
@@ -857,7 +862,7 @@ export function VariantsManagerPanel() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-8 gap-1.5"
+                  className="h-9 shrink-0 gap-1.5"
                   disabled={!notesVariant}
                   onClick={() => setNotesEditing(true)}
                 >
