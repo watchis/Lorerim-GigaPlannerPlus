@@ -847,31 +847,25 @@ export function BuildsPage() {
           "lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch lg:gap-6 lg:overflow-hidden",
         )}
       >
-        <div className="grid h-10 shrink-0 grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5 lg:hidden">
-          <button
+        <div className="inline-flex w-full shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5 lg:hidden">
+          <Button
             type="button"
+            variant={mobileTab === "transfer" ? "ghost" : "default"}
+            size="sm"
+            className="h-7 flex-1 px-2.5 text-[10px] font-medium"
             onClick={() => setMobileTab("builds")}
-            className={cn(
-              "rounded-[var(--radius-md)] px-3 text-xs font-medium transition-colors sm:text-sm",
-              mobileTab === "builds"
-                ? "bg-[var(--color-surface)] text-[var(--color-accent)] shadow-sm"
-                : "text-[var(--color-muted)]",
-            )}
           >
             {labels.savedBuildsTitle}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={mobileTab === "transfer" ? "default" : "ghost"}
+            size="sm"
+            className="h-7 flex-1 px-2.5 text-[10px] font-medium"
             onClick={() => setMobileTab("transfer")}
-            className={cn(
-              "rounded-[var(--radius-md)] px-3 text-xs font-medium transition-colors sm:text-sm",
-              mobileTab === "transfer"
-                ? "bg-[var(--color-surface)] text-[var(--color-accent)] shadow-sm"
-                : "text-[var(--color-muted)]",
-            )}
           >
             {labels.shareCodeTitle}
-          </button>
+          </Button>
         </div>
 
         <section
