@@ -415,7 +415,8 @@ export function preserveSkillPointAllocations(
     if (!isAllocatableSkill(game, skillId)) continue;
 
     const previousLevel = getStoredSkillLevel(game, previousBuild, skillId);
-    const targetPaid = computePaidSkillPoints(game, previousBuild, skillId, previousLevel);
+    const previousFloor = getSkillFloor(game, previousBuild, skillId);
+    const investedAboveFloor = Math.max(0, previousLevel - previousFloor);
     const previousRanges = getSkillTrainingRanges(game, previousBuild, skillId);
     const floor = getSkillFloor(game, { ...nextBuild, skillLevels, skillTrainingRanges }, skillId);
     const maxOnSkill = getMaxTrainingOnSkill(game, nextBuild, skillId, floor);
@@ -431,14 +432,13 @@ export function preserveSkillPointAllocations(
       delete skillTrainingRanges[skillId];
     }
 
-    const preservedLevel = findSkillLevelForPaidPoints(
-      game,
-      { ...nextBuild, skillLevels, skillTrainingRanges },
-      skillId,
-      targetPaid,
+    const nextState = { ...nextBuild, skillLevels, skillTrainingRanges };
+    const nextFloor = getSkillFloor(game, nextState, skillId);
+    const trainingFloor = getSkillLevelFromTraining(game, nextState, skillId);
+    skillLevels[skillId] = Math.min(
+      getMaxSkillLevel(game),
+      Math.max(trainingFloor, nextFloor + investedAboveFloor),
     );
-    // Race / major / minor changes can lower the skill floor; never drop absolute levels.
-    skillLevels[skillId] = Math.max(previousLevel, preservedLevel);
   }
 
   return normalizeSkillTraining(game, { ...nextBuild, skillLevels, skillTrainingRanges });

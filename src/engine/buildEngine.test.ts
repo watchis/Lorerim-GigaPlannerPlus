@@ -10,6 +10,7 @@ import {
   getEarnedDestinyPerkPoints,
   getEarnedPerkPoints,
   getEarnedSkillPoints,
+  getSkillFloor,
   getMaxAllowedSkillLevel,
   getMinimumPlayerLevelForBuild,
   getRemainingPerkPoints,
@@ -287,26 +288,36 @@ describe("race/major/minor changes never lower skills", () => {
     throw new Error("No race pair found with different starting skill values.");
   }
 
-  it("preserves absolute skill level when switching to a race with a lower starting skill, and auto-raises player level if skill points go negative", () => {
+  it("preserves invested levels above the floor when switching races, and auto-raises player level if skill points go negative", () => {
     const { skillId, highRaceId, lowRaceId, high, low } = findRacePairWithDifferentStartingSkill();
 
-    const before = reconcileBuild(
+    const beforeBase = reconcileBuild(
       game,
       createTestBuildState({
         playerLevel: game.mechanics.leveling.baseLevel,
         raceId: highRaceId,
-        skillLevels: { [skillId]: high },
+        skillLevels: {},
       }),
     );
+    const beforeFloor = getSkillFloor(game, beforeBase, skillId);
+    expect(beforeFloor).toBeGreaterThanOrEqual(high);
+
+    // Simulate investment above the floor.
+    const invested = 5;
+    const before = reconcileBuild(game, {
+      ...beforeBase,
+      skillLevels: { ...beforeBase.skillLevels, [skillId]: beforeFloor + invested },
+    });
     const beforeLevel = before.skillLevels[skillId] ?? 0;
-    expect(beforeLevel).toBeGreaterThanOrEqual(high);
+    expect(beforeLevel).toBe(beforeFloor + invested);
 
     const candidate = { ...before, raceId: lowRaceId };
     const preserved = reconcileBuild(game, preserveSkillPointAllocations(game, before, candidate));
     const afterLevel = preserved.skillLevels[skillId] ?? 0;
+    const afterFloor = getSkillFloor(game, preserved, skillId);
 
-    // Regression: this used to drop to the new race's lower starting skill (or floor).
-    expect(afterLevel).toBe(beforeLevel);
+    // We should preserve the invested amount above the floor, not the old race's floor itself.
+    expect(afterLevel).toBe(afterFloor + invested);
     expect(low).toBeLessThan(high);
 
     // Keeping the absolute level with a lower floor can increase paid points; ensureMinimumPlayerLevel should cover it.
@@ -318,7 +329,7 @@ describe("race/major/minor changes never lower skills", () => {
     }
   });
 
-  it("preserves absolute skill levels when removing a major/minor selection (floor decreases)", () => {
+  it("preserves invested levels above the floor when removing a major/minor selection (floor decreases)", () => {
     // Pick a skill that is eligible for major selection and not destiny.
     const skill = game.skills.find((entry) => entry.majorEligible && entry.id !== "destiny");
     expect(skill).toBeDefined();
@@ -328,24 +339,60 @@ describe("race/major/minor changes never lower skills", () => {
     const raceWithStarting = game.races.find((race) => (race.startingSkills[skillId] ?? 0) > 0);
     expect(raceWithStarting).toBeDefined();
 
-    const before = reconcileBuild(
+    const beforeBase = reconcileBuild(
       game,
       createTestBuildState({
         playerLevel: game.mechanics.leveling.baseLevel,
         raceId: raceWithStarting!.id,
         majorSkillIds: [skillId],
-        // No explicit stored skillLevels; this is the fragile "floor-only" case.
         skillLevels: {},
       }),
     );
+    const beforeFloor = getSkillFloor(game, beforeBase, skillId);
+    const invested = 5;
+    const before = reconcileBuild(game, {
+      ...beforeBase,
+      skillLevels: { ...beforeBase.skillLevels, [skillId]: beforeFloor + invested },
+    });
     const beforeLevel = before.skillLevels[skillId] ?? 0;
-    expect(beforeLevel).toBeGreaterThan(0);
+    expect(beforeLevel).toBe(beforeFloor + invested);
 
     // Remove the major selection, which would normally lower the floor and (previously) lower the visible level.
     const candidate = { ...before, majorSkillIds: [] };
     const preserved = reconcileBuild(game, preserveSkillPointAllocations(game, before, candidate));
     const afterLevel = preserved.skillLevels[skillId] ?? 0;
-    expect(afterLevel).toBe(beforeLevel);
+    const afterFloor = getSkillFloor(game, preserved, skillId);
+    expect(afterLevel).toBe(afterFloor + invested);
+  });
+
+  it("does not accumulate race floors when toggling races repeatedly on an empty build (Imperial <-> Dunmer)", () => {
+    const imperial = game.races.find((race) => race.id === "imperial");
+    const dunmer = game.races.find((race) => race.id === "dunmer");
+    expect(imperial).toBeDefined();
+    expect(dunmer).toBeDefined();
+
+    let state = reconcileBuild(game, createTestBuildState({ raceId: "imperial" }));
+    state = reconcileBuild(game, preserveSkillPointAllocations(game, state, { ...state, raceId: "dunmer" }));
+    state = reconcileBuild(game, preserveSkillPointAllocations(game, state, { ...state, raceId: "imperial" }));
+
+    // Pick a representative set from the reported list (must exist in test data).
+    const skills = [
+      "heavy-armor",
+      "block",
+      "evasion",
+      "sneak",
+      "speech",
+      "conjuration",
+      "destruction",
+      "restoration",
+      "enchanting",
+    ];
+
+    for (const skillId of skills) {
+      if (game.manifest.nonAllocatableSkills.includes(skillId)) continue;
+      const expected = getSkillFloor(game, state, skillId);
+      expect(state.skillLevels[skillId] ?? expected).toBe(expected);
+    }
   });
 });
 
