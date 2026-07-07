@@ -9,7 +9,6 @@ interface WorkspacePanelHeaderProps {
   title?: ReactNode;
   titleRow?: ReactNode;
   subtitle?: ReactNode;
-  headerDropdown?: ReactNode;
   back?: {
     label: string;
     onClick: () => void;
@@ -25,7 +24,6 @@ export function WorkspacePanelHeader({
   title,
   titleRow,
   subtitle,
-  headerDropdown,
   back,
   forward,
   className,
@@ -47,8 +45,7 @@ export function WorkspacePanelHeader({
             <p className="mt-1 text-xs text-[var(--color-muted)]">{subtitle}</p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {headerDropdown}
+        <div className="flex min-w-0 shrink items-center gap-2">
           {nav && (
             <Button
               variant="ghost"
