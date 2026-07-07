@@ -20,6 +20,7 @@ import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearc
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BugReportButton } from "@/components/BugReportButton";
+import { ImportedBuildBadge } from "@/components/ImportedBuildBadge";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import type { GameData } from "@/data/schemas";
 import {
@@ -46,6 +47,7 @@ import type { SavedBuild } from "@/store/savedBuilds";
 import {
   getActiveSavedBuildBuild,
   getDefaultVariantName,
+  isSavedBuildImported,
   normalizeSavedBuild,
   updateSavedBuildInList,
 } from "@/store/savedBuilds";
@@ -626,6 +628,9 @@ function SavedBuildCard({
             <span className="shrink-0 whitespace-nowrap rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
               {labels.activeBadge}
             </span>
+          )}
+          {isSavedBuildImported(entry) && (
+            <ImportedBuildBadge label={labels.importedBadge} />
           )}
         </div>
         <p className="mt-1 text-xs text-[var(--color-muted)]">

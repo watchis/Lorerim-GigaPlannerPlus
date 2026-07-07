@@ -17,8 +17,9 @@ import { cn } from "@/lib/utils";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import type { SavedBuild } from "@/store/savedBuilds";
-import { normalizeSavedBuild } from "@/store/savedBuilds";
+import { isSavedBuildImported, normalizeSavedBuild } from "@/store/savedBuilds";
 import { BugReportButton } from "@/components/BugReportButton";
+import { ImportedBuildBadge } from "@/components/ImportedBuildBadge";
 
 const featureIcons = [Sparkles, Trees, Compass, GitBranch, Activity, Share2] as const;
 
@@ -204,6 +205,9 @@ export function LandingPage() {
                           <span className="shrink-0 whitespace-nowrap rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
                             {buildLibraryLabels.activeBadge}
                           </span>
+                        )}
+                        {isSavedBuildImported(entry) && (
+                          <ImportedBuildBadge label={buildLibraryLabels.importedBadge} />
                         )}
                       </div>
                       <p className="mt-0.5 text-xs text-[var(--color-muted)]">
