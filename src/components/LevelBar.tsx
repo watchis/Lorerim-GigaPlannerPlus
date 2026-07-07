@@ -302,6 +302,7 @@ function BuildIssuesBanner({
   const supportsHover = useSupportsHover();
   const [touchOpen, setTouchOpen] = useState(false);
   const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
+  const bannerButtonRef = useRef<HTMLButtonElement>(null);
   const { displaySummary, showTooltip } = getBuildIssuesBannerState({
     isMobile,
     messages,
@@ -342,11 +343,14 @@ function BuildIssuesBanner({
         open={touchOpen}
         onOpenChange={setTouchOpen}
         touchAnchor={touchAnchor}
+        dismissOnPointerDownOutside
+        dismissOutsideRefs={[bannerButtonRef]}
         contentClassName={buildIssuesTooltipClassName}
         content={<BuildIssuesTooltipContent messages={messages} andMoreLabel={andMoreLabel} />}
         className={cn(bannerClassName, "cursor-pointer touch-manipulation")}
       >
         <button
+          ref={bannerButtonRef}
           type="button"
           className="flex w-full min-w-0 items-center gap-2 border-0 bg-transparent p-0 text-left text-inherit"
           aria-label={displaySummary}

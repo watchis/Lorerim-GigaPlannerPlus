@@ -273,6 +273,8 @@ export function CursorTooltip({
   touchAnchor,
   contentScale = 1,
   contentClassName,
+  dismissOnPointerDownOutside = false,
+  dismissOutsideRefs = [],
 }: {
   children: ReactNode;
   content: ReactNode;
@@ -284,6 +286,8 @@ export function CursorTooltip({
   touchAnchor?: { x: number; y: number } | null;
   contentScale?: number;
   contentClassName?: string;
+  dismissOnPointerDownOutside?: boolean;
+  dismissOutsideRefs?: Array<React.RefObject<HTMLElement | null>>;
 }) {
   const [hoverOpen, setHoverOpen] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0 });
@@ -318,6 +322,23 @@ export function CursorTooltip({
       setActiveTouchTooltipId(null);
     }
   }, [isTouchControlled, disabled, id, controlledOpen]);
+
+  useEffect(() => {
+    if (!isTouchControlled || !dismissOnPointerDownOutside) return;
+    if (!open || disabled) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (tooltipRef.current?.contains(target)) return;
+      for (const ref of dismissOutsideRefs) {
+        if (ref.current?.contains(target)) return;
+      }
+      onOpenChangeRef.current?.(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isTouchControlled, dismissOnPointerDownOutside, dismissOutsideRefs, open, disabled]);
 
   useEffect(() => {
     return () => {

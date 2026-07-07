@@ -272,5 +272,65 @@ describe("HoverTapTooltip (touch)", () => {
     });
     expect(document.body.textContent).not.toContain("banner tooltip");
   });
+
+  it("dismisses a touch-controlled CursorTooltip on outside pointerdown when enabled", () => {
+    mockMatchMedia((query) => query === "(hover: hover) and (pointer: fine)" ? false : false);
+
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    function Fixture() {
+      const [open, setOpen] = useState(false);
+      const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+      return (
+        <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+          <CursorTooltip
+            open={open}
+            onOpenChange={setOpen}
+            touchAnchor={anchor}
+            dismissOnPointerDownOutside
+            dismissOutsideRefs={[]}
+            content="banner tooltip"
+          >
+            <button
+              type="button"
+              aria-label="banner"
+              onClick={(e) => {
+                setAnchor({ x: e.clientX, y: e.clientY });
+                setOpen(true);
+              }}
+            >
+              banner
+            </button>
+          </CursorTooltip>
+          <button type="button" aria-label="nav">
+            nav
+          </button>
+        </TooltipProvider>
+      );
+    }
+
+    act(() => {
+      root?.render(<Fixture />);
+    });
+
+    const bannerButton = document.querySelector('button[aria-label="banner"]');
+    const navButton = document.querySelector('button[aria-label="nav"]');
+    expect(bannerButton).toBeTruthy();
+    expect(navButton).toBeTruthy();
+
+    act(() => {
+      bannerButton?.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: 10, clientY: 10 }));
+    });
+    expect(document.body.textContent).toContain("banner tooltip");
+
+    act(() => {
+      navButton?.dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }),
+      );
+    });
+    expect(document.body.textContent).not.toContain("banner tooltip");
+  });
 });
 
