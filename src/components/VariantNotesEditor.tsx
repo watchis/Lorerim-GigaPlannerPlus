@@ -146,7 +146,7 @@ function VariantNotesToolbarControls({
         <SelectTrigger
           className={cn(
             toolbarButtonClass,
-            "justify-center gap-0 border-0 bg-transparent shadow-none focus:ring-0 [&>span]:hidden",
+            "justify-center gap-0 border-0 bg-transparent shadow-none focus:ring-0 [&>svg:last-child]:hidden",
           )}
           aria-label="Text style"
           title="Text style"
@@ -167,8 +167,6 @@ function VariantNotesToolbarControls({
           <SelectItem value="6">Heading 6</SelectItem>
         </SelectContent>
       </Select>
-
-      <ToolbarDivider />
 
       <ToolbarButton
         label="Bold"
