@@ -406,7 +406,7 @@ export function SkillTreePanel() {
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-2">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-1">
           {isTrainingMode ? (
             <SkillTrainingSection
               game={gameData.game}
@@ -587,7 +587,7 @@ export function SkillTreePanel() {
       <CardContent
         className={cn(
           "flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-4 sm:p-6",
-          stackedLayout && "p-2",
+          stackedLayout && "p-1",
         )}
       >
         {isTrainingMode ? (

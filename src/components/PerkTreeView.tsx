@@ -47,18 +47,36 @@ const MIN_NODE_DIAMETER_PX = 14;
 /** Extra padding between perk tree content and the viewport edge in full-tree view. */
 const TREE_VIEW_EDGE_PADDING_PX = 12;
 
-function getTreeLayoutMetrics(
-  bounds: { width: number; height: number },
-  fit: boolean,
-  fitSize: { width: number; height: number } | null,
-  visiblePerks: Perk[],
-): { gridUnitPx: number; nodeDiameterPx: number } {
-  const gridUnitPx =
-    fit && fitSize
-      ? Math.min(fitSize.width / bounds.width, fitSize.height / bounds.height)
-      : GRID_UNIT_PX;
+interface FitLayoutTuning {
+  regionInsetRatio: number;
+  boundsExtraPadding: number;
+  edgePaddingPx: number;
+}
 
-  const nodeDiameterPx = resolvePerkNodeDiameterPx(
+const DEFAULT_FIT_TUNING: FitLayoutTuning = {
+  regionInsetRatio: FIT_REGION_INSET_RATIO,
+  boundsExtraPadding: 0.6,
+  edgePaddingPx: TREE_VIEW_EDGE_PADDING_PX,
+};
+
+function getFitLayoutTuning(containerWidth: number, containerHeight: number): FitLayoutTuning {
+  const minDim = Math.min(containerWidth, containerHeight);
+
+  if (minDim < 360) {
+    return { regionInsetRatio: 0.99, boundsExtraPadding: 0.3, edgePaddingPx: 4 };
+  }
+  if (minDim < 520) {
+    return { regionInsetRatio: 0.97, boundsExtraPadding: 0.45, edgePaddingPx: 6 };
+  }
+
+  return DEFAULT_FIT_TUNING;
+}
+
+function resolvePerkNodeMetrics(
+  gridUnitPx: number,
+  visiblePerks: Perk[],
+): number {
+  return resolvePerkNodeDiameterPx(
     gridUnitPx,
     getMinDistinctPerkCenterDistanceGrid(visiblePerks),
     {
@@ -67,8 +85,49 @@ function getTreeLayoutMetrics(
       minDiameterPx: MIN_NODE_DIAMETER_PX,
     },
   );
+}
 
-  return { gridUnitPx, nodeDiameterPx };
+function resolveTreeEdgePaddingPx(nodeDiameterPx: number, edgePaddingPx: number): number {
+  return Math.ceil(nodeDiameterPx / 2) + edgePaddingPx;
+}
+
+function resolveTreeLayoutMetrics(
+  bounds: { width: number; height: number },
+  fit: boolean,
+  fitSize: { width: number; height: number } | null,
+  visiblePerks: Perk[],
+  fitTuning: FitLayoutTuning,
+): { gridUnitPx: number; nodeDiameterPx: number; treeEdgePaddingPx: number } {
+  if (!fit || !fitSize) {
+    const gridUnitPx = GRID_UNIT_PX;
+    const nodeDiameterPx = resolvePerkNodeMetrics(gridUnitPx, visiblePerks);
+    return {
+      gridUnitPx,
+      nodeDiameterPx,
+      treeEdgePaddingPx: resolveTreeEdgePaddingPx(nodeDiameterPx, fitTuning.edgePaddingPx),
+    };
+  }
+
+  const estimateGridUnitPx = Math.min(
+    fitSize.width / bounds.width,
+    fitSize.height / bounds.height,
+  );
+  const estimateNodeDiameterPx = resolvePerkNodeMetrics(estimateGridUnitPx, visiblePerks);
+  const edgePaddingPx = resolveTreeEdgePaddingPx(
+    estimateNodeDiameterPx,
+    fitTuning.edgePaddingPx,
+  );
+
+  const innerWidth = Math.max(1, fitSize.width - edgePaddingPx * 2);
+  const innerHeight = Math.max(1, fitSize.height - edgePaddingPx * 2);
+  const gridUnitPx = Math.min(innerWidth / bounds.width, innerHeight / bounds.height);
+  const nodeDiameterPx = resolvePerkNodeMetrics(gridUnitPx, visiblePerks);
+
+  return {
+    gridUnitPx,
+    nodeDiameterPx,
+    treeEdgePaddingPx: resolveTreeEdgePaddingPx(nodeDiameterPx, fitTuning.edgePaddingPx),
+  };
 }
 
 function perkAbbreviation(name: string): string {
@@ -487,13 +546,32 @@ interface PerkTreeViewProps {
   className?: string;
 }
 
-function useFitContainSize(aspect: number, enabled: boolean) {
+function computeFitContainSize(
+  containerWidth: number,
+  containerHeight: number,
+  aspect: number,
+  regionInsetRatio: number,
+): { width: number; height: number } {
+  const availableWidth = containerWidth * regionInsetRatio;
+  const availableHeight = containerHeight * regionInsetRatio;
+
+  if (availableWidth / availableHeight > aspect) {
+    return { width: availableHeight * aspect, height: availableHeight };
+  }
+
+  return { width: availableWidth, height: availableWidth / aspect };
+}
+
+function useFitContainArea(enabled: boolean) {
   const areaRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [containerSize, setContainerSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!enabled) {
-      setSize(null);
+      setContainerSize(null);
       return;
     }
 
@@ -504,17 +582,7 @@ function useFitContainSize(aspect: number, enabled: boolean) {
       const containerWidth = element.clientWidth;
       const containerHeight = element.clientHeight;
       if (!containerWidth || !containerHeight) return;
-
-      const insetRatio =
-        containerHeight < 360 || containerWidth < 360 ? 0.96 : FIT_REGION_INSET_RATIO;
-      const availableWidth = containerWidth * insetRatio;
-      const availableHeight = containerHeight * insetRatio;
-
-      if (availableWidth / availableHeight > aspect) {
-        setSize({ width: availableHeight * aspect, height: availableHeight });
-      } else {
-        setSize({ width: availableWidth, height: availableWidth / aspect });
-      }
+      setContainerSize({ width: containerWidth, height: containerHeight });
     };
 
     const observer = new ResizeObserver(update);
@@ -522,9 +590,9 @@ function useFitContainSize(aspect: number, enabled: boolean) {
     update();
 
     return () => observer.disconnect();
-  }, [aspect, enabled]);
+  }, [enabled]);
 
-  return { areaRef, size };
+  return { areaRef, containerSize };
 }
 
 function PerkTreeView({
@@ -546,27 +614,44 @@ function PerkTreeView({
 
   const isDestinyTree = tree.skillId === DESTINY_SKILL_ID;
 
+  const { areaRef, containerSize } = useFitContainArea(fit);
+  const fitTuning = useMemo(
+    () =>
+      containerSize
+        ? getFitLayoutTuning(containerSize.width, containerSize.height)
+        : DEFAULT_FIT_TUNING,
+    [containerSize],
+  );
   const bounds = useMemo(
     () =>
       getPerkTreeContentBounds(
         tree,
         EDITOR_NODE_EXTENT,
-        fit ? EDITOR_BOUNDS_PADDING + 0.6 : EDITOR_BOUNDS_PADDING,
+        fit
+          ? EDITOR_BOUNDS_PADDING + fitTuning.boundsExtraPadding
+          : EDITOR_BOUNDS_PADDING,
       ),
-    [tree, fit],
+    [tree, fit, fitTuning.boundsExtraPadding],
   );
   const aspect = bounds.width / bounds.height;
-  const { areaRef, size: fitSize } = useFitContainSize(aspect, fit);
+  const fitSize = useMemo(() => {
+    if (!fit || !containerSize) return null;
+    return computeFitContainSize(
+      containerSize.width,
+      containerSize.height,
+      aspect,
+      fitTuning.regionInsetRatio,
+    );
+  }, [fit, containerSize, aspect, fitTuning.regionInsetRatio]);
   const visiblePerks = useMemo(
     () => getVisiblePerksForTree(tree, build.selectedPerkIds),
     [tree, build.selectedPerkIds],
   );
-  const { gridUnitPx, nodeDiameterPx } = useMemo(
-    () => getTreeLayoutMetrics(bounds, fit, fitSize, visiblePerks),
-    [bounds, fit, fitSize, visiblePerks],
+  const { gridUnitPx, nodeDiameterPx, treeEdgePaddingPx } = useMemo(
+    () => resolveTreeLayoutMetrics(bounds, fit, fitSize, visiblePerks, fitTuning),
+    [bounds, fit, fitSize, visiblePerks, fitTuning],
   );
   const nodeRadiusGrid = nodeDiameterPx / (2 * gridUnitPx);
-  const treeEdgePaddingPx = Math.ceil(nodeDiameterPx / 2) + TREE_VIEW_EDGE_PADDING_PX;
 
   const edges = useMemo(
     () =>
