@@ -33,6 +33,8 @@ export interface PerkBadgeLayoutInput {
 
 const PLACEMENT_SIDES: PerkBadgeSide[] = ["below", "above", "right", "left"];
 const VERTICAL_SHIFTS_PX = [-48, -32, -16, 0, 16, 32, 48];
+const BELOW_CENTER_BONUS = 3;
+const HORIZONTAL_SIDE_PENALTY = 150;
 
 function inflateRect(rect: AxisRect, margin: number): AxisRect {
   return {
@@ -120,8 +122,12 @@ function scorePlacement(
 
   score += Math.abs(placement.shiftX) * 0.5;
 
+  if (placement.side === "left" || placement.side === "right") {
+    score += HORIZONTAL_SIDE_PENALTY;
+  }
+
   if (placement.side === "below" && placement.shiftX === 0) {
-    score -= 1;
+    score -= BELOW_CENTER_BONUS;
   }
 
   return score;

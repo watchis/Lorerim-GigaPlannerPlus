@@ -17,6 +17,15 @@ describe("perkBadgeLayout", () => {
     ).toEqual({ side: "below", shiftX: 0 });
   });
 
+  it("prefers below over side placement when both are unobstructed", () => {
+    const circle = { top: 100, bottom: 132, left: 100, right: 132 };
+    const distantNeighbor = { top: 300, bottom: 332, left: 300, right: 332 };
+
+    expect(
+      resolveBestPerkBadgePlacement(circle, 20, 60, bounds, [distantNeighbor]),
+    ).toEqual({ side: "below", shiftX: 0 });
+  });
+
   it("uses horizontal side placement when vertical sides overlap a column", () => {
     const circle = { top: 150, bottom: 182, left: 100, right: 132 };
     const belowNeighbor = { top: 188, bottom: 220, left: 100, right: 132 };
