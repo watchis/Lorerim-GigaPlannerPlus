@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applySkillTrainingRangeChange,
+  clampPlayerLevel,
   computeBuild,
   computeSkillPointsToReach,
   computeSkillPointsSpentOnSkill,
@@ -15,6 +16,8 @@ import {
   getRemainingSkillPoints,
   getRequiredPlayerLevel,
   getSkillLevelIncreaseCost,
+  getTrainingBudgetConflict,
+  normalizeSkillTraining,
   canSelectPerk,
   arePrerequisitesMet,
   getPerkById,
@@ -93,6 +96,56 @@ describe("buildEngine economy", () => {
     expect(computed.trainingLevelsUsed).toBe(30);
     expect(computed.trainingLevelsRemaining).toBe(-5);
     expect(state.playerLevel).toBe(5);
+  });
+});
+
+describe("player level cap", () => {
+  const game = getTestGameData();
+
+  it("loads easy mode cap and standard max from mechanics data", () => {
+    expect(game.mechanics.leveling.maxPlayerLevel).toBe(201);
+    expect(game.mechanics.leveling.standardMaxPlayerLevel).toBe(101);
+  });
+
+  it("clamps player level to the configured max and base", () => {
+    expect(clampPlayerLevel(game, 1)).toBe(1);
+    expect(clampPlayerLevel(game, 201)).toBe(201);
+    expect(clampPlayerLevel(game, 250)).toBe(201);
+    expect(clampPlayerLevel(game, 0)).toBe(1);
+  });
+});
+
+describe("training budget conflicts", () => {
+  const game = getTestGameData();
+
+  it("reports a conflict when training exceeds earned levels at the current player level", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 5,
+      skillLevels: { block: 30 },
+      skillTrainingRanges: { block: [25, 5, 0, 0] },
+    });
+
+    expect(getTrainingBudgetConflict(game, state, 5)).toEqual({
+      trainingUsed: 30,
+      trainingEarned: 25,
+      requiredLevel: 6,
+    });
+  });
+
+  it("preserves over-budget training during normalize", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 5,
+      skillLevels: { block: 30 },
+      skillTrainingRanges: { block: [25, 5, 0, 0] },
+    });
+
+    const normalized = normalizeSkillTraining(game, state);
+    expect(normalized.skillTrainingRanges.block).toEqual([25, 5, 0, 0]);
+    expect(computeBuild(game, normalized).trainingLevelsRemaining).toBe(-5);
   });
 });
 

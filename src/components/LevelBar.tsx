@@ -21,6 +21,11 @@ import {
   getSkillLevelForPerkChecks,
   type BuildPlayerLevelWarnings,
 } from "@/engine/buildEngine";
+import {
+  getBuildIssuesBannerState,
+  shouldShowEasyModeLevelWarning,
+  shrinkFontSizeToFit,
+} from "@/lib/levelBarDisplay";
 import { cn } from "@/lib/utils";
 import { useBuildStore } from "@/store/buildStore";
 import { useThemeConfig } from "@/theme/ThemeProvider";
@@ -133,10 +138,14 @@ function FitTextLine({
 
       let size = maxFontSize;
       text.style.fontSize = `${size}px`;
-      while (size > minFontSize && text.scrollWidth > container.clientWidth) {
-        size -= 0.5;
-        text.style.fontSize = `${size}px`;
-      }
+      const textWidthAtMax = text.scrollWidth;
+      size = shrinkFontSizeToFit(
+        maxFontSize,
+        minFontSize,
+        textWidthAtMax,
+        container.clientWidth,
+      );
+      text.style.fontSize = `${size}px`;
       setFontSize(size);
     };
 
@@ -189,12 +198,12 @@ function BuildIssuesBanner({
   const supportsHover = useSupportsHover();
   const [touchOpen, setTouchOpen] = useState(false);
   const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
-  const displaySummary = isMobile
-    ? mobileSummary
-    : messages.length > 1
-      ? desktopSummary
-      : (messages[0] ?? "");
-  const showTooltip = isMobile || messages.length > 1;
+  const { displaySummary, showTooltip } = getBuildIssuesBannerState({
+    isMobile,
+    messages,
+    mobileSummary,
+    desktopSummary,
+  });
 
   const bannerClassName = cn(
     "mx-auto mt-2 flex max-w-[1600px] gap-2 rounded-[var(--radius-md)] border border-[var(--color-error)]/40 bg-[var(--color-error)]/10 px-3 py-2 text-[var(--color-foreground)]",
@@ -733,7 +742,10 @@ function LevelBarContent({
     ...skillReqConflictMessages,
     ...formatPlayerLevelWarningMessages(barLabels, warnings, build.playerLevel),
   ];
-  const showEasyModeWarning = build.playerLevel > standardMaxPlayerLevel;
+  const showEasyModeWarning = shouldShowEasyModeLevelWarning(
+    build.playerLevel,
+    standardMaxPlayerLevel,
+  );
   const easyModeLevelWarning = formatLabel(barLabels.easyModeLevelWarning, {
     standardMax: standardMaxPlayerLevel,
   });

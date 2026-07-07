@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  clampTrainingRangeCount,
   computeTrainingSkillPointCredit,
   distributeTrainingCountAcrossTiers,
   formatTrainingTierRange,
@@ -8,6 +9,7 @@ import {
   trimTrainingRangesToBudget,
 } from "@/lib/skillTraining";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
+import { getSkillFloor } from "@/engine/buildEngine";
 
 describe("skillTraining", () => {
   const game = getTestGameData();
@@ -45,5 +47,20 @@ describe("skillTraining", () => {
     expect(computeTrainingSkillPointCredit(game.mechanics, game, [3, 0, 0, 0])).toBe(3);
     expect(computeTrainingSkillPointCredit(game.mechanics, game, [0, 2, 0, 0])).toBe(4);
     expect(computeTrainingSkillPointCredit(game.mechanics, game, [5, 1, 0, 0])).toBe(7);
+  });
+
+  it("does not clamp training counts to the global earned budget", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 5,
+      skillLevels: { block: 25 },
+      skillTrainingRanges: { block: [25, 0, 0, 0] },
+    });
+    const floor = getSkillFloor(game, state, "block");
+
+    expect(
+      clampTrainingRangeCount(game, state, "block", 1, 5, floor, [25, 0, 0, 0]),
+    ).toBe(5);
   });
 });

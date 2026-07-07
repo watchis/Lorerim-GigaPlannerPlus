@@ -16,6 +16,17 @@ describe("loadAppData", () => {
     expect(data.ui.labels.app.title.length).toBeGreaterThan(0);
   });
 
+  it("loads level cap and build issue banner labels", () => {
+    const data = loadAppData();
+    const levelBar = data.ui.labels["level-bar"];
+
+    expect(data.game.mechanics.leveling.maxPlayerLevel).toBe(201);
+    expect(data.game.mechanics.leveling.standardMaxPlayerLevel).toBe(101);
+    expect(levelBar.buildIssuesAlertMobile).toBe("Your build has issues. Tap to see more.");
+    expect(levelBar.buildIssuesAlertDesktop).toBe("Your build has issues. Hover to see more.");
+    expect(levelBar.easyModeLevelWarning).toContain("{standardMax}");
+  });
+
   it("merges perk player level requirements onto perk nodes", () => {
     const data = loadAppData();
     const speechTree = data.game.perkTrees.speech;
