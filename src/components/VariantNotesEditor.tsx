@@ -20,12 +20,15 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { shouldShowMarkdownToolbarDivider } from "@/lib/markdownToolbarPriority";
+import { useResponsiveMarkdownToolbar } from "@/lib/useResponsiveMarkdownToolbar";
 import { formatShortcutLabel, resolveMarkdownShortcut } from "@/lib/markdownKeybindings";
 import {
   applyVariantNotesFormat,
   type MarkdownFormat,
   type TextEditResult,
 } from "@/lib/markdownFormatting";
+import type { MarkdownToolbarItemId } from "@/lib/markdownToolbarPriority";
 
 interface VariantNotesEditorProps {
   value: string;
@@ -86,12 +89,14 @@ function ToolbarButton({
   shortcut,
   onClick,
   disabled,
+  itemId,
   children,
 }: {
   label: string;
   shortcut?: string;
   onClick: () => void;
   disabled?: boolean;
+  itemId: MarkdownToolbarItemId;
   children: ReactNode;
 }) {
   const title = shortcut ? `${label} (${shortcut})` : label;
@@ -101,6 +106,7 @@ function ToolbarButton({
       type="button"
       variant="ghost"
       size="icon"
+      data-toolbar-item={itemId}
       className={toolbarButtonClass}
       onClick={onClick}
       disabled={disabled}
@@ -117,11 +123,15 @@ function VariantNotesToolbarControls({
   onChange,
   disabled,
   textareaRef,
+  isItemVisible,
+  hiddenItems,
 }: {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
+  isItemVisible: (itemId: MarkdownToolbarItemId) => boolean;
+  hiddenItems: ReadonlySet<MarkdownToolbarItemId>;
 }) {
   const [headingSelectKey, setHeadingSelectKey] = useState(0);
 
@@ -142,120 +152,155 @@ function VariantNotesToolbarControls({
 
   return (
     <>
-      <Select key={headingSelectKey} onValueChange={applyHeading} disabled={disabled}>
-        <SelectTrigger
-          className={cn(
-            toolbarButtonClass,
-            "justify-center gap-0 border-0 bg-transparent shadow-none focus:ring-0 [&>svg:last-child]:hidden",
-          )}
-          aria-label="Text style"
-          title="Text style"
+      {isItemVisible("heading") && (
+        <Select key={headingSelectKey} onValueChange={applyHeading} disabled={disabled}>
+          <SelectTrigger
+            data-toolbar-item="heading"
+            className={cn(
+              toolbarButtonClass,
+              "justify-center gap-0 border-0 bg-transparent shadow-none focus:ring-0 [&>svg:last-child]:hidden",
+            )}
+            aria-label="Text style"
+            title="Text style"
+          >
+            <Heading className={cn(toolbarIconClass, "shrink-0")} />
+          </SelectTrigger>
+          <SelectContent
+            position="popper"
+            sideOffset={5}
+            className="z-[80] max-h-[min(50vh,20rem)] min-w-[8rem] text-sm"
+          >
+            <SelectItem value="normal">Normal text</SelectItem>
+            <SelectItem value="1">Heading 1</SelectItem>
+            <SelectItem value="2">Heading 2</SelectItem>
+            <SelectItem value="3">Heading 3</SelectItem>
+            <SelectItem value="4">Heading 4</SelectItem>
+            <SelectItem value="5">Heading 5</SelectItem>
+            <SelectItem value="6">Heading 6</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+
+      {isItemVisible("bold") && (
+        <ToolbarButton
+          label="Bold"
+          itemId="bold"
+          shortcut={formatShortcutLabel("bold")}
+          onClick={() => applyFormat("bold")}
+          disabled={disabled}
         >
-          <Heading className={cn(toolbarIconClass, "shrink-0")} />
-        </SelectTrigger>
-        <SelectContent
-          position="popper"
-          sideOffset={5}
-          className="z-[80] max-h-[min(50vh,20rem)] min-w-[8rem] text-sm"
+          <Bold className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
+      {isItemVisible("italic") && (
+        <ToolbarButton
+          label="Italic"
+          itemId="italic"
+          shortcut={formatShortcutLabel("italic")}
+          onClick={() => applyFormat("italic")}
+          disabled={disabled}
         >
-          <SelectItem value="normal">Normal text</SelectItem>
-          <SelectItem value="1">Heading 1</SelectItem>
-          <SelectItem value="2">Heading 2</SelectItem>
-          <SelectItem value="3">Heading 3</SelectItem>
-          <SelectItem value="4">Heading 4</SelectItem>
-          <SelectItem value="5">Heading 5</SelectItem>
-          <SelectItem value="6">Heading 6</SelectItem>
-        </SelectContent>
-      </Select>
+          <Italic className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
+      {isItemVisible("strikethrough") && (
+        <ToolbarButton
+          label="Strikethrough"
+          itemId="strikethrough"
+          shortcut={formatShortcutLabel("strikethrough")}
+          onClick={() => applyFormat("strikethrough")}
+          disabled={disabled}
+        >
+          <Strikethrough className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
 
-      <ToolbarButton
-        label="Bold"
-        shortcut={formatShortcutLabel("bold")}
-        onClick={() => applyFormat("bold")}
-        disabled={disabled}
-      >
-        <Bold className={toolbarIconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Italic"
-        shortcut={formatShortcutLabel("italic")}
-        onClick={() => applyFormat("italic")}
-        disabled={disabled}
-      >
-        <Italic className={toolbarIconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Strikethrough"
-        shortcut={formatShortcutLabel("strikethrough")}
-        onClick={() => applyFormat("strikethrough")}
-        disabled={disabled}
-      >
-        <Strikethrough className={toolbarIconClass} />
-      </ToolbarButton>
+      {shouldShowMarkdownToolbarDivider(0, hiddenItems) && <ToolbarDivider />}
 
-      <ToolbarDivider />
+      {isItemVisible("code") && (
+        <ToolbarButton
+          label="Inline code"
+          itemId="code"
+          shortcut={formatShortcutLabel("code")}
+          onClick={() => applyFormat("code")}
+          disabled={disabled}
+        >
+          <Code className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
+      {isItemVisible("codeBlock") && (
+        <ToolbarButton
+          label="Code block"
+          itemId="codeBlock"
+          shortcut={formatShortcutLabel("codeBlock")}
+          onClick={() => applyFormat("codeBlock")}
+          disabled={disabled}
+        >
+          <span className="font-mono text-[9px] leading-none">{"{ }"}</span>
+        </ToolbarButton>
+      )}
+      {isItemVisible("link") && (
+        <ToolbarButton
+          label="Link"
+          itemId="link"
+          shortcut={formatShortcutLabel("link")}
+          onClick={() => applyFormat("link")}
+          disabled={disabled}
+        >
+          <Link className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
+      {isItemVisible("image") && (
+        <ToolbarButton label="Image" itemId="image" onClick={() => applyFormat("image")} disabled={disabled}>
+          <Image className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
 
-      <ToolbarButton
-        label="Inline code"
-        shortcut={formatShortcutLabel("code")}
-        onClick={() => applyFormat("code")}
-        disabled={disabled}
-      >
-        <Code className={toolbarIconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Code block"
-        shortcut={formatShortcutLabel("codeBlock")}
-        onClick={() => applyFormat("codeBlock")}
-        disabled={disabled}
-      >
-        <span className="font-mono text-[9px] leading-none">{"{ }"}</span>
-      </ToolbarButton>
-      <ToolbarButton
-        label="Link"
-        shortcut={formatShortcutLabel("link")}
-        onClick={() => applyFormat("link")}
-        disabled={disabled}
-      >
-        <Link className={toolbarIconClass} />
-      </ToolbarButton>
-      <ToolbarButton label="Image" onClick={() => applyFormat("image")} disabled={disabled}>
-        <Image className={toolbarIconClass} />
-      </ToolbarButton>
+      {shouldShowMarkdownToolbarDivider(1, hiddenItems) && <ToolbarDivider />}
 
-      <ToolbarDivider />
-
-      <ToolbarButton
-        label="Bullet list"
-        shortcut={formatShortcutLabel("list")}
-        onClick={() => applyFormat("list")}
-        disabled={disabled}
-      >
-        <List className={toolbarIconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Numbered list"
-        shortcut={formatShortcutLabel("orderedList")}
-        onClick={() => applyFormat("orderedList")}
-        disabled={disabled}
-      >
-        <ListOrdered className={toolbarIconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Blockquote"
-        shortcut={formatShortcutLabel("blockquote")}
-        onClick={() => applyFormat("blockquote")}
-        disabled={disabled}
-      >
-        <Quote className={toolbarIconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Horizontal rule"
-        onClick={() => applyFormat("horizontalRule")}
-        disabled={disabled}
-      >
-        <Minus className={toolbarIconClass} />
-      </ToolbarButton>
+      {isItemVisible("list") && (
+        <ToolbarButton
+          label="Bullet list"
+          itemId="list"
+          shortcut={formatShortcutLabel("list")}
+          onClick={() => applyFormat("list")}
+          disabled={disabled}
+        >
+          <List className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
+      {isItemVisible("orderedList") && (
+        <ToolbarButton
+          label="Numbered list"
+          itemId="orderedList"
+          shortcut={formatShortcutLabel("orderedList")}
+          onClick={() => applyFormat("orderedList")}
+          disabled={disabled}
+        >
+          <ListOrdered className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
+      {isItemVisible("blockquote") && (
+        <ToolbarButton
+          label="Blockquote"
+          itemId="blockquote"
+          shortcut={formatShortcutLabel("blockquote")}
+          onClick={() => applyFormat("blockquote")}
+          disabled={disabled}
+        >
+          <Quote className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
+      {isItemVisible("horizontalRule") && (
+        <ToolbarButton
+          label="Horizontal rule"
+          itemId="horizontalRule"
+          onClick={() => applyFormat("horizontalRule")}
+          disabled={disabled}
+        >
+          <Minus className={toolbarIconClass} />
+        </ToolbarButton>
+      )}
     </>
   );
 }
@@ -275,21 +320,31 @@ export function VariantNotesToolbar({
   className?: string;
   framed?: boolean;
 }) {
+  const { containerRef, hiddenItems, isItemVisible } = useResponsiveMarkdownToolbar();
+
   return (
     <div
+      ref={containerRef}
       style={toolbarLayoutStyle}
       className={cn(
-        "flex w-full min-w-0 flex-nowrap items-center gap-[var(--toolbar-gap)] overflow-x-auto overscroll-x-contain",
+        "relative flex w-full min-w-0 flex-nowrap items-center gap-[var(--toolbar-gap)] overflow-hidden",
         framed &&
           "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-0.5 py-px",
         className,
       )}
     >
+      <div
+        data-toolbar-probe
+        aria-hidden
+        className="pointer-events-none invisible absolute size-[var(--toolbar-btn)]"
+      />
       <VariantNotesToolbarControls
         value={value}
         onChange={onChange}
         disabled={disabled}
         textareaRef={textareaRef}
+        isItemVisible={isItemVisible}
+        hiddenItems={hiddenItems}
       />
     </div>
   );
