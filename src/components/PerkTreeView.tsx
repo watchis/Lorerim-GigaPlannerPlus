@@ -43,7 +43,7 @@ const GRID_UNIT_PX = 26;
 const FIT_REGION_INSET_RATIO = 0.9;
 /** Minimum grid unit when panning a tree on narrow viewports. */
 const SCROLLABLE_GRID_UNIT_PX = 30;
-const MIN_TREE_ZOOM = 0.75;
+const MIN_TREE_ZOOM = 0.5;
 const MAX_TREE_ZOOM = 2.5;
 const TREE_ZOOM_STEP = 0.25;
 const DESTINY_SKILL_ID = "destiny";

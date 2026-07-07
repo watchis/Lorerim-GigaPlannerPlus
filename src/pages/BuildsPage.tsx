@@ -594,11 +594,11 @@ function SavedBuildCard({
       tabIndex={isActive ? undefined : 0}
       aria-label={canReorder ? labels.dragToReorder : undefined}
       className={cn(
-        "relative flex items-center gap-2 transition-all",
+        "relative flex items-center gap-2 pl-3 transition-all",
         isDragging && "opacity-40",
         isDragOver && "z-10 ring-1 ring-inset ring-[var(--color-accent)]/50",
         isActive && "bg-[var(--color-accent)]/[0.04]",
-        canReorder && "cursor-grab active:cursor-grabbing",
+        canReorder && "cursor-grab active:cursor-grabbing lg:pl-0",
         !isActive && !isDragging && "hover:bg-[var(--color-surface-elevated)]/80",
       )}
     >
@@ -616,11 +616,13 @@ function SavedBuildCard({
         <GripVertical className="h-4 w-4" />
       </div>
 
-      <div className="min-w-0 flex-1 py-3 pr-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h4 className="truncate text-sm font-semibold text-[var(--color-foreground)]">{entry.name}</h4>
+      <div className="min-w-0 flex-1 py-3 pr-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <h4 className="min-w-0 flex-1 truncate text-sm font-semibold text-[var(--color-foreground)]">
+            {entry.name}
+          </h4>
           {isActive && (
-            <span className="rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
               {labels.activeBadge}
             </span>
           )}

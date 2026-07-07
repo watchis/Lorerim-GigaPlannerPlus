@@ -1,4 +1,4 @@
-import { AlertCircle, Minus, Plus, RotateCcw, ChevronLeft } from "lucide-react";
+import { AlertCircle, Minus, Plus, RotateCcw, ChevronLeft, ListFilter } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { SkillTrainingSection } from "@/components/SkillTrainingSection";
@@ -301,19 +301,33 @@ export function SkillTreePanel() {
               </p>
             </div>
             {!isDestinyTree && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 shrink-0 text-[var(--color-muted)]"
-                onClick={() =>
-                  isTrainingMode
-                    ? resetSkillTraining(activeTree.skillId)
-                    : resetSkillPerks(activeTree.skillId)
-                }
-                aria-label={isTrainingMode ? labels.resetTraining : labels.resetSkill}
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
+              <div className="flex shrink-0 items-center gap-0.5">
+                {!isTrainingMode && (
+                  <Button
+                    variant={showPerkSkillRequirements ? "default" : "ghost"}
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => setShowPerkSkillRequirements(!showPerkSkillRequirements)}
+                    aria-label={labels.showSkillRequirements}
+                    aria-pressed={showPerkSkillRequirements}
+                  >
+                    <ListFilter className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-[var(--color-muted)]"
+                  onClick={() =>
+                    isTrainingMode
+                      ? resetSkillTraining(activeTree.skillId)
+                      : resetSkillPerks(activeTree.skillId)
+                  }
+                  aria-label={isTrainingMode ? labels.resetTraining : labels.resetSkill}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </div>
         </header>
@@ -401,18 +415,6 @@ export function SkillTreePanel() {
                   {labels.skillLevelMin}: <span className="tabular-nums">{floor}</span>
                 </span>
               </div>
-            )}
-
-            {!isDestinyTree && !isTrainingMode && (
-              <label className="inline-flex cursor-pointer items-center gap-2 text-[11px] text-[var(--color-muted)]">
-                <input
-                  type="checkbox"
-                  checked={showPerkSkillRequirements}
-                  onChange={(event) => setShowPerkSkillRequirements(event.target.checked)}
-                  className="h-4 w-4 shrink-0 accent-[var(--color-accent)]"
-                />
-                {labels.showSkillRequirements}
-              </label>
             )}
           </div>
         </div>

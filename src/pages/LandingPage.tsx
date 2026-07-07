@@ -54,6 +54,7 @@ export function LandingPage() {
   const navigate = useNavigate();
   const { labels } = useThemeConfig();
   const { landing } = labels;
+  const buildLibraryLabels = labels.panels["build-library"];
   const gameData = useBuildStore((s) => s.gameData);
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
   const activeBuildId = useBuildStore((s) => s.activeBuildId);
@@ -152,10 +153,10 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 pb-1 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="flex flex-col gap-2">
+      <section className="flex min-w-0 flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,300px)] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-2">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-[family-name:var(--font-heading)] text-lg font-semibold text-[var(--color-accent)]">
+            <h2 className="min-w-0 font-[family-name:var(--font-heading)] text-lg font-semibold text-[var(--color-accent)]">
               {landing.recentBuildsTitle}
             </h2>
             {savedBuilds.length > 0 && (
@@ -189,26 +190,37 @@ export function LandingPage() {
                     type="button"
                     onClick={() => openBuild(entry.id)}
                     className={cn(
-                      "flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left transition-colors hover:bg-[var(--color-surface-elevated)]/60",
+                      "flex w-full min-w-0 items-start gap-3 px-3 py-3 text-left transition-colors hover:bg-[var(--color-surface-elevated)]/60 sm:items-center",
                       index > 0 && "border-t border-[var(--color-border)]/50",
                       isActive && "bg-[var(--color-accent)]/5",
                     )}
                   >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-[var(--color-foreground)]">
-                        {entry.name}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <p className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--color-foreground)]">
+                          {entry.name}
+                        </p>
+                        {isActive && (
+                          <span className="shrink-0 whitespace-nowrap rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--color-accent)]">
+                            {buildLibraryLabels.activeBadge}
+                          </span>
+                        )}
+                      </div>
                       <p className="mt-0.5 text-xs text-[var(--color-muted)]">
                         {raceName ?? labels.panels["build-library"].noRace} · Level {level} ·{" "}
                         {entry.build.selectedPerkIds.length} perks
                       </p>
+                      <p className="mt-1 text-[10px] text-[var(--color-muted)] sm:hidden">
+                        {formatUpdatedAt(entry.updatedAt)}
+                      </p>
                     </div>
-                    <div className="shrink-0 text-right">
+                    <div className="hidden shrink-0 text-right sm:block">
                       <p className="text-[10px] text-[var(--color-muted)]">
                         {formatUpdatedAt(entry.updatedAt)}
                       </p>
                       <ArrowRight className="ml-auto mt-0.5 h-3.5 w-3.5 text-[var(--color-accent-muted)]" />
                     </div>
+                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-accent-muted)] sm:hidden" />
                   </button>
                 );
               })}
@@ -216,8 +228,8 @@ export function LandingPage() {
           )}
         </div>
 
-        <Card className="h-fit border-[var(--color-border)]/80">
-          <CardHeader className="p-3 pb-1">
+        <Card className="min-w-0 overflow-hidden border-[var(--color-border)]/80">
+          <CardHeader className="p-4 pb-2 sm:p-3 sm:pb-1">
             <div className="flex gap-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
                 <Link2 className="h-3.5 w-3.5" />
@@ -232,7 +244,7 @@ export function LandingPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-2 p-3 pt-1">
+          <CardContent className="space-y-2 p-4 pt-2 sm:p-3 sm:pt-1">
             <input
               type="text"
               value={codeInput}
@@ -244,7 +256,7 @@ export function LandingPage() {
                 if (event.key === "Enter") handleImportCode();
               }}
               placeholder={landing.importPlaceholder}
-              className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-3 py-1.5 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]/40"
+              className="w-full min-w-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-3 py-2.5 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]/40 sm:py-1.5"
             />
             {importError && (
               <p className="text-xs text-[var(--color-error)]" role="alert">

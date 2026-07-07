@@ -19,9 +19,7 @@ import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 
 const CENTER_PANE_INDEX = 1;
-const SWIPE_NAV_HEIGHT = "4.25rem";
-const SWIPE_PANE_GAP_PX = 12;
-const SWIPE_PANE_INSET_PX = 12;
+const SWIPE_NAV_HEIGHT = "3.5rem";
 
 const GoToSwipePaneContext = createContext<(index: number) => void>(() => {});
 
@@ -51,9 +49,8 @@ const PANE_NAV = [
 ] as const;
 
 function getSwipeScrollMetrics(element: HTMLDivElement) {
-  const paneWidth = Math.max(0, element.clientWidth - SWIPE_PANE_INSET_PX * 2);
-  const stride = paneWidth + SWIPE_PANE_GAP_PX;
-  return { paneWidth, stride };
+  const paneWidth = element.clientWidth;
+  return { paneWidth, stride: paneWidth };
 }
 
 interface PlannerSwipePanelsProps {
@@ -69,6 +66,7 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
   const [activeIndex, setActiveIndex] = useState(CENTER_PANE_INDEX);
   const [paneWidth, setPaneWidth] = useState(0);
   const activeIndexRef = useRef(activeIndex);
+  const isProgrammaticScrollRef = useRef(false);
   activeIndexRef.current = activeIndex;
 
   const setupPicker = useUiStore((s) => s.setupPicker);
@@ -77,17 +75,22 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
 
   const scrollToIndex = useCallback(
-    (index: number, behavior: ScrollBehavior = "smooth") => {
+    (index: number, behavior: ScrollBehavior = "auto") => {
       const element = scrollRef.current;
       if (!element || panelIds.length === 0) return;
 
       const clamped = Math.max(0, Math.min(panelIds.length - 1, index));
       const { stride } = getSwipeScrollMetrics(element);
+      activeIndexRef.current = clamped;
+      setActiveIndex(clamped);
+      isProgrammaticScrollRef.current = true;
       element.scrollTo({
         left: clamped * stride,
         behavior,
       });
-      setActiveIndex(clamped);
+      window.setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, behavior === "smooth" ? 350 : 0);
     },
     [panelIds.length],
   );
@@ -98,19 +101,27 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
 
     const syncLayout = () => {
       const { paneWidth: nextPaneWidth, stride } = getSwipeScrollMetrics(element);
-      setPaneWidth(nextPaneWidth);
-      element.scrollTo({
-        left: activeIndexRef.current * stride,
-        behavior: "auto",
-      });
+      setPaneWidth((prev) => (prev === nextPaneWidth ? prev : nextPaneWidth));
+
+      const targetLeft = activeIndexRef.current * stride;
+      if (Math.abs(element.scrollLeft - targetLeft) > 1) {
+        isProgrammaticScrollRef.current = true;
+        element.scrollTo({ left: targetLeft, behavior: "auto" });
+        window.setTimeout(() => {
+          isProgrammaticScrollRef.current = false;
+        }, 0);
+      }
     };
 
     const syncActiveIndex = () => {
+      if (isProgrammaticScrollRef.current) return;
+
       const { stride } = getSwipeScrollMetrics(element);
       if (!stride) return;
       const index = Math.round(element.scrollLeft / stride);
       const clamped = Math.max(0, Math.min(panelIds.length - 1, index));
       if (clamped !== activeIndexRef.current) {
+        activeIndexRef.current = clamped;
         setActiveIndex(clamped);
       }
     };
@@ -163,9 +174,7 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
           className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           style={{
             touchAction: "pan-x",
-            gap: SWIPE_PANE_GAP_PX,
-            paddingInline: SWIPE_PANE_INSET_PX,
-            paddingBottom: `calc(${SWIPE_NAV_HEIGHT} + env(safe-area-inset-bottom))`,
+            paddingBottom: `calc(${SWIPE_NAV_HEIGHT} + env(safe-area-inset-bottom) + 0.75rem)`,
           }}
         >
           {panelIds.map((panelId, index) => {
@@ -190,16 +199,11 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
         </div>
 
         <nav
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-4 pb-[max(0.375rem,env(safe-area-inset-bottom))]"
           role="tablist"
           aria-label="Planner sections"
         >
-          <div className="pointer-events-auto relative mx-auto max-w-md rounded-2xl border border-[var(--color-border)]/80 bg-[var(--color-surface)]/92 px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-            <div
-              className="pointer-events-none absolute left-14 right-14 top-[1.35rem] h-px bg-[var(--color-border)]"
-              aria-hidden
-            />
-            <div className="relative flex items-end gap-1">
+          <div className="pointer-events-auto mx-auto flex max-w-sm items-end justify-between gap-1 rounded-full border border-[var(--color-border)]/60 bg-[var(--color-surface)]/88 px-2 py-1 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-xl">
             {panelIds.map((panelId, index) => {
               const nav = PANE_NAV.find((item) => item.panelId === panelId);
               const Icon = nav?.Icon ?? LayoutGrid;
@@ -210,28 +214,24 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
 
               if (isCenter) {
                 return (
-                  <div
+                  <button
                     key={panelId}
-                    className="relative flex w-[4.25rem] shrink-0 items-center justify-center self-center pb-0.5"
+                    id={`planner-swipe-tab-${panelId}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-label={ariaLabel}
+                    aria-controls={`planner-swipe-pane-${panelId}`}
+                    onClick={() => scrollToIndex(index)}
+                    className={cn(
+                      "relative z-10 -mt-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-[var(--color-surface)] shadow-[0_6px_20px_rgba(0,0,0,0.4)] transition-colors duration-200",
+                      isActive
+                        ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                        : "border-[var(--color-border)] text-[var(--color-muted)]",
+                    )}
                   >
-                    <button
-                      id={`planner-swipe-tab-${panelId}`}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      aria-label={ariaLabel}
-                      aria-controls={`planner-swipe-pane-${panelId}`}
-                      onClick={() => scrollToIndex(index)}
-                      className={cn(
-                        "relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 bg-[var(--color-surface)] shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition-all duration-200",
-                        isActive
-                          ? "border-[var(--color-accent)] text-[var(--color-accent)] shadow-[0_0_0_4px_rgba(201,162,39,0.12)]"
-                          : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-accent-muted)] hover:text-[var(--color-foreground)]",
-                      )}
-                    >
-                      <Icon className="h-5 w-5" aria-hidden />
-                    </button>
-                  </div>
+                    <Icon className="h-6 w-6" aria-hidden />
+                  </button>
                 );
               }
 
@@ -246,19 +246,16 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
                   aria-controls={`planner-swipe-pane-${panelId}`}
                   onClick={() => scrollToIndex(index)}
                   className={cn(
-                    "flex min-h-11 min-w-0 flex-1 flex-col items-center justify-end gap-0.5 rounded-xl px-2 py-1.5 transition-colors duration-200",
+                    "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-2 py-1 transition-colors duration-200",
                     isActive
                       ? "text-[var(--color-accent)]"
-                      : "text-[var(--color-muted)] hover:text-[var(--color-foreground)]",
+                      : "text-[var(--color-muted)]",
                   )}
                 >
-                  <Icon
-                    className={cn("h-5 w-5 shrink-0", isActive && "scale-105")}
-                    aria-hidden
-                  />
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden />
                   <span
                     className={cn(
-                      "max-w-full truncate text-[10px] font-medium leading-none tracking-wide",
+                      "max-w-full truncate text-[9px] font-medium leading-none tracking-wide",
                       isActive ? "text-[var(--color-accent)]" : "text-[var(--color-muted)]",
                     )}
                   >
@@ -267,7 +264,6 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
                 </button>
               );
             })}
-            </div>
           </div>
         </nav>
       </div>
@@ -294,10 +290,10 @@ function SwipePane({
       role="tabpanel"
       aria-hidden={!isActive}
       className={cn(
-        "planner-swipe-pane h-full shrink-0 snap-start snap-always overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/60 bg-[var(--color-surface)] shadow-[0_2px_12px_rgba(0,0,0,0.2)]",
+        "planner-swipe-pane h-full shrink-0 snap-start snap-always overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/50 bg-[var(--color-surface)]",
         fullHeight && "flex flex-col",
       )}
-      style={{ width: width > 0 ? width : undefined }}
+      style={{ width: width > 0 ? width : "100%" }}
     >
       <div
         className={cn(
