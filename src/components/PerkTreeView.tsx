@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -6,6 +7,7 @@ import {
   type MouseEvent,
   type MutableRefObject,
   type PointerEvent as ReactPointerEvent,
+  type TouchEvent as ReactTouchEvent,
 } from "react";
 import {
   arePrerequisitesMet,
@@ -46,6 +48,66 @@ const BASE_NODE_DIAMETER_PX = 32;
 const MIN_NODE_DIAMETER_PX = 14;
 /** Extra padding between perk tree content and the viewport edge in full-tree view. */
 const TREE_VIEW_EDGE_PADDING_PX = 12;
+const MIN_TREE_ZOOM = 1;
+const MAX_TREE_ZOOM = 2.5;
+
+interface TreeViewTransform {
+  zoom: number;
+  panX: number;
+  panY: number;
+}
+
+const DEFAULT_TREE_VIEW_TRANSFORM: TreeViewTransform = {
+  zoom: MIN_TREE_ZOOM,
+  panX: 0,
+  panY: 0,
+};
+
+function clampTreeZoom(zoom: number): number {
+  return Math.min(MAX_TREE_ZOOM, Math.max(MIN_TREE_ZOOM, zoom));
+}
+
+function zoomTreeViewAtPoint(
+  transform: TreeViewTransform,
+  nextZoom: number,
+  pointX: number,
+  pointY: number,
+): TreeViewTransform {
+  const zoom = clampTreeZoom(nextZoom);
+  if (zoom <= MIN_TREE_ZOOM) {
+    return DEFAULT_TREE_VIEW_TRANSFORM;
+  }
+
+  const scale = zoom / transform.zoom;
+  return {
+    zoom,
+    panX: pointX - scale * (pointX - transform.panX),
+    panY: pointY - scale * (pointY - transform.panY),
+  };
+}
+
+function getTouchDistance(touches: TouchList | { length: number; 0?: Touch; 1?: Touch }): number {
+  if (touches.length < 2 || !touches[0] || !touches[1]) return 0;
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.hypot(dx, dy);
+}
+
+function isPerkTreeInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest("[data-perk-node], button"));
+}
+
+function getViewportPointFromCenter(
+  viewport: HTMLElement,
+  clientX: number,
+  clientY: number,
+): { x: number; y: number } {
+  const rect = viewport.getBoundingClientRect();
+  return {
+    x: clientX - rect.left - rect.width / 2,
+    y: clientY - rect.top - rect.height / 2,
+  };
+}
 
 interface FitLayoutTuning {
   regionInsetRatio: number;
@@ -611,6 +673,150 @@ function PerkTreeView({
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
   const tookPerkWithLastClickRef = useRef(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const panDragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startPanX: number;
+    startPanY: number;
+  } | null>(null);
+  const pinchStateRef = useRef<{
+    distance: number;
+    transform: TreeViewTransform;
+    pivotX: number;
+    pivotY: number;
+  } | null>(null);
+  const viewTransformRef = useRef(DEFAULT_TREE_VIEW_TRANSFORM);
+  const [viewTransform, setViewTransform] = useState<TreeViewTransform>(DEFAULT_TREE_VIEW_TRANSFORM);
+  const [isPanning, setIsPanning] = useState(false);
+
+  viewTransformRef.current = viewTransform;
+
+  const updateViewTransform = useCallback((next: TreeViewTransform) => {
+    viewTransformRef.current = next;
+    setViewTransform(next);
+  }, []);
+
+  useEffect(() => {
+    updateViewTransform(DEFAULT_TREE_VIEW_TRANSFORM);
+    panDragRef.current = null;
+    pinchStateRef.current = null;
+    setIsPanning(false);
+  }, [tree.skillId, updateViewTransform]);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || !fit) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const point = getViewportPointFromCenter(viewport, event.clientX, event.clientY);
+      const zoomFactor = Math.exp(-event.deltaY * 0.002);
+      const current = viewTransformRef.current;
+      const next = zoomTreeViewAtPoint(
+        current,
+        current.zoom * zoomFactor,
+        point.x,
+        point.y,
+      );
+      if (
+        next.zoom === current.zoom &&
+        next.panX === current.panX &&
+        next.panY === current.panY
+      ) {
+        return;
+      }
+      updateViewTransform(next);
+    };
+
+    viewport.addEventListener("wheel", handleWheel, { passive: false });
+    return () => viewport.removeEventListener("wheel", handleWheel);
+  }, [fit, updateViewTransform]);
+
+  const handleViewportPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!fit || viewTransformRef.current.zoom <= MIN_TREE_ZOOM) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (isPerkTreeInteractiveTarget(event.target)) return;
+
+    panDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startPanX: viewTransformRef.current.panX,
+      startPanY: viewTransformRef.current.panY,
+    };
+    setIsPanning(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleViewportPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (pinchStateRef.current) return;
+    const drag = panDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    updateViewTransform({
+      ...viewTransformRef.current,
+      panX: drag.startPanX + (event.clientX - drag.startX),
+      panY: drag.startPanY + (event.clientY - drag.startY),
+    });
+  };
+
+  const endPanDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = panDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    panDragRef.current = null;
+    setIsPanning(false);
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
+  const handleTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
+    if (!fit || event.touches.length !== 2 || !viewportRef.current) return;
+
+    const point = getViewportPointFromCenter(
+      viewportRef.current,
+      (event.touches[0].clientX + event.touches[1].clientX) / 2,
+      (event.touches[0].clientY + event.touches[1].clientY) / 2,
+    );
+    pinchStateRef.current = {
+      distance: getTouchDistance(event.touches),
+      transform: viewTransformRef.current,
+      pivotX: point.x,
+      pivotY: point.y,
+    };
+  };
+
+  const handleTouchMove = (event: ReactTouchEvent<HTMLDivElement>) => {
+    if (!fit || event.touches.length !== 2 || !pinchStateRef.current) return;
+
+    const distance = getTouchDistance(event.touches);
+    if (!distance || !pinchStateRef.current.distance) return;
+
+    const pinch = pinchStateRef.current;
+    const next = zoomTreeViewAtPoint(
+      pinch.transform,
+      pinch.transform.zoom * (distance / pinch.distance),
+      pinch.pivotX,
+      pinch.pivotY,
+    );
+    if (
+      next.zoom === viewTransformRef.current.zoom &&
+      next.panX === viewTransformRef.current.panX &&
+      next.panY === viewTransformRef.current.panY
+    ) {
+      return;
+    }
+    updateViewTransform(next);
+  };
+
+  const handleTouchEnd = () => {
+    pinchStateRef.current = null;
+  };
+
+  const isTransformedView =
+    viewTransform.zoom !== MIN_TREE_ZOOM ||
+    viewTransform.panX !== 0 ||
+    viewTransform.panY !== 0;
 
   const isDestinyTree = tree.skillId === DESTINY_SKILL_ID;
 
@@ -806,19 +1012,43 @@ function PerkTreeView({
   if (fit) {
     return (
       <div ref={areaRef} className={cn("h-full min-h-0 w-full", className)}>
-        <div className="flex h-full w-full items-center justify-center">
-          {fitSize ? (
-            <div
-              className="relative shrink-0 box-border"
-              style={{
-                width: fitSize.width,
-                height: fitSize.height,
-                padding: treeEdgePaddingPx,
-              }}
-            >
-              <div className="relative h-full w-full">{treeCanvas}</div>
-            </div>
-          ) : null}
+        <div
+          ref={viewportRef}
+          className={cn(
+            "h-full w-full touch-none overflow-hidden",
+            isPanning
+              ? "cursor-grabbing"
+              : viewTransform.zoom > MIN_TREE_ZOOM && "cursor-grab",
+          )}
+          onPointerDown={handleViewportPointerDown}
+          onPointerMove={handleViewportPointerMove}
+          onPointerUp={endPanDrag}
+          onPointerCancel={endPanDrag}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
+        >
+          <div className="flex h-full w-full items-center justify-center">
+            {fitSize ? (
+              <div
+                className="relative shrink-0 box-border"
+                style={{
+                  width: fitSize.width,
+                  height: fitSize.height,
+                  padding: treeEdgePaddingPx,
+                  ...(isTransformedView
+                    ? {
+                        transform: `translate(${viewTransform.panX}px, ${viewTransform.panY}px) scale(${viewTransform.zoom})`,
+                        transformOrigin: "center center",
+                      }
+                    : undefined),
+                }}
+              >
+                <div className="relative h-full w-full">{treeCanvas}</div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     );
