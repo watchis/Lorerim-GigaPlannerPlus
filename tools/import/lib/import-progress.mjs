@@ -149,18 +149,15 @@ export function createImportReporter(options = {}) {
   function track(label, total) {
     const started = Date.now();
     let current = 0;
-    let lastDetail = "";
     let lastWrite = 0;
 
-    function writeLine(detail, { increment = false, replaceDetail = true } = {}) {
-      if (increment) current += 1;
-      if (detail && replaceDetail) lastDetail = detail;
-
+    function tick(detail = "") {
+      current += 1;
       const ratio = total > 0 ? current / total : 1;
       const percent = Math.floor(ratio * 100);
       const bar = renderBar(ratio);
       const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
-      const line = formatTrackLine(label, bar, current, total, percent, lastDetail, maxWidth);
+      const line = formatTrackLine(label, bar, current, total, percent, detail, maxWidth);
 
       const now = Date.now();
       const isComplete = current >= total;
@@ -176,14 +173,6 @@ export function createImportReporter(options = {}) {
       }
     }
 
-    function tick(detail = "") {
-      writeLine(detail, { increment: true, replaceDetail: Boolean(detail) });
-    }
-
-    function update(detail = "") {
-      writeLine(detail, { increment: false, replaceDetail: Boolean(detail) });
-    }
-
     function finish(detail = "") {
       const elapsed = formatDuration(Date.now() - started);
       clearProgressLine(stream);
@@ -193,7 +182,7 @@ export function createImportReporter(options = {}) {
       );
     }
 
-    return { tick, update, finish };
+    return { tick, finish };
   }
 
   /** @deprecated Use `track` — kept for existing call sites during migration. */

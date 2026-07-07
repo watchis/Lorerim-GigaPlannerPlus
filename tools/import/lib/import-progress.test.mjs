@@ -177,18 +177,14 @@ function createCaptureStream({ isTTY = false, columns = 100 } = {}) {
 {
   const { stream, getOutput } = createCaptureStream({ isTTY: true });
   const progress = createImportReporter({ stream, interactive: true });
-  const transform = progress.track("Transform steps", 3);
+  const transform = progress.track("Transform steps", 2);
 
-  transform.update("Traits [Good Natured]");
-  transform.tick();
-  transform.update("Races [Nord]");
-  transform.tick();
-  transform.finish("done");
+  transform.tick("Perk trees");
+  transform.tick("Traits");
+  transform.finish("2 data sets");
 
-  const text = getOutput();
-  assert.match(text, /Traits \[Good Natured\]/);
-  assert.match(text, /Races \[Nord\]/);
-  assert.doesNotMatch(text, /— Traits\n/);
+  assert.match(getOutput(), /Transform steps/);
+  assert.match(getOutput(), /Traits/);
 }
 
 console.log("import-progress.test.mjs: ok");
