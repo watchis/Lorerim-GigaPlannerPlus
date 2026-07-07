@@ -26,7 +26,6 @@ import { formatShortcutLabel, resolveMarkdownShortcut } from "@/lib/markdownKeyb
 import {
   applyVariantNotesFormat,
   type MarkdownFormat,
-  type TextEditResult,
 } from "@/lib/markdownFormatting";
 import type { MarkdownToolbarItemId } from "@/lib/markdownToolbarPriority";
 
@@ -35,29 +34,19 @@ interface VariantNotesEditorProps {
   onChange: (value: string) => void;
   placeholder: string;
   disabled?: boolean;
-  toolbarRef?: RefObject<HTMLDivElement | null>;
   showToolbar?: boolean;
-  textareaRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
-function applyFormatToTextarea(
-  format: MarkdownFormat,
-  textarea: HTMLTextAreaElement,
-  value: string,
-): TextEditResult {
-  return applyVariantNotesFormat(format, value, {
-    start: textarea.selectionStart,
-    end: textarea.selectionEnd,
-  });
-}
-
-export function commitVariantNotesFormat(
+function commitVariantNotesFormat(
   format: MarkdownFormat,
   textarea: HTMLTextAreaElement,
   value: string,
   onChange: (value: string) => void,
 ): void {
-  const result = applyFormatToTextarea(format, textarea, value);
+  const result = applyVariantNotesFormat(format, value, {
+    start: textarea.selectionStart,
+    end: textarea.selectionEnd,
+  });
   onChange(result.value);
   requestAnimationFrame(() => {
     textarea.focus();
@@ -305,20 +294,16 @@ function VariantNotesToolbarControls({
   );
 }
 
-export function VariantNotesToolbar({
+function VariantNotesToolbar({
   value,
   onChange,
   disabled,
   textareaRef,
-  className,
-  framed = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
-  className?: string;
-  framed?: boolean;
 }) {
   const { containerRef, hiddenItems, isItemVisible } = useResponsiveMarkdownToolbar();
 
@@ -326,12 +311,7 @@ export function VariantNotesToolbar({
     <div
       ref={containerRef}
       style={toolbarLayoutStyle}
-      className={cn(
-        "relative flex w-full min-w-0 flex-nowrap items-center gap-[var(--toolbar-gap)] overflow-hidden",
-        framed &&
-          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-0.5 py-px",
-        className,
-      )}
+      className="relative flex w-full min-w-0 flex-nowrap items-center gap-[var(--toolbar-gap)] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-0.5 py-px"
     >
       <div
         data-toolbar-probe
@@ -355,12 +335,9 @@ export function VariantNotesEditor({
   onChange,
   placeholder,
   disabled,
-  toolbarRef,
   showToolbar = true,
-  textareaRef: externalTextareaRef,
 }: VariantNotesEditorProps) {
-  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const textareaRef = externalTextareaRef ?? internalTextareaRef;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (disabled) return;
@@ -375,15 +352,12 @@ export function VariantNotesEditor({
   return (
     <div className="flex h-full min-h-0 flex-col gap-1">
       {showToolbar && (
-        <div ref={toolbarRef}>
-          <VariantNotesToolbar
-            value={value}
-            onChange={onChange}
-            disabled={disabled}
-            textareaRef={textareaRef}
-            framed
-          />
-        </div>
+        <VariantNotesToolbar
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          textareaRef={textareaRef}
+        />
       )}
 
       <textarea
@@ -400,8 +374,4 @@ export function VariantNotesEditor({
       />
     </div>
   );
-}
-
-export function useVariantNotesTextareaRef() {
-  return useRef<HTMLTextAreaElement>(null);
 }

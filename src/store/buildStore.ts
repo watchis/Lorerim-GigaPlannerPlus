@@ -31,6 +31,7 @@ import {
   createMilestone,
   createSavedBuild,
   getActiveSavedBuildBuild,
+  getActiveSavedBuild,
   getDefaultVariantName,
   getVariantBuild,
   getVariantCount,
@@ -165,11 +166,6 @@ interface BuildStore {
   setVariantNotes: (variantId: string | null, notes: string) => void;
 }
 
-function getActiveEntry(savedBuilds: SavedBuild[], activeBuildId: string): SavedBuild | undefined {
-  const entry = savedBuilds.find((b) => b.id === activeBuildId);
-  return entry ? normalizeSavedBuild(entry) : undefined;
-}
-
 function updateActiveEntry(
   savedBuilds: SavedBuild[],
   activeBuildId: string,
@@ -223,7 +219,7 @@ function activateBuild(
   savedBuilds: SavedBuild[],
 ): void {
   const { gameData } = get();
-  const entry = getActiveEntry(savedBuilds, buildId);
+  const entry = getActiveSavedBuild(savedBuilds, buildId);
   if (!entry || !gameData) return;
 
   const build = getActiveSavedBuildBuild(entry);
@@ -762,7 +758,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
-          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
           if (milestoneId && !entry.milestones.some((m) => m.id === milestoneId)) return;
@@ -786,7 +782,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
-          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
           const freshBuild = reconcileBuild(gameData.game, createInitialBuildState());
@@ -819,7 +815,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
-          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
           const sourceName = getVariantName(entry, variantId);
@@ -851,7 +847,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
-          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
           const reconciled = reconcileBuild(gameData.game, importedBuild);
@@ -890,14 +886,14 @@ export const useBuildStore = create<BuildStore>()(
 
         deleteActiveVariant: () => {
           const { savedBuilds, activeBuildId } = get();
-          const entry = getActiveEntry(savedBuilds, activeBuildId);
+          const entry = getActiveSavedBuild(savedBuilds, activeBuildId);
           if (!entry) return;
           get().deleteVariant(entry.activeMilestoneId);
         },
 
         renameActiveVariant: (name) => {
           const { savedBuilds, activeBuildId } = get();
-          const entry = getActiveEntry(savedBuilds, activeBuildId);
+          const entry = getActiveSavedBuild(savedBuilds, activeBuildId);
           if (!entry) return;
           get().renameVariant(entry.activeMilestoneId, name);
         },
@@ -907,7 +903,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
-          const entry = getActiveEntry(syncedBuilds, activeBuildId);
+          const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry || getVariantCount(entry) <= 1) return;
 
           let nextEntry: SavedBuild;
@@ -1013,7 +1009,7 @@ export const useBuildStore = create<BuildStore>()(
         if (state.build.playerLevel == null || Number.isNaN(state.build.playerLevel)) {
           state.build = { ...state.build, playerLevel: baseLevel };
         }
-        const activeEntry = getActiveEntry(state.savedBuilds, state.activeBuildId);
+        const activeEntry = getActiveSavedBuild(state.savedBuilds, state.activeBuildId);
         if (activeEntry) {
           state.build = getActiveSavedBuildBuild(activeEntry);
         }

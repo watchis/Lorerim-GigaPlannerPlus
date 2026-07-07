@@ -242,11 +242,20 @@ export function getActiveSavedBuildBuild(entry: SavedBuild): BuildState {
   return milestone?.build ?? entry.build;
 }
 
+export function getActiveSavedBuild(
+  savedBuilds: SavedBuild[],
+  activeBuildId: string,
+): SavedBuild | undefined {
+  const entry = savedBuilds.find((build) => build.id === activeBuildId);
+  return entry ? normalizeSavedBuild(entry) : undefined;
+}
+
 export function listBuildVariants(entry: SavedBuild): Array<{
   id: string | null;
   name: string;
   level: number;
   perkCount: number;
+  notes: string;
 }> {
   const normalized = normalizeSavedBuild(entry);
 
@@ -256,12 +265,14 @@ export function listBuildVariants(entry: SavedBuild): Array<{
       name: getDefaultVariantName(normalized),
       level: normalized.build.playerLevel,
       perkCount: normalized.build.selectedPerkIds.length,
+      notes: normalized.defaultVariantNotes ?? "",
     },
     ...normalized.milestones.map((milestone) => ({
       id: milestone.id,
       name: milestone.name,
       level: milestone.build.playerLevel,
       perkCount: milestone.build.selectedPerkIds.length,
+      notes: milestone.notes ?? "",
     })),
   ];
 }

@@ -60,6 +60,15 @@ function getDefaultShowPerkSkillRequirements(): boolean {
   return window.innerWidth >= STACKED_LAYOUT_MAX_WIDTH;
 }
 
+function scrollMiddleWorkspaceIntoView(): void {
+  requestAnimationFrame(() => {
+    document.getElementById("middle-workspace")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  });
+}
+
 export const useUiStore = create<UiStore>((set, get) => ({
   setupPicker: null,
   characterOptionsOpen: false,
@@ -113,12 +122,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
       variantsManagerInitialVariantId: null,
       variantsManagerRequestId: state.variantsManagerRequestId + 1,
     }));
-    requestAnimationFrame(() => {
-      document.getElementById("middle-workspace")?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    });
+    scrollMiddleWorkspaceIntoView();
   },
   openVariantNotes: (variantId) => {
     set((state) => ({
@@ -129,12 +133,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
       variantsManagerInitialVariantId: variantId,
       variantNotesRequestId: state.variantNotesRequestId + 1,
     }));
-    requestAnimationFrame(() => {
-      document.getElementById("middle-workspace")?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    });
+    scrollMiddleWorkspaceIntoView();
   },
   closeVariantsManager: () =>
     set({

@@ -1,23 +1,7 @@
 /**
  * Markdown toolbar overflow priority.
- *
- * When the toolbar is narrower than its contents, items are removed in
- * `MARKDOWN_TOOLBAR_REMOVAL_ORDER` (first = lowest priority). The most-used
- * formats stay visible the longest.
- *
- * Removal order (first hidden → last hidden):
- * 1. Blockquote
- * 2. Code block
- * 3. Numbered list
- * 4. Strikethrough
- * 5. Link
- * 6. Inline code
- * 7. Heading
- * 8. Bullet list
- * 9. Horizontal rule
- * 10. Image
- * 11. Italic
- * 12. Bold (kept until everything else is gone)
+ * Items are removed in `MARKDOWN_TOOLBAR_REMOVAL_ORDER` when space is tight
+ * (first = lowest priority, last = highest).
  */
 export type MarkdownToolbarItemId =
   | "heading"
@@ -48,26 +32,14 @@ export const MARKDOWN_TOOLBAR_REMOVAL_ORDER: readonly MarkdownToolbarItemId[] = 
   "bold",
 ] as const;
 
-export const MARKDOWN_TOOLBAR_DISPLAY_ORDER: readonly MarkdownToolbarItemId[] = [
-  "heading",
-  "bold",
-  "italic",
-  "strikethrough",
-  "code",
-  "codeBlock",
-  "link",
-  "image",
-  "list",
-  "orderedList",
-  "blockquote",
-  "horizontalRule",
-] as const;
-
 export const MARKDOWN_TOOLBAR_GROUPS: readonly (readonly MarkdownToolbarItemId[])[] = [
   ["heading", "bold", "italic", "strikethrough"],
   ["code", "codeBlock", "link", "image"],
   ["list", "orderedList", "blockquote", "horizontalRule"],
 ] as const;
+
+export const MARKDOWN_TOOLBAR_DISPLAY_ORDER: readonly MarkdownToolbarItemId[] =
+  MARKDOWN_TOOLBAR_GROUPS.flat();
 
 export interface MarkdownToolbarLayoutMetrics {
   containerWidth: number;
@@ -143,13 +115,6 @@ export function shouldShowMarkdownToolbarDivider(
   const previousVisible = previousGroup.some((itemId) => !hidden.has(itemId));
   const nextVisible = nextGroup.some((itemId) => !hidden.has(itemId));
   return previousVisible && nextVisible;
-}
-
-export function isMarkdownToolbarItemVisible(
-  itemId: MarkdownToolbarItemId,
-  hidden: ReadonlySet<MarkdownToolbarItemId>,
-): boolean {
-  return !hidden.has(itemId);
 }
 
 export function readMarkdownToolbarLayoutMetrics(container: HTMLElement): MarkdownToolbarLayoutMetrics {

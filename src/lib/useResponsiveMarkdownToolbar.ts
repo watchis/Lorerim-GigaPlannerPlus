@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   type MarkdownToolbarItemId,
   computeHiddenMarkdownToolbarItems,
-  isMarkdownToolbarItemVisible,
   readMarkdownToolbarLayoutMetrics,
 } from "@/lib/markdownToolbarPriority";
 
@@ -29,7 +28,6 @@ export function useResponsiveMarkdownToolbar() {
   return {
     containerRef,
     hiddenItems,
-    isItemVisible: (itemId: MarkdownToolbarItemId) =>
-      isMarkdownToolbarItemVisible(itemId, hiddenItems),
+    isItemVisible: (itemId: MarkdownToolbarItemId) => !hiddenItems.has(itemId),
   };
 }
