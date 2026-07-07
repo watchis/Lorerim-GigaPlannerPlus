@@ -165,7 +165,16 @@ export function HoverTapTooltip({
     if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
     event.preventDefault();
     event.stopPropagation();
-    setOpen((value) => !value);
+    setOpen((value) => {
+      const next = !value;
+      if (next) {
+        // Close any other touch tooltip immediately.
+        setActiveTouchTooltipId(id);
+      } else if (activeTouchTooltipId === id) {
+        setActiveTouchTooltipId(null);
+      }
+      return next;
+    });
   };
 
   if (!supportsHover) {
