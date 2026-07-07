@@ -180,5 +180,44 @@ describe("HoverTapTooltip (touch)", () => {
     expect(document.body.textContent).toContain("wallet tooltip");
     expect(document.body.textContent).not.toContain("build issues tooltip");
   });
+
+  it("allows a CursorTooltip to open when no other tooltip is active", () => {
+    mockMatchMedia((query) => query === "(hover: hover) and (pointer: fine)" ? false : false);
+
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    function Fixture() {
+      const [open, setOpen] = useState(false);
+      return (
+        <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+          <CursorTooltip
+            open={open}
+            onOpenChange={setOpen}
+            touchAnchor={{ x: 10, y: 10 }}
+            content="banner tooltip"
+          >
+            <button type="button" aria-label="banner" onClick={() => setOpen((v) => !v)}>
+              banner
+            </button>
+          </CursorTooltip>
+        </TooltipProvider>
+      );
+    }
+
+    act(() => {
+      root?.render(<Fixture />);
+    });
+
+    const bannerButton = document.querySelector('button[aria-label="banner"]');
+    expect(bannerButton).toBeTruthy();
+
+    act(() => {
+      bannerButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(document.body.textContent).toContain("banner tooltip");
+  });
 });
 

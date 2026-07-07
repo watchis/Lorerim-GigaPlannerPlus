@@ -273,15 +273,21 @@ export function CursorTooltip({
   const isTouchControlled = controlledOpen !== undefined;
   const open = isTouchControlled ? controlledOpen && !disabled : hoverOpen && !disabled;
   const id = useId();
+  const controlledOpenRef = useRef(controlledOpen);
+  const onOpenChangeRef = useRef(onOpenChange);
+
+  controlledOpenRef.current = controlledOpen;
+  onOpenChangeRef.current = onOpenChange;
 
   useEffect(() => {
     if (!isTouchControlled || disabled) return;
     return subscribeActiveTouchTooltipId((activeId) => {
-      if (activeId !== id && controlledOpen) {
-        onOpenChange?.(false);
+      // Only close when another tooltip becomes active.
+      if (activeId !== null && activeId !== id && controlledOpenRef.current) {
+        onOpenChangeRef.current?.(false);
       }
     });
-  }, [isTouchControlled, disabled, id, controlledOpen, onOpenChange]);
+  }, [isTouchControlled, disabled, id]);
 
   useEffect(() => {
     if (!isTouchControlled || disabled) return;
