@@ -156,16 +156,22 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
 
   progress.phase("Transforming game data", 3, 5);
   const transformProgress = progress.track("Transform steps", 5);
+  const reportTransform = (category, name) => {
+    transformProgress.update(`${category} [${name}]`);
+  };
 
-  transformProgress.tick("Perk trees");
+  transformProgress.update("Perk trees");
   const { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs } = transformPerkRecords(
     perkRecords,
     perksDir,
     install.installDir,
     perkMetadataIndex,
     avifMembership,
+    { onProgress: reportTransform },
   );
+
   const importedPerks = Object.values(trees).reduce((sum, tree) => sum + tree.perks.length, 0);
+  transformProgress.tick("Perk trees");
   progress.step(
     `Perk trees — ${formatCount(Object.keys(trees).length)} trees, ` +
       `${formatCount(importedPerks)} perks` +
@@ -175,31 +181,37 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
         : ""),
   );
 
-  transformProgress.tick("Traits");
+  transformProgress.update("Traits");
   const traits = await transformTraitRecords(spellRecords, install, plugins, {
     traitsFormList,
     mastersByPath,
+    onProgress: reportTransform,
   });
+  transformProgress.tick("Traits");
   progress.step(`Traits — ${formatCount(traits.traits.length)} entries`);
 
-  transformProgress.tick("Races");
+  transformProgress.update("Races");
   const { races, raceEffects } = transformRaceRecords(
     raceRecords,
     spellRecords,
     join(dataDir, "races.json"),
     lorerimRaceRecords,
+    { onProgress: reportTransform },
   );
+  transformProgress.tick("Races");
   progress.step(`Races — ${formatCount(races.races.length)} playable races`);
 
-  transformProgress.tick("Birthsigns");
+  transformProgress.update("Birthsigns");
   const birthsigns = transformStandingStoneRecords(
     spellRecords,
     mesgRecords,
     join(dataDir, "birthsigns.json"),
+    { onProgress: reportTransform },
   );
+  transformProgress.tick("Birthsigns");
   progress.step(`Birthsigns — ${formatCount(birthsigns.birthsigns.length)} entries`);
 
-  transformProgress.tick("Deities");
+  transformProgress.update("Deities");
   const deityEligibility = await buildDeityEligibilityIndex({
     wintersunPlugins: plugins.filter((plugin) => /Wintersun/i.test(plugin.pluginName)),
     mesgRecords: wintersunMesgRecords,
@@ -214,7 +226,9 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     altarMagnitudes,
     deityEligibility,
     boonMagnitudes,
+    { onProgress: reportTransform },
   );
+  transformProgress.tick("Deities");
   progress.step(`Deities — ${formatCount(deities.deities.length)} entries`);
   transformProgress.finish("5 data sets transformed");
 

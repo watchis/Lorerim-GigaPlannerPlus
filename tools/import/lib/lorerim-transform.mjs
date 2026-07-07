@@ -292,7 +292,9 @@ export function transformPerkRecords(
   installDir = null,
   metadataIndex = null,
   membership = null,
+  options = {},
 ) {
+  const onProgress = options.onProgress;
   const handTunedOverrides = loadPerkHandTunedOverrides(perksDir);
   const layoutOverrides = loadPerkLayoutOverrides(perksDir);
   const graphSnapshots = loadPerkGraphSnapshots(perksDir);
@@ -307,8 +309,10 @@ export function transformPerkRecords(
       grid: { width: 1, height: 1 },
       perks: [],
     };
+  onProgress?.("Perk trees", "Destiny");
   trees["destiny.json"] = buildDestinyTree(perkRecords, installDir, existingDestiny);
 
+  onProgress?.("Perk trees", "missing perks");
   const addedPerks = appendMissingPerkNodes(
     trees,
     treePerkRecords,
@@ -322,6 +326,7 @@ export function transformPerkRecords(
   applyPerkLayoutOverrides(trees, layoutOverrides);
   applyPerkGraphSnapshots(trees, graphSnapshots);
   for (const tree of Object.values(trees)) {
+    onProgress?.("Perk trees", tree.skillName || tree.skillId || "tree");
     normalizeStackPrerequisites(tree);
   }
   const playerLevelReqs = mergePerkPlayerLevelReqs(
@@ -346,6 +351,7 @@ function resolveTraitText(spellRecord) {
 }
 
 export async function transformTraitRecords(spellRecords, install = null, plugins = [], scanContext = {}) {
+  const onProgress = scanContext.onProgress;
   const traitSpells =
     install && plugins.length > 0
       ? await collectTraitAbilitySpells(
@@ -367,6 +373,7 @@ export async function transformTraitRecords(spellRecords, install = null, plugin
 
   for (const spell of traitSpells) {
     const { id, name, description, bonus } = resolveTraitText(spell);
+    onProgress?.("Traits", name);
     const effects = parseBonusEffects(bonus);
 
     traits.push({
@@ -520,7 +527,9 @@ export function transformRaceRecords(
   spellRecords,
   racesPath,
   lorerimRaceRecords = [],
+  options = {},
 ) {
+  const onProgress = options.onProgress;
   const existing = JSON.parse(readFileSync(racesPath, "utf8"));
   const existingById = new Map(existing.races.map((race) => [race.id, race]));
   const abilityByKey = buildRaceAbilityLookup(spellRecords);
@@ -536,6 +545,8 @@ export function transformRaceRecords(
       const id = RACE_ID_MAP[record.edid];
       const prior = findPriorRace(existingById, id, record.edid);
       const source = lorerimByEdid.get(record.edid) ?? record;
+      const displayName = RACE_DISPLAY_NAMES[record.edid] || source.name || prior?.name || id;
+      onProgress?.("Races", displayName);
       const importedBonuses = collectRaceBonuses(record.edid, abilityByKey);
       const bonuses = mergeRaceBonuses(importedBonuses, prior?.bonuses ?? []);
       const importedStats = mergeImportedRaceStats(prior, parseRaceData(source.data));
@@ -663,7 +674,8 @@ function buildBirthsignMesgLookup(mesgRecords) {
   return byStone;
 }
 
-export function transformStandingStoneRecords(spellRecords, mesgRecords, birthsignsPath) {
+export function transformStandingStoneRecords(spellRecords, mesgRecords, birthsignsPath, options = {}) {
+  const onProgress = options.onProgress;
   const existing = JSON.parse(readFileSync(birthsignsPath, "utf8"));
   const existingEntries = existing.birthsigns ?? existing.standingStones ?? [];
   const existingById = new Map(existingEntries.map((birthsign) => [birthsign.id, birthsign]));
@@ -673,6 +685,7 @@ export function transformStandingStoneRecords(spellRecords, mesgRecords, birthsi
   const birthsigns = [];
 
   for (const stoneName of BIRTHSIGN_NAMES) {
+    onProgress?.("Birthsigns", stoneName);
     const id = birthsignIdFromName(stoneName);
     const prior = existingById.get(id);
     const spell = spellByEdid.get(`REQ_Ability_Birthsign_${stoneName}`);
@@ -791,7 +804,9 @@ export function transformDeityRecords(
   altarMagnitudes = new Map(),
   deityEligibility = new Map(),
   boonMagnitudes = new Map(),
+  options = {},
 ) {
+  const onProgress = options.onProgress;
   const existing = JSON.parse(readFileSync(deitiesPath, "utf8"));
   const existingEntries = existing.deities ?? existing.blessings ?? [];
   const existingById = new Map(existingEntries.map((deity) => [deity.id, deity]));
@@ -805,6 +820,7 @@ export function transformDeityRecords(
   for (const altarKey of altarKeys) {
     const record = spellByAltarKey.get(altarKey);
     const name = blessingNameFromSpell(record?.name ?? "", altarKey);
+    onProgress?.("Deities", name);
     const id = blessingIdFromName(record?.name ?? "", altarKey);
     const prior = existingById.get(id);
 

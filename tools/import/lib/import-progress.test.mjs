@@ -174,4 +174,20 @@ function createCaptureStream({ isTTY = false, columns = 100 } = {}) {
   assert.match(lastWrite, /1\/1 \(100%\)/);
 }
 
+{
+  const { stream, getOutput } = createCaptureStream({ isTTY: true });
+  const progress = createImportReporter({ stream, interactive: true });
+  const transform = progress.track("Transform steps", 3);
+
+  transform.update("Traits [Good Natured]");
+  transform.tick("Traits");
+  transform.update("Races [Nord]");
+  transform.tick("Races");
+  transform.finish("done");
+
+  const text = getOutput();
+  assert.match(text, /Traits \[Good Natured\]/);
+  assert.match(text, /Races \[Nord\]/);
+}
+
 console.log("import-progress.test.mjs: ok");
