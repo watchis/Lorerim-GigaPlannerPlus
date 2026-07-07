@@ -10,6 +10,7 @@ import {
   CursorTooltip,
   HoverTapTooltip,
   InfoTooltipButton,
+  useSupportsHover,
 } from "@/components/ui/tooltip";
 import {
   getBuildPlayerLevelWarnings,
@@ -92,6 +93,72 @@ function formatPlayerLevelWarningMessages(
   return messages;
 }
 
+function useMobileLayout(): boolean {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return isMobile;
+}
+
+function FitTextLine({
+  children,
+  className,
+  maxFontSize = 14,
+  minFontSize = 9,
+}: {
+  children: string;
+  className?: string;
+  maxFontSize?: number;
+  minFontSize?: number;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [fontSize, setFontSize] = useState(maxFontSize);
+
+  useLayoutEffect(() => {
+    const update = () => {
+      const container = containerRef.current;
+      const text = textRef.current;
+      if (!container || !text) return;
+
+      let size = maxFontSize;
+      text.style.fontSize = `${size}px`;
+      while (size > minFontSize && text.scrollWidth > container.clientWidth) {
+        size -= 0.5;
+        text.style.fontSize = `${size}px`;
+      }
+      setFontSize(size);
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [children, maxFontSize, minFontSize]);
+
+  return (
+    <div ref={containerRef} className="min-w-0 flex-1 overflow-hidden">
+      <p
+        ref={textRef}
+        className={cn("whitespace-nowrap leading-snug", className)}
+        style={{ fontSize }}
+      >
+        {children}
+      </p>
+    </div>
+  );
+}
+
 function BuildIssuesTooltipContent({ messages }: { messages: string[] }) {
   if (messages.length === 1) {
     return <p className="text-xs leading-relaxed">{messages[0]}</p>;
@@ -111,23 +178,69 @@ function BuildIssuesTooltipContent({ messages }: { messages: string[] }) {
 
 function BuildIssuesBanner({
   summary,
+  mobileSummary,
   messages,
 }: {
   summary: string;
+  mobileSummary: string;
   messages: string[];
 }) {
-  const bannerClassName =
-    "mx-auto mt-2 flex max-w-[1600px] items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-error)]/40 bg-[var(--color-error)]/10 px-3 py-2 text-sm text-[var(--color-foreground)]";
+  const isMobile = useMobileLayout();
+  const supportsHover = useSupportsHover();
+  const [touchOpen, setTouchOpen] = useState(false);
+  const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
+  const displaySummary = isMobile ? mobileSummary : summary;
+  const showTooltip = isMobile || messages.length > 1;
+
+  const bannerClassName = cn(
+    "mx-auto mt-2 flex max-w-[1600px] gap-2 rounded-[var(--radius-md)] border border-[var(--color-error)]/40 bg-[var(--color-error)]/10 px-3 py-2 text-[var(--color-foreground)]",
+    isMobile ? "items-center text-sm" : "items-start text-sm",
+  );
+
+  const summaryNode = isMobile ? (
+    <FitTextLine>{displaySummary}</FitTextLine>
+  ) : (
+    <p className="min-w-0 flex-1 leading-snug">{displaySummary}</p>
+  );
 
   const banner = (
     <>
-      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-error)]" />
-      <p className="min-w-0 flex-1 leading-snug">{summary}</p>
+      <AlertCircle
+        className={cn(
+          "h-4 w-4 shrink-0 text-[var(--color-error)]",
+          isMobile ? "" : "mt-0.5",
+        )}
+      />
+      {summaryNode}
     </>
   );
 
-  if (messages.length <= 1) {
+  if (!showTooltip) {
     return <div className={bannerClassName}>{banner}</div>;
+  }
+
+  if (isMobile && !supportsHover) {
+    return (
+      <CursorTooltip
+        open={touchOpen}
+        onOpenChange={setTouchOpen}
+        touchAnchor={touchAnchor}
+        content={<BuildIssuesTooltipContent messages={messages} />}
+        className={cn(bannerClassName, "cursor-pointer touch-manipulation")}
+      >
+        <button
+          type="button"
+          className="flex w-full min-w-0 items-center gap-2 border-0 bg-transparent p-0 text-left text-inherit"
+          aria-label={mobileSummary}
+          onClick={(event) => {
+            setTouchAnchor({ x: event.clientX, y: event.clientY });
+            setTouchOpen((open) => !open);
+          }}
+        >
+          {banner}
+        </button>
+      </CursorTooltip>
+    );
   }
 
   return (
@@ -726,7 +839,11 @@ function LevelBarContent({
       </div>
 
       {alertMessages.length > 0 && (
-        <BuildIssuesBanner summary={alertSummary} messages={alertMessages} />
+        <BuildIssuesBanner
+          summary={alertSummary}
+          mobileSummary={barLabels.buildIssuesAlertMobile}
+          messages={alertMessages}
+        />
       )}
     </div>
   );
