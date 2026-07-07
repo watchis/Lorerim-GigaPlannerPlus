@@ -63,9 +63,9 @@ export function commitVariantNotesFormat(
 }
 
 const toolbarLayoutStyle = {
-  "--toolbar-gap": "clamp(0.25rem, 1.5vw, 0.5rem)",
-  "--toolbar-btn": "clamp(2rem, 2rem + 0.6vw, 2.25rem)",
-  "--toolbar-icon": "clamp(1rem, 1rem + 0.3vw, 1.125rem)",
+  "--toolbar-gap": "clamp(0.125rem, 0.75vw, 0.3125rem)",
+  "--toolbar-btn": "clamp(1.625rem, 1.625rem + 0.25vw, 1.75rem)",
+  "--toolbar-icon": "1rem",
 } as CSSProperties;
 
 function ToolbarDivider() {
@@ -78,7 +78,7 @@ function ToolbarDivider() {
 }
 
 const toolbarButtonClass =
-  "size-[var(--toolbar-btn)] min-h-0 min-w-0 shrink-0 rounded-md p-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]";
+  "size-[var(--toolbar-btn)] min-h-0 min-w-0 shrink-0 rounded-sm p-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]";
 const toolbarIconClass = "size-[var(--toolbar-icon)] shrink-0";
 
 function ToolbarButton({
@@ -211,7 +211,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("codeBlock")}
         disabled={disabled}
       >
-        <span className="font-mono text-[10px] leading-none">{"{ }"}</span>
+        <span className="font-mono text-[9px] leading-none">{"{ }"}</span>
       </ToolbarButton>
       <ToolbarButton
         label="Link"
@@ -281,9 +281,9 @@ export function VariantNotesToolbar({
     <div
       style={toolbarLayoutStyle}
       className={cn(
-        "flex w-full min-w-0 flex-wrap items-center gap-[var(--toolbar-gap)]",
+        "flex w-full min-w-0 flex-nowrap items-center gap-[var(--toolbar-gap)] overflow-x-auto overscroll-x-contain",
         framed &&
-          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-[var(--toolbar-gap)]",
+          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 px-0.5 py-px",
         className,
       )}
     >
@@ -320,7 +320,7 @@ export function VariantNotesEditor({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-1.5">
+    <div className="flex h-full min-h-0 flex-col gap-1">
       {showToolbar && (
         <div ref={toolbarRef}>
           <VariantNotesToolbar
