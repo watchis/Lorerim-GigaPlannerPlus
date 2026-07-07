@@ -43,12 +43,12 @@ const EDITOR_NODE_EXTENT = 1.25;
 const EDITOR_BOUNDS_PADDING = 1.45;
 const GRID_UNIT_PX = 26;
 /** Shrink fitted trees so nodes sit inset from the render region edges. */
-const FIT_REGION_INSET_RATIO = 0.9;
+const FIT_REGION_INSET_RATIO = 0.96;
 const DESTINY_SKILL_ID = "destiny";
 const BASE_NODE_DIAMETER_PX = 32;
 const MIN_NODE_DIAMETER_PX = 14;
 /** Extra padding between perk tree content and the viewport edge in full-tree view. */
-const TREE_VIEW_EDGE_PADDING_PX = 12;
+const TREE_VIEW_EDGE_PADDING_PX = 6;
 const MIN_TREE_ZOOM = 1;
 const MAX_TREE_ZOOM = 2.5;
 const PERK_DOUBLE_TAP_MS = 400;
@@ -151,7 +151,7 @@ interface FitLayoutTuning {
 
 const DEFAULT_FIT_TUNING: FitLayoutTuning = {
   regionInsetRatio: FIT_REGION_INSET_RATIO,
-  boundsExtraPadding: 0.6,
+  boundsExtraPadding: 0.45,
   edgePaddingPx: TREE_VIEW_EDGE_PADDING_PX,
   nodeBaseDiameterPx: BASE_NODE_DIAMETER_PX,
 };
