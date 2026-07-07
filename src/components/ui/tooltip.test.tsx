@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act } from "react";
+import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { TooltipProvider, HoverTapTooltip } from "@/components/ui/tooltip";
+import { TooltipProvider, HoverTapTooltip, CursorTooltip } from "@/components/ui/tooltip";
 
 function mockMatchMedia(matchesForQuery: (query: string) => boolean) {
   Object.defineProperty(window, "matchMedia", {
@@ -112,6 +112,73 @@ describe("HoverTapTooltip (touch)", () => {
 
     expect(document.body.textContent).toContain("tooltip two");
     expect(document.body.textContent).not.toContain("tooltip one");
+  });
+
+  it("closes a CursorTooltip when a HoverTapTooltip opens (touch singleton across types)", () => {
+    mockMatchMedia((query) => query === "(hover: hover) and (pointer: fine)" ? false : false);
+
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    function Fixture() {
+      const [bannerOpen, setBannerOpen] = useState(false);
+      const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+
+      return (
+        <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+          <div>
+            <CursorTooltip
+              open={bannerOpen}
+              onOpenChange={setBannerOpen}
+              touchAnchor={anchor}
+              content="build issues tooltip"
+            >
+              <button
+                type="button"
+                aria-label="banner"
+                onClick={(event) => {
+                  setAnchor({ x: event.clientX, y: event.clientY });
+                  setBannerOpen((value) => !value);
+                }}
+              >
+                banner
+              </button>
+            </CursorTooltip>
+
+            <HoverTapTooltip content="wallet tooltip">
+              <button type="button" aria-label="wallet">
+                wallet
+              </button>
+            </HoverTapTooltip>
+          </div>
+        </TooltipProvider>
+      );
+    }
+
+    act(() => {
+      root?.render(<Fixture />);
+    });
+
+    const bannerButton = document.querySelector('button[aria-label="banner"]');
+    const walletButton = document.querySelector('button[aria-label="wallet"]');
+    expect(bannerButton).toBeTruthy();
+    expect(walletButton).toBeTruthy();
+
+    act(() => {
+      bannerButton?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, clientX: 10, clientY: 10 }),
+      );
+    });
+    expect(document.body.textContent).toContain("build issues tooltip");
+
+    act(() => {
+      walletButton?.dispatchEvent(
+        new PointerEvent("pointerup", { bubbles: true, pointerType: "touch" }),
+      );
+    });
+    expect(document.body.textContent).toContain("wallet tooltip");
+    expect(document.body.textContent).not.toContain("build issues tooltip");
   });
 });
 
