@@ -57,6 +57,7 @@ body,
   height: 100%;
   min-height: 100dvh;
   margin: 0;
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -65,6 +66,15 @@ body {
   color: var(--color-foreground, #e8eaef);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@media (pointer: coarse) {
+  html,
+  body,
+  #root {
+    /* Limit document-level horizontal pans that trigger browser back/forward swipes. */
+    touch-action: pan-y pinch-zoom;
+  }
 }
 
 .app-shell {
