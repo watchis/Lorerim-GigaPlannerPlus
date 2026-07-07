@@ -803,7 +803,7 @@ export function VariantsManagerPanel() {
             </div>
           </>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 pt-2">
             <div className="flex shrink-0 items-end gap-3">
               <VariantSelectField label={variantLabels.title} className="min-w-0 flex-1">
                 <Select value={notesVariantSelectValue} onValueChange={switchNotesVariant}>

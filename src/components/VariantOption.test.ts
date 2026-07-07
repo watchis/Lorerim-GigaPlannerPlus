@@ -29,6 +29,24 @@ describe("VariantOption", () => {
     const nameEl = container.querySelector(".truncate");
     expect(nameEl).not.toBeNull();
     expect(nameEl!.textContent).toBe(longName);
-    expect(nameEl?.parentElement?.className).toContain("min-w-0");
+    expect(nameEl?.parentElement?.className).toContain("grid-cols-[minmax(0,1fr)_auto]");
+  });
+
+  it("always renders the level chip beside the variant name", () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => {
+      root!.render(
+        createElement(VariantOption, {
+          name: "Another Very Long Build Variant Name",
+          levelText: "Lv 42",
+        }),
+      );
+    });
+
+    const levelChip = container.querySelector("[data-variant-level-chip]");
+    expect(levelChip).not.toBeNull();
+    expect(levelChip!.textContent).toBe("Lv 42");
   });
 });
