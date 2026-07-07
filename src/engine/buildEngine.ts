@@ -416,7 +416,6 @@ export function preserveSkillPointAllocations(
 
     const previousLevel = getStoredSkillLevel(game, previousBuild, skillId);
     const previousFloor = getSkillFloor(game, previousBuild, skillId);
-    const investedAboveFloor = Math.max(0, previousLevel - previousFloor);
     const previousRanges = getSkillTrainingRanges(game, previousBuild, skillId);
     const floor = getSkillFloor(game, { ...nextBuild, skillLevels, skillTrainingRanges }, skillId);
     const maxOnSkill = getMaxTrainingOnSkill(game, nextBuild, skillId, floor);
@@ -435,10 +434,11 @@ export function preserveSkillPointAllocations(
     const nextState = { ...nextBuild, skillLevels, skillTrainingRanges };
     const nextFloor = getSkillFloor(game, nextState, skillId);
     const trainingFloor = getSkillLevelFromTraining(game, nextState, skillId);
-    skillLevels[skillId] = Math.min(
-      getMaxSkillLevel(game),
-      Math.max(trainingFloor, nextFloor + investedAboveFloor),
-    );
+    const hadInvestmentAboveFloor = previousLevel > previousFloor;
+    // If the user invested above the floor, preserve the absolute level across floor changes.
+    // Otherwise, just allow the floor to change (prevents race floors from "stacking" on empty builds).
+    const targetLevel = hadInvestmentAboveFloor ? previousLevel : nextFloor;
+    skillLevels[skillId] = Math.min(getMaxSkillLevel(game), Math.max(trainingFloor, targetLevel));
   }
 
   return normalizeSkillTraining(game, { ...nextBuild, skillLevels, skillTrainingRanges });
