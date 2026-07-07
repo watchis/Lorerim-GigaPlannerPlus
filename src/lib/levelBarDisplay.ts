@@ -41,12 +41,25 @@ export function getBuildIssuesBannerState({
 
 export const BUILD_ISSUES_TOOLTIP_MAX_HEIGHT_RATIO = 0.75;
 export const BUILD_ISSUES_TOOLTIP_ITEM_GAP_PX = 6;
+export const BUILD_ISSUES_TOOLTIP_VERTICAL_PADDING_PX = 16;
+export const BUILD_ISSUES_TOOLTIP_WIDTH_PX = 320;
 
 export function getBuildIssuesTooltipMaxHeight(
   viewportHeight: number,
   ratio = BUILD_ISSUES_TOOLTIP_MAX_HEIGHT_RATIO,
 ): number {
   return viewportHeight * ratio;
+}
+
+export function getBuildIssuesTooltipContentMaxHeight(
+  viewportHeight: number,
+  ratio = BUILD_ISSUES_TOOLTIP_MAX_HEIGHT_RATIO,
+): number {
+  return Math.max(
+    0,
+    getBuildIssuesTooltipMaxHeight(viewportHeight, ratio) -
+      BUILD_ISSUES_TOOLTIP_VERTICAL_PADDING_PX,
+  );
 }
 
 export function computeVisibleBuildIssueCount(

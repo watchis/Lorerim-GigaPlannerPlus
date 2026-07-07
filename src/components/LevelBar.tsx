@@ -23,9 +23,10 @@ import {
 } from "@/engine/buildEngine";
 import {
   BUILD_ISSUES_TOOLTIP_ITEM_GAP_PX,
+  BUILD_ISSUES_TOOLTIP_WIDTH_PX,
   computeVisibleBuildIssueCount,
   getBuildIssuesBannerState,
-  getBuildIssuesTooltipMaxHeight,
+  getBuildIssuesTooltipContentMaxHeight,
   shouldShowEasyModeLevelWarning,
   shrinkFontSizeToFit,
 } from "@/lib/levelBarDisplay";
@@ -180,6 +181,9 @@ function BuildIssueListItem({ message }: { message: string }) {
   );
 }
 
+const buildIssuesTooltipClassName =
+  "max-h-[75vh] overflow-hidden overflow-x-hidden";
+
 function BuildIssuesTooltipContent({
   messages,
   andMoreLabel,
@@ -187,16 +191,24 @@ function BuildIssuesTooltipContent({
   messages: string[];
   andMoreLabel: string;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const measureListRef = useRef<HTMLUListElement>(null);
   const [visibleCount, setVisibleCount] = useState(messages.length);
 
   useLayoutEffect(() => {
     const updateVisibleCount = () => {
-      const list = measureListRef.current;
-      if (!list || messages.length <= 1) {
+      if (messages.length <= 1) {
         setVisibleCount(messages.length);
         return;
       }
+
+      const list = measureListRef.current;
+      const container = containerRef.current;
+      if (!list || !container) return;
+
+      const measureWidth = container.clientWidth;
+      list.style.width =
+        measureWidth > 0 ? `${measureWidth}px` : `${BUILD_ISSUES_TOOLTIP_WIDTH_PX}px`;
 
       const children = Array.from(list.children) as HTMLElement[];
       const issueItems = children.slice(0, messages.length);
@@ -206,12 +218,12 @@ function BuildIssuesTooltipContent({
         return;
       }
 
-      const itemHeights = issueItems.map((item) => item.offsetHeight);
-      const maxHeight = getBuildIssuesTooltipMaxHeight(window.innerHeight);
+      const itemHeights = issueItems.map((item) => item.getBoundingClientRect().height);
+      const maxHeight = getBuildIssuesTooltipContentMaxHeight(window.innerHeight);
       setVisibleCount(
         computeVisibleBuildIssueCount(
           itemHeights,
-          andMoreItem.offsetHeight,
+          andMoreItem.getBoundingClientRect().height,
           BUILD_ISSUES_TOOLTIP_ITEM_GAP_PX,
           maxHeight,
         ),
@@ -219,13 +231,24 @@ function BuildIssuesTooltipContent({
     };
 
     updateVisibleCount();
+    const frame = window.requestAnimationFrame(updateVisibleCount);
+
+    const observer = new ResizeObserver(updateVisibleCount);
+    if (containerRef.current) observer.observe(containerRef.current);
+
     window.addEventListener("resize", updateVisibleCount);
-    return () => window.removeEventListener("resize", updateVisibleCount);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("resize", updateVisibleCount);
+    };
   }, [messages, andMoreLabel]);
 
   if (messages.length === 1) {
     return (
-      <p className="max-h-[75vh] overflow-y-auto text-xs leading-relaxed">{messages[0]}</p>
+      <p className="max-h-[calc(75vh-1rem)] overflow-y-auto text-xs leading-relaxed">
+        {messages[0]}
+      </p>
     );
   }
 
@@ -233,11 +256,11 @@ function BuildIssuesTooltipContent({
   const visibleMessages = messages.slice(0, visibleCount);
 
   return (
-    <div className="max-h-[75vh] overflow-hidden">
+    <div ref={containerRef} className="relative overflow-hidden">
       <ul
         ref={measureListRef}
         aria-hidden
-        className="pointer-events-none invisible fixed top-0 -left-[9999px] w-full max-w-xs space-y-1.5 text-xs leading-relaxed"
+        className="pointer-events-none invisible absolute top-0 left-0 space-y-1.5 text-xs leading-relaxed"
       >
         {messages.map((message, index) => (
           <BuildIssueListItem key={`measure-${index}`} message={message} />
@@ -317,6 +340,7 @@ function BuildIssuesBanner({
         open={touchOpen}
         onOpenChange={setTouchOpen}
         touchAnchor={touchAnchor}
+        contentClassName={buildIssuesTooltipClassName}
         content={<BuildIssuesTooltipContent messages={messages} andMoreLabel={andMoreLabel} />}
         className={cn(bannerClassName, "cursor-pointer touch-manipulation")}
       >
@@ -338,6 +362,7 @@ function BuildIssuesBanner({
   return (
     <CursorTooltip
       className={cn(bannerClassName, "cursor-help")}
+      contentClassName={buildIssuesTooltipClassName}
       content={<BuildIssuesTooltipContent messages={messages} andMoreLabel={andMoreLabel} />}
     >
       {banner}

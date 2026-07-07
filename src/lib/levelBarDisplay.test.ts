@@ -3,6 +3,7 @@ import {
   computeVisibleBuildIssueCount,
   formatBuildIssuesSummary,
   getBuildIssuesBannerState,
+  getBuildIssuesTooltipContentMaxHeight,
   getBuildIssuesTooltipMaxHeight,
   shouldShowEasyModeLevelWarning,
   shrinkFontSizeToFit,
@@ -125,6 +126,12 @@ describe("computeVisibleBuildIssueCount", () => {
 describe("getBuildIssuesTooltipMaxHeight", () => {
   it("uses 75% of the viewport height by default", () => {
     expect(getBuildIssuesTooltipMaxHeight(800)).toBe(600);
+  });
+});
+
+describe("getBuildIssuesTooltipContentMaxHeight", () => {
+  it("subtracts tooltip vertical padding from the tooltip max height", () => {
+    expect(getBuildIssuesTooltipContentMaxHeight(800)).toBe(584);
   });
 });
 
