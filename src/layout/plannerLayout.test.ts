@@ -6,6 +6,7 @@ import {
   computePlannerLayoutMetrics,
   getSwipePanelIds,
   getThreeColumnDesignWidth,
+  PICKER_SIDE_BY_SIDE_MIN_WIDTH,
   STACKED_LAYOUT_MAX_WIDTH,
 } from "@/layout/plannerLayout";
 
@@ -58,5 +59,42 @@ describe("plannerLayout", () => {
       "skill-trees",
       "skill-trees-sidebar",
     ]);
+  });
+
+  it("returns stacked layout for non-positive container width", () => {
+    const metrics = computePlannerLayoutMetrics(0, lorerimLayout);
+    expect(metrics.useThreeColumnLayout).toBe(false);
+    expect(metrics.centerWidth).toBe(0);
+  });
+
+  it("returns stacked layout when layout has fewer than three columns", () => {
+    const twoColumn: Layout = {
+      columns: [
+        { width: "300px", panels: ["character-setup"] },
+        { width: "1fr", panels: ["skill-trees"] },
+      ],
+    };
+    expect(computePlannerLayoutMetrics(1200, twoColumn).useThreeColumnLayout).toBe(false);
+  });
+
+  it("uses three-column layout once inner width clears the stacked threshold", () => {
+    const metrics = computePlannerLayoutMetrics(STACKED_LAYOUT_MAX_WIDTH + 32, lorerimLayout);
+    expect(metrics.useThreeColumnLayout).toBe(true);
+    expect(metrics.centerWidth).toBeGreaterThan(0);
+  });
+
+  it("filters swipe panels to those present in the layout", () => {
+    const partial: Layout = {
+      columns: [
+        { width: "300px", panels: ["character-setup"] },
+        { width: "1fr", panels: ["skill-trees"] },
+        { width: "370px", panels: ["derived-stats"] },
+      ],
+    };
+    expect(getSwipePanelIds(partial)).toEqual(["character-setup", "skill-trees"]);
+  });
+
+  it("exports picker compact threshold constant", () => {
+    expect(PICKER_SIDE_BY_SIDE_MIN_WIDTH).toBe(520);
   });
 });

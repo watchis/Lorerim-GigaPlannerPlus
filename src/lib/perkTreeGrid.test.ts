@@ -9,6 +9,7 @@ import {
   getPerkTreeGridBounds,
   parseSvgViewBox,
   resolvePerkNodeDiameterPx,
+  resolvePerkTakeTarget,
   sortPerkStack,
 } from "@/lib/perkTreeGrid";
 
@@ -130,5 +131,20 @@ describe("perkTreeGrid", () => {
       30,
     );
     expect(resolvePerkNodeDiameterPx(30, Number.POSITIVE_INFINITY)).toBe(32);
+  });
+
+  it("resolves click target to the next rank when the visible tier is owned", () => {
+    const stack = [makePerk("rank-25", 25), makePerk("rank-50", 50), makePerk("rank-75", 75)];
+
+    expect(resolvePerkTakeTarget(stack, [])).toBe("rank-25");
+    expect(resolvePerkTakeTarget(stack, ["rank-25"])).toBe("rank-50");
+    expect(resolvePerkTakeTarget(stack, ["rank-25", "rank-50"])).toBe("rank-75");
+    expect(resolvePerkTakeTarget(stack, ["rank-25", "rank-50", "rank-75"])).toBe("rank-75");
+  });
+
+  it("resolves click target to the front perk for single-rank nodes", () => {
+    const stack = [makePerk("solo", 0)];
+    expect(resolvePerkTakeTarget(stack, [])).toBe("solo");
+    expect(resolvePerkTakeTarget(stack, ["solo"])).toBe("solo");
   });
 });
