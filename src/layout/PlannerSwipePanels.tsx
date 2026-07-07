@@ -102,6 +102,8 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
     !characterOptionsOpen &&
     !variantsManagerOpen &&
     !skillTreeOpen;
+  const isCenterPaneSubView =
+    activeIndex === CENTER_PANE_INDEX && !isCharacterOverviewActive;
 
   useEffect(() => {
     if (setupPicker || characterOptionsOpen || variantsManagerOpen || skillTreeOpen) {
@@ -185,10 +187,12 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
                     aria-controls={`planner-swipe-pane-${panelId}`}
                     onClick={goToCharacterOverview}
                     className={cn(
-                      "relative z-10 -mt-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-[var(--color-surface)] shadow-[0_6px_20px_rgba(0,0,0,0.4)] transition-colors duration-200",
+                      "relative z-10 -mt-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200",
                       isCharacterOverviewActive
-                        ? "border-[var(--color-accent)] text-[var(--color-accent)]"
-                        : "border-[var(--color-border)] text-[var(--color-muted)]",
+                        ? "border-[var(--color-accent)] bg-[var(--color-surface)] text-[var(--color-accent)] shadow-[0_6px_20px_rgba(0,0,0,0.4)]"
+                        : isCenterPaneSubView
+                          ? "border-[var(--color-perk-partial)] bg-[var(--color-perk-partial)]/30 text-[var(--color-perk-partial)] shadow-[0_0_12px_rgba(78,179,245,0.4)]"
+                          : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)] shadow-[0_6px_20px_rgba(0,0,0,0.4)]",
                     )}
                   >
                     <Icon className="h-6 w-6" aria-hidden />
