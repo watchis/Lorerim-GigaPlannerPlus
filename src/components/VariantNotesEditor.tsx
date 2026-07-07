@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from "react";
+import { useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import {
   Bold,
   Code,
@@ -62,13 +62,24 @@ export function commitVariantNotesFormat(
   });
 }
 
+const toolbarLayoutStyle = {
+  "--toolbar-gap": "clamp(0.25rem, 1.5vw, 0.5rem)",
+  "--toolbar-btn": "clamp(2rem, 2rem + 0.6vw, 2.25rem)",
+  "--toolbar-icon": "clamp(1rem, 1rem + 0.3vw, 1.125rem)",
+} as CSSProperties;
+
 function ToolbarDivider() {
-  return <div className="mx-0 h-3.5 w-px shrink-0 bg-[var(--color-border)]/80 sm:mx-0.5 sm:h-5" aria-hidden />;
+  return (
+    <div
+      className="mx-[calc(var(--toolbar-gap)/2)] h-[calc(var(--toolbar-btn)*0.62)] w-px shrink-0 bg-[var(--color-border)]/80"
+      aria-hidden
+    />
+  );
 }
 
 const toolbarButtonClass =
-  "h-[18px] w-[18px] min-h-0 min-w-0 shrink-0 rounded-sm p-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)] sm:h-7 sm:w-7 sm:rounded-md md:h-8 md:w-8";
-const toolbarIconClass = "h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-[18px] md:w-[18px]";
+  "size-[var(--toolbar-btn)] min-h-0 min-w-0 shrink-0 rounded-md p-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]";
+const toolbarIconClass = "size-[var(--toolbar-icon)] shrink-0";
 
 function ToolbarButton({
   label,
@@ -200,7 +211,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("codeBlock")}
         disabled={disabled}
       >
-        <span className="font-mono text-[8px] leading-none sm:text-[10px]">{"{ }"}</span>
+        <span className="font-mono text-[10px] leading-none">{"{ }"}</span>
       </ToolbarButton>
       <ToolbarButton
         label="Link"
@@ -268,10 +279,11 @@ export function VariantNotesToolbar({
 }) {
   return (
     <div
+      style={toolbarLayoutStyle}
       className={cn(
-        "flex w-full min-w-0 flex-nowrap items-center gap-0 sm:gap-0.5",
+        "flex w-full min-w-0 flex-wrap items-center gap-[var(--toolbar-gap)]",
         framed &&
-          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-px sm:p-0.5",
+          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-[var(--toolbar-gap)]",
         className,
       )}
     >
