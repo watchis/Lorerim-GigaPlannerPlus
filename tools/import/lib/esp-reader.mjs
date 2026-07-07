@@ -359,33 +359,28 @@ async function readPluginImportPayload({ pluginName, path }) {
   const avifRecords = [];
   let traitsFormListFormIds = null;
   const faithSpellCandidates = [];
+  const pendingSpelRecords = [];
   const lorerimRaceRecords = [];
   const pluginMgefFormIds = new Map();
   const pluginMgefIdentities = new Map();
-
-  for (const [offset, type] of offsets) {
-    if (type !== "MGEF" || !wanted.has(type)) continue;
-
-    try {
-      const buffer = await getRecordBufferAsync(fh.fd, offset);
-      const parsed = parseRecord(buffer, ownerPluginLower, masters);
-      if (parsed?.edid && parsed.formId != null) {
-        pluginMgefFormIds.set(parsed.edid, parsed.formId);
-        pluginMgefIdentities.set(
-          resolveFormIdentity(ownerPluginLower, masters, parsed.formId),
-          parsed.edid,
-        );
-      }
-    } catch {
-      // Skip malformed MGEF records.
-    }
-  }
 
   for (const [offset, type] of offsets) {
     if (!wanted.has(type)) continue;
 
     try {
       const buffer = await getRecordBufferAsync(fh.fd, offset);
+
+      if (type === "MGEF") {
+        const parsed = parseRecord(buffer, ownerPluginLower, masters);
+        if (parsed?.edid && parsed.formId != null) {
+          pluginMgefFormIds.set(parsed.edid, parsed.formId);
+          pluginMgefIdentities.set(
+            resolveFormIdentity(ownerPluginLower, masters, parsed.formId),
+            parsed.edid,
+          );
+        }
+        continue;
+      }
 
       if (type === "AVIF") {
         const parsed = parseAvifRecord(buffer, ownerPluginLower, masters);
@@ -407,20 +402,8 @@ async function readPluginImportPayload({ pluginName, path }) {
       if (!parsed) continue;
 
       if (type === "SPEL") {
-        const spellEdid = parsed.edid;
-        const pluginFaithLookup = {
-          formIdsByEdid: pluginMgefFormIds,
-          edidByFormIdentity: pluginMgefIdentities,
-          ownerPluginLower,
-          masters,
-        };
-        if (
-          spellEdid.startsWith("WSN_AltarBlessing_") ||
-          BOON_SPELL_PATTERN.test(spellEdid) ||
-          spellBufferHasAltarBlessingEffect(buffer, pluginFaithLookup)
-        ) {
-          faithSpellCandidates.push({ edid: spellEdid, buffer: Buffer.from(buffer) });
-        }
+        pendingSpelRecords.push({ parsed, buffer: Buffer.from(buffer) });
+        continue;
       }
 
       records.push(parsed);
@@ -430,6 +413,25 @@ async function readPluginImportPayload({ pluginName, path }) {
     } catch {
       // Skip malformed or unsupported records instead of failing the whole import.
     }
+  }
+
+  const pluginFaithLookup = {
+    formIdsByEdid: pluginMgefFormIds,
+    edidByFormIdentity: pluginMgefIdentities,
+    ownerPluginLower,
+    masters,
+  };
+
+  for (const { parsed, buffer } of pendingSpelRecords) {
+    const spellEdid = parsed.edid;
+    if (
+      spellEdid.startsWith("WSN_AltarBlessing_") ||
+      BOON_SPELL_PATTERN.test(spellEdid) ||
+      spellBufferHasAltarBlessingEffect(buffer, pluginFaithLookup)
+    ) {
+      faithSpellCandidates.push({ edid: spellEdid, buffer });
+    }
+    records.push(parsed);
   }
 
   await fh.close();

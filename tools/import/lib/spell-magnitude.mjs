@@ -21,13 +21,15 @@ function readSpellEfitMagnitudesRaw(recordBuffer) {
   let index = 0;
 
   while ((index = recordBuffer.indexOf("EFIT", index)) !== -1) {
+    if (index + 6 > recordBuffer.length) break;
+
     const size = recordBuffer.readUInt16LE(index + 4);
     const data = recordBuffer.subarray(index + 6, index + 6 + size);
     if (data.length >= 4) {
       const magnitude = data.readFloatLE(0);
       if (Number.isFinite(magnitude)) magnitudes.push(magnitude);
     }
-    index += 4;
+    index += 6 + size;
   }
 
   return magnitudes;
@@ -120,7 +122,7 @@ function readSpellFaithEffectEntriesRaw(recordBuffer) {
 
     if (formId != null) entries.push({ formId, magnitude });
 
-    index = efidIdx + 4;
+    index = efitIdx + 6 + efitSize;
   }
 
   return entries;
@@ -188,7 +190,7 @@ function readMagnitudeForMgefFormIdRaw(recordBuffer, mgefFormId) {
       if (meaningful != null) return meaningful;
     }
 
-    index = efidIdx + 4;
+    index = efitIdx + 6 + efitSize;
   }
 
   return null;
@@ -262,7 +264,7 @@ function readMagnitudesForFormIdsRaw(recordBuffer, formIds) {
       if (meaningful != null) magnitudes.push(meaningful);
     }
 
-    index = efidIdx + 4;
+    index = efitIdx + 6 + efitSize;
   }
 
   return magnitudes;

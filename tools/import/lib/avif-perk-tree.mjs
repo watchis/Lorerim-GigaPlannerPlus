@@ -65,17 +65,31 @@ function parseAvifPerkSections(buffer, ownerPluginLower, masters) {
 }
 
 function addPrerequisiteNames(sections, identityToName) {
-  const inamToSection = new Map(
-    sections.filter((section) => section.inam != null).map((section) => [section.inam, section]),
-  );
+  const inamToSection = new Map();
+  const prerequisiteSourcesByInam = new Map();
+
+  for (const section of sections) {
+    if (section.inam != null) {
+      inamToSection.set(section.inam, section);
+    }
+
+    for (const childInam of section.cnam) {
+      if (!prerequisiteSourcesByInam.has(childInam)) {
+        prerequisiteSourcesByInam.set(childInam, []);
+      }
+      prerequisiteSourcesByInam.get(childInam).push(section);
+    }
+  }
 
   for (const section of sections) {
     const prerequisiteNames = [];
-    for (const other of sections) {
-      if (!other.cnam.includes(section.inam)) continue;
-      const name = identityToName.get(other.identity);
-      if (name) prerequisiteNames.push(name);
+    if (section.inam != null) {
+      for (const source of prerequisiteSourcesByInam.get(section.inam) ?? []) {
+        const name = identityToName.get(source.identity);
+        if (name) prerequisiteNames.push(name);
+      }
     }
+
     section.prerequisiteNames = prerequisiteNames;
     section.name = identityToName.get(section.identity) ?? null;
     section.childNames = section.cnam

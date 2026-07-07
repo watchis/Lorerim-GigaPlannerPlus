@@ -14,20 +14,36 @@ export function perkObjectId(formId) {
   return formId & 0x00ffffff;
 }
 
+function isSubrecordTypeChar(byte) {
+  return (byte >= 65 && byte <= 90) || (byte >= 48 && byte <= 57);
+}
+
 export function scanSubrecords(buffer) {
   const subs = [];
   let index = buffer.indexOf("EDID");
   if (index < 0) return subs;
 
-  while (index < buffer.length - 6) {
+  while (index + 6 <= buffer.length) {
+    if (
+      !isSubrecordTypeChar(buffer[index]) ||
+      !isSubrecordTypeChar(buffer[index + 1]) ||
+      !isSubrecordTypeChar(buffer[index + 2]) ||
+      !isSubrecordTypeChar(buffer[index + 3])
+    ) {
+      break;
+    }
+
     const type = buffer.toString("ascii", index, index + 4);
-    if (!/^[A-Z0-9]{4}$/.test(type)) break;
     const size = buffer.readUInt16LE(index + 4);
+    const dataStart = index + 6;
+    const dataEnd = dataStart + size;
+    if (dataEnd > buffer.length) break;
+
     subs.push({
       type,
-      data: buffer.subarray(index + 6, index + 6 + size),
+      data: buffer.subarray(dataStart, dataEnd),
     });
-    index += 6 + size;
+    index = dataEnd;
   }
 
   return subs;
