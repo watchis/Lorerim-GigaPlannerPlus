@@ -224,7 +224,7 @@ function ActiveBuildCodeBlock({
             : "border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 hover:border-[var(--color-accent-muted)]",
         )}
       >
-        <code className="min-w-0 flex-1 break-all font-mono text-xs text-[var(--color-accent)] sm:break-normal sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap">
+        <code className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-[var(--color-accent)]">
           {code}
         </code>
         {copiedAction === "code" ? (
