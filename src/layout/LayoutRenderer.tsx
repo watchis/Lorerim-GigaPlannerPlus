@@ -68,15 +68,14 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
                   key={colIndex}
                   className={cn(
                     "flex min-h-0 flex-col gap-4",
-                    colIndex === 1 || colIndex === layout.columns.length - 1
+                    colIndex === 1
                       ? "overflow-hidden"
                       : "overflow-y-auto overflow-x-hidden",
                   )}
                 >
                   {column.panels.map((panelId) => {
                     const Panel = panelRegistry[panelId];
-                    const isFullHeight =
-                      panelId === "skill-trees" || panelId === "skill-trees-sidebar";
+                    const isFullHeight = panelId === "skill-trees";
 
                     if (!Panel) {
                       return (
