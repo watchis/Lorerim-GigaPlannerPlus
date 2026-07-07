@@ -150,7 +150,7 @@ export async function collectAvifPerkTrees(plugins, progress = null) {
     }
 
     await fh.close();
-    scan?.tick(pluginName, trees.size > 0 ? `${trees.size} skills` : "");
+    scan?.tick(trees.size > 0 ? `${trees.size} skill trees` : "");
   }
 
   scan?.finish(`${formatCount(trees.size)} skill trees`);

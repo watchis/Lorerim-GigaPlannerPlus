@@ -106,13 +106,13 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
 
   const progress = createImportReporter();
   progress.banner([
-    "LoreRim → GigaPlanner import",
+    "Game data import",
     options.dryRun ? "(dry run — no files will be written)" : "",
   ].filter(Boolean));
 
-  console.log(`Install: ${install.installDir}`);
-  console.log(`MO2 profile: ${install.profile}`);
-  console.log(`Plugins in load order: ${formatCount(allPlugins.length)}`);
+  progress.step(`Install: ${install.installDir}`);
+  progress.step(`MO2 profile: ${install.profile}`);
+  progress.step(`Plugins in load order: ${formatCount(allPlugins.length)}`);
 
   progress.phase("Classifying plugins", 1, 5);
   const { toScan: plugins, skipped: skippedPlugins } = await filterPluginsForImport(
@@ -120,22 +120,14 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     { rescanAll: options.rescanPlugins, progress },
   );
   if (skippedPlugins.length > 0) {
-    console.log(
+    progress.step(
       `Skipping ${formatCount(skippedPlugins.length)} non-mechanics plugins ` +
-        `(textures/meshes only; cache in tools/import/cache/)`,
+        `(asset-only; cache in tools/import/cache/)`,
     );
   }
-  console.log(`Plugins to scan: ${formatCount(plugins.length)}`);
+  progress.step(`Plugins to scan: ${formatCount(plugins.length)}`);
   const pluginSources = summarizePluginSources(plugins);
   const fromXEdit = plugins.filter((plugin) => plugin.modName === "LoreRim - xEdit64 Output").length;
-  console.log(`Plugins from LoreRim - xEdit64 Output: ${fromXEdit}`);
-  if (pluginSources.length > 0) {
-    const topSources = pluginSources
-      .slice(0, 5)
-      .map(({ modName, count }) => `${modName} (${formatCount(count)})`)
-      .join(", ");
-    console.log(`Top plugin sources: ${topSources}`);
-  }
 
   progress.phase("Scanning plugin records", 2, 5);
   const {
@@ -153,25 +145,19 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     traitsFormList,
     mastersByPath,
   } = await collectImportPluginData(plugins, progress);
-  progress.step("Building perk metadata index…");
+  progress.activity("Building perk metadata index…");
   const avifMembership = buildAvifMembershipIndex(
     avifTrees,
     buildIdentityToPerkName(perkRecords),
   );
   const perkMetadataIndex = buildPerkMetadataIndex(perkRecords, avifTrees, avifMembership);
   progress.step(
-    `Perk metadata ready — ${formatCount(perkRecords.length)} PERK records, ` +
+    `Indexed perks — ${formatCount(perkRecords.length)} PERK records, ` +
       `${formatCount(avifMembership.allDisplayedIdentities.size)} AVIF-displayed perks`,
   );
 
-  const wintersunPlugins = plugins.filter((plugin) => /Wintersun/i.test(plugin.pluginName));
-  progress.step(
-    `Wintersun plugins: ${formatCount(wintersunPlugins.length)} ` +
-      `(MGEF/MESG from combined scan)`,
-  );
-
   progress.phase("Transforming game data", 3, 5);
-  progress.step("Building perk trees…");
+  progress.activity("Building perk trees…");
   const { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs } = transformPerkRecords(
     perkRecords,
     perksDir,
@@ -189,18 +175,19 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
         : ""),
   );
 
-  progress.step("Parsing traits…");
+  progress.activity("Parsing traits…");
   const traits = await transformTraitRecords(spellRecords, install, plugins, {
     traitsFormList,
     mastersByPath,
   });
   progress.step(`Traits — ${formatCount(traits.traits.length)} entries`);
 
-  progress.step(
-    `Races — merging ${formatCount(raceRecords.length)} RACE records` +
+  progress.activity(
+    `Merging ${formatCount(raceRecords.length)} race records` +
       (lorerimRaceRecords.length > 0
-        ? ` with ${formatCount(lorerimRaceRecords.length)} LoreRim race overrides`
-        : ""),
+        ? ` with ${formatCount(lorerimRaceRecords.length)} overrides`
+        : "") +
+      "…",
   );
   const { races, raceEffects } = transformRaceRecords(
     raceRecords,
@@ -210,7 +197,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   );
   progress.step(`Races — ${formatCount(races.races.length)} playable races`);
 
-  progress.step("Birthsigns…");
+  progress.activity("Birthsigns…");
   const birthsigns = transformStandingStoneRecords(
     spellRecords,
     mesgRecords,
@@ -218,9 +205,9 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   );
   progress.step(`Birthsigns — ${formatCount(birthsigns.birthsigns.length)} entries`);
 
-  progress.step("Deities…");
+  progress.activity("Deities…");
   const deityEligibility = await buildDeityEligibilityIndex({
-    wintersunPlugins,
+    wintersunPlugins: plugins.filter((plugin) => /Wintersun/i.test(plugin.pluginName)),
     mesgRecords: wintersunMesgRecords,
     questRecords,
     spellRecords,
@@ -251,7 +238,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   } else if (manifest.version) {
     progress.step(`Modpack version: ${manifest.version}`);
   } else {
-    console.warn("Warning: could not detect LoreRim modpack version; manifest version unchanged.");
+    progress.step("Warning: could not detect modpack version; manifest version unchanged.");
   }
 
   const summary = {
@@ -297,13 +284,15 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     ...Object.entries(trees).map(([filename, tree]) => [`perks/${filename}`, tree]),
   ];
 
+  const writeProgress = progress.track("Writing output files", filesToWrite.length);
   for (const [relativePath, payload] of filesToWrite) {
     const filePath = relativePath.startsWith("perks/")
       ? join(perksDir, relativePath.slice("perks/".length))
       : join(dataDir, relativePath);
     writeJson(filePath, payload);
-    progress.step(`Wrote ${relativePath}`);
+    writeProgress.tick();
   }
+  writeProgress.finish(`${formatCount(filesToWrite.length)} files`);
 
   const removedPerkFiles = removeStalePerkFiles(perksDir, Object.keys(trees));
   if (removedPerkFiles.length > 0) {

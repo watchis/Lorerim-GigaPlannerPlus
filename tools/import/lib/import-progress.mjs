@@ -42,8 +42,25 @@ function clearProgressLine(stream = process.stderr) {
 export function createImportReporter(options = {}) {
   const stream = options.stream ?? process.stderr;
   const interactive = options.interactive ?? isInteractive(stream);
-  const logInterval = options.logInterval ?? 400;
+  const updateIntervalMs = options.updateIntervalMs ?? 250;
   const importStarted = Date.now();
+  let lastActivityWrite = 0;
+
+  function writeProgressLine(line, { forceNewline = false } = {}) {
+    const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
+    const clipped = truncateEnd(line, maxWidth);
+
+    if (interactive && !forceNewline) {
+      stream.write(`\r${clipped}`);
+      return;
+    }
+
+    const now = Date.now();
+    if (forceNewline || now - lastActivityWrite >= updateIntervalMs) {
+      lastActivityWrite = now;
+      stream.write(`${clipped}\n`);
+    }
+  }
 
   function phase(title, index = null, total = null) {
     clearProgressLine(stream);
@@ -57,35 +74,35 @@ export function createImportReporter(options = {}) {
     stream.write(`  ${message}\n`);
   }
 
-  function pluginScan(label, total) {
+  /** Ephemeral status line — overwritten by the next activity or track tick. */
+  function activity(message) {
+    writeProgressLine(`  ${message}`);
+  }
+
+  function track(label, total) {
     const started = Date.now();
     let current = 0;
-    let lastNonInteractiveLog = 0;
+    let lastWrite = 0;
 
-    function tick(pluginName, detail = "") {
+    function tick(detail = "") {
       current += 1;
       const ratio = total > 0 ? current / total : 1;
       const percent = Math.floor(ratio * 100);
       const suffix = detail ? ` — ${detail}` : "";
-      const name = truncateEnd(pluginName, 42);
+      const bar = renderBar(ratio);
+      const line = `  ${label} ${bar} ${formatCount(current)}/${formatCount(total)} (${percent}%)${suffix}`;
 
-      if (interactive) {
-        const bar = renderBar(ratio);
-        const line = `  ${label} ${bar} ${formatCount(current)}/${formatCount(total)} (${percent}%) ${name}${suffix}`;
-        const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
-        stream.write(`\r${truncateEnd(line, maxWidth)}`);
-        return;
-      }
-
-      if (
+      const now = Date.now();
+      const isComplete = current >= total;
+      const shouldWrite =
+        interactive ||
         current === 1 ||
-        current === total ||
-        current - lastNonInteractiveLog >= logInterval
-      ) {
-        lastNonInteractiveLog = current;
-        stream.write(
-          `  ${label}: ${formatCount(current)}/${formatCount(total)} (${percent}%) ${name}\n`,
-        );
+        isComplete ||
+        now - lastWrite >= updateIntervalMs;
+
+      if (shouldWrite) {
+        lastWrite = now;
+        writeProgressLine(line, { forceNewline: !interactive && isComplete });
       }
     }
 
@@ -93,10 +110,17 @@ export function createImportReporter(options = {}) {
       const elapsed = formatDuration(Date.now() - started);
       clearProgressLine(stream);
       const summary = detail ? `${detail} in ${elapsed}` : `done in ${elapsed}`;
-      stream.write(`  ✓ ${label}: ${formatCount(current)}/${formatCount(total)} plugins — ${summary}\n`);
+      stream.write(
+        `  ✓ ${label}: ${formatCount(current)}/${formatCount(total)} — ${summary}\n`,
+      );
     }
 
     return { tick, finish };
+  }
+
+  /** @deprecated Use `track` — kept for existing call sites during migration. */
+  function pluginScan(label, total) {
+    return track(label, total);
   }
 
   function banner(lines) {
@@ -112,5 +136,14 @@ export function createImportReporter(options = {}) {
     return formatDuration(Date.now() - importStarted);
   }
 
-  return { phase, step, pluginScan, banner, elapsed, clearProgressLine };
+  return {
+    phase,
+    step,
+    activity,
+    track,
+    pluginScan,
+    banner,
+    elapsed,
+    clearProgressLine,
+  };
 }

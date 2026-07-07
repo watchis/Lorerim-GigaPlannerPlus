@@ -591,15 +591,23 @@ export async function collectImportPluginData(plugins, progress = null, options 
   const mastersByPath = new Map();
 
   const scan = progress?.pluginScan?.("Scanning plugin records", plugins.length);
-  const pluginPayloads = await mapConcurrent(plugins, concurrency, readPluginImportPayload);
+  let recordsRead = 0;
+  const pluginPayloads = await mapConcurrent(plugins, concurrency, async (plugin) => {
+    const payload = await readPluginImportPayload(plugin);
+    recordsRead += payload.records.length;
+    scan?.tick(
+      recordsRead > 0 ? `${formatCount(recordsRead)} records read` : "reading files",
+    );
+    return payload;
+  });
 
   // Merge in load-order sequence so later plugins override earlier ones.
+  progress?.activity?.("Merging records by load order…");
   const payloadsByName = new Map(pluginPayloads.map((payload) => [payload.pluginName, payload]));
   const orderedPayloads = plugins
     .map((plugin) => payloadsByName.get(plugin.pluginName))
     .filter(Boolean);
 
-  let recordCount = 0;
   for (const payload of orderedPayloads) {
     mergePluginPayload(
       mergedByType,
@@ -608,11 +616,6 @@ export async function collectImportPluginData(plugins, progress = null, options 
       traitsFormList,
       mastersByPath,
       payload,
-    );
-    recordCount += payload.records.length;
-    scan?.tick(
-      payload.pluginName,
-      recordCount > 0 ? `${formatCount(recordCount)} records` : "",
     );
   }
 
@@ -695,7 +698,7 @@ export async function collectRecordsFromPlugins(plugins, recordTypes, progress =
       const existing = merged.get(key);
       merged.set(key, existing ? mergeCollectedRecord(existing, next) : next);
     }
-    scan?.tick(pluginName, records.length > 0 ? `${records.length} in plugin` : "");
+    scan?.tick(records.length > 0 ? `${formatCount(records.length)} records` : "");
   }
 
   scan?.finish(`${formatCount(merged.size)} unique ${label} records`);

@@ -80,7 +80,7 @@ export async function filterPluginsForImport(plugins, options = {}) {
         const current = pluginStats(plugin.path);
         if (statsMatch(cached, current)) {
           skipped.push({ ...plugin, reason: "cached-non-mechanics" });
-          classifyProgress?.tick(plugin.pluginName, "cached skip");
+          classifyProgress?.tick("cached skip");
           continue;
         }
       } catch {
@@ -93,6 +93,13 @@ export async function filterPluginsForImport(plugins, options = {}) {
 
   const classifications = await mapConcurrent(candidates, concurrency, async (plugin) => {
     const mechanics = await classify(plugin.path);
+    classifyProgress?.tick(
+      mechanics.hasMechanics
+        ? mechanics.recordTypes.length > 0
+          ? mechanics.recordTypes.join(", ")
+          : "mechanics"
+        : "asset-only",
+    );
     return { plugin, mechanics };
   });
 
@@ -106,16 +113,11 @@ export async function filterPluginsForImport(plugins, options = {}) {
         classifiedAt: new Date().toISOString(),
       };
       skipped.push({ ...plugin, reason: "non-mechanics" });
-      classifyProgress?.tick(plugin.pluginName, "no mechanics records");
       continue;
     }
 
     delete cache.plugins[key];
     toScan.push(plugin);
-    classifyProgress?.tick(
-      plugin.pluginName,
-      mechanics.recordTypes.length > 0 ? mechanics.recordTypes.join(", ") : "",
-    );
   }
 
   saveSkipCache(cache, cachePath);
