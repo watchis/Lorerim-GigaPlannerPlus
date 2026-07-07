@@ -7,6 +7,22 @@ export function perkMetadataKey(skillId, perkName) {
   return `${skillId}:${canonicalPerkName(perkName)}`;
 }
 
+function buildPerkNameIndex(tree) {
+  const byCanonical = new Map();
+
+  for (const perk of tree.perks) {
+    const canonical = canonicalPerkName(perk.name);
+    if (!canonical) continue;
+
+    if (!byCanonical.has(canonical)) {
+      byCanonical.set(canonical, []);
+    }
+    byCanonical.get(canonical).push(perk);
+  }
+
+  return byCanonical;
+}
+
 function uniqueNames(names) {
   const seen = new Set();
   const result = [];
@@ -85,11 +101,9 @@ export function buildPerkMetadataIndex(perkRecords, avifTrees, membership = null
   return byKey;
 }
 
-export function resolvePrerequisiteId(tree, prerequisiteName, childSkillReq) {
+export function resolvePrerequisiteId(tree, prerequisiteName, childSkillReq, nameIndex = null) {
   const canonical = canonicalPerkName(prerequisiteName);
-  const matches = tree.perks.filter(
-    (perk) => canonicalPerkName(perk.name) === canonical,
-  );
+  const matches = (nameIndex ?? buildPerkNameIndex(tree)).get(canonical) ?? [];
   if (matches.length === 0) return null;
   if (matches.length === 1) return matches[0].id;
 
@@ -105,9 +119,10 @@ export function resolvePrerequisiteId(tree, prerequisiteName, childSkillReq) {
 export function resolvePrerequisiteIds(tree, prerequisiteNames, childSkillReq) {
   const ids = [];
   const seen = new Set();
+  const nameIndex = buildPerkNameIndex(tree);
 
   for (const name of prerequisiteNames) {
-    const id = resolvePrerequisiteId(tree, name, childSkillReq);
+    const id = resolvePrerequisiteId(tree, name, childSkillReq, nameIndex);
     if (!id || seen.has(id)) continue;
     seen.add(id);
     ids.push(id);
@@ -123,9 +138,11 @@ export function resolvePrerequisiteIds(tree, prerequisiteNames, childSkillReq) {
 export function filterSpuriousPrerequisites(tree, childSkillReq, prerequisiteNames) {
   if (prerequisiteNames.length <= 1) return prerequisiteNames;
 
+  const nameIndex = buildPerkNameIndex(tree);
+  const perksById = new Map(tree.perks.map((perk) => [perk.id, perk]));
   const resolved = prerequisiteNames.map((name) => {
-    const id = resolvePrerequisiteId(tree, name, childSkillReq);
-    const perk = tree.perks.find((candidate) => candidate.id === id);
+    const id = resolvePrerequisiteId(tree, name, childSkillReq, nameIndex);
+    const perk = id ? perksById.get(id) : null;
     return { name, skillReq: perk?.skillReq ?? null };
   });
 
@@ -152,11 +169,10 @@ export function inferPositionFromPrerequisites(tree, prerequisiteIds) {
 }
 
 /** Same-named siblings form a multi-rank stack. Name-based so it survives layout repositioning. */
-function sameNameSiblings(perk, tree) {
+function sameNameSiblings(perk, tree, nameIndex = null) {
   const canonical = canonicalPerkName(perk.name);
-  return tree.perks.filter(
-    (candidate) => candidate.id !== perk.id && canonicalPerkName(candidate.name) === canonical,
-  );
+  const matches = (nameIndex ?? buildPerkNameIndex(tree)).get(canonical) ?? [];
+  return matches.filter((candidate) => candidate.id !== perk.id);
 }
 
 function stackRankFromPerkId(id) {
@@ -178,7 +194,8 @@ export function applyPerkMetadata(perk, tree, metadataIndex) {
   const metadata = metadataIndex.get(perkMetadataKey(tree.skillId, perk.name));
   if (!metadata) return perk;
 
-  const siblings = sameNameSiblings(perk, tree);
+  const nameIndex = buildPerkNameIndex(tree);
+  const siblings = sameNameSiblings(perk, tree, nameIndex);
   const inStack = siblings.length > 0;
 
   // Higher stack tiers are gated by the stack mechanism (position + rank), not metadata.
