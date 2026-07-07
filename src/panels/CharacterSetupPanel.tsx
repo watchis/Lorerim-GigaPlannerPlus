@@ -256,7 +256,7 @@ export function CharacterSetupPanel() {
         className={cn(
           "flex shrink-0 flex-row items-center justify-between space-y-0",
           stackedLayout
-            ? "border-b border-[var(--color-border)]/50 px-3 py-2.5 !p-0"
+            ? "border-b border-[var(--color-border)]/50 px-3 py-2.5"
             : compact
               ? "pb-1.5"
               : "pb-2",
@@ -283,7 +283,7 @@ export function CharacterSetupPanel() {
         className={cn(
           "space-y-3",
           compact && "space-y-2 text-[13px]",
-          stackedLayout && "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain !p-0 px-3 pb-2 pt-2",
+          stackedLayout && "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-3 pb-2 pt-2",
         )}
       >
         <div className="space-y-1.5">
