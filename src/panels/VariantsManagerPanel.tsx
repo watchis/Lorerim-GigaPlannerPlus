@@ -663,8 +663,14 @@ export function VariantsManagerPanel() {
   };
 
   const saveNotesDraft = () => {
-    if (!notesVariant) return;
-    setVariantNotes(notesVariant.id, notesDraft);
+    const { savedBuilds, activeBuildId } = useBuildStore.getState();
+    const refreshedEntry = savedBuilds
+      .map((build) => normalizeSavedBuild(build))
+      .find((build) => build.id === activeBuildId);
+    if (!refreshedEntry) return;
+
+    const variantId = notesVariantIdRef.current;
+    setVariantNotes(variantId, notesDraftRef.current);
     setNotesEditing(false);
   };
 

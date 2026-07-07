@@ -35,6 +35,7 @@ import {
   getVariantCount,
   getVariantName,
   getVariantNotes,
+  mergeVariantNotesFromEntry,
   migrateLegacyStorage,
   nextBuildName,
   nextMilestoneName,
@@ -532,12 +533,18 @@ export const useBuildStore = create<BuildStore>()(
           const entryName = decoded.shared.name.trim();
           const nextBuilds = savedBuilds.map((entry) => {
             if (entry.id !== activeBuildId) return normalizeSavedBuild(entry);
+
+            const existing = normalizeSavedBuild(entry);
+            const fromPackage = createSavedBuildFromPackage(
+              gameData.game,
+              decoded,
+              entryName || entry.name,
+            );
+            const mergedNotes = mergeVariantNotesFromEntry(existing, fromPackage);
+
             return {
-              ...createSavedBuildFromPackage(
-                gameData.game,
-                decoded,
-                entryName || entry.name,
-              ),
+              ...fromPackage,
+              ...mergedNotes,
               id: entry.id,
               updatedAt: Date.now(),
             };

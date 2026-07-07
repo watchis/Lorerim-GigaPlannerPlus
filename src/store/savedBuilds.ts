@@ -151,6 +151,28 @@ export function setVariantNotesOnEntry(
   };
 }
 
+export function mergeVariantNotesFromEntry(
+  existing: SavedBuild,
+  incoming: SavedBuild,
+): Pick<SavedBuild, "defaultVariantNotes" | "milestones"> {
+  const normalizedExisting = normalizeSavedBuild(existing);
+  const normalizedIncoming = normalizeSavedBuild(incoming);
+
+  const defaultVariantNotes = normalizedIncoming.defaultVariantNotes?.trim()
+    ? normalizedIncoming.defaultVariantNotes
+    : (normalizedExisting.defaultVariantNotes ?? "");
+
+  const milestones = normalizedIncoming.milestones.map((milestone, index) => {
+    const localMatch =
+      normalizedExisting.milestones.find((item) => item.name === milestone.name) ??
+      normalizedExisting.milestones[index];
+    const notes = milestone.notes?.trim() ? milestone.notes : (localMatch?.notes ?? "");
+    return { ...milestone, notes };
+  });
+
+  return { defaultVariantNotes, milestones };
+}
+
 export function getDefaultVariantName(entry: SavedBuild): string {
   return normalizeSavedBuild(entry).defaultVariantName;
 }
