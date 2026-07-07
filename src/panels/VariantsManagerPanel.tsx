@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -630,11 +630,30 @@ export function VariantsManagerPanel() {
           label: labels.back,
           onClick: activePane === "notes" ? backToManageVariants : closeVariantsManager,
         }}
-        title={activePane === "notes" ? (labels["notesTitle"] ?? (labels["notes"] ?? "Notes")) : labels.title}
+        title={activePane === "manage" ? labels.title : undefined}
         subtitle={
-          activePane === "notes"
-            ? (notesVariant?.name ?? "")
-            : formatLabel(labels.variantCount, { count: variantCount })
+          activePane === "manage"
+            ? formatLabel(labels.variantCount, { count: variantCount })
+            : undefined
+        }
+        titleRow={
+          activePane === "notes" ? (
+            <div className="flex min-w-0 gap-2">
+              <StickyNote className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]" />
+              <div className="min-w-0">
+                <CardTitle className="min-w-0 truncate text-base">
+                  {labels["notesTitle"] ?? labels["notes"] ?? "Notes"}
+                </CardTitle>
+                {notesVariant && (
+                  <p className="mt-1 text-xs text-[var(--color-muted)]">
+                    <span className="font-medium text-[var(--color-foreground)]">
+                      {notesVariant.name}
+                    </span>
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : undefined
         }
       />
 
@@ -729,11 +748,7 @@ export function VariantsManagerPanel() {
           </>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4">
-            <h3 className="shrink-0 px-1 text-sm font-semibold text-[var(--color-foreground)]">
-              {labels["notes"] ?? "Notes"}
-            </h3>
-
-            <div className="mt-2 flex items-center justify-end gap-2 px-1">
+            <div className="flex items-center justify-end gap-2 px-1">
               <Button
                 type="button"
                 variant="outline"
@@ -755,7 +770,7 @@ export function VariantsManagerPanel() {
               </Button>
             </div>
 
-            <div className="mt-2 min-h-0 flex-1">
+            <div className="mt-3 min-h-0 flex-1">
               <textarea
                 value={notesVariant ? notesDraft : ""}
                 onChange={(event) => setNotesDraft(event.target.value)}
