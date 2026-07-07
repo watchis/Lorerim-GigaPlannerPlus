@@ -51,6 +51,25 @@ function variantKey(id: string | null): string {
   return id ?? "default";
 }
 
+function persistPendingVariantNotes(
+  activePane: "manage" | "notes",
+  variantId: string | null,
+  draft: string,
+): void {
+  if (activePane !== "notes") return;
+
+  const { savedBuilds, activeBuildId, setVariantNotes } = useBuildStore.getState();
+  const entry = savedBuilds
+    .map((build) => normalizeSavedBuild(build))
+    .find((build) => build.id === activeBuildId);
+  if (!entry) return;
+
+  const persisted = getVariantNotes(entry, variantId);
+  if (draft !== persisted) {
+    setVariantNotes(variantId, draft);
+  }
+}
+
 function stopPropagation(event: MouseEvent | KeyboardEvent | DragEvent) {
   event.stopPropagation();
 }
@@ -418,6 +437,7 @@ export function VariantsManagerPanel() {
   const initialPane = useUiStore((s) => s.variantsManagerInitialPane);
   const initialVariantId = useUiStore((s) => s.variantsManagerInitialVariantId);
   const variantNotesRequestId = useUiStore((s) => s.variantNotesRequestId);
+  const variantsManagerRequestId = useUiStore((s) => s.variantsManagerRequestId);
   const gameData = useBuildStore((s) => s.gameData);
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
   const activeBuildId = useBuildStore((s) => s.activeBuildId);
@@ -473,30 +493,43 @@ export function VariantsManagerPanel() {
     if (variantNotesRequestId === 0) return;
 
     const targetVariantId = initialVariantId;
+    persistPendingVariantNotes(
+      activePaneRef.current,
+      notesVariantIdRef.current,
+      notesDraftRef.current,
+    );
+
     const { savedBuilds, activeBuildId } = useBuildStore.getState();
-    const currentEntry = savedBuilds
+    const refreshedEntry = savedBuilds
       .map((build) => normalizeSavedBuild(build))
-      .find((build) => build.id === activeBuildId);
-    if (!currentEntry) return;
-
-    if (activePaneRef.current === "notes") {
-      const currentVariantId = notesVariantIdRef.current;
-      const currentPersisted = getVariantNotes(currentEntry, currentVariantId);
-      if (notesDraftRef.current !== currentPersisted) {
-        setVariantNotes(currentVariantId, notesDraftRef.current);
-      }
-    }
-
-    const refreshedEntry = useBuildStore
-      .getState()
-      .savedBuilds.map((build) => normalizeSavedBuild(build))
       .find((build) => build.id === activeBuildId);
     if (!refreshedEntry) return;
 
     setActivePane("notes");
     setNotesVariantId(targetVariantId);
     setNotesDraft(getVariantNotes(refreshedEntry, targetVariantId));
-  }, [variantNotesRequestId, initialVariantId, setVariantNotes]);
+  }, [variantNotesRequestId, initialVariantId]);
+
+  useEffect(() => {
+    if (variantsManagerRequestId === 0) return;
+
+    persistPendingVariantNotes(
+      activePaneRef.current,
+      notesVariantIdRef.current,
+      notesDraftRef.current,
+    );
+    setActivePane("manage");
+  }, [variantsManagerRequestId]);
+
+  useEffect(() => {
+    return () => {
+      persistPendingVariantNotes(
+        activePaneRef.current,
+        notesVariantIdRef.current,
+        notesDraftRef.current,
+      );
+    };
+  }, []);
 
   const startRename = (id: string | null, name: string) => {
     setRenamingKey(variantKey(id));
@@ -555,12 +588,7 @@ export function VariantsManagerPanel() {
   };
 
   const openNotes = (variantId: string | null) => {
-    if (activePane === "notes" && notesVariant && notesVariant.id !== variantId) {
-      const currentPersisted = getVariantNotes(entry, notesVariant.id);
-      if (notesDraft !== currentPersisted) {
-        setVariantNotes(notesVariant.id, notesDraft);
-      }
-    }
+    persistPendingVariantNotes(activePane, notesVariantId, notesDraft);
 
     setNotesVariantId(variantId);
     setNotesDraft(getVariantNotes(entry, variantId));
@@ -568,6 +596,7 @@ export function VariantsManagerPanel() {
   };
 
   const backToManageVariants = () => {
+    persistPendingVariantNotes(activePane, notesVariantId, notesDraft);
     setActivePane("manage");
   };
 
