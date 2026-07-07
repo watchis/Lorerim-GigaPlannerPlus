@@ -415,7 +415,7 @@ export function preserveSkillPointAllocations(
     if (!isAllocatableSkill(game, skillId)) continue;
 
     const previousLevel = getStoredSkillLevel(game, previousBuild, skillId);
-    const targetPaid = computePaidSkillPoints(game, previousBuild, skillId, previousLevel);
+    const previousFloor = getSkillFloor(game, previousBuild, skillId);
     const previousRanges = getSkillTrainingRanges(game, previousBuild, skillId);
     const floor = getSkillFloor(game, { ...nextBuild, skillLevels, skillTrainingRanges }, skillId);
     const maxOnSkill = getMaxTrainingOnSkill(game, nextBuild, skillId, floor);
@@ -431,12 +431,14 @@ export function preserveSkillPointAllocations(
       delete skillTrainingRanges[skillId];
     }
 
-    skillLevels[skillId] = findSkillLevelForPaidPoints(
-      game,
-      { ...nextBuild, skillLevels, skillTrainingRanges },
-      skillId,
-      targetPaid,
-    );
+    const nextState = { ...nextBuild, skillLevels, skillTrainingRanges };
+    const nextFloor = getSkillFloor(game, nextState, skillId);
+    const trainingFloor = getSkillLevelFromTraining(game, nextState, skillId);
+    const hadInvestmentAboveFloor = previousLevel > previousFloor;
+    // If the user invested above the floor, preserve the absolute level across floor changes.
+    // Otherwise, just allow the floor to change (prevents race floors from "stacking" on empty builds).
+    const targetLevel = hadInvestmentAboveFloor ? previousLevel : nextFloor;
+    skillLevels[skillId] = Math.min(getMaxSkillLevel(game), Math.max(trainingFloor, targetLevel));
   }
 
   return normalizeSkillTraining(game, { ...nextBuild, skillLevels, skillTrainingRanges });
@@ -1836,6 +1838,54 @@ export function migrateBuildState(
     return { ...rest, deityId: blessingId ?? "none" };
   }
   return build;
+}
+
+function stringArraysEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+function stringRecordEqual(a: Record<string, string>, b: Record<string, string>): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => a[key] === b[key]);
+}
+
+function numberRecordEqual(a: Record<string, number>, b: Record<string, number>): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => a[key] === b[key]);
+}
+
+function trainingRangesEqual(
+  a: Record<string, number[]>,
+  b: Record<string, number[]>,
+): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => stringArraysEqual(a[key] ?? [], b[key] ?? []));
+}
+
+export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
+  return (
+    a.raceId === b.raceId &&
+    a.birthsignId === b.birthsignId &&
+    a.deityId === b.deityId &&
+    stringArraysEqual(a.traitIds, b.traitIds) &&
+    stringArraysEqual(a.majorSkillIds, b.majorSkillIds) &&
+    stringArraysEqual(a.minorSkillIds, b.minorSkillIds) &&
+    a.attributeBonus.health === b.attributeBonus.health &&
+    a.attributeBonus.magicka === b.attributeBonus.magicka &&
+    a.attributeBonus.stamina === b.attributeBonus.stamina &&
+    stringRecordEqual(a.characterOptionChoices, b.characterOptionChoices) &&
+    stringArraysEqual(a.selectedPerkIds, b.selectedPerkIds) &&
+    numberRecordEqual(a.skillLevels, b.skillLevels) &&
+    trainingRangesEqual(a.skillTrainingRanges, b.skillTrainingRanges) &&
+    a.playerLevel === b.playerLevel &&
+    a.description === b.description
+  );
 }
 
 export function createInitialBuildState(): BuildState {

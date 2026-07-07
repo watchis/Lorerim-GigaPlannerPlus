@@ -114,6 +114,12 @@ button {
   padding-bottom: max(5rem, calc(3.5rem + env(safe-area-inset-bottom)));
 }
 
+@media (max-width: 767px) {
+  .page-scroll-with-fab {
+    padding-bottom: 0;
+  }
+}
+
 .planner-swipe-pane {
   padding-bottom: 0.5rem;
 }

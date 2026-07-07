@@ -127,8 +127,8 @@ export function SkillTreePanel() {
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillWorkspaceMode = useUiStore((s) => s.skillWorkspaceMode);
   const setSkillWorkspaceMode = useUiStore((s) => s.setSkillWorkspaceMode);
-  const showPerkSkillRequirements = useUiStore((s) => s.showPerkSkillRequirements);
   const setShowPerkSkillRequirements = useUiStore((s) => s.setShowPerkSkillRequirements);
+  const showPerkSkillRequirements = useUiStore((s) => s.showPerkSkillRequirements);
   const stackedLayout = usePlannerStackedLayout();
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
@@ -254,7 +254,6 @@ export function SkillTreePanel() {
       labels={labels}
       conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}
       playerLevelConflictPerkIds={invalidPerkIdsOnTree}
-      showSkillRequirements={showPerkSkillRequirements}
     />
   );
 

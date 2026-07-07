@@ -20,6 +20,18 @@ function truncateEnd(text, maxLen) {
   return `…${value.slice(-(maxLen - 1))}`;
 }
 
+function formatTrackLine(label, bar, current, total, percent, detail, maxWidth) {
+  const prefix = `  ${label} ${bar} ${formatCount(current)}/${formatCount(total)} (${percent}%)`;
+  if (!detail) return truncateEnd(prefix, maxWidth);
+
+  const separator = " — ";
+  const maxDetailLen = Math.max(8, maxWidth - prefix.length - separator.length);
+  if (maxDetailLen <= 8) return truncateEnd(prefix, maxWidth);
+
+  const clippedDetail = truncateEnd(detail, maxDetailLen);
+  return prefix + separator + clippedDetail;
+}
+
 function renderBar(ratio, width = DEFAULT_BAR_WIDTH) {
   const clamped = Math.max(0, Math.min(1, ratio));
   const filled = Math.round(clamped * width);
@@ -35,6 +47,60 @@ function clearProgressLine(stream = process.stderr) {
   stream.write("\r\x1b[2K");
 }
 
+export function formatImportSummary(summary, { elapsed, dryRun = false } = {}) {
+  const lines = [
+    dryRun
+      ? `Dry run complete in ${elapsed} (no files written)`
+      : `Import complete in ${elapsed}`,
+    `Install: ${summary.installDir}`,
+    `MO2 profile: ${summary.profile}`,
+    `Plugins in load order: ${formatCount(summary.pluginsInLoadOrder)}`,
+  ];
+
+  if (summary.pluginsSkippedNonMechanics > 0) {
+    lines.push(
+      `Plugins skipped (asset-only): ${formatCount(summary.pluginsSkippedNonMechanics)}`,
+    );
+  }
+
+  lines.push(
+    `Plugins scanned: ${formatCount(summary.pluginsScanned)}`,
+    `Perk records: ${formatCount(summary.perkRecords)}`,
+    `Perk trees: ${formatCount(summary.perkTrees)}`,
+    `Imported perks: ${formatCount(summary.importedPerks)}`,
+  );
+
+  if (summary.addedPerks > 0) {
+    lines.push(`New perks: ${formatCount(summary.addedPerks)}`);
+  }
+  if (summary.removedPerks > 0) {
+    lines.push(`Removed perks: ${formatCount(summary.removedPerks)}`);
+  }
+
+  lines.push(
+    `AVIF skills: ${formatCount(summary.avifSkills)}`,
+    `AVIF-displayed perks: ${formatCount(summary.avifPerks)}`,
+    `Traits: ${formatCount(summary.traits)}`,
+    `Races: ${formatCount(summary.races)}`,
+    `Birthsigns: ${formatCount(summary.birthsigns)}`,
+    `Deities: ${formatCount(summary.deities)}`,
+  );
+
+  if (summary.modpackVersion) {
+    lines.push(`Modpack version: ${summary.modpackVersion}`);
+  }
+
+  return lines;
+}
+
+export function printImportSummary(progress, summary, options = {}) {
+  const lines = formatImportSummary(summary, options);
+  progress.step("");
+  for (const line of lines) {
+    progress.step(line);
+  }
+}
+
 /**
  * Reporter for long-running import steps. Progress ticks go to stderr so stdout
  * stays clean for machine-readable output at the end.
@@ -42,8 +108,26 @@ function clearProgressLine(stream = process.stderr) {
 export function createImportReporter(options = {}) {
   const stream = options.stream ?? process.stderr;
   const interactive = options.interactive ?? isInteractive(stream);
-  const logInterval = options.logInterval ?? 400;
+  const updateIntervalMs = options.updateIntervalMs ?? 250;
   const importStarted = Date.now();
+  let lastActivityWrite = 0;
+
+  function writeProgressLine(line, { forceNewline = false } = {}) {
+    const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
+    const clipped = truncateEnd(line, maxWidth);
+
+    if (interactive && !forceNewline) {
+      clearProgressLine(stream);
+      stream.write(clipped);
+      return;
+    }
+
+    const now = Date.now();
+    if (forceNewline || now - lastActivityWrite >= updateIntervalMs) {
+      lastActivityWrite = now;
+      stream.write(`${clipped}\n`);
+    }
+  }
 
   function phase(title, index = null, total = null) {
     clearProgressLine(stream);
@@ -57,35 +141,35 @@ export function createImportReporter(options = {}) {
     stream.write(`  ${message}\n`);
   }
 
-  function pluginScan(label, total) {
+  /** Ephemeral status line — overwritten by the next activity or track tick. */
+  function activity(message) {
+    writeProgressLine(`  ${message}`);
+  }
+
+  function track(label, total) {
     const started = Date.now();
     let current = 0;
-    let lastNonInteractiveLog = 0;
+    let lastWrite = 0;
 
-    function tick(pluginName, detail = "") {
+    function tick(detail = "") {
       current += 1;
       const ratio = total > 0 ? current / total : 1;
       const percent = Math.floor(ratio * 100);
-      const suffix = detail ? ` — ${detail}` : "";
-      const name = truncateEnd(pluginName, 42);
+      const bar = renderBar(ratio);
+      const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
+      const line = formatTrackLine(label, bar, current, total, percent, detail, maxWidth);
 
-      if (interactive) {
-        const bar = renderBar(ratio);
-        const line = `  ${label} ${bar} ${formatCount(current)}/${formatCount(total)} (${percent}%) ${name}${suffix}`;
-        const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
-        stream.write(`\r${truncateEnd(line, maxWidth)}`);
-        return;
-      }
-
-      if (
+      const now = Date.now();
+      const isComplete = current >= total;
+      const shouldWrite =
+        interactive ||
         current === 1 ||
-        current === total ||
-        current - lastNonInteractiveLog >= logInterval
-      ) {
-        lastNonInteractiveLog = current;
-        stream.write(
-          `  ${label}: ${formatCount(current)}/${formatCount(total)} (${percent}%) ${name}\n`,
-        );
+        isComplete ||
+        now - lastWrite >= updateIntervalMs;
+
+      if (shouldWrite) {
+        lastWrite = now;
+        writeProgressLine(line, { forceNewline: !interactive && isComplete });
       }
     }
 
@@ -93,10 +177,17 @@ export function createImportReporter(options = {}) {
       const elapsed = formatDuration(Date.now() - started);
       clearProgressLine(stream);
       const summary = detail ? `${detail} in ${elapsed}` : `done in ${elapsed}`;
-      stream.write(`  ✓ ${label}: ${formatCount(current)}/${formatCount(total)} plugins — ${summary}\n`);
+      stream.write(
+        `  ✓ ${label}: ${formatCount(current)}/${formatCount(total)} — ${summary}\n`,
+      );
     }
 
     return { tick, finish };
+  }
+
+  /** @deprecated Use `track` — kept for existing call sites during migration. */
+  function pluginScan(label, total) {
+    return track(label, total);
   }
 
   function banner(lines) {
@@ -112,5 +203,14 @@ export function createImportReporter(options = {}) {
     return formatDuration(Date.now() - importStarted);
   }
 
-  return { phase, step, pluginScan, banner, elapsed, clearProgressLine };
+  return {
+    phase,
+    step,
+    activity,
+    track,
+    pluginScan,
+    banner,
+    elapsed,
+    clearProgressLine,
+  };
 }

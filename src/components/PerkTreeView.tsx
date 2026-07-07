@@ -48,6 +48,7 @@ import {
   zoomTreeViewAtPoint,
 } from "@/lib/perkTreeViewLayout";
 import { useBuildStore } from "@/store/buildStore";
+import { useUiStore } from "@/store/uiStore";
 
 const EDITOR_NODE_EXTENT = 1.25;
 const EDITOR_BOUNDS_PADDING = 1.45;
@@ -93,7 +94,6 @@ interface PerkTreeViewProps {
   labels: Record<string, string>;
   conflictPerkIds?: string[];
   playerLevelConflictPerkIds?: string[];
-  showSkillRequirements?: boolean;
   /** Scale the tree to fit and center within the parent area. */
   fit?: boolean;
   className?: string;
@@ -104,7 +104,6 @@ function PerkTreeView({
   labels,
   conflictPerkIds = [],
   playerLevelConflictPerkIds = [],
-  showSkillRequirements = true,
   fit = false,
   className,
 }: PerkTreeViewProps) {
@@ -114,6 +113,7 @@ function PerkTreeView({
   const tryTakePerk = useBuildStore((s) => s.tryTakePerk);
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
+  const showSkillRequirements = useUiStore((s) => s.showPerkSkillRequirements);
   const tookPerkWithLastClickRef = useRef(false);
   const supportsHover = useSupportsHover();
   const [touchTooltip, setTouchTooltip] = useState<{

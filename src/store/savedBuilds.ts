@@ -1,5 +1,5 @@
 import type { BuildState } from "@/engine/buildEngine";
-import { createInitialBuildState, migrateBuildState } from "@/engine/buildEngine";
+import { areBuildStatesEqual, createInitialBuildState, migrateBuildState } from "@/engine/buildEngine";
 
 export interface BuildMilestone {
   id: string;
@@ -19,6 +19,7 @@ export interface SavedBuild {
   milestones: BuildMilestone[];
   activeMilestoneId: string | null;
   updatedAt: number;
+  importedAt: number | null;
 }
 
 export interface BuildLibraryState {
@@ -26,8 +27,10 @@ export interface BuildLibraryState {
   activeBuildId: string;
 }
 
-const LEGACY_STORAGE_KEY = "lorerim-build";
-const LIBRARY_STORAGE_KEY = "lorerim-build-library";
+export const LEGACY_STORAGE_KEY = "lorerim-build";
+export const LIBRARY_STORAGE_KEY = "lorerim-build-library";
+
+export const APP_STORAGE_KEYS = [LIBRARY_STORAGE_KEY, LEGACY_STORAGE_KEY] as const;
 
 export function createBuildId(): string {
   return crypto.randomUUID();
@@ -103,6 +106,7 @@ export function createSavedBuild(
   build: BuildState,
   milestones: BuildMilestone[] = [],
   defaultVariantName: string = DEFAULT_VARIANT_NAME,
+  options: { imported?: boolean } = {},
 ): SavedBuild {
   return {
     id: createBuildId(),
@@ -113,7 +117,21 @@ export function createSavedBuild(
     milestones,
     activeMilestoneId: null,
     updatedAt: Date.now(),
+    importedAt: options.imported ? Date.now() : null,
   };
+}
+
+export function isSavedBuildImported(entry: SavedBuild): boolean {
+  return entry.importedAt != null;
+}
+
+export function markSavedBuildImported(entry: SavedBuild): SavedBuild {
+  return { ...entry, importedAt: Date.now() };
+}
+
+export function acknowledgeSavedBuildEdits(entry: SavedBuild): SavedBuild {
+  if (entry.importedAt == null) return entry;
+  return { ...entry, importedAt: null };
 }
 
 export function normalizeSavedBuild(entry: SavedBuild): SavedBuild {
@@ -123,6 +141,7 @@ export function normalizeSavedBuild(entry: SavedBuild): SavedBuild {
     defaultVariantNotes: entry.defaultVariantNotes ?? "",
     milestones: entry.milestones ?? [],
     activeMilestoneId: entry.activeMilestoneId ?? null,
+    importedAt: entry.importedAt ?? null,
   };
 }
 
@@ -331,8 +350,29 @@ export function nextBuildName(builds: SavedBuild[]): string {
   return defaultBuildName(index);
 }
 
+export function uniqueBuildName(desiredName: string, builds: SavedBuild[]): string {
+  const trimmed = desiredName.trim();
+  if (!trimmed) return nextBuildName(builds);
+
+  const used = new Set(builds.map((build) => build.name));
+  if (!used.has(trimmed)) return trimmed;
+
+  const base = `${trimmed} copy`;
+  if (!used.has(base)) return base;
+
+  let index = 2;
+  while (used.has(`${base} ${index}`)) {
+    index += 1;
+  }
+  return `${base} ${index}`;
+}
+
 export function touchSavedBuild(saved: SavedBuild, build: BuildState): SavedBuild {
-  return { ...saved, build, updatedAt: Date.now() };
+  if (areBuildStatesEqual(saved.build, build)) {
+    return saved;
+  }
+
+  return acknowledgeSavedBuildEdits({ ...saved, build, updatedAt: Date.now() });
 }
 
 export function updateSavedBuildInList(
@@ -345,7 +385,14 @@ export function updateSavedBuildInList(
 
     const normalized = normalizeSavedBuild(entry);
     if (normalized.activeMilestoneId) {
-      return {
+      const activeMilestone = normalized.milestones.find(
+        (milestone) => milestone.id === normalized.activeMilestoneId,
+      );
+      if (activeMilestone && areBuildStatesEqual(activeMilestone.build, build)) {
+        return normalized;
+      }
+
+      return acknowledgeSavedBuildEdits({
         ...normalized,
         milestones: normalized.milestones.map((milestone) =>
           milestone.id === normalized.activeMilestoneId
@@ -353,7 +400,7 @@ export function updateSavedBuildInList(
             : milestone,
         ),
         updatedAt: Date.now(),
-      };
+      });
     }
 
     return touchSavedBuild(normalized, build);
@@ -409,5 +456,3 @@ export function createInitialLibrary(): BuildLibraryState {
     activeBuildId: entry.id,
   };
 }
-
-export { LIBRARY_STORAGE_KEY };

@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import { BugReportButton } from "@/components/BugReportButton";
 import { LevelBar } from "@/components/LevelBar";
 import { LayoutRenderer } from "@/layout/LayoutRenderer";
-import { decodeBuildPackage, getBuildFromUrl } from "@/engine/buildCodec";
+import { clearBuildFromUrl, decodeBuildPackage, getBuildFromUrl } from "@/engine/buildCodec";
 import { useBuildStore } from "@/store/buildStore";
 import { LIBRARY_STORAGE_KEY } from "@/store/savedBuilds";
 
 export function PlannerPage() {
   const layout = useBuildStore((s) => s.gameData?.ui.layout);
   const game = useBuildStore((s) => s.gameData?.game);
-  const loadSharedBuild = useBuildStore((s) => s.loadSharedBuild);
+  const importSharedBuild = useBuildStore((s) => s.importSharedBuild);
 
   useEffect(() => {
     const urlBuild = getBuildFromUrl();
@@ -20,12 +20,12 @@ export function PlannerPage() {
     if (localStorage.getItem(LIBRARY_STORAGE_KEY)) return;
 
     try {
-      loadSharedBuild(decodeBuildPackage(urlBuild, game));
+      importSharedBuild(decodeBuildPackage(urlBuild, game));
+      clearBuildFromUrl();
     } catch {
       // ignore invalid URL build codes
     }
-  }, [game, loadSharedBuild]);
-
+  }, [game, importSharedBuild]);
   if (!layout) return null;
 
   return (

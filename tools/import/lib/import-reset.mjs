@@ -317,17 +317,19 @@ export function applyPerkGraphSnapshots(trees, snapshots) {
   }
 }
 
-export function removeStalePerkFiles(perksDir, activeFilenames) {
+export function findStalePerkFiles(perksDir, activeFilenames) {
   if (!existsSync(perksDir)) return [];
 
   const keep = new Set([...activeFilenames, "index.json"]);
-  const removed = [];
+  return readdirSync(perksDir).filter(
+    (filename) => filename.endsWith(".json") && !keep.has(filename),
+  );
+}
 
-  for (const filename of readdirSync(perksDir)) {
-    if (!filename.endsWith(".json") || keep.has(filename)) continue;
+export function removeStalePerkFiles(perksDir, activeFilenames) {
+  const removed = findStalePerkFiles(perksDir, activeFilenames);
+  for (const filename of removed) {
     unlinkSync(join(perksDir, filename));
-    removed.push(filename);
   }
-
   return removed;
 }

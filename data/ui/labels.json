@@ -275,6 +275,7 @@
       "subtitle": "Manage, share, import, and export your saved character builds.",
       "openPlanner": "Open Planner",
       "activeBadge": "Active",
+      "importedBadge": "Imported",
       "buildCount": "{count} saved builds",
       "noRace": "No race selected",
       "playerLevel": "Level {level}",
@@ -312,7 +313,12 @@
       "copiedLink": "Link copied!",
       "exportBackup": "Export backup",
       "exportActive": "Active build",
-      "exportAll": "Full library"
+      "exportAll": "Full library",
+      "storageMonitorTitle": "Browser storage",
+      "storageUsageLabel": "Used space",
+      "storageUsage": "{used} / {quota}",
+      "storageUsageWarning": "Storage is getting full. Export or delete builds to free space.",
+      "storageUsageCritical": "Storage is nearly full. Export or delete builds before saving more."
     },
     "build-summary": {
       "title": "Build Summary",

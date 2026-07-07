@@ -20,6 +20,8 @@ import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearc
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BugReportButton } from "@/components/BugReportButton";
+import { ImportedBuildBadge } from "@/components/ImportedBuildBadge";
+import { StorageMonitor } from "@/components/StorageMonitor";
 import type { GameData } from "@/data/schemas";
 import {
   decodeBuildPackage,
@@ -45,6 +47,7 @@ import type { SavedBuild } from "@/store/savedBuilds";
 import {
   getActiveSavedBuildBuild,
   getDefaultVariantName,
+  isSavedBuildImported,
   normalizeSavedBuild,
   updateSavedBuildInList,
 } from "@/store/savedBuilds";
@@ -223,7 +226,7 @@ function ActiveBuildCodeBlock({
             : "border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 hover:border-[var(--color-accent-muted)]",
         )}
       >
-        <code className="min-w-0 flex-1 break-all font-mono text-xs text-[var(--color-accent)] sm:break-normal sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap">
+        <code className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-[var(--color-accent)]">
           {code}
         </code>
         {copiedAction === "code" ? (
@@ -313,6 +316,7 @@ function TransferSidebar({
 
   return (
     <div className="min-w-0 space-y-3">
+      <StorageMonitor />
       <Card className="min-w-0 overflow-hidden">
         <PanelHeader
           icon={Link2}
@@ -625,6 +629,9 @@ function SavedBuildCard({
               {labels.activeBadge}
             </span>
           )}
+          {isSavedBuildImported(entry) && (
+            <ImportedBuildBadge label={labels.importedBadge} />
+          )}
         </div>
         <p className="mt-1 text-xs text-[var(--color-muted)]">
           {summary.raceLabel} ·{" "}
@@ -818,8 +825,7 @@ export function BuildsPage() {
   return (
     <div
       className={cn(
-        "page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4",
-        mobileTab === "transfer" ? "max-lg:overflow-hidden" : "overflow-y-auto",
+        "page-scroll-with-fab mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6 lg:gap-5 lg:overflow-hidden lg:py-4",
       )}
     >
       <header className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -845,7 +851,6 @@ export function BuildsPage() {
       <div
         className={cn(
           "flex flex-col gap-3",
-          mobileTab === "transfer" && "min-h-0 flex-1 overflow-hidden max-lg:overflow-hidden",
           "lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch lg:gap-6 lg:overflow-hidden",
         )}
       >
@@ -938,9 +943,10 @@ export function BuildsPage() {
 
         <aside
           className={cn(
-            "min-h-0 min-w-0 overflow-y-auto overscroll-y-contain pr-1",
+            "min-h-0 min-w-0 pr-1",
             mobileTab !== "transfer" && "hidden lg:block",
             mobileTab === "transfer" && "flex-1 lg:flex-none",
+            "lg:overflow-y-auto lg:overscroll-y-contain",
           )}
         >
           <TransferSidebar

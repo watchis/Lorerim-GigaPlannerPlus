@@ -26,6 +26,7 @@ import {
   type ComputedBuild,
 } from "@/engine/buildEngine";
 import {
+  acknowledgeSavedBuildEdits,
   createInitialLibrary,
   createMilestone,
   createSavedBuild,
@@ -36,8 +37,10 @@ import {
   getVariantName,
   getVariantNotes,
   mergeVariantNotesFromEntry,
+  markSavedBuildImported,
   migrateLegacyStorage,
   nextBuildName,
+  uniqueBuildName,
   nextMilestoneName,
   nextVariantCopyName,
   normalizeSavedBuild,
@@ -261,9 +264,14 @@ export const useBuildStore = create<BuildStore>()(
         setRace: (raceId) => {
           const { gameData, build } = get();
           if (!gameData) return;
-          const candidate = { ...build, raceId };
-          const preserved = preserveSkillPointAllocations(gameData.game, build, candidate);
-          commitBuild(set, get, reconcileBuild(gameData.game, preserved));
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, raceId };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const reconciled = reconcileBuild(gameData.game, preserved);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
         },
 
         setBirthsign: (birthsignId) => {
@@ -325,7 +333,14 @@ export const useBuildStore = create<BuildStore>()(
           }
 
           // Keep absolute skill levels — major/minor only changes the floor bonus, not invested levels.
-          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, majorSkillIds }));
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, majorSkillIds };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const reconciled = reconcileBuild(gameData.game, preserved);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
         },
 
         toggleMinorSkill: (skillId) => {
@@ -339,7 +354,14 @@ export const useBuildStore = create<BuildStore>()(
             minorSkillIds.push(skillId);
           }
 
-          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, minorSkillIds }));
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, minorSkillIds };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const reconciled = reconcileBuild(gameData.game, preserved);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
         },
 
         adjustAttribute: (stat, delta) => {
@@ -571,10 +593,12 @@ export const useBuildStore = create<BuildStore>()(
 
           const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
           const activeBuild = getActiveBuildFromPackage(decoded);
-          const newEntry = createSavedBuildFromPackage(
-            gameData.game,
-            decoded,
-            decoded.shared.name.trim() || nextBuildName(syncedBuilds),
+          const newEntry = markSavedBuildImported(
+            createSavedBuildFromPackage(
+              gameData.game,
+              decoded,
+              uniqueBuildName(decoded.shared.name, syncedBuilds),
+            ),
           );
 
           set({
@@ -661,11 +685,13 @@ export const useBuildStore = create<BuildStore>()(
           const milestones = importedMilestones.map((entry) =>
             createMilestone(entry.name, reconcileBuild(gameData.game, entry.build), entry.notes ?? ""),
           );
-          const newEntry = createSavedBuild(
-            name?.trim() || nextBuildName(syncedBuilds),
-            importedBuild,
-            milestones,
-            defaultVariantName,
+          const newEntry = markSavedBuildImported(
+            createSavedBuild(
+              uniqueBuildName(name ?? "", syncedBuilds),
+              importedBuild,
+              milestones,
+              defaultVariantName,
+            ),
           );
           if (defaultVariantNotes != null) {
             newEntry.defaultVariantNotes = defaultVariantNotes;
@@ -773,12 +799,12 @@ export const useBuildStore = create<BuildStore>()(
             );
           const milestone = createMilestone(milestoneName, freshBuild);
 
-          const nextEntry: SavedBuild = {
+          const nextEntry: SavedBuild = acknowledgeSavedBuildEdits({
             ...entry,
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
-          };
+          });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
           set({
@@ -805,12 +831,12 @@ export const useBuildStore = create<BuildStore>()(
             sourceNotes,
           );
 
-          const nextEntry: SavedBuild = {
+          const nextEntry: SavedBuild = acknowledgeSavedBuildEdits({
             ...entry,
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
-          };
+          });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
           set({
@@ -838,12 +864,12 @@ export const useBuildStore = create<BuildStore>()(
             );
           const milestone = createMilestone(milestoneName, reconciled, notes ?? "");
 
-          const nextEntry: SavedBuild = {
+          const nextEntry: SavedBuild = acknowledgeSavedBuildEdits({
             ...entry,
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
-          };
+          });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
           set({
@@ -889,18 +915,18 @@ export const useBuildStore = create<BuildStore>()(
           if (variantId === null) {
             const toPromote = pickMilestoneToPromote(entry.milestones);
             if (!toPromote) return;
-            nextEntry = {
+            nextEntry = acknowledgeSavedBuildEdits({
               ...promoteMilestoneToDefault(entry, toPromote.id),
               updatedAt: Date.now(),
-            };
+            });
           } else {
             const wasActive = entry.activeMilestoneId === variantId;
-            nextEntry = {
+            nextEntry = acknowledgeSavedBuildEdits({
               ...entry,
               milestones: entry.milestones.filter((m) => m.id !== variantId),
               activeMilestoneId: wasActive ? null : entry.activeMilestoneId,
               updatedAt: Date.now(),
-            };
+            });
           }
 
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
@@ -929,16 +955,20 @@ export const useBuildStore = create<BuildStore>()(
           set({
             savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) => {
               if (variantId === null) {
-                return { ...current, defaultVariantName: trimmed, updatedAt: Date.now() };
+                return acknowledgeSavedBuildEdits({
+                  ...current,
+                  defaultVariantName: trimmed,
+                  updatedAt: Date.now(),
+                });
               }
 
-              return {
+              return acknowledgeSavedBuildEdits({
                 ...current,
                 milestones: current.milestones.map((milestone) =>
                   milestone.id === variantId ? { ...milestone, name: trimmed } : milestone,
                 ),
                 updatedAt: Date.now(),
-              };
+              });
             }),
           });
         },

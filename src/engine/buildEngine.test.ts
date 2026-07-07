@@ -10,6 +10,7 @@ import {
   getEarnedDestinyPerkPoints,
   getEarnedPerkPoints,
   getEarnedSkillPoints,
+  getSkillFloor,
   getMaxAllowedSkillLevel,
   getMinimumPlayerLevelForBuild,
   getRemainingPerkPoints,
@@ -20,10 +21,13 @@ import {
   getSkillLevelIncreaseCost,
   getTrainingBudgetConflict,
   normalizeSkillTraining,
+  preserveSkillPointAllocations,
+  reconcileBuild,
   canSelectPerk,
   arePrerequisitesMet,
   getPerkById,
   removePerk,
+  areBuildStatesEqual,
 } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 
@@ -251,6 +255,146 @@ describe("ensurePlayerLevelForBuild", () => {
   });
 });
 
+describe("race/major/minor changes never lower skills", () => {
+  const game = getTestGameData();
+
+  function findRacePairWithDifferentStartingSkill(): {
+    skillId: string;
+    highRaceId: string;
+    lowRaceId: string;
+    high: number;
+    low: number;
+  } {
+    for (const skillId of game.manifest.skills) {
+      // This behavior only matters for allocatable skills.
+      if (game.manifest.nonAllocatableSkills.includes(skillId)) continue;
+      const racesWithValue = game.races
+        .map((race) => ({
+          id: race.id,
+          value: race.startingSkills[skillId] ?? 0,
+        }))
+        .sort((a, b) => b.value - a.value);
+      const highest = racesWithValue[0];
+      const lowest = racesWithValue.at(-1);
+      if (!highest || !lowest) continue;
+      if (highest.value <= lowest.value) continue;
+      return {
+        skillId,
+        highRaceId: highest.id,
+        lowRaceId: lowest.id,
+        high: highest.value,
+        low: lowest.value,
+      };
+    }
+    throw new Error("No race pair found with different starting skill values.");
+  }
+
+  it("preserves user-raised skill levels when switching races, and auto-raises player level if skill points go negative", () => {
+    const { skillId, highRaceId, lowRaceId, high, low } = findRacePairWithDifferentStartingSkill();
+
+    const beforeBase = reconcileBuild(
+      game,
+      createTestBuildState({
+        playerLevel: game.mechanics.leveling.baseLevel,
+        raceId: highRaceId,
+        skillLevels: {},
+      }),
+    );
+    const beforeFloor = getSkillFloor(game, beforeBase, skillId);
+    expect(beforeFloor).toBeGreaterThanOrEqual(high);
+
+    // Simulate investment above the floor.
+    const invested = 5;
+    const before = reconcileBuild(game, {
+      ...beforeBase,
+      skillLevels: { ...beforeBase.skillLevels, [skillId]: beforeFloor + invested },
+    });
+    const beforeLevel = before.skillLevels[skillId] ?? 0;
+    expect(beforeLevel).toBe(beforeFloor + invested);
+
+    const candidate = { ...before, raceId: lowRaceId };
+    const preserved = reconcileBuild(game, preserveSkillPointAllocations(game, before, candidate));
+    const afterLevel = preserved.skillLevels[skillId] ?? 0;
+
+    // We should preserve the user's absolute level (do not reduce due to floor changes).
+    expect(afterLevel).toBe(beforeLevel);
+    expect(low).toBeLessThan(high);
+
+    // Keeping the absolute level with a lower floor can increase paid points; ensureMinimumPlayerLevel should cover it.
+    const overBudget = getRemainingSkillPoints(game, preserved);
+    if (overBudget < 0) {
+      const leveled = ensurePlayerLevelForBuild(game, preserved, { ensureMinimumPlayerLevel: true });
+      expect(getRemainingSkillPoints(game, leveled)).toBeGreaterThanOrEqual(0);
+      expect(leveled.playerLevel).toBeGreaterThanOrEqual(preserved.playerLevel);
+    }
+  });
+
+  it("preserves user-raised skill levels when removing a major/minor selection (floor decreases)", () => {
+    // Pick a skill that is eligible for major selection and not destiny.
+    const skill = game.skills.find((entry) => entry.majorEligible && entry.id !== "destiny");
+    expect(skill).toBeDefined();
+    const skillId = skill!.id;
+
+    // Find a race that has a non-zero starting skill so we can distinguish race floor from major/minor bonus.
+    const raceWithStarting = game.races.find((race) => (race.startingSkills[skillId] ?? 0) > 0);
+    expect(raceWithStarting).toBeDefined();
+
+    const beforeBase = reconcileBuild(
+      game,
+      createTestBuildState({
+        playerLevel: game.mechanics.leveling.baseLevel,
+        raceId: raceWithStarting!.id,
+        majorSkillIds: [skillId],
+        skillLevels: {},
+      }),
+    );
+    const beforeFloor = getSkillFloor(game, beforeBase, skillId);
+    const invested = 5;
+    const before = reconcileBuild(game, {
+      ...beforeBase,
+      skillLevels: { ...beforeBase.skillLevels, [skillId]: beforeFloor + invested },
+    });
+    const beforeLevel = before.skillLevels[skillId] ?? 0;
+    expect(beforeLevel).toBe(beforeFloor + invested);
+
+    // Remove the major selection, which would normally lower the floor and (previously) lower the visible level.
+    const candidate = { ...before, majorSkillIds: [] };
+    const preserved = reconcileBuild(game, preserveSkillPointAllocations(game, before, candidate));
+    const afterLevel = preserved.skillLevels[skillId] ?? 0;
+    expect(afterLevel).toBe(beforeLevel);
+  });
+
+  it("does not accumulate race floors when toggling races repeatedly on an empty build (Imperial <-> Dunmer)", () => {
+    const imperial = game.races.find((race) => race.id === "imperial");
+    const dunmer = game.races.find((race) => race.id === "dunmer");
+    expect(imperial).toBeDefined();
+    expect(dunmer).toBeDefined();
+
+    let state = reconcileBuild(game, createTestBuildState({ raceId: "imperial" }));
+    state = reconcileBuild(game, preserveSkillPointAllocations(game, state, { ...state, raceId: "dunmer" }));
+    state = reconcileBuild(game, preserveSkillPointAllocations(game, state, { ...state, raceId: "imperial" }));
+
+    // Pick a representative set from the reported list (must exist in test data).
+    const skills = [
+      "heavy-armor",
+      "block",
+      "evasion",
+      "sneak",
+      "speech",
+      "conjuration",
+      "destruction",
+      "restoration",
+      "enchanting",
+    ];
+
+    for (const skillId of skills) {
+      if (game.manifest.nonAllocatableSkills.includes(skillId)) continue;
+      const expected = getSkillFloor(game, state, skillId);
+      expect(state.skillLevels[skillId] ?? expected).toBe(expected);
+    }
+  });
+});
+
 describe("buildEngine perk selection", () => {
   const game = getTestGameData();
 
@@ -419,5 +563,67 @@ describe("computeBuild ally-only perks", () => {
     expect(allySources).toEqual([
       { stat: "priceModifier", value: 10 },
     ]);
+  });
+});
+
+describe("areBuildStatesEqual", () => {
+  it("returns true for identical build snapshots", () => {
+    const build = createTestBuildState({
+      raceId: "nord",
+      deityId: "arkay",
+      selectedPerkIds: ["block-improved-blocking"],
+      skillLevels: { block: 25 },
+      skillTrainingRanges: { block: [1, 0, 0, 0] },
+      description: "Same build",
+    });
+
+    expect(areBuildStatesEqual(build, { ...build })).toBe(true);
+  });
+
+  it("detects differences across planner-editable fields", () => {
+    const base = createTestBuildState({
+      raceId: "nord",
+      birthsignId: "none",
+      deityId: "none",
+      traitIds: ["robust"],
+      majorSkillIds: ["block"],
+      minorSkillIds: ["one-handed"],
+      attributeBonus: { health: 1, magicka: 0, stamina: 0 },
+      characterOptionChoices: { "oghma-infinium": "health" },
+      selectedPerkIds: ["block-improved-blocking"],
+      skillLevels: { block: 20 },
+      skillTrainingRanges: { block: [1, 0, 0, 0] },
+      playerLevel: 5,
+      description: "Baseline",
+    });
+
+    expect(areBuildStatesEqual(base, { ...base, raceId: "breton" })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, birthsignId: "lover" })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, deityId: "arkay" })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, traitIds: [] })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, majorSkillIds: ["smithing"] })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, minorSkillIds: ["block"] })).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        attributeBonus: { health: 2, magicka: 0, stamina: 0 },
+      }),
+    ).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        characterOptionChoices: { "oghma-infinium": "magicka" },
+      }),
+    ).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, selectedPerkIds: [] })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, skillLevels: { block: 21 } })).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        skillTrainingRanges: { block: [2, 0, 0, 0] },
+      }),
+    ).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, playerLevel: 6 })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, description: "Changed" })).toBe(false);
   });
 });
