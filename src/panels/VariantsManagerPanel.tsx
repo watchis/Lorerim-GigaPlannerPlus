@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
+import { VariantNotesMarkdown } from "@/components/VariantNotesMarkdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -68,6 +69,10 @@ function persistPendingVariantNotes(
   if (draft !== persisted) {
     setVariantNotes(variantId, draft);
   }
+}
+
+function shouldStartNotesEditing(content: string): boolean {
+  return content.trim() === "";
 }
 
 function stopPropagation(event: MouseEvent | KeyboardEvent | DragEvent) {
@@ -460,6 +465,7 @@ export function VariantsManagerPanel() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [notesVariantId, setNotesVariantId] = useState<string | null>(initialVariantId);
   const [notesDraft, setNotesDraft] = useState("");
+  const [notesEditing, setNotesEditing] = useState(false);
   const [activePane, setActivePane] = useState<"manage" | "notes">(initialPane);
   const notesDraftRef = useRef(notesDraft);
   const notesVariantIdRef = useRef(notesVariantId);
@@ -505,9 +511,11 @@ export function VariantsManagerPanel() {
       .find((build) => build.id === activeBuildId);
     if (!refreshedEntry) return;
 
+    const nextNotes = getVariantNotes(refreshedEntry, targetVariantId);
     setActivePane("notes");
     setNotesVariantId(targetVariantId);
-    setNotesDraft(getVariantNotes(refreshedEntry, targetVariantId));
+    setNotesDraft(nextNotes);
+    setNotesEditing(shouldStartNotesEditing(nextNotes));
   }, [variantNotesRequestId, initialVariantId]);
 
   useEffect(() => {
@@ -590,8 +598,10 @@ export function VariantsManagerPanel() {
   const openNotes = (variantId: string | null) => {
     persistPendingVariantNotes(activePane, notesVariantId, notesDraft);
 
+    const nextNotes = getVariantNotes(entry, variantId);
     setNotesVariantId(variantId);
-    setNotesDraft(getVariantNotes(entry, variantId));
+    setNotesDraft(nextNotes);
+    setNotesEditing(shouldStartNotesEditing(nextNotes));
     setActivePane("notes");
   };
 
@@ -608,7 +618,12 @@ export function VariantsManagerPanel() {
   const saveNotesDraft = () => {
     if (!notesVariant) return;
     setVariantNotes(notesVariant.id, notesDraft);
+    setNotesEditing(false);
   };
+
+  const notesPlaceholder =
+    labels["notesPlaceholder"] ??
+    "Add notes for this variant (supports **bold**, *italic*, lists, and links)";
 
   const handleVariantDrop = (fromIndex: number, toIndex: number) => {
     if (fromIndex !== toIndex) {
@@ -749,42 +764,67 @@ export function VariantsManagerPanel() {
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4">
             <div className="flex items-center justify-end gap-2 px-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-8"
-                disabled={!notesVariant || notesDraft === persistedNotes}
-                onClick={resetNotesDraft}
-              >
-                {labels["resetNotes"] ?? "Reset"}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="h-8"
-                disabled={!notesVariant || notesDraft === persistedNotes}
-                onClick={saveNotesDraft}
-              >
-                {labels["saveNotes"] ?? "Save"}
-              </Button>
+              {notesEditing ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    disabled={!notesVariant || notesDraft === persistedNotes}
+                    onClick={resetNotesDraft}
+                  >
+                    {labels["resetNotes"] ?? "Reset"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-8"
+                    disabled={!notesVariant || notesDraft === persistedNotes}
+                    onClick={saveNotesDraft}
+                  >
+                    {labels["saveNotes"] ?? "Save"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  disabled={!notesVariant}
+                  onClick={() => setNotesEditing(true)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  {labels["editNotes"] ?? "Edit"}
+                </Button>
+              )}
             </div>
 
             <div className="mt-3 min-h-0 flex-1">
-              <textarea
-                value={notesVariant ? notesDraft : ""}
-                onChange={(event) => setNotesDraft(event.target.value)}
-                placeholder={
-                  labels["notesPlaceholder"] ??
-                  "Add notes for this variant (gear, goals, next perks...)"
-                }
-                disabled={!notesVariant}
-                className={cn(
-                  "h-full w-full resize-none rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/60 px-3 py-2 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30",
-                  !notesVariant && "opacity-60",
-                )}
-              />
-              {notesVariant && notesDraft !== persistedNotes && (
+              {notesEditing ? (
+                <textarea
+                  value={notesVariant ? notesDraft : ""}
+                  onChange={(event) => setNotesDraft(event.target.value)}
+                  placeholder={notesPlaceholder}
+                  disabled={!notesVariant}
+                  className={cn(
+                    "h-full w-full resize-none rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/60 px-3 py-2 font-mono text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30",
+                    !notesVariant && "opacity-60",
+                  )}
+                />
+              ) : (
+                <ScrollArea className="h-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60">
+                  <div className="px-3 py-2">
+                    {notesVariant && notesDraft.trim() ? (
+                      <VariantNotesMarkdown content={notesDraft} />
+                    ) : (
+                      <p className="text-sm italic text-[var(--color-muted)]">{notesPlaceholder}</p>
+                    )}
+                  </div>
+                </ScrollArea>
+              )}
+              {notesVariant && notesEditing && notesDraft !== persistedNotes && (
                 <p className="mt-1 px-1 text-[11px] text-[var(--color-muted)]">
                   {labels["notesUnsavedHint"] ?? "Unsaved changes"}
                 </p>
