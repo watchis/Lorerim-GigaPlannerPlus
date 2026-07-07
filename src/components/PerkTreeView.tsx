@@ -41,8 +41,6 @@ const EDITOR_BOUNDS_PADDING = 1.45;
 const GRID_UNIT_PX = 26;
 /** Shrink fitted trees so nodes sit inset from the render region edges. */
 const FIT_REGION_INSET_RATIO = 0.9;
-/** Minimum grid unit when scrolling a tree on narrow viewports. */
-const SCROLLABLE_GRID_UNIT_PX = 30;
 const DESTINY_SKILL_ID = "destiny";
 const BASE_NODE_DIAMETER_PX = 32;
 const MIN_NODE_DIAMETER_PX = 14;
@@ -486,8 +484,6 @@ interface PerkTreeViewProps {
   showSkillRequirements?: boolean;
   /** Scale the tree to fit and center within the parent area. */
   fit?: boolean;
-  /** Render at readable scale inside a scrollable viewport (mobile). */
-  scrollable?: boolean;
   className?: string;
 }
 
@@ -538,7 +534,6 @@ function PerkTreeView({
   playerLevelConflictPerkIds = [],
   showSkillRequirements = true,
   fit = false,
-  scrollable = false,
   className,
 }: PerkTreeViewProps) {
   const gameData = useBuildStore((s) => s.gameData);
@@ -556,45 +551,20 @@ function PerkTreeView({
       getPerkTreeContentBounds(
         tree,
         EDITOR_NODE_EXTENT,
-        fit && !scrollable ? EDITOR_BOUNDS_PADDING + 0.6 : EDITOR_BOUNDS_PADDING,
+        fit ? EDITOR_BOUNDS_PADDING + 0.6 : EDITOR_BOUNDS_PADDING,
       ),
-    [tree, fit, scrollable],
+    [tree, fit],
   );
   const aspect = bounds.width / bounds.height;
-  const useFitLayout = fit && !scrollable;
-  const { areaRef, size: fitSize } = useFitContainSize(aspect, useFitLayout);
+  const { areaRef, size: fitSize } = useFitContainSize(aspect, fit);
   const visiblePerks = useMemo(
     () => getVisiblePerksForTree(tree, build.selectedPerkIds),
     [tree, build.selectedPerkIds],
   );
-  const scrollGridUnitPx = scrollable ? SCROLLABLE_GRID_UNIT_PX : GRID_UNIT_PX;
-  const scrollSize = scrollable
-    ? { width: bounds.width * scrollGridUnitPx, height: bounds.height * scrollGridUnitPx }
-    : null;
-  const { gridUnitPx, nodeDiameterPx } = useMemo(() => {
-    if (scrollable && scrollSize) {
-      const gridUnitPx = scrollGridUnitPx;
-      const nodeDiameterPx = resolvePerkNodeDiameterPx(
-        gridUnitPx,
-        getMinDistinctPerkCenterDistanceGrid(visiblePerks),
-        {
-          baseDiameterPx: BASE_NODE_DIAMETER_PX,
-          gridUnitReferencePx: SCROLLABLE_GRID_UNIT_PX,
-          minDiameterPx: MIN_NODE_DIAMETER_PX,
-        },
-      );
-      return { gridUnitPx, nodeDiameterPx };
-    }
-    return getTreeLayoutMetrics(bounds, useFitLayout, fitSize, visiblePerks);
-  }, [
-    bounds,
-    useFitLayout,
-    fitSize,
-    scrollable,
-    scrollSize,
-    scrollGridUnitPx,
-    visiblePerks,
-  ]);
+  const { gridUnitPx, nodeDiameterPx } = useMemo(
+    () => getTreeLayoutMetrics(bounds, fit, fitSize, visiblePerks),
+    [bounds, fit, fitSize, visiblePerks],
+  );
   const nodeRadiusGrid = nodeDiameterPx / (2 * gridUnitPx);
   const treeEdgePaddingPx = Math.ceil(nodeDiameterPx / 2) + TREE_VIEW_EDGE_PADDING_PX;
 
@@ -647,10 +617,7 @@ function PerkTreeView({
 
   const treeCanvas = (
     <div
-      className={cn(
-        "relative h-full w-full",
-        !fit && !scrollable && "overflow-hidden",
-      )}
+      className={cn("relative h-full w-full", !fit && "overflow-hidden")}
       style={
         fit
           ? undefined
@@ -751,34 +718,7 @@ function PerkTreeView({
     </div>
   );
 
-  if (scrollable && scrollSize) {
-    return (
-      <div className={cn("relative h-full min-h-0 w-full", className)}>
-        <div
-          ref={areaRef}
-          className="h-full min-h-0 w-full touch-pan-x touch-pan-y overflow-auto overscroll-contain"
-        >
-          <div
-            className="relative mx-auto shrink-0"
-            style={{
-              width: scrollSize.width + treeEdgePaddingPx * 2,
-              height: scrollSize.height + treeEdgePaddingPx * 2,
-              padding: treeEdgePaddingPx,
-            }}
-          >
-            <div
-              className="relative"
-              style={{ width: scrollSize.width, height: scrollSize.height }}
-            >
-              {treeCanvas}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (useFitLayout) {
+  if (fit) {
     return (
       <div ref={areaRef} className={cn("h-full min-h-0 w-full", className)}>
         <div className="flex h-full w-full items-center justify-center">

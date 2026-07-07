@@ -248,8 +248,7 @@ export function SkillTreePanel() {
 
   const perkTree = (
     <PerkTreeView
-      fit={!stackedLayout}
-      scrollable={stackedLayout}
+      fit
       className="min-h-0 flex-1"
       tree={activeTree}
       labels={labels}
