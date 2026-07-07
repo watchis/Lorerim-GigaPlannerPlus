@@ -460,3 +460,9 @@ export function setBuildInUrl(code: string): void {
   window.history.replaceState({}, "", url.toString());
 }
 
+export function clearBuildFromUrl(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("build");
+  window.history.replaceState({}, "", url.toString());
+}
+

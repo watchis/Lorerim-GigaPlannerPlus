@@ -1840,6 +1840,54 @@ export function migrateBuildState(
   return build;
 }
 
+function stringArraysEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+function stringRecordEqual(a: Record<string, string>, b: Record<string, string>): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => a[key] === b[key]);
+}
+
+function numberRecordEqual(a: Record<string, number>, b: Record<string, number>): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => a[key] === b[key]);
+}
+
+function trainingRangesEqual(
+  a: Record<string, number[]>,
+  b: Record<string, number[]>,
+): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => stringArraysEqual(a[key] ?? [], b[key] ?? []));
+}
+
+export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
+  return (
+    a.raceId === b.raceId &&
+    a.birthsignId === b.birthsignId &&
+    a.deityId === b.deityId &&
+    stringArraysEqual(a.traitIds, b.traitIds) &&
+    stringArraysEqual(a.majorSkillIds, b.majorSkillIds) &&
+    stringArraysEqual(a.minorSkillIds, b.minorSkillIds) &&
+    a.attributeBonus.health === b.attributeBonus.health &&
+    a.attributeBonus.magicka === b.attributeBonus.magicka &&
+    a.attributeBonus.stamina === b.attributeBonus.stamina &&
+    stringRecordEqual(a.characterOptionChoices, b.characterOptionChoices) &&
+    stringArraysEqual(a.selectedPerkIds, b.selectedPerkIds) &&
+    numberRecordEqual(a.skillLevels, b.skillLevels) &&
+    trainingRangesEqual(a.skillTrainingRanges, b.skillTrainingRanges) &&
+    a.playerLevel === b.playerLevel &&
+    a.description === b.description
+  );
+}
+
 export function createInitialBuildState(): BuildState {
   return {
     raceId: "none",
