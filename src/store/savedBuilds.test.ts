@@ -25,4 +25,18 @@ describe("savedBuilds variant notes", () => {
     expect(getVariantNotes(updated, milestone.id)).toBe("Updated notes");
     expect(getVariantNotes(updated, null)).toBe("");
   });
+
+  it("survives JSON serialization like localStorage persistence", () => {
+    const milestone = createMilestone("Level 25", build, "Milestone notes");
+    const entry = setVariantNotesOnEntry(
+      createSavedBuild("Tank", build, [milestone]),
+      null,
+      "Default notes",
+    );
+
+    const restored = JSON.parse(JSON.stringify(entry)) as typeof entry;
+
+    expect(getVariantNotes(restored, null)).toBe("Default notes");
+    expect(getVariantNotes(restored, milestone.id)).toBe("Milestone notes");
+  });
 });

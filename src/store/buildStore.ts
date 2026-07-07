@@ -847,9 +847,10 @@ export const useBuildStore = create<BuildStore>()(
         },
 
         setVariantNotes: (variantId, notes) => {
-          const { savedBuilds, activeBuildId } = get();
+          const { savedBuilds, activeBuildId, build } = get();
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
           set({
-            savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) =>
+            savedBuilds: updateActiveEntry(syncedBuilds, activeBuildId, (current) =>
               setVariantNotesOnEntry(current, variantId, notes),
             ),
           });

@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from "react";
+import { useRef, type ReactNode, type RefObject } from "react";
 import {
   Bold,
   Code,
@@ -13,6 +13,7 @@ import {
   applyMarkdownLinePrefix,
   applyMarkdownLink,
   applyMarkdownWrap,
+  type TextEditResult,
 } from "@/lib/markdownFormatting";
 
 type MarkdownFormat = "bold" | "italic" | "strikethrough" | "code" | "link" | "list";
@@ -22,6 +23,9 @@ interface VariantNotesEditorProps {
   onChange: (value: string) => void;
   placeholder: string;
   disabled?: boolean;
+  toolbarRef?: RefObject<HTMLDivElement | null>;
+  showToolbar?: boolean;
+  textareaRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
 function ToolbarButton({
@@ -51,45 +55,50 @@ function ToolbarButton({
   );
 }
 
-export function VariantNotesEditor({
+function applyFormatToNotes(
+  format: MarkdownFormat,
+  textarea: HTMLTextAreaElement,
+  value: string,
+): TextEditResult {
+  const selection = {
+    start: textarea.selectionStart,
+    end: textarea.selectionEnd,
+  };
+
+  switch (format) {
+    case "bold":
+      return applyMarkdownWrap(value, selection, "**", "**", "bold");
+    case "italic":
+      return applyMarkdownWrap(value, selection, "*", "*", "italic");
+    case "strikethrough":
+      return applyMarkdownWrap(value, selection, "~~", "~~", "strike");
+    case "code":
+      return applyMarkdownWrap(value, selection, "`", "`", "code");
+    case "link":
+      return applyMarkdownLink(value, selection);
+    case "list":
+      return applyMarkdownLinePrefix(value, selection, "- ");
+  }
+}
+
+export function VariantNotesToolbar({
   value,
   onChange,
-  placeholder,
   disabled,
-}: VariantNotesEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  textareaRef,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  className?: string;
+}) {
   const applyFormat = (format: MarkdownFormat) => {
     const textarea = textareaRef.current;
     if (!textarea || disabled) return;
 
-    const selection = {
-      start: textarea.selectionStart,
-      end: textarea.selectionEnd,
-    };
-
-    let result;
-    switch (format) {
-      case "bold":
-        result = applyMarkdownWrap(value, selection, "**", "**", "bold");
-        break;
-      case "italic":
-        result = applyMarkdownWrap(value, selection, "*", "*", "italic");
-        break;
-      case "strikethrough":
-        result = applyMarkdownWrap(value, selection, "~~", "~~", "strike");
-        break;
-      case "code":
-        result = applyMarkdownWrap(value, selection, "`", "`", "code");
-        break;
-      case "link":
-        result = applyMarkdownLink(value, selection);
-        break;
-      case "list":
-        result = applyMarkdownLinePrefix(value, selection, "- ");
-        break;
-    }
-
+    const result = applyFormatToNotes(format, textarea, value);
     onChange(result.value);
     requestAnimationFrame(() => {
       textarea.focus();
@@ -98,31 +107,65 @@ export function VariantNotesEditor({
   };
 
   return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center gap-0.5 overflow-x-auto",
+        className,
+      )}
+    >
+      <ToolbarButton label="Bold" onClick={() => applyFormat("bold")} disabled={disabled}>
+        <Bold className="h-3.5 w-3.5" />
+      </ToolbarButton>
+      <ToolbarButton label="Italic" onClick={() => applyFormat("italic")} disabled={disabled}>
+        <Italic className="h-3.5 w-3.5" />
+      </ToolbarButton>
+      <ToolbarButton
+        label="Strikethrough"
+        onClick={() => applyFormat("strikethrough")}
+        disabled={disabled}
+      >
+        <Strikethrough className="h-3.5 w-3.5" />
+      </ToolbarButton>
+      <ToolbarButton label="Code" onClick={() => applyFormat("code")} disabled={disabled}>
+        <Code className="h-3.5 w-3.5" />
+      </ToolbarButton>
+      <ToolbarButton label="Link" onClick={() => applyFormat("link")} disabled={disabled}>
+        <Link className="h-3.5 w-3.5" />
+      </ToolbarButton>
+      <ToolbarButton label="Bullet list" onClick={() => applyFormat("list")} disabled={disabled}>
+        <List className="h-3.5 w-3.5" />
+      </ToolbarButton>
+    </div>
+  );
+}
+
+export function VariantNotesEditor({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  toolbarRef,
+  showToolbar = true,
+  textareaRef: externalTextareaRef,
+}: VariantNotesEditorProps) {
+  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = externalTextareaRef ?? internalTextareaRef;
+
+  return (
     <div className="flex h-full min-h-0 flex-col gap-2">
-      <div className="flex shrink-0 items-center gap-0.5 overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-1">
-        <ToolbarButton label="Bold" onClick={() => applyFormat("bold")} disabled={disabled}>
-          <Bold className="h-3.5 w-3.5" />
-        </ToolbarButton>
-        <ToolbarButton label="Italic" onClick={() => applyFormat("italic")} disabled={disabled}>
-          <Italic className="h-3.5 w-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          label="Strikethrough"
-          onClick={() => applyFormat("strikethrough")}
-          disabled={disabled}
+      {showToolbar && (
+        <div
+          ref={toolbarRef}
+          className="flex shrink-0 items-center gap-0.5 overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-1"
         >
-          <Strikethrough className="h-3.5 w-3.5" />
-        </ToolbarButton>
-        <ToolbarButton label="Code" onClick={() => applyFormat("code")} disabled={disabled}>
-          <Code className="h-3.5 w-3.5" />
-        </ToolbarButton>
-        <ToolbarButton label="Link" onClick={() => applyFormat("link")} disabled={disabled}>
-          <Link className="h-3.5 w-3.5" />
-        </ToolbarButton>
-        <ToolbarButton label="Bullet list" onClick={() => applyFormat("list")} disabled={disabled}>
-          <List className="h-3.5 w-3.5" />
-        </ToolbarButton>
-      </div>
+          <VariantNotesToolbar
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+            textareaRef={textareaRef}
+          />
+        </div>
+      )}
 
       <textarea
         ref={textareaRef}
@@ -137,4 +180,8 @@ export function VariantNotesEditor({
       />
     </div>
   );
+}
+
+export function useVariantNotesTextareaRef() {
+  return useRef<HTMLTextAreaElement>(null);
 }
