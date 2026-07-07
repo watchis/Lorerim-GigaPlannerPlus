@@ -28,6 +28,7 @@ describe("loadAppData", () => {
     expect(levelBar.buildIssuesAlertDesktop).toBe(
       "Your build has {count} {issues}. Hover to see more.",
     );
+    expect(levelBar.buildIssuesAndMore).toBe("And more...");
     expect(levelBar.easyModeLevelWarning).toContain("{standardMax}");
   });
 

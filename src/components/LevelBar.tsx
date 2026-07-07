@@ -22,7 +22,10 @@ import {
   type BuildPlayerLevelWarnings,
 } from "@/engine/buildEngine";
 import {
+  BUILD_ISSUES_TOOLTIP_ITEM_GAP_PX,
+  computeVisibleBuildIssueCount,
   getBuildIssuesBannerState,
+  getBuildIssuesTooltipMaxHeight,
   shouldShowEasyModeLevelWarning,
   shrinkFontSizeToFit,
 } from "@/lib/levelBarDisplay";
@@ -168,30 +171,106 @@ function FitTextLine({
   );
 }
 
-function BuildIssuesTooltipContent({ messages }: { messages: string[] }) {
+function BuildIssueListItem({ message }: { message: string }) {
+  return (
+    <li className="flex gap-2">
+      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--color-error)]" />
+      <span>{message}</span>
+    </li>
+  );
+}
+
+function BuildIssuesTooltipContent({
+  messages,
+  andMoreLabel,
+}: {
+  messages: string[];
+  andMoreLabel: string;
+}) {
+  const measureListRef = useRef<HTMLUListElement>(null);
+  const [visibleCount, setVisibleCount] = useState(messages.length);
+
+  useLayoutEffect(() => {
+    const updateVisibleCount = () => {
+      const list = measureListRef.current;
+      if (!list || messages.length <= 1) {
+        setVisibleCount(messages.length);
+        return;
+      }
+
+      const children = Array.from(list.children) as HTMLElement[];
+      const issueItems = children.slice(0, messages.length);
+      const andMoreItem = children[messages.length];
+      if (issueItems.length !== messages.length || !andMoreItem) {
+        setVisibleCount(messages.length);
+        return;
+      }
+
+      const itemHeights = issueItems.map((item) => item.offsetHeight);
+      const maxHeight = getBuildIssuesTooltipMaxHeight(window.innerHeight);
+      setVisibleCount(
+        computeVisibleBuildIssueCount(
+          itemHeights,
+          andMoreItem.offsetHeight,
+          BUILD_ISSUES_TOOLTIP_ITEM_GAP_PX,
+          maxHeight,
+        ),
+      );
+    };
+
+    updateVisibleCount();
+    window.addEventListener("resize", updateVisibleCount);
+    return () => window.removeEventListener("resize", updateVisibleCount);
+  }, [messages, andMoreLabel]);
+
   if (messages.length === 1) {
-    return <p className="text-xs leading-relaxed">{messages[0]}</p>;
+    return (
+      <p className="max-h-[75vh] overflow-y-auto text-xs leading-relaxed">{messages[0]}</p>
+    );
   }
 
+  const hasMore = visibleCount < messages.length;
+  const visibleMessages = messages.slice(0, visibleCount);
+
   return (
-    <ul className="space-y-1.5 text-xs leading-relaxed">
-      {messages.map((message, index) => (
-        <li key={index} className="flex gap-2">
+    <div className="max-h-[75vh] overflow-hidden">
+      <ul
+        ref={measureListRef}
+        aria-hidden
+        className="pointer-events-none invisible fixed top-0 -left-[9999px] w-full max-w-xs space-y-1.5 text-xs leading-relaxed"
+      >
+        {messages.map((message, index) => (
+          <BuildIssueListItem key={`measure-${index}`} message={message} />
+        ))}
+        <li className="flex gap-2">
           <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--color-error)]" />
-          <span>{message}</span>
+          <span>{andMoreLabel}</span>
         </li>
-      ))}
-    </ul>
+      </ul>
+      <ul className="space-y-1.5 text-xs leading-relaxed">
+        {visibleMessages.map((message, index) => (
+          <BuildIssueListItem key={index} message={message} />
+        ))}
+        {hasMore && (
+          <li className="flex gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--color-error)]" />
+            <span>{andMoreLabel}</span>
+          </li>
+        )}
+      </ul>
+    </div>
   );
 }
 
 function BuildIssuesBanner({
   mobileSummaryTemplate,
   desktopSummaryTemplate,
+  andMoreLabel,
   messages,
 }: {
   mobileSummaryTemplate: string;
   desktopSummaryTemplate: string;
+  andMoreLabel: string;
   messages: string[];
 }) {
   const isMobile = useMobileLayout();
@@ -238,7 +317,7 @@ function BuildIssuesBanner({
         open={touchOpen}
         onOpenChange={setTouchOpen}
         touchAnchor={touchAnchor}
-        content={<BuildIssuesTooltipContent messages={messages} />}
+        content={<BuildIssuesTooltipContent messages={messages} andMoreLabel={andMoreLabel} />}
         className={cn(bannerClassName, "cursor-pointer touch-manipulation")}
       >
         <button
@@ -259,7 +338,7 @@ function BuildIssuesBanner({
   return (
     <CursorTooltip
       className={cn(bannerClassName, "cursor-help")}
-      content={<BuildIssuesTooltipContent messages={messages} />}
+      content={<BuildIssuesTooltipContent messages={messages} andMoreLabel={andMoreLabel} />}
     >
       {banner}
     </CursorTooltip>
@@ -854,6 +933,7 @@ function LevelBarContent({
         <BuildIssuesBanner
           mobileSummaryTemplate={barLabels.buildIssuesAlertMobile}
           desktopSummaryTemplate={barLabels.buildIssuesAlertDesktop}
+          andMoreLabel={barLabels.buildIssuesAndMore}
           messages={alertMessages}
         />
       )}

@@ -460,6 +460,7 @@ export const labelsSchema = z.object({
     buildIssuesAlert: z.string(),
     buildIssuesAlertMobile: z.string(),
     buildIssuesAlertDesktop: z.string(),
+    buildIssuesAndMore: z.string(),
     setToMinimumLevel: z.string(),
     setToMinimumLevelInfo: z.string(),
     ensurePlayerLevel: z.string(),

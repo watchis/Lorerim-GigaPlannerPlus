@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  computeVisibleBuildIssueCount,
   formatBuildIssuesSummary,
   getBuildIssuesBannerState,
+  getBuildIssuesTooltipMaxHeight,
   shouldShowEasyModeLevelWarning,
   shrinkFontSizeToFit,
 } from "@/lib/levelBarDisplay";
@@ -99,6 +101,30 @@ describe("getBuildIssuesBannerState", () => {
       displaySummary: "Your build has 2 issues. Hover to see more.",
       showTooltip: true,
     });
+  });
+});
+
+describe("computeVisibleBuildIssueCount", () => {
+  const gap = 6;
+  const andMoreHeight = 20;
+
+  it("shows every issue when they all fit within the max height", () => {
+    expect(computeVisibleBuildIssueCount([20, 20, 20], andMoreHeight, gap, 200)).toBe(3);
+  });
+
+  it("reduces visible issues and reserves space for the overflow row", () => {
+    expect(computeVisibleBuildIssueCount([40, 40, 40], andMoreHeight, gap, 100)).toBe(1);
+    expect(computeVisibleBuildIssueCount([30, 30, 30], andMoreHeight, gap, 100)).toBe(2);
+  });
+
+  it("always shows at least one issue", () => {
+    expect(computeVisibleBuildIssueCount([80, 80], andMoreHeight, gap, 50)).toBe(1);
+  });
+});
+
+describe("getBuildIssuesTooltipMaxHeight", () => {
+  it("uses 75% of the viewport height by default", () => {
+    expect(getBuildIssuesTooltipMaxHeight(800)).toBe(600);
   });
 });
 
