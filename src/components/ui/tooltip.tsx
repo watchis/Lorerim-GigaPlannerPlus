@@ -169,16 +169,22 @@ export function CursorTooltip({
   content,
   className,
   style,
+  disabled = false,
 }: {
   children: ReactNode;
   content: ReactNode;
   className?: string;
   style?: CSSProperties;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
 
   const updateAnchor = (event: MouseEvent) => {
     setAnchor({
@@ -188,7 +194,7 @@ export function CursorTooltip({
   };
 
   useLayoutEffect(() => {
-    if (!open || !tooltipRef.current) return;
+    if (!open || disabled || !tooltipRef.current) return;
 
     const el = tooltipRef.current;
     const updateDisplay = () => {
@@ -205,7 +211,7 @@ export function CursorTooltip({
     const observer = new ResizeObserver(updateDisplay);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [open, anchor]);
+  }, [open, anchor, disabled]);
 
   return (
     <>
@@ -213,15 +219,22 @@ export function CursorTooltip({
         className={className}
         style={style}
         onMouseEnter={(event) => {
+          if (disabled) return;
           updateAnchor(event);
           setOpen(true);
         }}
-        onMouseLeave={() => setOpen(false)}
-        onMouseMove={updateAnchor}
+        onMouseLeave={() => {
+          if (disabled) return;
+          setOpen(false);
+        }}
+        onMouseMove={(event) => {
+          if (disabled) return;
+          updateAnchor(event);
+        }}
       >
         {children}
       </div>
-      {open &&
+      {open && !disabled &&
         createPortal(
           <div
             ref={tooltipRef}

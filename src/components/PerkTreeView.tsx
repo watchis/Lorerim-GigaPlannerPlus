@@ -157,6 +157,8 @@ function PerkNode({
   const longPressTriggeredRef = useRef(false);
   const singleTapTimerRef = useRef<number | null>(null);
   const lastTapRef = useRef(0);
+  const suppressTooltipClearRef = useRef<number | null>(null);
+  const [suppressTooltip, setSuppressTooltip] = useState(false);
 
   const clearLongPressTimer = () => {
     if (longPressTimerRef.current !== null) {
@@ -169,6 +171,23 @@ function PerkNode({
     if (singleTapTimerRef.current !== null) {
       window.clearTimeout(singleTapTimerRef.current);
       singleTapTimerRef.current = null;
+    }
+  };
+
+  const scheduleTooltipSuppressionClear = () => {
+    if (suppressTooltipClearRef.current !== null) {
+      window.clearTimeout(suppressTooltipClearRef.current);
+    }
+    suppressTooltipClearRef.current = window.setTimeout(() => {
+      setSuppressTooltip(false);
+      suppressTooltipClearRef.current = null;
+    }, 400);
+  };
+
+  const clearTooltipSuppressionClear = () => {
+    if (suppressTooltipClearRef.current !== null) {
+      window.clearTimeout(suppressTooltipClearRef.current);
+      suppressTooltipClearRef.current = null;
     }
   };
 
@@ -212,6 +231,11 @@ function PerkNode({
       return;
     }
 
+    if (!isSelected) {
+      clearTooltipSuppressionClear();
+      setSuppressTooltip(true);
+    }
+
     longPressTimerRef.current = window.setTimeout(() => {
       longPressTriggeredRef.current = true;
       if (isSelected) {
@@ -226,6 +250,9 @@ function PerkNode({
     if (event.pointerType === "mouse") return;
 
     clearLongPressTimer();
+    if (!isSelected) {
+      scheduleTooltipSuppressionClear();
+    }
     if (!isInteractive || longPressTriggeredRef.current) return;
 
     const now = Date.now();
@@ -247,6 +274,9 @@ function PerkNode({
   const handlePointerCancel = () => {
     clearLongPressTimer();
     clearSingleTapTimer();
+    if (!isSelected) {
+      scheduleTooltipSuppressionClear();
+    }
     longPressTriggeredRef.current = false;
   };
 
@@ -254,6 +284,7 @@ function PerkNode({
     () => () => {
       clearLongPressTimer();
       clearSingleTapTimer();
+      clearTooltipSuppressionClear();
     },
     [],
   );
@@ -366,6 +397,7 @@ function PerkNode({
   return (
     <CursorTooltip
       content={tooltipContent}
+      disabled={!isSelected && suppressTooltip}
       className={cn(
         "absolute -translate-x-1/2 -translate-y-1/2 select-none",
         !isInteractive && "pointer-events-none",
