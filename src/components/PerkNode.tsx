@@ -119,6 +119,7 @@ export function PerkNode({
   const lastTapRef = useRef(0);
   const touchInteractionRef = useRef(false);
   const touchClearRef = useRef<number | null>(null);
+  const forceAllocateHandledOnMouseDownRef = useRef(false);
 
   const clearLongPressTimer = () => {
     if (longPressTimerRef.current !== null) {
@@ -201,24 +202,31 @@ export function PerkNode({
     if (event.button !== 0) return;
 
     if (event.detail > 1) {
+      forceAllocateHandledOnMouseDownRef.current = true;
       handleForceAllocate(true);
       return;
     }
 
+    forceAllocateHandledOnMouseDownRef.current = false;
     tookPerkWithLastClickRef.current = onTryTake(takeTargetId);
+  };
+
+  const handleDoubleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (forceAllocateHandledOnMouseDownRef.current) {
+      forceAllocateHandledOnMouseDownRef.current = false;
+      return;
+    }
+    handleForceAllocate(true);
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (!isInteractive) return;
+    if (event.pointerType === "mouse") return;
 
     longPressTriggeredRef.current = false;
     clearLongPressTimer();
     clearSingleTapTooltipTimer();
-
-    if (event.pointerType === "mouse") {
-      handleMouseDown(event as unknown as MouseEvent<HTMLButtonElement>);
-      return;
-    }
 
     markTouchInteraction();
 
@@ -443,10 +451,11 @@ export function PerkNode({
         type="button"
         data-perk-node
         aria-label={perk.name}
+        onMouseDown={handleMouseDown}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        onDoubleClick={(event) => event.preventDefault()}
+        onDoubleClick={handleDoubleClick}
         onContextMenu={(event) => event.preventDefault()}
         className="group relative touch-manipulation border-0 bg-transparent p-0"
       >
