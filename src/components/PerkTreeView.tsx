@@ -537,7 +537,7 @@ function PerkTreeView({
           ref={viewportRef}
           data-perk-tree-viewport
           className={cn(
-            "h-full w-full touch-none overflow-hidden",
+            "relative h-full w-full touch-none overflow-hidden",
             isPanning
               ? "cursor-grabbing"
               : viewTransform.zoom > MIN_TREE_ZOOM && "cursor-grab",
@@ -551,6 +551,15 @@ function PerkTreeView({
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
         >
+          <div
+            className="pointer-events-none absolute right-2 top-2 z-30"
+            aria-live="polite"
+            aria-label={`Zoom ${Math.round(viewTransform.zoom * 100)} percent`}
+          >
+            <span className="rounded-full border border-[var(--color-border)]/70 bg-[var(--color-surface)]/90 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[var(--color-muted)] shadow-[0_2px_8px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+              {Math.round(viewTransform.zoom * 100)}%
+            </span>
+          </div>
           <div className="flex h-full w-full items-center justify-center">
             {fitSize ? (
               <div
