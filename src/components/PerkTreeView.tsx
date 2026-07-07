@@ -49,6 +49,8 @@ import {
 } from "@/lib/perkTreeViewLayout";
 import { useBuildStore } from "@/store/buildStore";
 import { useUiStore } from "@/store/uiStore";
+import { usePerkBadgePlacements } from "@/hooks/usePerkBadgePlacements";
+import { DEFAULT_PERK_BADGE_PLACEMENT } from "@/lib/perkBadgeLayout";
 
 const EDITOR_NODE_EXTENT = 1.25;
 const EDITOR_BOUNDS_PADDING = 1.45;
@@ -114,6 +116,7 @@ function PerkTreeView({
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
   const perkBadgeVisibility = useUiStore((s) => s.perkBadgeVisibility);
+  const treeCanvasRef = useRef<HTMLDivElement>(null);
   const tookPerkWithLastClickRef = useRef(false);
   const supportsHover = useSupportsHover();
   const [touchTooltip, setTouchTooltip] = useState<{
@@ -359,6 +362,19 @@ function PerkTreeView({
       ].join(":"),
     [viewTransform, containerSize, fitSize, treeEdgePaddingPx],
   );
+  const badgeLayoutRevisionKey = useMemo(
+    () =>
+      [
+        badgeLayoutRevision,
+        perkBadgeVisibility.playerLevelReq,
+        perkBadgeVisibility.skillLevelReq,
+        perkBadgeVisibility.perkName,
+        build.selectedPerkIds.join(","),
+        visiblePerks.length,
+      ].join(":"),
+    [badgeLayoutRevision, perkBadgeVisibility, build.selectedPerkIds, visiblePerks.length],
+  );
+  const badgePlacements = usePerkBadgePlacements(treeCanvasRef, badgeLayoutRevisionKey);
 
   clampContextRef.current =
     containerSize && fitSize
@@ -420,6 +436,7 @@ function PerkTreeView({
 
   const treeCanvas = (
     <div
+      ref={treeCanvasRef}
       data-perk-tree-viewport={fit ? undefined : true}
       className={cn("relative h-full w-full", !fit && "overflow-hidden")}
       style={
@@ -517,8 +534,9 @@ function PerkTreeView({
             labels={labels}
             badgeVisibility={perkBadgeVisibility}
             badgePerkName={badgePerk.name}
+            badgePlacement={badgePlacements.get(positionKey) ?? DEFAULT_PERK_BADGE_PLACEMENT}
+            positionKey={positionKey}
             tooltipScale={tooltipScale}
-            badgeLayoutRevision={badgeLayoutRevision}
             touchTooltipOpen={touchTooltip?.positionKey === positionKey}
             touchAnchor={
               touchTooltip?.positionKey === positionKey ? touchTooltip.anchor : null
