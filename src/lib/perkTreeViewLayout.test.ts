@@ -8,11 +8,14 @@ import {
   computeFitContainSize,
   DEFAULT_TREE_VIEW_TRANSFORM,
   estimatePerkBadgeStackHeight,
+  estimateBadgeStackRect,
   getFitLayoutTuning,
   getTouchDistance,
   getViewportPointFromCenter,
   isPerkTreeInteractiveTarget,
+  overlapArea,
   perkAbbreviation,
+  rectsOverlap,
   resolvePerkBadgePlacement,
   resolvePerkTooltipScale,
   resolveTreeEdgePaddingPx,
@@ -157,6 +160,28 @@ describe("perkTreeViewLayout", () => {
 
     it("flips above when below is cramped and above has more room", () => {
       expect(resolvePerkBadgePlacement(280, 312, 20, { top: 0, bottom: 320 })).toBe(true);
+    });
+
+    it("avoids overlapping nearby perk circles when placing badges", () => {
+      const belowObstacle = estimateBadgeStackRect(
+        { top: 100, bottom: 132, left: 90, right: 122 },
+        20,
+        80,
+        false,
+      );
+      const obstacle = { top: 136, bottom: 168, left: 90, right: 122 };
+
+      expect(overlapArea(belowObstacle, obstacle)).toBeGreaterThan(0);
+      expect(rectsOverlap(belowObstacle, obstacle)).toBe(true);
+
+      const preferAbove = resolvePerkBadgePlacement(100, 132, 20, { top: 0, bottom: 300 }, {
+        circleLeft: 90,
+        circleRight: 122,
+        stackWidth: 80,
+        obstacles: [obstacle],
+      });
+
+      expect(preferAbove).toBe(true);
     });
   });
 

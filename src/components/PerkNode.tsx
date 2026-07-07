@@ -16,6 +16,7 @@ import {
   getPerkNodeRequirements,
 } from "@/lib/perkRequirements";
 import {
+  collectPerkBadgeObstacleRects,
   estimatePerkBadgeStackHeight,
   PERK_DOUBLE_TAP_MS,
   PERK_TOOLTIP_DELAY_MS,
@@ -115,6 +116,7 @@ export function PerkNode({
   const supportsHover = useSupportsHover();
   const longPressTimerRef = useRef<number | null>(null);
   const circleRef = useRef<HTMLSpanElement>(null);
+  const nodeRef = useRef<HTMLButtonElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
   const [badgesAbove, setBadgesAbove] = useState(() => position.y >= 75);
   const longPressTriggeredRef = useRef(false);
@@ -319,37 +321,59 @@ export function PerkNode({
   });
   const badgeCount = (requirementLabel ? 1 : 0) + (stackRank ? 1 : 0);
 
-  const updateBadgePlacement = useCallback(() => {
-    if (badgeCount === 0) {
-      setBadgesAbove(false);
-      return;
-    }
+  const updateBadgePlacement = useCallback(
+    (includeBadgeObstacles: boolean) => {
+      if (badgeCount === 0) {
+        setBadgesAbove(false);
+        return;
+      }
 
-    const circle = circleRef.current;
-    if (!circle) return;
+      const circle = circleRef.current;
+      if (!circle) return;
 
-    const circleRect = circle.getBoundingClientRect();
-    const viewport = circle.closest("[data-perk-tree-viewport]");
-    const viewportRect = viewport instanceof HTMLElement ? viewport.getBoundingClientRect() : null;
-    const stackHeight =
-      badgeRef.current?.getBoundingClientRect().height ??
-      estimatePerkBadgeStackHeight(badgeCount);
-    const preferAbove = resolvePerkBadgePlacement(
-      circleRect.top,
-      circleRect.bottom,
-      stackHeight,
-      viewportRect ?? undefined,
-    );
+      const circleRect = circle.getBoundingClientRect();
+      const viewport = circle.closest("[data-perk-tree-viewport]");
+      const viewportRect = viewport instanceof HTMLElement ? viewport.getBoundingClientRect() : null;
+      const stackHeight =
+        badgeRef.current?.getBoundingClientRect().height ??
+        estimatePerkBadgeStackHeight(badgeCount);
+      const stackWidth =
+        badgeRef.current?.getBoundingClientRect().width ??
+        Math.max(circleRect.width, 48);
+      const obstacles =
+        viewport instanceof HTMLElement && nodeRef.current
+          ? collectPerkBadgeObstacleRects(viewport, nodeRef.current, includeBadgeObstacles)
+          : [];
+      const preferAbove = resolvePerkBadgePlacement(
+        circleRect.top,
+        circleRect.bottom,
+        stackHeight,
+        viewportRect ?? undefined,
+        {
+          circleLeft: circleRect.left,
+          circleRight: circleRect.right,
+          stackWidth,
+          obstacles,
+        },
+      );
 
-    setBadgesAbove((current) => (current === preferAbove ? current : preferAbove));
-  }, [badgeCount]);
+      setBadgesAbove((current) => (current === preferAbove ? current : preferAbove));
+    },
+    [badgeCount],
+  );
 
   useLayoutEffect(() => {
-    updateBadgePlacement();
+    updateBadgePlacement(false);
     if (badgeCount === 0) return;
 
-    const frame = requestAnimationFrame(updateBadgePlacement);
-    return () => cancelAnimationFrame(frame);
+    let frame2 = 0;
+    const frame1 = requestAnimationFrame(() => {
+      frame2 = requestAnimationFrame(() => updateBadgePlacement(true));
+    });
+    return () => {
+      cancelAnimationFrame(frame1);
+      cancelAnimationFrame(frame2);
+    };
   }, [
     updateBadgePlacement,
     badgeLayoutRevision,
@@ -360,8 +384,12 @@ export function PerkNode({
   ]);
 
   useEffect(() => {
-    window.addEventListener("resize", updateBadgePlacement);
-    return () => window.removeEventListener("resize", updateBadgePlacement);
+    const handleResize = () => {
+      updateBadgePlacement(false);
+      requestAnimationFrame(() => updateBadgePlacement(true));
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [updateBadgePlacement]);
 
   const requirementBadgeClassName = cn(
@@ -453,6 +481,7 @@ export function PerkNode({
       style={{ left: `${position.x}%`, top: `${position.y}%`, zIndex: paintOrder }}
     >
       <button
+        ref={nodeRef}
         type="button"
         data-perk-node
         aria-label={perk.name}
@@ -466,6 +495,7 @@ export function PerkNode({
       >
         <span
           ref={circleRef}
+          data-perk-circle
           className={circleClassName}
           style={{ width: nodeDiameterPx, height: nodeDiameterPx, fontSize: labelFontPx }}
         >
@@ -474,6 +504,7 @@ export function PerkNode({
         {badgeCount > 0 ? (
           <div
             ref={badgeRef}
+            data-perk-badges
             className={cn(
               "absolute left-1/2 flex -translate-x-1/2 flex-col items-center gap-0.5",
               badgesAbove ? "bottom-full mb-0.5 flex-col-reverse" : "top-full mt-0.5",
