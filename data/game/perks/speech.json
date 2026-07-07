@@ -2,7 +2,7 @@
   "skillId": "speech",
   "skillName": "Speech",
   "grid": {
-    "width": 34,
+    "width": 37,
     "height": 34
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Haggling",
       "skillReq": 0,
       "position": {
-        "x": 19,
+        "x": 20,
         "y": 33
       },
       "prerequisites": [],
@@ -24,7 +24,7 @@
       "name": "Merchant",
       "skillReq": 50,
       "position": {
-        "x": 17,
+        "x": 18,
         "y": 27
       },
       "prerequisites": [
@@ -46,7 +46,7 @@
       "name": "Fencing",
       "skillReq": 100,
       "position": {
-        "x": 19,
+        "x": 20,
         "y": 23
       },
       "prerequisites": [
@@ -61,7 +61,7 @@
       "name": "Silver Tongue",
       "skillReq": 25,
       "position": {
-        "x": 14,
+        "x": 15,
         "y": 33
       },
       "prerequisites": [
@@ -76,7 +76,7 @@
       "name": "Masquerade",
       "skillReq": 50,
       "position": {
-        "x": 14,
+        "x": 15,
         "y": 4
       },
       "prerequisites": [
@@ -91,7 +91,7 @@
       "name": "Masquerade",
       "skillReq": 100,
       "position": {
-        "x": 14,
+        "x": 15,
         "y": 4
       },
       "prerequisites": [
@@ -106,7 +106,7 @@
       "name": "Leadership",
       "skillReq": 75,
       "position": {
-        "x": 17,
+        "x": 18,
         "y": 15
       },
       "prerequisites": [
@@ -121,7 +121,7 @@
       "name": "Lore of the Thu'um",
       "skillReq": 0,
       "position": {
-        "x": 33,
+        "x": 36,
         "y": 33
       },
       "prerequisites": [],
@@ -141,7 +141,7 @@
       "name": "Tongue's Insight",
       "skillReq": 0,
       "position": {
-        "x": 33,
+        "x": 36,
         "y": 7
       },
       "prerequisites": [
@@ -156,7 +156,7 @@
       "name": "Spiritual Equilibrium",
       "skillReq": 0,
       "position": {
-        "x": 28,
+        "x": 31,
         "y": 21
       },
       "prerequisites": [
@@ -171,7 +171,7 @@
       "name": "Indomitable Force",
       "skillReq": 0,
       "position": {
-        "x": 28,
+        "x": 31,
         "y": 29
       },
       "prerequisites": [
@@ -186,7 +186,7 @@
       "name": "Destructive Urge",
       "skillReq": 0,
       "position": {
-        "x": 28,
+        "x": 31,
         "y": 33
       },
       "prerequisites": [
@@ -201,7 +201,7 @@
       "name": "The Way of the Voice",
       "skillReq": 0,
       "position": {
-        "x": 30,
+        "x": 33,
         "y": 13
       },
       "prerequisites": [
@@ -216,7 +216,7 @@
       "name": "Commander",
       "skillReq": 25,
       "position": {
-        "x": 21,
+        "x": 22,
         "y": 27
       },
       "prerequisites": [
@@ -231,7 +231,7 @@
       "name": "Commander",
       "skillReq": 50,
       "position": {
-        "x": 21,
+        "x": 22,
         "y": 27
       },
       "prerequisites": [
@@ -246,7 +246,7 @@
       "name": "Commander",
       "skillReq": 75,
       "position": {
-        "x": 21,
+        "x": 22,
         "y": 27
       },
       "prerequisites": [
@@ -261,7 +261,7 @@
       "name": "Shout Focus",
       "skillReq": 0,
       "position": {
-        "x": 25,
+        "x": 27,
         "y": 33
       },
       "prerequisites": [],
@@ -287,7 +287,7 @@
       "name": "Shout Focus",
       "skillReq": 0,
       "position": {
-        "x": 25,
+        "x": 27,
         "y": 33
       },
       "prerequisites": [],
@@ -313,7 +313,7 @@
       "name": "Shout Focus",
       "skillReq": 0,
       "position": {
-        "x": 25,
+        "x": 27,
         "y": 33
       },
       "prerequisites": [],
@@ -339,7 +339,7 @@
       "name": "War Cry",
       "skillReq": 50,
       "position": {
-        "x": 12,
+        "x": 13,
         "y": 18
       },
       "prerequisites": [

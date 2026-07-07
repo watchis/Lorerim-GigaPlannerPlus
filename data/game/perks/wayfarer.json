@@ -2,7 +2,7 @@
   "skillId": "wayfarer",
   "skillName": "Wayfarer",
   "grid": {
-    "width": 21,
+    "width": 26,
     "height": 34
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Cheap Tricks",
       "skillReq": 0,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 33
       },
       "prerequisites": [],
@@ -37,7 +37,7 @@
       "name": "Lone Wolf",
       "skillReq": 25,
       "position": {
-        "x": 12,
+        "x": 15,
         "y": 25
       },
       "prerequisites": [
@@ -52,7 +52,7 @@
       "name": "Solo",
       "skillReq": 40,
       "position": {
-        "x": 12,
+        "x": 15,
         "y": 18
       },
       "prerequisites": [
@@ -67,7 +67,7 @@
       "name": "Maverick",
       "skillReq": 60,
       "position": {
-        "x": 12,
+        "x": 15,
         "y": 12
       },
       "prerequisites": [
@@ -82,7 +82,7 @@
       "name": "One Man Legion",
       "skillReq": 100,
       "position": {
-        "x": 12,
+        "x": 15,
         "y": 5
       },
       "prerequisites": [
@@ -97,7 +97,7 @@
       "name": "Advanced Lockpicking",
       "skillReq": 25,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 26
       },
       "prerequisites": [
@@ -125,7 +125,7 @@
       "name": "Treasure Hunter",
       "skillReq": 40,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 16
       },
       "prerequisites": [
@@ -140,7 +140,7 @@
       "name": "Sophisticated Lockpicking",
       "skillReq": 60,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 8
       },
       "prerequisites": [
@@ -168,7 +168,7 @@
       "name": "Masterly Lockpicking",
       "skillReq": 90,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 0
       },
       "prerequisites": [
@@ -256,7 +256,7 @@
       "name": "Pacification",
       "skillReq": 50,
       "position": {
-        "x": 16,
+        "x": 20,
         "y": 2
       },
       "prerequisites": [
@@ -271,7 +271,7 @@
       "name": "Survival Instincts",
       "skillReq": 30,
       "position": {
-        "x": 16,
+        "x": 20,
         "y": 13
       },
       "prerequisites": [
@@ -286,7 +286,7 @@
       "name": "Hunter",
       "skillReq": 10,
       "position": {
-        "x": 16,
+        "x": 20,
         "y": 25
       },
       "prerequisites": [
@@ -301,7 +301,7 @@
       "name": "Hunter",
       "skillReq": 40,
       "position": {
-        "x": 16,
+        "x": 20,
         "y": 25
       },
       "prerequisites": [
@@ -316,7 +316,7 @@
       "name": "Lockdown",
       "skillReq": 40,
       "position": {
-        "x": 8,
+        "x": 10,
         "y": 16
       },
       "prerequisites": [
@@ -331,7 +331,7 @@
       "name": "Hotwire",
       "skillReq": 60,
       "position": {
-        "x": 8,
+        "x": 10,
         "y": 8
       },
       "prerequisites": [
@@ -346,7 +346,7 @@
       "name": "Percussive Maintenance",
       "skillReq": 100,
       "position": {
-        "x": 8,
+        "x": 10,
         "y": 0
       },
       "prerequisites": [
@@ -361,7 +361,7 @@
       "name": "Beastmaster",
       "skillReq": 80,
       "position": {
-        "x": 20,
+        "x": 25,
         "y": 4
       },
       "prerequisites": [
@@ -376,7 +376,7 @@
       "name": "Animal Riding",
       "skillReq": 50,
       "position": {
-        "x": 20,
+        "x": 25,
         "y": 11
       },
       "prerequisites": [
@@ -391,7 +391,7 @@
       "name": "Animal Taming",
       "skillReq": 10,
       "position": {
-        "x": 20,
+        "x": 25,
         "y": 19
       },
       "prerequisites": [

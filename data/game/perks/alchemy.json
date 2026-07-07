@@ -2,7 +2,7 @@
   "skillId": "alchemy",
   "skillName": "Alchemy",
   "grid": {
-    "width": 22,
+    "width": 26,
     "height": 34
   },
   "perks": [
@@ -37,7 +37,7 @@
       "name": "Improved Elixirs",
       "skillReq": 25,
       "position": {
-        "x": 20,
+        "x": 22,
         "y": 31
       },
       "prerequisites": [
@@ -59,7 +59,7 @@
       "name": "Catalysis",
       "skillReq": 50,
       "position": {
-        "x": 16,
+        "x": 18,
         "y": 19
       },
       "prerequisites": [
@@ -74,7 +74,7 @@
       "name": "Catalysis",
       "skillReq": 100,
       "position": {
-        "x": 16,
+        "x": 18,
         "y": 19
       },
       "prerequisites": [
@@ -89,7 +89,7 @@
       "name": "Immunization",
       "skillReq": 75,
       "position": {
-        "x": 15,
+        "x": 17,
         "y": 7
       },
       "prerequisites": [
@@ -118,7 +118,7 @@
       "name": "Purification Process",
       "skillReq": 100,
       "position": {
-        "x": 12,
+        "x": 13,
         "y": 0
       },
       "prerequisites": [
@@ -133,7 +133,7 @@
       "name": "Fortified Muscles",
       "skillReq": 75,
       "position": {
-        "x": 12,
+        "x": 13,
         "y": 19
       },
       "prerequisites": [
@@ -148,7 +148,7 @@
       "name": "Alchemical Intellect",
       "skillReq": 100,
       "position": {
-        "x": 18,
+        "x": 20,
         "y": 3
       },
       "prerequisites": [
@@ -163,7 +163,7 @@
       "name": "Night Vision",
       "skillReq": 25,
       "position": {
-        "x": 21,
+        "x": 25,
         "y": 25
       },
       "prerequisites": [
@@ -178,7 +178,7 @@
       "name": "Regeneration",
       "skillReq": 50,
       "position": {
-        "x": 19,
+        "x": 22,
         "y": 16
       },
       "prerequisites": [

@@ -2,7 +2,7 @@
   "skillId": "finesse",
   "skillName": "Finesse",
   "grid": {
-    "width": 17,
+    "width": 23,
     "height": 33
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Nimble Fingers",
       "skillReq": 0,
       "position": {
-        "x": 4,
+        "x": 6,
         "y": 32
       },
       "prerequisites": [],
@@ -24,7 +24,7 @@
       "name": "Nimble Fingers",
       "skillReq": 20,
       "position": {
-        "x": 4,
+        "x": 6,
         "y": 32
       },
       "prerequisites": [],
@@ -37,7 +37,7 @@
       "name": "Outlaw",
       "skillReq": 20,
       "position": {
-        "x": 4,
+        "x": 6,
         "y": 26
       },
       "prerequisites": [
@@ -52,7 +52,7 @@
       "name": "Thief",
       "skillReq": 50,
       "position": {
-        "x": 4,
+        "x": 6,
         "y": 18
       },
       "prerequisites": [
@@ -67,7 +67,7 @@
       "name": "Lucky 7",
       "skillReq": 77,
       "position": {
-        "x": 6,
+        "x": 9,
         "y": 10
       },
       "prerequisites": [
@@ -127,7 +127,7 @@
       "name": "Perfected Art",
       "skillReq": 100,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 0
       },
       "prerequisites": [
@@ -142,7 +142,7 @@
       "name": "Sound Body",
       "skillReq": 30,
       "position": {
-        "x": 8,
+        "x": 12,
         "y": 26
       },
       "prerequisites": [],
@@ -178,7 +178,7 @@
       "name": "Sound Body",
       "skillReq": 30,
       "position": {
-        "x": 8,
+        "x": 12,
         "y": 26
       },
       "prerequisites": [],
@@ -214,7 +214,7 @@
       "name": "Sound Mind",
       "skillReq": 60,
       "position": {
-        "x": 8,
+        "x": 12,
         "y": 17
       },
       "prerequisites": [
@@ -229,7 +229,7 @@
       "name": "Sound Spirit",
       "skillReq": 80,
       "position": {
-        "x": 8,
+        "x": 12,
         "y": 8
       },
       "prerequisites": [
@@ -251,7 +251,7 @@
       "name": "Trapper",
       "skillReq": 0,
       "position": {
-        "x": 12,
+        "x": 17,
         "y": 32
       },
       "prerequisites": [],
@@ -264,7 +264,7 @@
       "name": "Poisoned Clamps",
       "skillReq": 25,
       "position": {
-        "x": 12,
+        "x": 17,
         "y": 17
       },
       "prerequisites": [
@@ -279,7 +279,7 @@
       "name": "Salt on the Wound",
       "skillReq": 50,
       "position": {
-        "x": 12,
+        "x": 17,
         "y": 8
       },
       "prerequisites": [
@@ -294,7 +294,7 @@
       "name": "Pocket Sand",
       "skillReq": 25,
       "position": {
-        "x": 16,
+        "x": 22,
         "y": 17
       },
       "prerequisites": [
@@ -309,7 +309,7 @@
       "name": "Quick Sand",
       "skillReq": 50,
       "position": {
-        "x": 16,
+        "x": 22,
         "y": 8
       },
       "prerequisites": [
@@ -324,7 +324,7 @@
       "name": "Quick Sand",
       "skillReq": 75,
       "position": {
-        "x": 16,
+        "x": 22,
         "y": 8
       },
       "prerequisites": [
@@ -339,7 +339,7 @@
       "name": "Mutiny",
       "skillReq": 100,
       "position": {
-        "x": 5,
+        "x": 7,
         "y": 5
       },
       "prerequisites": [
@@ -354,7 +354,7 @@
       "name": "Death's Emperor",
       "skillReq": 70,
       "position": {
-        "x": 2,
+        "x": 3,
         "y": 14
       },
       "prerequisites": [
@@ -370,7 +370,7 @@
       "name": "Lawless World",
       "skillReq": 40,
       "position": {
-        "x": 6,
+        "x": 9,
         "y": 22
       },
       "prerequisites": [

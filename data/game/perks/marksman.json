@@ -2,7 +2,7 @@
   "skillId": "marksman",
   "skillName": "Marksman",
   "grid": {
-    "width": 17,
+    "width": 20,
     "height": 30
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Ranged Combat Training",
       "skillReq": 0,
       "position": {
-        "x": 16,
+        "x": 18,
         "y": 28
       },
       "prerequisites": [],
@@ -37,7 +37,7 @@
       "name": "Eagle Eye",
       "skillReq": 25,
       "position": {
-        "x": 6,
+        "x": 7,
         "y": 22
       },
       "prerequisites": [
@@ -74,7 +74,7 @@
       "name": "Quick Shot",
       "skillReq": 50,
       "position": {
-        "x": 7,
+        "x": 9,
         "y": 12
       },
       "prerequisites": [
@@ -104,7 +104,7 @@
       "name": "Power Shot",
       "skillReq": 50,
       "position": {
-        "x": 2,
+        "x": 3,
         "y": 6
       },
       "prerequisites": [
@@ -119,7 +119,7 @@
       "name": "Stunning Precision",
       "skillReq": 75,
       "position": {
-        "x": 7,
+        "x": 9,
         "y": 0
       },
       "prerequisites": [
@@ -135,7 +135,7 @@
       "name": "Precise Aim",
       "skillReq": 20,
       "position": {
-        "x": 16,
+        "x": 19,
         "y": 21
       },
       "prerequisites": [
@@ -163,7 +163,7 @@
       "name": "Piercing Shot",
       "skillReq": 30,
       "position": {
-        "x": 14,
+        "x": 17,
         "y": 11
       },
       "prerequisites": [
@@ -191,7 +191,7 @@
       "name": "Penetrating Shot",
       "skillReq": 50,
       "position": {
-        "x": 10,
+        "x": 13,
         "y": 1
       },
       "prerequisites": [
@@ -206,7 +206,7 @@
       "name": "Ranger",
       "skillReq": 15,
       "position": {
-        "x": 8,
+        "x": 9,
         "y": 25
       },
       "prerequisites": [
@@ -236,7 +236,7 @@
       "name": "Hidden Blade",
       "skillReq": 20,
       "position": {
-        "x": 13,
+        "x": 15,
         "y": 22
       },
       "prerequisites": [
@@ -251,7 +251,7 @@
       "name": "Sharp Throw",
       "skillReq": 50,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 9
       },
       "prerequisites": [
@@ -307,7 +307,7 @@
       "name": "Bow Strike",
       "skillReq": 25,
       "position": {
-        "x": 9,
+        "x": 11,
         "y": 21
       },
       "prerequisites": [
@@ -329,7 +329,7 @@
       "name": "Focus on the Prey",
       "skillReq": 30,
       "position": {
-        "x": 10,
+        "x": 14,
         "y": 17
       },
       "prerequisites": [
@@ -344,7 +344,7 @@
       "name": "Three Crows",
       "skillReq": 75,
       "position": {
-        "x": 10,
+        "x": 12,
         "y": 10
       },
       "prerequisites": [
@@ -359,7 +359,7 @@
       "name": "Lion's Arrow",
       "skillReq": 60,
       "position": {
-        "x": 7,
+        "x": 10,
         "y": 3
       },
       "prerequisites": [
