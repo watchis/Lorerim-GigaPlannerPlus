@@ -301,12 +301,7 @@ export function SetupPickerPanel() {
             noMatchesLabel={labels.noMatches}
             selectedLabel={labels.selected}
             backToListLabel={labels.backToOverview ?? "Options"}
-            touchPreviewSelect={
-              stackedLayout &&
-              (setupPicker === "race" ||
-                setupPicker === "birthsign" ||
-                setupPicker === "deity")
-            }
+            touchPreviewSelect={stackedLayout && detailPicker}
           />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
