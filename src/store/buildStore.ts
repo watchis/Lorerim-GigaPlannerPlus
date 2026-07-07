@@ -255,7 +255,11 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
           const candidate = { ...build, raceId };
           const preserved = preserveSkillPointAllocations(gameData.game, build, candidate);
-          commitBuild(set, get, reconcileBuild(gameData.game, preserved));
+          const reconciled = reconcileBuild(gameData.game, preserved);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
         },
 
         setBirthsign: (birthsignId) => {
@@ -317,7 +321,11 @@ export const useBuildStore = create<BuildStore>()(
           }
 
           // Keep absolute skill levels — major/minor only changes the floor bonus, not invested levels.
-          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, majorSkillIds }));
+          const reconciled = reconcileBuild(gameData.game, { ...build, majorSkillIds });
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
         },
 
         toggleMinorSkill: (skillId) => {
@@ -331,7 +339,11 @@ export const useBuildStore = create<BuildStore>()(
             minorSkillIds.push(skillId);
           }
 
-          commitBuild(set, get, reconcileBuild(gameData.game, { ...build, minorSkillIds }));
+          const reconciled = reconcileBuild(gameData.game, { ...build, minorSkillIds });
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
         },
 
         adjustAttribute: (stat, delta) => {

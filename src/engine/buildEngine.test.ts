@@ -20,6 +20,8 @@ import {
   getSkillLevelIncreaseCost,
   getTrainingBudgetConflict,
   normalizeSkillTraining,
+  preserveSkillPointAllocations,
+  reconcileBuild,
   canSelectPerk,
   arePrerequisitesMet,
   getPerkById,
@@ -248,6 +250,72 @@ describe("ensurePlayerLevelForBuild", () => {
     const withFlag = ensurePlayerLevelForBuild(game, state, { ensureMinimumPlayerLevel: true });
     expect(withFlag.playerLevel).toBe(6);
     expect(computeBuild(game, withFlag).trainingLevelsRemaining).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("race/major/minor changes never lower skills", () => {
+  const game = getTestGameData();
+
+  function findRacePairWithDifferentStartingSkill(): {
+    skillId: string;
+    highRaceId: string;
+    lowRaceId: string;
+    high: number;
+    low: number;
+  } {
+    for (const skillId of game.manifest.skills) {
+      // This behavior only matters for allocatable skills.
+      if (game.manifest.nonAllocatableSkills.includes(skillId)) continue;
+      const racesWithValue = game.races
+        .map((race) => ({
+          id: race.id,
+          value: race.startingSkills[skillId] ?? 0,
+        }))
+        .sort((a, b) => b.value - a.value);
+      const highest = racesWithValue[0];
+      const lowest = racesWithValue.at(-1);
+      if (!highest || !lowest) continue;
+      if (highest.value <= lowest.value) continue;
+      return {
+        skillId,
+        highRaceId: highest.id,
+        lowRaceId: lowest.id,
+        high: highest.value,
+        low: lowest.value,
+      };
+    }
+    throw new Error("No race pair found with different starting skill values.");
+  }
+
+  it("preserves absolute skill level when switching to a race with a lower starting skill, and auto-raises player level if skill points go negative", () => {
+    const { skillId, highRaceId, lowRaceId, high, low } = findRacePairWithDifferentStartingSkill();
+
+    const before = reconcileBuild(
+      game,
+      createTestBuildState({
+        playerLevel: game.mechanics.leveling.baseLevel,
+        raceId: highRaceId,
+        skillLevels: { [skillId]: high },
+      }),
+    );
+    const beforeLevel = before.skillLevels[skillId] ?? 0;
+    expect(beforeLevel).toBeGreaterThanOrEqual(high);
+
+    const candidate = { ...before, raceId: lowRaceId };
+    const preserved = reconcileBuild(game, preserveSkillPointAllocations(game, before, candidate));
+    const afterLevel = preserved.skillLevels[skillId] ?? 0;
+
+    // Regression: this used to drop to the new race's lower starting skill (or floor).
+    expect(afterLevel).toBe(beforeLevel);
+    expect(low).toBeLessThan(high);
+
+    // Keeping the absolute level with a lower floor can increase paid points; ensureMinimumPlayerLevel should cover it.
+    const overBudget = getRemainingSkillPoints(game, preserved);
+    if (overBudget < 0) {
+      const leveled = ensurePlayerLevelForBuild(game, preserved, { ensureMinimumPlayerLevel: true });
+      expect(getRemainingSkillPoints(game, leveled)).toBeGreaterThanOrEqual(0);
+      expect(leveled.playerLevel).toBeGreaterThanOrEqual(preserved.playerLevel);
+    }
   });
 });
 

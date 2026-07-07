@@ -431,12 +431,14 @@ export function preserveSkillPointAllocations(
       delete skillTrainingRanges[skillId];
     }
 
-    skillLevels[skillId] = findSkillLevelForPaidPoints(
+    const preservedLevel = findSkillLevelForPaidPoints(
       game,
       { ...nextBuild, skillLevels, skillTrainingRanges },
       skillId,
       targetPaid,
     );
+    // Race / major / minor changes can lower the skill floor; never drop absolute levels.
+    skillLevels[skillId] = Math.max(previousLevel, preservedLevel);
   }
 
   return normalizeSkillTraining(game, { ...nextBuild, skillLevels, skillTrainingRanges });
