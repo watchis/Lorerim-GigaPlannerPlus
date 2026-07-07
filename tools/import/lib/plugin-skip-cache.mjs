@@ -68,7 +68,11 @@ export async function filterPluginsForImport(plugins, options = {}) {
   const toScan = [];
   const skipped = [];
   const classify = classifyFn;
-  const classifyProgress = progress?.pluginScan?.("Classifying plugins", plugins.length);
+  const classifyProgress = progress?.trackParallel?.(
+    "Classifying plugins",
+    plugins.length,
+    concurrency,
+  );
 
   const candidates = [];
   for (const plugin of plugins) {
@@ -91,11 +95,22 @@ export async function filterPluginsForImport(plugins, options = {}) {
     candidates.push(plugin);
   }
 
-  const classifications = await mapConcurrent(candidates, concurrency, async (plugin) => {
-    const mechanics = await classify(plugin.path);
-    classifyProgress?.tick(plugin.pluginName);
-    return { plugin, mechanics };
-  });
+  const classifications = await mapConcurrent(
+    candidates,
+    concurrency,
+    async (plugin) => {
+      const mechanics = await classify(plugin.path);
+      return { plugin, mechanics };
+    },
+    {
+      onWorkerStart(workerId, plugin) {
+        classifyProgress?.workerStart(workerId, plugin.pluginName);
+      },
+      onWorkerEnd(workerId, plugin) {
+        classifyProgress?.workerEnd(workerId, plugin.pluginName);
+      },
+    },
+  );
 
   for (const { plugin, mechanics } of classifications) {
     const key = cacheKey(plugin.pluginName);

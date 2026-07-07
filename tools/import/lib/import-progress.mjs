@@ -130,6 +130,10 @@ export function createImportReporter(options = {}) {
   }
 
   function phase(title, index = null, total = null) {
+    if (activeLiveBlock) {
+      clearLiveBlock(activeLiveBlock);
+      activeLiveBlock = null;
+    }
     clearProgressLine(stream);
     const prefix =
       index != null && total != null ? `[${index}/${total}] ` : "";
@@ -137,6 +141,10 @@ export function createImportReporter(options = {}) {
   }
 
   function step(message) {
+    if (activeLiveBlock) {
+      clearLiveBlock(activeLiveBlock);
+      activeLiveBlock = null;
+    }
     clearProgressLine(stream);
     stream.write(`  ${message}\n`);
   }
@@ -145,6 +153,18 @@ export function createImportReporter(options = {}) {
   function activity(message) {
     writeProgressLine(`  ${message}`);
   }
+
+  function clearLiveBlock(block) {
+    if (!interactive || !block || block.liveBlockLines <= 0) return;
+    stream.write(`\x1b[${block.liveBlockLines}A`);
+    for (let index = 0; index < block.liveBlockLines; index++) {
+      stream.write("\x1b[2K\n");
+    }
+    stream.write(`\x1b[${block.liveBlockLines}A`);
+    block.liveBlockLines = 0;
+  }
+
+  let activeLiveBlock = null;
 
   function track(label, total) {
     const started = Date.now();
@@ -185,9 +205,106 @@ export function createImportReporter(options = {}) {
     return { tick, finish };
   }
 
+  function trackParallel(label, total, workerCount) {
+    const started = Date.now();
+    let current = 0;
+    let lastWrite = 0;
+    const workers = Math.max(1, workerCount);
+    const workerStatus = new Map();
+    const block = { liveBlockLines: 0 };
+
+    function formatWorkerLines(maxWidth) {
+      const lines = [];
+      for (let workerId = 0; workerId < workers; workerId++) {
+        const detail = workerStatus.get(workerId) ?? "idle";
+        lines.push(truncateEnd(`    worker ${workerId + 1}: ${detail}`, maxWidth));
+      }
+      return lines;
+    }
+
+    function renderOverallDetail(detail = "") {
+      const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
+      const ratio = total > 0 ? current / total : 1;
+      const percent = Math.floor(ratio * 100);
+      const bar = renderBar(ratio);
+      return formatTrackLine(label, bar, current, total, percent, detail, maxWidth);
+    }
+
+    function render(detail = "") {
+      const now = Date.now();
+      const isComplete = current >= total;
+      const shouldWrite =
+        interactive ||
+        current === 0 ||
+        isComplete ||
+        now - lastWrite >= updateIntervalMs;
+      if (!shouldWrite) return;
+      lastWrite = now;
+
+      const overallLine = renderOverallDetail(detail);
+
+      if (!interactive) {
+        writeProgressLine(overallLine, { forceNewline: isComplete });
+        return;
+      }
+
+      const workerLines = formatWorkerLines(Math.max(40, (stream.columns ?? 100) - 1));
+      const allLines = [overallLine, ...workerLines];
+
+      if (block.liveBlockLines > 0) {
+        stream.write(`\x1b[${block.liveBlockLines}A`);
+      }
+
+      for (const line of allLines) {
+        stream.write(`\x1b[2K${line}\n`);
+      }
+
+      block.liveBlockLines = allLines.length;
+      stream.write(`\x1b[${block.liveBlockLines}A`);
+    }
+
+    function workerStart(workerId, detail = "") {
+      workerStatus.set(workerId, detail);
+      render();
+    }
+
+    function workerEnd(workerId, detail = "") {
+      workerStatus.delete(workerId);
+      current += 1;
+      render(detail);
+    }
+
+    function tick(detail = "") {
+      current += 1;
+      render(detail);
+    }
+
+    function clear() {
+      clearLiveBlock(block);
+      workerStatus.clear();
+    }
+
+    function finish(detail = "") {
+      clear();
+      activeLiveBlock = null;
+      const elapsed = formatDuration(Date.now() - started);
+      const summary = detail ? `${detail} in ${elapsed}` : `done in ${elapsed}`;
+      stream.write(
+        `  ✓ ${label}: ${formatCount(current)}/${formatCount(total)} — ${summary}\n`,
+      );
+    }
+
+    activeLiveBlock = block;
+    return { workerStart, workerEnd, tick, finish, clear };
+  }
+
   /** @deprecated Use `track` — kept for existing call sites during migration. */
   function pluginScan(label, total) {
     return track(label, total);
+  }
+
+  function pluginScanParallel(label, total, workerCount) {
+    return trackParallel(label, total, workerCount);
   }
 
   function banner(lines) {
@@ -208,7 +325,9 @@ export function createImportReporter(options = {}) {
     step,
     activity,
     track,
+    trackParallel,
     pluginScan,
+    pluginScanParallel,
     banner,
     elapsed,
     clearProgressLine,

@@ -174,4 +174,21 @@ function createCaptureStream({ isTTY = false, columns = 100 } = {}) {
   assert.match(lastWrite, /1\/1 \(100%\)/);
 }
 
+{
+  const { stream, getOutput } = createCaptureStream({ isTTY: true, columns: 100 });
+  const progress = createImportReporter({ stream, interactive: true });
+  const scan = progress.trackParallel("Classifying plugins", 2, 2);
+
+  scan.workerStart(0, "Alpha.esp");
+  scan.workerStart(1, "Beta.esp");
+  scan.workerEnd(0, "Alpha.esp");
+  scan.workerEnd(1, "Beta.esp");
+  scan.finish("done");
+
+  const text = getOutput();
+  assert.match(text, /worker 1: Alpha\.esp/);
+  assert.match(text, /worker 2: Beta\.esp/);
+  assert.match(text, /✓ Classifying plugins: 2\/2 — done/);
+}
+
 console.log("import-progress.test.mjs: ok");
