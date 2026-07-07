@@ -590,24 +590,16 @@ export async function collectImportPluginData(plugins, progress = null, options 
   const traitsFormList = { formIds: null, sourcePlugin: null };
   const mastersByPath = new Map();
 
-  const scan = progress?.trackParallel?.(
-    "Scanning plugin records",
-    plugins.length,
-    concurrency,
-  );
-  const pluginPayloads = await mapConcurrent(
-    plugins,
-    concurrency,
-    readPluginImportPayload,
-    {
-      onWorkerStart(workerId, plugin) {
-        scan?.workerStart(workerId, plugin.pluginName);
-      },
-      onWorkerEnd(workerId, plugin) {
-        scan?.workerEnd(workerId, plugin.pluginName);
-      },
-    },
-  );
+  const scan = progress?.pluginScan?.("Scanning plugin records", plugins.length);
+  let recordsRead = 0;
+  const pluginPayloads = await mapConcurrent(plugins, concurrency, async (plugin) => {
+    const payload = await readPluginImportPayload(plugin);
+    recordsRead += payload.records.length;
+    scan?.tick(
+      recordsRead > 0 ? `${formatCount(recordsRead)} records read` : "reading files",
+    );
+    return payload;
+  });
 
   // Merge in load-order sequence so later plugins override earlier ones.
   progress?.activity?.("Merging records by load order…");

@@ -23,29 +23,21 @@ export function visitAsync(file) {
 
 /**
  * Run an async mapper over items with a fixed worker pool. Results preserve input order.
- *
- * Optional hooks receive `workerId` (0-based pool slot) for progress UIs.
  */
-export async function mapConcurrent(items, concurrency, fn, hooks = null) {
+export async function mapConcurrent(items, concurrency, fn) {
   if (items.length === 0) return [];
 
   const results = new Array(items.length);
   let nextIndex = 0;
   const workers = Math.min(Math.max(1, concurrency), items.length);
 
-  async function worker(workerId) {
+  async function worker() {
     while (nextIndex < items.length) {
       const index = nextIndex++;
-      const item = items[index];
-      hooks?.onWorkerStart?.(workerId, item, index);
-      try {
-        results[index] = await fn(item, index, workerId);
-      } finally {
-        hooks?.onWorkerEnd?.(workerId, item, index);
-      }
+      results[index] = await fn(items[index], index);
     }
   }
 
-  await Promise.all(Array.from({ length: workers }, (_, workerId) => worker(workerId)));
+  await Promise.all(Array.from({ length: workers }, () => worker()));
   return results;
 }
