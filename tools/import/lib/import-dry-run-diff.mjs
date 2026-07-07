@@ -1,6 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
+const DEFAULT_CONTEXT_LINES = 3;
+const MAX_HUNK_LINES = 14;
+
 export function serializePlannerJson(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
@@ -63,27 +66,75 @@ function buildDiffOps(oldLines, newLines) {
   return ops;
 }
 
-function countHunkLines(ops) {
-  let oldCount = 0;
-  let newCount = 0;
+export function buildHunkWindows(ops, contextLines = DEFAULT_CONTEXT_LINES) {
+  const changeIndices = ops
+    .map((op, index) => (op.type === "context" ? -1 : index))
+    .filter((index) => index >= 0);
 
-  for (const op of ops) {
-    if (op.type === "context" || op.type === "remove") oldCount += 1;
-    if (op.type === "context" || op.type === "add") newCount += 1;
+  if (changeIndices.length === 0) return [];
+
+  const windows = changeIndices.map((index) => [
+    Math.max(0, index - contextLines),
+    Math.min(ops.length - 1, index + contextLines),
+  ]);
+
+  windows.sort((left, right) => left[0] - right[0]);
+  const merged = [windows[0]];
+
+  for (let index = 1; index < windows.length; index++) {
+    const previous = merged[merged.length - 1];
+    const current = windows[index];
+    if (current[0] <= previous[1] + 1) {
+      previous[1] = Math.max(previous[1], current[1]);
+    } else {
+      merged.push(current);
+    }
   }
 
-  return { oldCount, newCount };
+  return merged;
 }
 
-export function formatUnifiedDiff(oldPath, newPath, oldContent, newContent) {
+function formatOpLine(op) {
+  if (op.type === "context") return ` ${op.line}`;
+  if (op.type === "remove") return `-${op.line}`;
+  return `+${op.line}`;
+}
+
+export function formatHunkLines(ops, start, end) {
+  const lines = [];
+  for (let index = start; index <= end; index++) {
+    lines.push(formatOpLine(ops[index]));
+  }
+  return truncateLongHunk(lines);
+}
+
+function truncateLongHunk(lines) {
+  if (lines.length <= MAX_HUNK_LINES) return lines;
+
+  const leadingContext = Math.min(DEFAULT_CONTEXT_LINES, lines.length);
+  const trailingContext = Math.min(DEFAULT_CONTEXT_LINES, lines.length - leadingContext);
+  const head = lines.slice(0, leadingContext + 4);
+  const tail = lines.slice(-trailingContext);
+
+  if (head.length + tail.length + 1 >= lines.length) return lines;
+  return [...head, "...", ...tail];
+}
+
+export function formatUnifiedDiff(
+  oldPath,
+  newPath,
+  oldContent,
+  newContent,
+  options = {},
+) {
   if (oldContent === newContent) return null;
 
+  const contextLines = options.contextLines ?? DEFAULT_CONTEXT_LINES;
   const oldLines = splitLines(oldContent);
   const newLines = splitLines(newContent);
   const ops = buildDiffOps(oldLines, newLines);
-  const { oldCount, newCount } = countHunkLines(ops);
-  const oldStart = oldCount === 0 ? 0 : 1;
-  const newStart = newCount === 0 ? 0 : 1;
+  const windows = buildHunkWindows(ops, contextLines);
+  if (windows.length === 0) return null;
 
   const oldLabel = oldContent == null ? "/dev/null" : `a/${oldPath}`;
   const newLabel = newContent == null ? "/dev/null" : `b/${newPath}`;
@@ -91,13 +142,12 @@ export function formatUnifiedDiff(oldPath, newPath, oldContent, newContent) {
     `diff --git a/${oldPath} b/${newPath}`,
     `--- ${oldLabel}`,
     `+++ ${newLabel}`,
-    `@@ -${oldStart},${oldCount} +${newStart},${newCount} @@`,
   ];
 
-  for (const op of ops) {
-    if (op.type === "context") lines.push(` ${op.line}`);
-    if (op.type === "remove") lines.push(`-${op.line}`);
-    if (op.type === "add") lines.push(`+${op.line}`);
+  const hunkBodies = windows.map(([start, end]) => formatHunkLines(ops, start, end));
+  for (let index = 0; index < hunkBodies.length; index++) {
+    if (index > 0) lines.push("...");
+    lines.push(...hunkBodies[index]);
   }
 
   return `${lines.join("\n")}\n`;
@@ -119,6 +169,7 @@ export function formatDryRunDiff({
   dataDir,
   perksDir,
   repoRoot,
+  contextLines = DEFAULT_CONTEXT_LINES,
 }) {
   const sections = [];
 
@@ -127,7 +178,9 @@ export function formatDryRunDiff({
     const repoPath = toRepoRelativePath(absolutePath, repoRoot);
     const nextContent = serializePlannerJson(payload);
     const currentContent = readFileContent(absolutePath);
-    const section = formatUnifiedDiff(repoPath, repoPath, currentContent, nextContent);
+    const section = formatUnifiedDiff(repoPath, repoPath, currentContent, nextContent, {
+      contextLines,
+    });
     if (section) sections.push(section.trimEnd());
   }
 
@@ -136,7 +189,9 @@ export function formatDryRunDiff({
     const repoPath = toRepoRelativePath(absolutePath, repoRoot);
     const currentContent = readFileContent(absolutePath);
     if (currentContent == null) continue;
-    const section = formatUnifiedDiff(repoPath, repoPath, currentContent, null);
+    const section = formatUnifiedDiff(repoPath, repoPath, currentContent, null, {
+      contextLines,
+    });
     if (section) sections.push(section.trimEnd());
   }
 

@@ -3,7 +3,9 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
+  buildHunkWindows,
   formatDryRunDiff,
+  formatHunkLines,
   formatUnifiedDiff,
   serializePlannerJson,
 } from "./import-dry-run-diff.mjs";
@@ -19,9 +21,55 @@ import {
   assert.match(diff, /^diff --git a\/data\/game\/traits\.json b\/data\/game\/traits\.json/);
   assert.match(diff, /^--- a\/data\/game\/traits\.json/m);
   assert.match(diff, /^\+\+\+ b\/data\/game\/traits\.json/m);
-  assert.match(diff, /^@@ -\d+,\d+ \+\d+,\d+ @@/m);
+  assert.doesNotMatch(diff, /^@@ /m);
+  assert.ok(diff.includes(' "traits": ['));
   assert.ok(diff.includes('-      "name": "Old"'));
   assert.ok(diff.includes('+      "name": "New"'));
+  assert.ok(!diff.includes('{\n  "traits"') || diff.split("\n").length < 12);
+}
+
+{
+  const oldContent = [
+    "{",
+    '  "alpha": 1,',
+    '  "beta": 2,',
+    '  "gamma": 3,',
+    '  "delta": 4,',
+    '  "epsilon": 5,',
+    '  "eta": 6,',
+    '  "theta": 7,',
+    '  "iota": 8,',
+    '  "kappa": 9,',
+    '  "zeta": 10,',
+    "}",
+  ].join("\n") + "\n";
+  const newContent = [
+    "{",
+    '  "alpha": 1,',
+    '  "beta": 9,',
+    '  "gamma": 3,',
+    '  "delta": 4,',
+    '  "epsilon": 5,',
+    '  "eta": 6,',
+    '  "theta": 7,',
+    '  "iota": 8,',
+    '  "kappa": 9,',
+    '  "zeta": 11,',
+    "}",
+  ].join("\n") + "\n";
+
+  const diff = formatUnifiedDiff(
+    "data/game/sample.json",
+    "data/game/sample.json",
+    oldContent,
+    newContent,
+  );
+
+  assert.ok(diff.includes('-  "beta": 2,'));
+  assert.ok(diff.includes('+  "beta": 9,'));
+  assert.ok(diff.includes("..."));
+  assert.ok(diff.includes('-  "zeta": 10,'));
+  assert.ok(diff.includes('+  "zeta": 11,'));
 }
 
 {
@@ -54,6 +102,22 @@ assert.equal(
   formatUnifiedDiff("data/game/a.json", "data/game/a.json", '{"a":1}\n', '{"a":1}\n'),
   null,
 );
+
+{
+  const ops = [
+    { type: "context", line: "a" },
+    { type: "remove", line: "b" },
+    { type: "add", line: "c" },
+    { type: "context", line: "d" },
+    { type: "context", line: "e" },
+    { type: "context", line: "f" },
+    { type: "context", line: "g" },
+    { type: "remove", line: "h" },
+  ];
+  const windows = buildHunkWindows(ops, 1);
+  assert.equal(windows.length, 2);
+  assert.deepEqual(formatHunkLines(ops, windows[0][0], windows[0][1]), [" a", "-b", "+c", " d"]);
+}
 
 {
   const repoRoot = mkdtempSync(join(tmpdir(), "giga-dry-run-diff-"));
