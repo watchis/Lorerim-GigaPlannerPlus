@@ -100,7 +100,8 @@ export function HoverTapTooltip({
   const [open, setOpen] = useState(false);
   const id = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const ignoreNextClickRef = useRef(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [touchPosition, setTouchPosition] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (supportsHover) return;
@@ -135,7 +136,7 @@ export function HoverTapTooltip({
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (triggerRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target) || contentRef.current?.contains(target)) return;
       setOpen(false);
     };
 
@@ -143,36 +144,68 @@ export function HoverTapTooltip({
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [open, supportsHover]);
 
-  const handleTap = (event: MouseEvent<HTMLSpanElement>) => {
+  useLayoutEffect(() => {
+    if (supportsHover || !open) return;
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Anchor just below/above trigger; align approximates Radix align behavior.
+    const preferredX =
+      align === "start" ? rect.left : align === "end" ? rect.right : rect.left + rect.width / 2;
+    const preferredY = side === "top" ? rect.top : rect.bottom;
+    const contentEl = contentRef.current;
+    const width = contentEl?.getBoundingClientRect().width ?? 240;
+    const height = contentEl?.getBoundingClientRect().height ?? 40;
+    const resolved = resolveCursorTooltipPosition(preferredX, preferredY, width, height);
+    setTouchPosition(resolved);
+  }, [supportsHover, open, side, align, content]);
+
+  const handleTouchToggle = (event: PointerEvent) => {
     if (supportsHover) return;
-    if (ignoreNextClickRef.current) {
-      ignoreNextClickRef.current = false;
-      return;
-    }
+    if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
     event.preventDefault();
     event.stopPropagation();
     setOpen((value) => !value);
   };
 
-  return (
-    <Tooltip
-      open={supportsHover ? undefined : open}
-      onOpenChange={supportsHover ? undefined : setOpen}
-    >
-      <TooltipTrigger asChild>
+  if (!supportsHover) {
+    return (
+      <>
         <span
           ref={triggerRef}
-          className={cn("inline-flex", triggerClassName)}
-          onPointerUp={(event) => {
-            if (supportsHover) return;
-            if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
-            ignoreNextClickRef.current = true;
-            event.preventDefault();
-            event.stopPropagation();
-            setOpen((value) => !value);
-          }}
-          onClick={handleTap}
+          className={cn("inline-flex touch-manipulation", triggerClassName)}
+          onPointerUp={handleTouchToggle}
         >
+          {children}
+        </span>
+        {open &&
+          createPortal(
+            <div
+              ref={contentRef}
+              role="tooltip"
+              className={cn(
+                tooltipSurfaceClassName,
+                "fixed max-w-xs animate-in fade-in-0 zoom-in-95",
+                contentClassName,
+              )}
+              style={{
+                left: touchPosition?.x ?? -9999,
+                top: touchPosition?.y ?? -9999,
+                visibility: touchPosition ? "visible" : "hidden",
+              }}
+            >
+              {content}
+            </div>,
+            document.body,
+          )}
+      </>
+    );
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span ref={triggerRef} className={cn("inline-flex", triggerClassName)}>
           {children}
         </span>
       </TooltipTrigger>
