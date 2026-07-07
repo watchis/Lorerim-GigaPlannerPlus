@@ -63,10 +63,12 @@ export function commitVariantNotesFormat(
 }
 
 function ToolbarDivider() {
-  return <div className="mx-0.5 h-5 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
+  return <div className="mx-0 h-3.5 w-px shrink-0 bg-[var(--color-border)]/80 sm:mx-0.5 sm:h-5" aria-hidden />;
 }
 
-const toolbarIconClass = "h-[18px] w-[18px]";
+const toolbarButtonClass =
+  "h-[18px] w-[18px] min-h-0 min-w-0 shrink-0 rounded-sm p-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)] sm:h-7 sm:w-7 sm:rounded-md md:h-8 md:w-8";
+const toolbarIconClass = "h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-[18px] md:w-[18px]";
 
 function ToolbarButton({
   label,
@@ -88,7 +90,7 @@ function ToolbarButton({
       type="button"
       variant="ghost"
       size="icon"
-      className="h-8 w-8 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+      className={toolbarButtonClass}
       onClick={onClick}
       disabled={disabled}
       aria-label={title}
@@ -131,7 +133,10 @@ function VariantNotesToolbarControls({
     <>
       <Select key={headingSelectKey} onValueChange={applyHeading} disabled={disabled}>
         <SelectTrigger
-          className="h-8 w-8 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)]"
+          className={cn(
+            toolbarButtonClass,
+            "justify-center gap-0 border-0 bg-transparent shadow-none focus:ring-0 [&>span]:hidden",
+          )}
           aria-label="Text style"
           title="Text style"
         >
@@ -195,7 +200,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("codeBlock")}
         disabled={disabled}
       >
-        <span className="font-mono text-[10px]">{"{ }"}</span>
+        <span className="font-mono text-[8px] leading-none sm:text-[10px]">{"{ }"}</span>
       </ToolbarButton>
       <ToolbarButton
         label="Link"
@@ -264,9 +269,9 @@ export function VariantNotesToolbar({
   return (
     <div
       className={cn(
-        "flex w-full min-w-0 flex-wrap items-center gap-0.5",
+        "flex w-full min-w-0 flex-nowrap items-center gap-0 sm:gap-0.5",
         framed &&
-          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-0.5",
+          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-px sm:p-0.5",
         className,
       )}
     >
