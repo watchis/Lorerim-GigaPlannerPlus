@@ -1,5 +1,5 @@
 import { AlertCircle, AlertTriangle, ChevronsDown, ChevronsUp, Minus, Plus, Wallet } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { NumericLevelInput } from "@/components/NumericLevelInput";
 import { Button } from "@/components/ui/button";
@@ -177,7 +177,72 @@ function BudgetStatRow({
   );
 }
 
-function MobileBudgetDropdown({
+function BudgetInlineStats({
+  barLabels,
+  computed,
+  perkPointsInfo,
+  skillPointsInfo,
+  trainingLevelsInfo,
+  perkOverBudget,
+  skillOverBudget,
+  trainingOverBudget,
+  className,
+}: {
+  barLabels: Record<string, string>;
+  computed: NonNullable<ReturnType<typeof useBuildStore.getState>["computed"]>;
+  perkPointsInfo: string;
+  skillPointsInfo: string;
+  trainingLevelsInfo: string;
+  perkOverBudget: boolean;
+  skillOverBudget: boolean;
+  trainingOverBudget: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex shrink-0 items-center gap-3 text-xs", className)}>
+      <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
+          <span>{barLabels.perkPointsRemaining}:</span>
+          <span className={remainingCountClassName(perkOverBudget)}>
+            {computed.perkPointsRemaining}
+          </span>
+          <PointsInfoTooltip text={perkPointsInfo} />
+        </span>
+        <span className="text-[var(--color-muted)]">
+          ({computed.perkPointsSpent} {barLabels.perkPointsSpent})
+        </span>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
+          <span>{barLabels.trainingLevelsRemaining}:</span>
+          <span className={remainingCountClassName(trainingOverBudget)}>
+            {computed.trainingLevelsRemaining}
+          </span>
+          <PointsInfoTooltip text={trainingLevelsInfo} />
+        </span>
+        <span className="text-[var(--color-muted)]">
+          ({computed.trainingLevelsUsed} {barLabels.trainingLevelsSpent})
+        </span>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
+          <span>{barLabels.skillPointsRemaining}:</span>
+          <span className={remainingCountClassName(skillOverBudget)}>
+            {computed.skillPointsRemaining}
+          </span>
+          <PointsInfoTooltip text={skillPointsInfo} />
+        </span>
+        <span className="text-[var(--color-muted)]">
+          ({computed.skillPointsSpent} {barLabels.skillPointsSpent})
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function BudgetDropdown({
   barLabels,
   computed,
   perkPointsInfo,
@@ -294,14 +359,14 @@ function MobileBudgetDropdown({
       : null;
 
   return (
-    <div className="md:hidden">
+    <>
       <Button
         ref={triggerRef}
         type="button"
         variant="outline"
         size="icon"
         className={cn(
-          "h-9 w-9 border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50",
+          "h-9 w-9 border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 md:h-7 md:w-7",
           hasIssue && "border-[var(--color-error)]/50 text-[var(--color-error)]",
         )}
         aria-expanded={open}
@@ -312,8 +377,57 @@ function MobileBudgetDropdown({
         <Wallet className="h-4 w-4" />
       </Button>
       {menu}
-    </div>
+    </>
   );
+}
+
+type BudgetProps = {
+  barLabels: Record<string, string>;
+  computed: NonNullable<ReturnType<typeof useBuildStore.getState>["computed"]>;
+  perkPointsInfo: string;
+  skillPointsInfo: string;
+  trainingLevelsInfo: string;
+  perkOverBudget: boolean;
+  skillOverBudget: boolean;
+  trainingOverBudget: boolean;
+};
+
+function useCompactBudgetLayout(
+  rowRef: RefObject<HTMLDivElement | null>,
+  levelControlsRef: RefObject<HTMLDivElement | null>,
+  budgetMeasureRef: RefObject<HTMLDivElement | null>,
+  deps: unknown[],
+) {
+  const [useCompactBudget, setUseCompactBudget] = useState(false);
+
+  useLayoutEffect(() => {
+    const update = () => {
+      const row = rowRef.current;
+      const levelControls = levelControlsRef.current;
+      const budgetMeasure = budgetMeasureRef.current;
+      if (!row || !levelControls || !budgetMeasure) return;
+
+      const gapBuffer = 12;
+      const availableWidth = row.clientWidth - levelControls.offsetWidth - gapBuffer;
+      const budgetWidth = budgetMeasure.scrollWidth;
+      setUseCompactBudget(budgetWidth > availableWidth);
+    };
+
+    update();
+
+    const observer = new ResizeObserver(update);
+    for (const element of [rowRef.current, levelControlsRef.current, budgetMeasureRef.current]) {
+      if (element) observer.observe(element);
+    }
+
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, deps);
+
+  return useCompactBudget;
 }
 
 function LevelStepperTooltipButton({
@@ -382,10 +496,41 @@ export function LevelBar() {
 
   if (!gameData || !computed) return null;
 
+  return (
+    <LevelBarContent
+      barLabels={barLabels}
+      game={gameData.game}
+      build={build}
+      computed={computed}
+      setPlayerLevel={setPlayerLevel}
+      ensurePlayerLevel={ensurePlayerLevel}
+    />
+  );
+}
+
+function LevelBarContent({
+  barLabels,
+  game,
+  build,
+  computed,
+  setPlayerLevel,
+  ensurePlayerLevel,
+}: {
+  barLabels: Record<string, string>;
+  game: NonNullable<ReturnType<typeof useBuildStore.getState>["gameData"]>["game"];
+  build: NonNullable<ReturnType<typeof useBuildStore.getState>["build"]>;
+  computed: NonNullable<ReturnType<typeof useBuildStore.getState>["computed"]>;
+  setPlayerLevel: (level: number) => void;
+  ensurePlayerLevel: () => void;
+}) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const levelControlsRef = useRef<HTMLDivElement>(null);
+  const budgetMeasureRef = useRef<HTMLDivElement>(null);
+
   const { baseLevel, maxPlayerLevel, standardMaxPlayerLevel, initialPerkPoints } =
-    gameData.game.mechanics.leveling;
-  const minimumPlayerLevel = getMinimumPlayerLevelForBuild(gameData.game, build);
-  const ensuredPlayerLevel = ensurePlayerLevelForBuild(gameData.game, build, {
+    game.mechanics.leveling;
+  const minimumPlayerLevel = getMinimumPlayerLevelForBuild(game, build);
+  const ensuredPlayerLevel = ensurePlayerLevelForBuild(game, build, {
     ensureMinimumPlayerLevel: true,
   }).playerLevel;
   const perkPointsInfo = formatLabel(barLabels.perkPointsInfo, {
@@ -402,15 +547,15 @@ export function LevelBar() {
   });
   const skillOverBudget = computed.skillPointsRemaining < 0;
   const perkOverBudget = computed.perkPointsRemaining < 0;
-  const destinyOverBudget = getRemainingDestinyPerkPoints(gameData.game, build) < 0;
+  const destinyOverBudget = getRemainingDestinyPerkPoints(game, build) < 0;
   const trainingOverBudget = computed.trainingLevelsRemaining < 0;
   const skillOverBy = skillOverBudget ? Math.abs(computed.skillPointsRemaining) : 0;
   const perkOverBy = perkOverBudget ? Math.abs(computed.perkPointsRemaining) : 0;
   const destinyOverBy = destinyOverBudget
-    ? Math.abs(getRemainingDestinyPerkPoints(gameData.game, build))
+    ? Math.abs(getRemainingDestinyPerkPoints(game, build))
     : 0;
-  const warnings = getBuildPlayerLevelWarnings(gameData.game, build);
-  const skillReqConflicts = getSelectedPerksBelowSkillRequirement(gameData.game, build);
+  const warnings = getBuildPlayerLevelWarnings(game, build);
+  const skillReqConflicts = getSelectedPerksBelowSkillRequirement(game, build);
 
   const perkOverBudgetMessage = perkOverBudget
     ? formatLabel(barLabels.perkOverBudgetAlert, {
@@ -449,7 +594,7 @@ export function LevelBar() {
             perk: skillReqConflicts[0].name,
             required: skillReqConflicts[0].skillReq,
             current: getSkillLevelForPerkChecks(
-              gameData.game,
+              game,
               build,
               skillReqConflicts[0].skillId,
             ),
@@ -479,117 +624,103 @@ export function LevelBar() {
   const easyModeLevelWarning = formatLabel(barLabels.easyModeLevelWarning, {
     standardMax: standardMaxPlayerLevel,
   });
+  const budgetProps: BudgetProps = {
+    barLabels,
+    computed,
+    perkPointsInfo,
+    skillPointsInfo,
+    trainingLevelsInfo,
+    perkOverBudget,
+    skillOverBudget,
+    trainingOverBudget,
+  };
+  const compactBudget = useCompactBudgetLayout(
+    rowRef,
+    levelControlsRef,
+    budgetMeasureRef,
+    [showEasyModeWarning, build.playerLevel, computed],
+  );
 
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3">
-        <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 sm:gap-3">
-          <span className="hidden shrink-0 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)] min-[380px]:inline">
-            {barLabels.playerLevel}
-          </span>
+      <div className="mx-auto max-w-[1600px]">
+        <div
+          ref={rowRef}
+          className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 sm:gap-3"
+        >
           <div
-            className={cn(
-              "inline-flex shrink-0 items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
-              showEasyModeWarning
-                ? "border-[var(--color-accent)]"
-                : "border-[var(--color-border)]",
+            ref={levelControlsRef}
+            className="flex min-w-0 shrink-0 flex-nowrap items-center gap-1.5 sm:gap-3"
+          >
+            <span className="hidden shrink-0 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)] min-[380px]:inline">
+              {barLabels.playerLevel}
+            </span>
+            <div
+              className={cn(
+                "inline-flex shrink-0 items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
+                showEasyModeWarning
+                  ? "border-[var(--color-accent)]"
+                  : "border-[var(--color-border)]",
+              )}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 md:h-7 md:w-7"
+                onClick={() => setPlayerLevel(build.playerLevel - 1)}
+                disabled={build.playerLevel <= baseLevel}
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </Button>
+              <NumericLevelInput
+                value={build.playerLevel}
+                min={baseLevel}
+                max={maxPlayerLevel}
+                onCommit={setPlayerLevel}
+                className="w-11 sm:w-14"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 md:h-7 md:w-7"
+                onClick={() => setPlayerLevel(build.playerLevel + 1)}
+                disabled={build.playerLevel >= maxPlayerLevel}
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            {showEasyModeWarning && <EasyModeLevelWarningIcon message={easyModeLevelWarning} />}
+            <LevelStepperTooltipButton
+              label={barLabels.ensurePlayerLevel}
+              info={barLabels.ensurePlayerLevelInfo}
+              onClick={ensurePlayerLevel}
+              disabled={build.playerLevel >= ensuredPlayerLevel}
+            >
+              <ChevronsUp className="h-3.5 w-3.5" />
+            </LevelStepperTooltipButton>
+            <LevelStepperTooltipButton
+              label={barLabels.setToMinimumLevel}
+              info={barLabels.setToMinimumLevelInfo}
+              onClick={() => setPlayerLevel(minimumPlayerLevel)}
+              disabled={build.playerLevel <= minimumPlayerLevel}
+            >
+              <ChevronsDown className="h-3.5 w-3.5" />
+            </LevelStepperTooltipButton>
+          </div>
+
+          <div className="relative ml-auto flex shrink-0 items-center justify-end">
+            <div
+              ref={budgetMeasureRef}
+              className="pointer-events-none invisible absolute right-0 top-0 flex"
+              aria-hidden
+            >
+              <BudgetInlineStats {...budgetProps} />
+            </div>
+            {compactBudget ? (
+              <BudgetDropdown {...budgetProps} />
+            ) : (
+              <BudgetInlineStats {...budgetProps} />
             )}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 md:h-7 md:w-7"
-              onClick={() => setPlayerLevel(build.playerLevel - 1)}
-              disabled={build.playerLevel <= baseLevel}
-            >
-              <Minus className="h-3.5 w-3.5" />
-            </Button>
-            <NumericLevelInput
-              value={build.playerLevel}
-              min={baseLevel}
-              max={maxPlayerLevel}
-              onCommit={setPlayerLevel}
-              className="w-11 sm:w-14"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 md:h-7 md:w-7"
-              onClick={() => setPlayerLevel(build.playerLevel + 1)}
-              disabled={build.playerLevel >= maxPlayerLevel}
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-          <LevelStepperTooltipButton
-            label={barLabels.ensurePlayerLevel}
-            info={barLabels.ensurePlayerLevelInfo}
-            onClick={ensurePlayerLevel}
-            disabled={build.playerLevel >= ensuredPlayerLevel}
-          >
-            <ChevronsUp className="h-3.5 w-3.5" />
-          </LevelStepperTooltipButton>
-          <LevelStepperTooltipButton
-            label={barLabels.setToMinimumLevel}
-            info={barLabels.setToMinimumLevelInfo}
-            onClick={() => setPlayerLevel(minimumPlayerLevel)}
-            disabled={build.playerLevel <= minimumPlayerLevel}
-          >
-            <ChevronsDown className="h-3.5 w-3.5" />
-          </LevelStepperTooltipButton>
-          {showEasyModeWarning && <EasyModeLevelWarningIcon message={easyModeLevelWarning} />}
-          <div className="ml-auto shrink-0">
-            <MobileBudgetDropdown
-              barLabels={barLabels}
-              computed={computed}
-              perkPointsInfo={perkPointsInfo}
-              skillPointsInfo={skillPointsInfo}
-              trainingLevelsInfo={trainingLevelsInfo}
-              perkOverBudget={perkOverBudget}
-              skillOverBudget={skillOverBudget}
-              trainingOverBudget={trainingOverBudget}
-            />
-          </div>
-        </div>
-
-        <div className="hidden items-center gap-3 text-xs md:flex md:flex-wrap">
-          <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
-            <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
-              <span>{barLabels.perkPointsRemaining}:</span>
-              <span className={remainingCountClassName(perkOverBudget)}>
-                {computed.perkPointsRemaining}
-              </span>
-              <PointsInfoTooltip text={perkPointsInfo} />
-            </span>
-            <span className="text-[var(--color-muted)]">
-              ({computed.perkPointsSpent} {barLabels.perkPointsSpent})
-            </span>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
-            <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
-              <span>{barLabels.trainingLevelsRemaining}:</span>
-              <span className={remainingCountClassName(trainingOverBudget)}>
-                {computed.trainingLevelsRemaining}
-              </span>
-              <PointsInfoTooltip text={trainingLevelsInfo} />
-            </span>
-            <span className="text-[var(--color-muted)]">
-              ({computed.trainingLevelsUsed} {barLabels.trainingLevelsSpent})
-            </span>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-x-2 whitespace-nowrap">
-            <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
-              <span>{barLabels.skillPointsRemaining}:</span>
-              <span className={remainingCountClassName(skillOverBudget)}>
-                {computed.skillPointsRemaining}
-              </span>
-              <PointsInfoTooltip text={skillPointsInfo} />
-            </span>
-            <span className="text-[var(--color-muted)]">
-              ({computed.skillPointsSpent} {barLabels.skillPointsSpent})
-            </span>
           </div>
         </div>
       </div>
