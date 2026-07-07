@@ -70,19 +70,29 @@ describe("buildEngine economy", () => {
     const spentBefore = computeSkillPointsSpentOnSkill(game, state, "block");
     expect(spentBefore).toBe(15);
 
-    const withTraining = applySkillTrainingRangeChange(
-      game,
-      state,
-      "block",
-      0,
-      1,
-      { ignoreTrainingCap: true },
-    );
+    const withTraining = applySkillTrainingRangeChange(game, state, "block", 0, 1);
 
     expect(computeSkillPointsSpentOnSkill(game, withTraining, "block")).toBe(14);
     expect(getRemainingSkillPoints(game, withTraining)).toBe(
       getRemainingSkillPoints(game, state) + 1,
     );
+  });
+
+  it("allows training above the earned budget and reports negative remaining", () => {
+    let state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 5,
+      skillLevels: { block: 25 },
+    });
+
+    state = applySkillTrainingRangeChange(game, state, "block", 0, 25);
+    state = applySkillTrainingRangeChange(game, state, "block", 1, 5);
+    const computed = computeBuild(game, state);
+
+    expect(computed.trainingLevelsUsed).toBe(30);
+    expect(computed.trainingLevelsRemaining).toBe(-5);
+    expect(state.playerLevel).toBe(5);
   });
 });
 
@@ -117,6 +127,29 @@ describe("ensurePlayerLevelForBuild", () => {
     const withFlag = ensurePlayerLevelForBuild(game, state, { ensureMinimumPlayerLevel: true });
     expect(withFlag.playerLevel).toBe(7);
     expect(getRemainingPerkPoints(game, withFlag)).toBeGreaterThanOrEqual(0);
+  });
+
+  it("keeps level when training exceeds budget unless ensureMinimumPlayerLevel is set", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 5,
+      skillLevels: { block: 30 },
+      skillTrainingRanges: { block: [25, 5, 0, 0] },
+    });
+
+    expect(computeBuild(game, state).trainingLevelsRemaining).toBe(-5);
+    expect(getRequiredPlayerLevel(game, state)).toBeLessThan(
+      getMinimumPlayerLevelForBuild(game, state),
+    );
+
+    const withoutFlag = ensurePlayerLevelForBuild(game, state);
+    expect(withoutFlag.playerLevel).toBe(5);
+    expect(computeBuild(game, withoutFlag).trainingLevelsRemaining).toBe(-5);
+
+    const withFlag = ensurePlayerLevelForBuild(game, state, { ensureMinimumPlayerLevel: true });
+    expect(withFlag.playerLevel).toBe(6);
+    expect(computeBuild(game, withFlag).trainingLevelsRemaining).toBeGreaterThanOrEqual(0);
   });
 });
 
