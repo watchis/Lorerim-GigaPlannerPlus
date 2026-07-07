@@ -35,6 +35,60 @@ function clearProgressLine(stream = process.stderr) {
   stream.write("\r\x1b[2K");
 }
 
+export function formatImportSummary(summary, { elapsed, dryRun = false } = {}) {
+  const lines = [
+    dryRun
+      ? `Dry run complete in ${elapsed} (no files written)`
+      : `Import complete in ${elapsed}`,
+    `Install: ${summary.installDir}`,
+    `MO2 profile: ${summary.profile}`,
+    `Plugins in load order: ${formatCount(summary.pluginsInLoadOrder)}`,
+  ];
+
+  if (summary.pluginsSkippedNonMechanics > 0) {
+    lines.push(
+      `Plugins skipped (asset-only): ${formatCount(summary.pluginsSkippedNonMechanics)}`,
+    );
+  }
+
+  lines.push(
+    `Plugins scanned: ${formatCount(summary.pluginsScanned)}`,
+    `Perk records: ${formatCount(summary.perkRecords)}`,
+    `Perk trees: ${formatCount(summary.perkTrees)}`,
+    `Imported perks: ${formatCount(summary.importedPerks)}`,
+  );
+
+  if (summary.addedPerks > 0) {
+    lines.push(`New perks: ${formatCount(summary.addedPerks)}`);
+  }
+  if (summary.removedPerks > 0) {
+    lines.push(`Removed perks: ${formatCount(summary.removedPerks)}`);
+  }
+
+  lines.push(
+    `AVIF skills: ${formatCount(summary.avifSkills)}`,
+    `AVIF-displayed perks: ${formatCount(summary.avifPerks)}`,
+    `Traits: ${formatCount(summary.traits)}`,
+    `Races: ${formatCount(summary.races)}`,
+    `Birthsigns: ${formatCount(summary.birthsigns)}`,
+    `Deities: ${formatCount(summary.deities)}`,
+  );
+
+  if (summary.modpackVersion) {
+    lines.push(`Modpack version: ${summary.modpackVersion}`);
+  }
+
+  return lines;
+}
+
+export function printImportSummary(progress, summary, options = {}) {
+  const lines = formatImportSummary(summary, options);
+  progress.step("");
+  for (const line of lines) {
+    progress.step(line);
+  }
+}
+
 /**
  * Reporter for long-running import steps. Progress ticks go to stderr so stdout
  * stays clean for machine-readable output at the end.

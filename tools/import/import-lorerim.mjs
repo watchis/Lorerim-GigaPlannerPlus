@@ -5,7 +5,7 @@ import { collectImportPluginData } from "./lib/esp-reader.mjs";
 import { buildIdentityToPerkName } from "./lib/avif-perk-tree.mjs";
 import { buildAvifMembershipIndex } from "./lib/avif-perk-membership.mjs";
 import { buildPerkMetadataIndex } from "./lib/perk-tree-metadata.mjs";
-import { discoverInstall, summarizePluginSources } from "./lib/lorerim-install.mjs";
+import { discoverInstall } from "./lib/lorerim-install.mjs";
 import { filterPluginsForImport } from "./lib/plugin-skip-cache.mjs";
 import {
   transformManifestFromInstall,
@@ -17,7 +17,7 @@ import {
 } from "./lib/lorerim-transform.mjs";
 import { loadJsonIfExists } from "./lib/transform-utils.mjs";
 import { removeStalePerkFiles } from "./lib/import-reset.mjs";
-import { createImportReporter, formatCount } from "./lib/import-progress.mjs";
+import { createImportReporter, formatCount, printImportSummary } from "./lib/import-progress.mjs";
 import { buildDeityEligibilityIndex } from "./lib/deity-eligibility.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -126,8 +126,6 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     );
   }
   progress.step(`Plugins to scan: ${formatCount(plugins.length)}`);
-  const pluginSources = summarizePluginSources(plugins);
-  const fromXEdit = plugins.filter((plugin) => plugin.modName === "LoreRim - xEdit64 Output").length;
 
   progress.phase("Scanning plugin records", 2, 5);
   const {
@@ -157,7 +155,9 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   );
 
   progress.phase("Transforming game data", 3, 5);
-  progress.activity("Building perk trees…");
+  const transformProgress = progress.track("Transform steps", 5);
+
+  transformProgress.tick("Perk trees");
   const { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs } = transformPerkRecords(
     perkRecords,
     perksDir,
@@ -175,20 +175,14 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
         : ""),
   );
 
-  progress.activity("Parsing traits…");
+  transformProgress.tick("Traits");
   const traits = await transformTraitRecords(spellRecords, install, plugins, {
     traitsFormList,
     mastersByPath,
   });
   progress.step(`Traits — ${formatCount(traits.traits.length)} entries`);
 
-  progress.activity(
-    `Merging ${formatCount(raceRecords.length)} race records` +
-      (lorerimRaceRecords.length > 0
-        ? ` with ${formatCount(lorerimRaceRecords.length)} overrides`
-        : "") +
-      "…",
-  );
+  transformProgress.tick("Races");
   const { races, raceEffects } = transformRaceRecords(
     raceRecords,
     spellRecords,
@@ -197,7 +191,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   );
   progress.step(`Races — ${formatCount(races.races.length)} playable races`);
 
-  progress.activity("Birthsigns…");
+  transformProgress.tick("Birthsigns");
   const birthsigns = transformStandingStoneRecords(
     spellRecords,
     mesgRecords,
@@ -205,7 +199,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   );
   progress.step(`Birthsigns — ${formatCount(birthsigns.birthsigns.length)} entries`);
 
-  progress.activity("Deities…");
+  transformProgress.tick("Deities");
   const deityEligibility = await buildDeityEligibilityIndex({
     wintersunPlugins: plugins.filter((plugin) => /Wintersun/i.test(plugin.pluginName)),
     mesgRecords: wintersunMesgRecords,
@@ -222,6 +216,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     boonMagnitudes,
   );
   progress.step(`Deities — ${formatCount(deities.deities.length)} entries`);
+  transformProgress.finish("5 data sets transformed");
 
   progress.phase("Resolving modpack version", 4, 5);
   const existingManifest = loadJsonIfExists(join(dataDir, "manifest.json"));
@@ -247,10 +242,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     pluginsInLoadOrder: allPlugins.length,
     pluginsSkippedNonMechanics: skippedPlugins.length,
     pluginsScanned: plugins.length,
-    pluginsFromXEditOutput: fromXEdit,
-    pluginSourcesTop: pluginSources.slice(0, 8),
     perkRecords: perkRecords.length,
-    raceRecords: raceRecords.length,
     perkTrees: Object.keys(trees).length,
     importedPerks: Object.values(trees).reduce((sum, tree) => sum + tree.perks.length, 0),
     addedPerks: addedPerks.length,
@@ -266,8 +258,10 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
 
   if (options.dryRun) {
     progress.phase("Dry run complete", 5, 5);
-    console.log(`Finished in ${progress.elapsed()} (no files written).`);
-    console.log(JSON.stringify(summary, null, 2));
+    printImportSummary(progress, summary, {
+      elapsed: progress.elapsed(),
+      dryRun: true,
+    });
     return { ok: true, dryRun: true, summary };
   }
 
@@ -299,8 +293,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     progress.step(`Removed stale perk files: ${removedPerkFiles.join(", ")}`);
   }
 
-  console.log(`\nImport complete in ${progress.elapsed()}:`);
-  console.log(JSON.stringify(summary, null, 2));
+  printImportSummary(progress, summary, { elapsed: progress.elapsed() });
 
   return { ok: true, summary };
 }

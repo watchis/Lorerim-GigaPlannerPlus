@@ -80,7 +80,7 @@ export async function filterPluginsForImport(plugins, options = {}) {
         const current = pluginStats(plugin.path);
         if (statsMatch(cached, current)) {
           skipped.push({ ...plugin, reason: "cached-non-mechanics" });
-          classifyProgress?.tick("cached skip");
+          classifyProgress?.tick(plugin.pluginName);
           continue;
         }
       } catch {
@@ -93,13 +93,7 @@ export async function filterPluginsForImport(plugins, options = {}) {
 
   const classifications = await mapConcurrent(candidates, concurrency, async (plugin) => {
     const mechanics = await classify(plugin.path);
-    classifyProgress?.tick(
-      mechanics.hasMechanics
-        ? mechanics.recordTypes.length > 0
-          ? mechanics.recordTypes.join(", ")
-          : "mechanics"
-        : "asset-only",
-    );
+    classifyProgress?.tick(plugin.pluginName);
     return { plugin, mechanics };
   });
 
