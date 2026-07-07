@@ -376,32 +376,6 @@ export function isSkillOverPlayerLevelCap(
   return getStoredSkillLevel(game, state, skillId) > getMaxAllowedSkillLevel(game, state);
 }
 
-function findSkillLevelForPaidPoints(
-  game: GameData,
-  state: BuildState,
-  skillId: string,
-  targetPaid: number,
-): number {
-  const floor = getSkillFloor(game, state, skillId);
-  const maxLevel = getMaxSkillLevel(game);
-
-  if (targetPaid <= 0) {
-    return Math.min(maxLevel, getSkillLevelFromTraining(game, state, skillId));
-  }
-
-  let lo = floor;
-  let hi = maxLevel;
-
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    const paid = computePaidSkillPoints(game, state, skillId, mid);
-    if (paid <= targetPaid) lo = mid;
-    else hi = mid - 1;
-  }
-
-  return lo;
-}
-
 /** Keep per-skill skill-point spend and training ranges when race or skill floors change. */
 export function preserveSkillPointAllocations(
   game: GameData,
@@ -1844,6 +1818,10 @@ function stringArraysEqual(a: string[], b: string[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
+function numberArraysEqual(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
 function stringRecordEqual(a: Record<string, string>, b: Record<string, string>): boolean {
   const aKeys = Object.keys(a);
   const bKeys = Object.keys(b);
@@ -1865,7 +1843,7 @@ function trainingRangesEqual(
   const aKeys = Object.keys(a);
   const bKeys = Object.keys(b);
   if (aKeys.length !== bKeys.length) return false;
-  return aKeys.every((key) => stringArraysEqual(a[key] ?? [], b[key] ?? []));
+  return aKeys.every((key) => numberArraysEqual(a[key] ?? [], b[key] ?? []));
 }
 
 export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {

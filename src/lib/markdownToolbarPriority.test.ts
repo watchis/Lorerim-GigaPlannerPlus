@@ -98,7 +98,13 @@ describe("markdownToolbarPriority", () => {
   });
 
   it("counts dividers only between groups that still have visible items", () => {
-    const hidden = new Set(["blockquote", "codeBlock", "orderedList", "horizontalRule", "image"]);
+    const hidden = new Set<MarkdownToolbarItemId>([
+      "blockquote",
+      "codeBlock",
+      "orderedList",
+      "horizontalRule",
+      "image",
+    ]);
 
     expect(
       countMarkdownToolbarDividers([
@@ -114,13 +120,27 @@ describe("markdownToolbarPriority", () => {
 
     expect(shouldShowMarkdownToolbarDivider(0, hidden)).toBe(true);
     expect(shouldShowMarkdownToolbarDivider(1, hidden)).toBe(true);
-    expect(shouldShowMarkdownToolbarDivider(0, new Set())).toBe(true);
+    expect(shouldShowMarkdownToolbarDivider(0, new Set<MarkdownToolbarItemId>())).toBe(true);
     expect(
       shouldShowMarkdownToolbarDivider(
         0,
-        new Set(["code", "codeBlock", "link", "image", "list", "orderedList", "blockquote", "horizontalRule"]),
+        new Set<MarkdownToolbarItemId>([
+          "code",
+          "codeBlock",
+          "link",
+          "image",
+          "list",
+          "orderedList",
+          "blockquote",
+          "horizontalRule",
+        ]),
       ),
     ).toBe(false);
-    expect(shouldShowMarkdownToolbarDivider(1, new Set(["code", "codeBlock", "link", "image"]))).toBe(false);
+    expect(
+      shouldShowMarkdownToolbarDivider(
+        1,
+        new Set<MarkdownToolbarItemId>(["code", "codeBlock", "link", "image"]),
+      ),
+    ).toBe(false);
   });
 });
