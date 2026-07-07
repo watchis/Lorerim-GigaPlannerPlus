@@ -20,6 +20,18 @@ function truncateEnd(text, maxLen) {
   return `…${value.slice(-(maxLen - 1))}`;
 }
 
+function formatTrackLine(label, bar, current, total, percent, detail, maxWidth) {
+  const prefix = `  ${label} ${bar} ${formatCount(current)}/${formatCount(total)} (${percent}%)`;
+  if (!detail) return truncateEnd(prefix, maxWidth);
+
+  const separator = " — ";
+  const maxDetailLen = Math.max(8, maxWidth - prefix.length - separator.length);
+  if (maxDetailLen <= 8) return truncateEnd(prefix, maxWidth);
+
+  const clippedDetail = truncateEnd(detail, maxDetailLen);
+  return prefix + separator + clippedDetail;
+}
+
 function renderBar(ratio, width = DEFAULT_BAR_WIDTH) {
   const clamped = Math.max(0, Math.min(1, ratio));
   const filled = Math.round(clamped * width);
@@ -105,7 +117,8 @@ export function createImportReporter(options = {}) {
     const clipped = truncateEnd(line, maxWidth);
 
     if (interactive && !forceNewline) {
-      stream.write(`\r${clipped}`);
+      clearProgressLine(stream);
+      stream.write(clipped);
       return;
     }
 
@@ -142,9 +155,9 @@ export function createImportReporter(options = {}) {
       current += 1;
       const ratio = total > 0 ? current / total : 1;
       const percent = Math.floor(ratio * 100);
-      const suffix = detail ? ` — ${detail}` : "";
       const bar = renderBar(ratio);
-      const line = `  ${label} ${bar} ${formatCount(current)}/${formatCount(total)} (${percent}%)${suffix}`;
+      const maxWidth = Math.max(40, (stream.columns ?? 100) - 1);
+      const line = formatTrackLine(label, bar, current, total, percent, detail, maxWidth);
 
       const now = Date.now();
       const isComplete = current >= total;

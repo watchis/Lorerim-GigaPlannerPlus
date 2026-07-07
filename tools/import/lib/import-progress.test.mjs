@@ -147,4 +147,31 @@ function createCaptureStream({ isTTY = false, columns = 100 } = {}) {
   assert.doesNotMatch(getOutput(), /\{/);
 }
 
+{
+  const { stream, getOutput } = createCaptureStream({ isTTY: true, columns: 120 });
+  const progress = createImportReporter({ stream, interactive: true });
+  const scan = progress.track("Classifying plugins", 2);
+
+  scan.tick("ccbgssse050-ba_daedric.esl");
+  scan.tick("Water patch.esp");
+
+  const text = getOutput();
+  assert.match(text, /\x1b\[2K/);
+  assert.match(text, /Water patch\.esp/);
+  assert.doesNotMatch(text, /eslsl/);
+}
+
+{
+  const { stream, getOutput } = createCaptureStream({ isTTY: true, columns: 72 });
+  const progress = createImportReporter({ stream, interactive: true });
+  const scan = progress.track("Classifying plugins", 1);
+
+  scan.tick("ccbgssse067-daedrapaladinarmor.esl");
+
+  const lastWrite = getOutput().split("\x1b[2K").pop();
+  assert.ok(lastWrite.length <= 72);
+  assert.match(lastWrite, /Classifying plugins \[/);
+  assert.match(lastWrite, /1\/1 \(100%\)/);
+}
+
 console.log("import-progress.test.mjs: ok");
