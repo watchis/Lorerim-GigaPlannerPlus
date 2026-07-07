@@ -53,13 +53,14 @@ type CompactBuildPayload = {
   d?: string;
 };
 
-type CompactMilestone = [string, CompactBuildPayload];
+type CompactMilestone = [string, CompactBuildPayload, string?];
 
 interface CompactBuildV2 extends CompactBuildPayload {
   v: typeof BUILD_CODEC_V2;
   mv: string;
   bn?: string;
   dv?: string;
+  dn?: string;
   ms?: CompactMilestone[];
   av?: number;
 }
@@ -67,7 +68,8 @@ interface CompactBuildV2 extends CompactBuildPayload {
 export interface SharedBuildPackage {
   name: string;
   defaultVariantName: string;
-  milestones: Array<{ name: string; build: BuildState }>;
+  defaultVariantNotes?: string;
+  milestones: Array<{ name: string; build: BuildState; notes?: string }>;
   activeVariantIndex: number;
 }
 
@@ -308,11 +310,18 @@ function encodeSavedBuildV2(entry: SavedBuild, registry: BuildCodecRegistry): st
     payload.dv = defaultVariantName;
   }
 
+  if (normalized.defaultVariantNotes?.trim()) {
+    payload.dn = normalized.defaultVariantNotes;
+  }
+
   if (normalized.milestones.length > 0) {
-    payload.ms = normalized.milestones.map((milestone) => [
-      milestone.name,
-      compactPayloadFromBuild(milestone.build, registry),
-    ]);
+    payload.ms = normalized.milestones.map((milestone) => {
+      const compact = compactPayloadFromBuild(milestone.build, registry);
+      if (milestone.notes?.trim()) {
+        return [milestone.name, compact, milestone.notes];
+      }
+      return [milestone.name, compact];
+    });
   }
 
   const activeVariantIndex = getActiveVariantIndex(normalized);
@@ -352,10 +361,14 @@ function decodeBuildV1(code: string): BuildState {
   }));
 }
 
-function sharedPackageFromPayload(payload: CompactBuildV2, registry: BuildCodecRegistry): SharedBuildPackage | undefined {
+function sharedPackageFromPayload(
+  payload: CompactBuildV2,
+  registry: BuildCodecRegistry,
+): SharedBuildPackage | undefined {
   const hasMetadata =
     payload.bn !== undefined ||
     payload.dv !== undefined ||
+    payload.dn !== undefined ||
     (payload.ms?.length ?? 0) > 0 ||
     payload.av !== undefined;
 
@@ -364,10 +377,15 @@ function sharedPackageFromPayload(payload: CompactBuildV2, registry: BuildCodecR
   return {
     name: payload.bn ?? "",
     defaultVariantName: payload.dv ?? DEFAULT_VARIANT_NAME,
-    milestones: (payload.ms ?? []).map(([name, compact]) => ({
-      name,
-      build: buildStateFromCompactPayload(compact, registry),
-    })),
+    defaultVariantNotes: payload.dn ?? "",
+    milestones: (payload.ms ?? []).map((milestone) => {
+      const [name, compact, notes] = milestone;
+      return {
+        name,
+        build: buildStateFromCompactPayload(compact, registry),
+        notes: notes ?? "",
+      };
+    }),
     activeVariantIndex: payload.av ?? 0,
   };
 }

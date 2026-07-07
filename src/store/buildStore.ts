@@ -80,6 +80,7 @@ function createSavedBuildFromPackage(
     createMilestone(
       milestone.name,
       reconcileBuild(game, migrateBuildState(milestone.build)),
+      milestone.notes ?? "",
     ),
   );
   const defaultBuild = reconcileBuild(game, migrateBuildState(decoded.build));
@@ -88,6 +89,7 @@ function createSavedBuildFromPackage(
 
   return normalizeSavedBuild({
     ...createSavedBuild(name, defaultBuild, milestoneEntries, defaultVariantName),
+    defaultVariantNotes: decoded.shared?.defaultVariantNotes ?? "",
     activeMilestoneId,
   });
 }
