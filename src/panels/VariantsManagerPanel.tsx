@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
-import { VariantNotesEditor, VariantNotesToolbar, useVariantNotesTextareaRef } from "@/components/VariantNotesEditor";
+import { VariantNotesEditor, useVariantNotesTextareaRef } from "@/components/VariantNotesEditor";
 import { VariantNotesMarkdown } from "@/components/VariantNotesMarkdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -531,8 +531,6 @@ export function VariantsManagerPanel() {
   const backupExtension = allLabels.panels["build-library"].backupExtension;
 
   const notesVariant = variants[notesVariantIndex] ?? null;
-  const notesVariantId = notesVariant?.id ?? null;
-  const persistedNotes = notesVariant ? getVariantNotes(entry, notesVariantId) : "";
 
   useEffect(() => {
     if (activePane !== "notes") return;
@@ -695,12 +693,7 @@ export function VariantsManagerPanel() {
     setActivePane("manage");
   };
 
-  const resetNotesDraft = () => {
-    if (!notesVariant) return;
-    setNotesDraft(getVariantNotes(entry, notesVariantId));
-  };
-
-  const saveNotesDraft = () => {
+  const finishNotesEditing = () => {
     const refreshedEntry = getActiveSavedEntry();
     if (!refreshedEntry) return;
 
@@ -889,56 +882,35 @@ export function VariantsManagerPanel() {
           </>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4">
-            <div className="flex min-w-0 flex-col gap-2 px-1">
-              {notesEditing && (
-                <VariantNotesToolbar
-                  value={notesVariant ? notesDraft : ""}
-                  onChange={setNotesDraft}
+            <div className="flex shrink-0 items-center justify-end px-1">
+              {notesEditing ? (
+                <Button
+                  type="button"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
                   disabled={!notesVariant}
-                  textareaRef={notesTextareaRef}
-                  framed
-                />
+                  onClick={finishNotesEditing}
+                  aria-label={labels["doneNotes"] ?? "Done editing"}
+                  title={labels["doneNotes"] ?? "Done editing"}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  disabled={!notesVariant}
+                  onClick={() => setNotesEditing(true)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  {labels["editNotes"] ?? "Edit"}
+                </Button>
               )}
-              <div className="flex shrink-0 items-center justify-end gap-2">
-                {notesEditing ? (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      disabled={!notesVariant || notesDraft === persistedNotes}
-                      onClick={resetNotesDraft}
-                    >
-                      {labels["resetNotes"] ?? "Reset"}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-8"
-                      disabled={!notesVariant}
-                      onClick={saveNotesDraft}
-                    >
-                      {labels["saveNotes"] ?? "Save"}
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 gap-1.5"
-                    disabled={!notesVariant}
-                    onClick={() => setNotesEditing(true)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    {labels["editNotes"] ?? "Edit"}
-                  </Button>
-                )}
-              </div>
             </div>
 
-            <div className="mt-3 min-h-0 flex-1" key={notesVariantIndex}>
+            <div className="mt-2 min-h-0 flex-1" key={notesVariantIndex}>
               {notesEditing ? (
                 <VariantNotesEditor
                   key={`edit-${notesVariantIndex}`}
@@ -946,7 +918,7 @@ export function VariantsManagerPanel() {
                   onChange={setNotesDraft}
                   placeholder={notesPlaceholder}
                   disabled={!notesVariant}
-                  showToolbar={false}
+                  showToolbar
                   textareaRef={notesTextareaRef}
                 />
               ) : (
@@ -962,11 +934,6 @@ export function VariantsManagerPanel() {
                     )}
                   </div>
                 </ScrollArea>
-              )}
-              {notesVariant && notesEditing && notesDraft !== persistedNotes && (
-                <p className="mt-1 px-1 text-[11px] text-[var(--color-muted)]">
-                  {labels["notesUnsavedHint"] ?? "Unsaved changes"}
-                </p>
               )}
             </div>
           </div>

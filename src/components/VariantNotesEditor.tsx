@@ -18,7 +18,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +27,7 @@ import {
   applyMarkdownImage,
   applyMarkdownLinePrefix,
   applyMarkdownLink,
+  applyMarkdownNormalText,
   applyMarkdownOrderedList,
   applyMarkdownWrap,
   type TextEditResult,
@@ -46,6 +46,7 @@ type MarkdownFormat =
   | "orderedList"
   | "blockquote"
   | "horizontalRule"
+  | "normalText"
   | `heading-${1 | 2 | 3 | 4 | 5 | 6}`;
 
 interface VariantNotesEditorProps {
@@ -59,7 +60,7 @@ interface VariantNotesEditorProps {
 }
 
 function ToolbarDivider() {
-  return <div className="mx-0.5 h-5 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
+  return <div className="mx-0.5 h-4 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
 }
 
 function ToolbarButton({
@@ -78,7 +79,7 @@ function ToolbarButton({
       type="button"
       variant="ghost"
       size="icon"
-      className="h-9 w-9 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)] sm:h-8 sm:w-8"
+      className="h-7 w-7 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
@@ -124,6 +125,8 @@ function applyFormatToNotes(
       return applyMarkdownLinePrefix(value, selection, "> ");
     case "horizontalRule":
       return applyMarkdownHorizontalRule(value, selection);
+    case "normalText":
+      return applyMarkdownNormalText(value, selection);
     case "heading-1":
       return applyMarkdownHeading(value, selection, 1);
     case "heading-2":
@@ -165,7 +168,11 @@ function VariantNotesToolbarControls({
   };
 
   const applyHeading = (level: string) => {
-    applyFormat(`heading-${Number(level) as 1 | 2 | 3 | 4 | 5 | 6}`);
+    if (level === "normal") {
+      applyFormat("normalText");
+    } else {
+      applyFormat(`heading-${Number(level) as 1 | 2 | 3 | 4 | 5 | 6}`);
+    }
     setHeadingSelectKey((current) => current + 1);
   };
 
@@ -173,20 +180,18 @@ function VariantNotesToolbarControls({
     <>
       <Select key={headingSelectKey} onValueChange={applyHeading} disabled={disabled}>
         <SelectTrigger
-          className="h-9 w-9 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)] sm:h-8 sm:w-[7.25rem] sm:justify-between sm:gap-1.5 sm:px-2"
-          aria-label="Heading"
-          title="Heading"
+          className="h-7 w-7 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)]"
+          aria-label="Text style"
+          title="Text style"
         >
-          <Heading className="h-3.5 w-3.5 shrink-0" />
-          <span className="hidden min-w-0 sm:inline-flex sm:flex-1">
-            <SelectValue placeholder="Heading" />
-          </span>
+          <Heading className="h-3 w-3 shrink-0" />
         </SelectTrigger>
         <SelectContent
           position="popper"
           sideOffset={5}
           className="z-[80] max-h-[min(50vh,20rem)] min-w-[8rem] text-sm"
         >
+          <SelectItem value="normal">Normal text</SelectItem>
           <SelectItem value="1">Heading 1</SelectItem>
           <SelectItem value="2">Heading 2</SelectItem>
           <SelectItem value="3">Heading 3</SelectItem>
@@ -199,62 +204,62 @@ function VariantNotesToolbarControls({
       <ToolbarDivider />
 
       <ToolbarButton label="Bold" onClick={() => applyFormat("bold")} disabled={disabled}>
-        <Bold className="h-3.5 w-3.5" />
+        <Bold className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton label="Italic" onClick={() => applyFormat("italic")} disabled={disabled}>
-        <Italic className="h-3.5 w-3.5" />
+        <Italic className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton
         label="Bold and italic"
         onClick={() => applyFormat("boldItalic")}
         disabled={disabled}
       >
-        <span className="text-xs font-bold italic">B</span>
+        <span className="text-[10px] font-bold italic">B</span>
       </ToolbarButton>
       <ToolbarButton
         label="Strikethrough"
         onClick={() => applyFormat("strikethrough")}
         disabled={disabled}
       >
-        <Strikethrough className="h-3.5 w-3.5" />
+        <Strikethrough className="h-3 w-3" />
       </ToolbarButton>
 
       <ToolbarDivider />
 
       <ToolbarButton label="Inline code" onClick={() => applyFormat("code")} disabled={disabled}>
-        <Code className="h-3.5 w-3.5" />
+        <Code className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton label="Code block" onClick={() => applyFormat("codeBlock")} disabled={disabled}>
-        <span className="font-mono text-[10px]">{"{ }"}</span>
+        <span className="font-mono text-[9px]">{"{ }"}</span>
       </ToolbarButton>
       <ToolbarButton label="Link" onClick={() => applyFormat("link")} disabled={disabled}>
-        <Link className="h-3.5 w-3.5" />
+        <Link className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton label="Image" onClick={() => applyFormat("image")} disabled={disabled}>
-        <Image className="h-3.5 w-3.5" />
+        <Image className="h-3 w-3" />
       </ToolbarButton>
 
       <ToolbarDivider />
 
       <ToolbarButton label="Bullet list" onClick={() => applyFormat("list")} disabled={disabled}>
-        <List className="h-3.5 w-3.5" />
+        <List className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton
         label="Numbered list"
         onClick={() => applyFormat("orderedList")}
         disabled={disabled}
       >
-        <ListOrdered className="h-3.5 w-3.5" />
+        <ListOrdered className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton label="Blockquote" onClick={() => applyFormat("blockquote")} disabled={disabled}>
-        <Quote className="h-3.5 w-3.5" />
+        <Quote className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton
         label="Horizontal rule"
         onClick={() => applyFormat("horizontalRule")}
         disabled={disabled}
       >
-        <Minus className="h-3.5 w-3.5" />
+        <Minus className="h-3 w-3" />
       </ToolbarButton>
     </>
   );
@@ -276,23 +281,20 @@ export function VariantNotesToolbar({
   framed?: boolean;
 }) {
   return (
-    <div className={cn("w-full min-w-0", className)}>
-      <div
-        className={cn(
-          "notes-markdown-toolbar-scroll overflow-x-auto overscroll-x-contain",
-          framed &&
-            "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40",
-        )}
-      >
-        <div className="flex w-max items-center gap-0.5 px-1 py-1">
-          <VariantNotesToolbarControls
-            value={value}
-            onChange={onChange}
-            disabled={disabled}
-            textareaRef={textareaRef}
-          />
-        </div>
-      </div>
+    <div
+      className={cn(
+        "flex w-full min-w-0 flex-wrap items-center gap-0.5",
+        framed &&
+          "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-0.5",
+        className,
+      )}
+    >
+      <VariantNotesToolbarControls
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        textareaRef={textareaRef}
+      />
     </div>
   );
 }
@@ -310,7 +312,7 @@ export function VariantNotesEditor({
   const textareaRef = externalTextareaRef ?? internalTextareaRef;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2">
+    <div className="flex h-full min-h-0 flex-col gap-1.5">
       {showToolbar && (
         <div ref={toolbarRef}>
           <VariantNotesToolbar

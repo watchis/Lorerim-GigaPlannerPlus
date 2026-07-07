@@ -6,6 +6,7 @@ import {
   applyMarkdownImage,
   applyMarkdownLinePrefix,
   applyMarkdownLink,
+  applyMarkdownNormalText,
   applyMarkdownOrderedList,
   applyMarkdownWrap,
 } from "@/lib/markdownFormatting";
@@ -69,6 +70,12 @@ describe("markdownFormatting", () => {
     expect(result.value).toBe("# Old title");
     expect(result.selectionStart).toBe(0);
     expect(result.selectionEnd).toBe(11);
+  });
+
+  it("removes heading prefixes for normal text", () => {
+    const result = applyMarkdownNormalText("## Heading\n### Another", { start: 0, end: 20 });
+
+    expect(result.value).toBe("Heading\nAnother");
   });
 
   it("applies headings to every line in the selection", () => {

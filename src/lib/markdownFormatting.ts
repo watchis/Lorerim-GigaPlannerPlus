@@ -156,6 +156,25 @@ export function applyMarkdownHeading(
   };
 }
 
+export function applyMarkdownNormalText(
+  text: string,
+  selection: TextSelection,
+): TextEditResult {
+  const { rangeStart, rangeEnd } = selectedLineBounds(text, selection);
+  const block = text.slice(rangeStart, rangeEnd);
+  const lines = block.split("\n");
+  const updated = lines
+    .map((line) => (line.trim() === "" ? line : line.replace(HEADING_PREFIX_PATTERN, "")))
+    .join("\n");
+  const value = `${text.slice(0, rangeStart)}${updated}${text.slice(rangeEnd)}`;
+
+  return {
+    value,
+    selectionStart: rangeStart,
+    selectionEnd: rangeStart + updated.length,
+  };
+}
+
 export function applyMarkdownCodeBlock(
   text: string,
   selection: TextSelection,
