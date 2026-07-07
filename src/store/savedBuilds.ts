@@ -24,8 +24,10 @@ export interface BuildLibraryState {
   activeBuildId: string;
 }
 
-const LEGACY_STORAGE_KEY = "lorerim-build";
-const LIBRARY_STORAGE_KEY = "lorerim-build-library";
+export const LEGACY_STORAGE_KEY = "lorerim-build";
+export const LIBRARY_STORAGE_KEY = "lorerim-build-library";
+
+export const APP_STORAGE_KEYS = [LIBRARY_STORAGE_KEY, LEGACY_STORAGE_KEY] as const;
 
 export function createBuildId(): string {
   return crypto.randomUUID();
@@ -337,5 +339,3 @@ export function createInitialLibrary(): BuildLibraryState {
     activeBuildId: entry.id,
   };
 }
-
-export { LIBRARY_STORAGE_KEY };

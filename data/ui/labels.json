@@ -312,7 +312,11 @@
       "copiedLink": "Link copied!",
       "exportBackup": "Export backup",
       "exportActive": "Active build",
-      "exportAll": "Full library"
+      "exportAll": "Full library",
+      "storageMonitorTitle": "Browser storage",
+      "storageUsage": "{used} / {quota}",
+      "storageUsageWarning": "Storage is getting full. Export or delete builds to free space.",
+      "storageUsageCritical": "Storage is nearly full. Export or delete builds before saving more."
     },
     "build-summary": {
       "title": "Build Summary",

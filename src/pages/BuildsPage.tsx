@@ -20,6 +20,7 @@ import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearc
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BugReportButton } from "@/components/BugReportButton";
+import { StorageMonitor } from "@/components/StorageMonitor";
 import type { GameData } from "@/data/schemas";
 import {
   decodeBuildPackage,
@@ -831,6 +832,7 @@ export function BuildsPage() {
           <p className="mt-1.5 text-sm text-[var(--color-muted)]">
             {formatLabel(labels.buildCount, { count: savedBuilds.length })}
           </p>
+          <StorageMonitor className="mt-3 max-w-md" />
         </div>
         <Button asChild variant="outline" className="w-full shrink-0 sm:w-auto sm:self-start">
           <Link to="/planner">
