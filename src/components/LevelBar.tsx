@@ -463,70 +463,83 @@ export function LevelBar() {
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-start sm:gap-3">
-          <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
-            {barLabels.playerLevel}
-          </span>
-          <div className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 md:h-7 md:w-7"
-              onClick={() => setPlayerLevel(build.playerLevel - 1)}
-              disabled={build.playerLevel <= baseLevel}
+        <div className="flex w-full min-w-0 flex-col gap-2 md:w-auto">
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-start sm:gap-3">
+            <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+              {barLabels.playerLevel}
+            </span>
+            <div
+              className={cn(
+                "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
+                showEasyModeWarning
+                  ? "border-[var(--color-accent)]"
+                  : "border-[var(--color-border)]",
+              )}
             >
-              <Minus className="h-3.5 w-3.5" />
-            </Button>
-            <NumericLevelInput
-              value={build.playerLevel}
-              min={baseLevel}
-              max={maxPlayerLevel}
-              onCommit={setPlayerLevel}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 md:h-7 md:w-7"
+                onClick={() => setPlayerLevel(build.playerLevel - 1)}
+                disabled={build.playerLevel <= baseLevel}
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </Button>
+              <NumericLevelInput
+                value={build.playerLevel}
+                min={baseLevel}
+                max={maxPlayerLevel}
+                onCommit={setPlayerLevel}
+                className="w-12 sm:w-14"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 md:h-7 md:w-7"
+                onClick={() => setPlayerLevel(build.playerLevel + 1)}
+                disabled={build.playerLevel >= maxPlayerLevel}
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <LevelStepperTooltipButton
+              label={barLabels.ensurePlayerLevel}
+              info={barLabels.ensurePlayerLevelInfo}
+              onClick={ensurePlayerLevel}
+              disabled={build.playerLevel >= ensuredPlayerLevel}
+            >
+              <ChevronsUp className="h-3.5 w-3.5" />
+            </LevelStepperTooltipButton>
+            <LevelStepperTooltipButton
+              label={barLabels.setToMinimumLevel}
+              info={barLabels.setToMinimumLevelInfo}
+              onClick={() => setPlayerLevel(minimumPlayerLevel)}
+              disabled={build.playerLevel <= minimumPlayerLevel}
+            >
+              <ChevronsDown className="h-3.5 w-3.5" />
+            </LevelStepperTooltipButton>
+
+            <MobileBudgetDropdown
+              barLabels={barLabels}
+              computed={computed}
+              perkPointsInfo={perkPointsInfo}
+              skillPointsInfo={skillPointsInfo}
+              trainingLevelsInfo={trainingLevelsInfo}
+              perkOverBudget={perkOverBudget}
+              skillOverBudget={skillOverBudget}
+              trainingOverBudget={trainingOverBudget}
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 md:h-7 md:w-7"
-              onClick={() => setPlayerLevel(build.playerLevel + 1)}
-              disabled={build.playerLevel >= maxPlayerLevel}
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </Button>
           </div>
-          <LevelStepperTooltipButton
-            label={barLabels.ensurePlayerLevel}
-            info={barLabels.ensurePlayerLevelInfo}
-            onClick={ensurePlayerLevel}
-            disabled={build.playerLevel >= ensuredPlayerLevel}
-          >
-            <ChevronsUp className="h-3.5 w-3.5" />
-          </LevelStepperTooltipButton>
-          <LevelStepperTooltipButton
-            label={barLabels.setToMinimumLevel}
-            info={barLabels.setToMinimumLevelInfo}
-            onClick={() => setPlayerLevel(minimumPlayerLevel)}
-            disabled={build.playerLevel <= minimumPlayerLevel}
-          >
-            <ChevronsDown className="h-3.5 w-3.5" />
-          </LevelStepperTooltipButton>
 
           {showEasyModeWarning && (
-            <span className="inline-flex max-w-[14rem] items-start gap-1 text-[10px] leading-snug text-[var(--color-accent)] sm:max-w-none">
-              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
-              <span>{easyModeLevelWarning}</span>
-            </span>
+            <div
+              className="flex w-full min-w-0 items-start gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5 px-2.5 py-1.5 text-[11px] leading-snug text-[var(--color-accent)] sm:text-xs"
+              role="status"
+            >
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="min-w-0">{easyModeLevelWarning}</span>
+            </div>
           )}
-
-          <MobileBudgetDropdown
-            barLabels={barLabels}
-            computed={computed}
-            perkPointsInfo={perkPointsInfo}
-            skillPointsInfo={skillPointsInfo}
-            trainingLevelsInfo={trainingLevelsInfo}
-            perkOverBudget={perkOverBudget}
-            skillOverBudget={skillOverBudget}
-            trainingOverBudget={trainingOverBudget}
-          />
         </div>
 
         <div className="hidden items-center gap-3 text-xs md:flex md:flex-wrap">
