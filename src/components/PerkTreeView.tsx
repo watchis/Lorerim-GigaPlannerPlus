@@ -571,13 +571,6 @@ function PerkNode({
     [],
   );
 
-  const handleDoubleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    if (touchInteractionRef.current) return;
-    handleForceAllocate(true);
-    showTouchTooltip();
-  };
-
   const isPartialRank =
     isSelected && stackRank !== null && stackRank.current < stackRank.total;
 
@@ -749,11 +742,10 @@ function PerkNode({
         type="button"
         data-perk-node
         aria-label={perk.name}
-        onMouseDown={handleMouseDown}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        onDoubleClick={handleDoubleClick}
+        onDoubleClick={(event) => event.preventDefault()}
         onContextMenu={(event) => event.preventDefault()}
         className="group relative touch-manipulation border-0 bg-transparent p-0"
       >
