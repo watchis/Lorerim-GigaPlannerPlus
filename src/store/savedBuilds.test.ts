@@ -45,13 +45,21 @@ describe("imported build markers", () => {
     expect(entry.importedAt).toBeTypeOf("number");
   });
 
-  it("clears the imported marker when build content is touched", () => {
+  it("clears the imported marker when build content changes", () => {
     const entry = markSavedBuildImported(createSavedBuild("Imported", build));
     const edited = touchSavedBuild(entry, { ...build, description: "Edited locally" });
 
     expect(isSavedBuildImported(edited)).toBe(false);
     expect(edited.importedAt).toBeNull();
     expect(edited.build.description).toBe("Edited locally");
+  });
+
+  it("keeps the imported marker when build content is unchanged", () => {
+    const entry = markSavedBuildImported(createSavedBuild("Imported", build));
+    const synced = touchSavedBuild(entry, build);
+
+    expect(synced).toBe(entry);
+    expect(isSavedBuildImported(synced)).toBe(true);
   });
 
   it("acknowledgeSavedBuildEdits is a no-op for non-imported builds", () => {

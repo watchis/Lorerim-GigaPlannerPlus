@@ -20,7 +20,7 @@ vi.stubGlobal("localStorage", localStorageMock);
 
 import { decodeBuildPackage, encodeBuild, encodeSavedBuild } from "@/engine/buildCodec";
 import { createTestBuildState, getTestAppData } from "@/test/helpers";
-import { createSavedBuild, isSavedBuildImported } from "@/store/savedBuilds";
+import { createSavedBuild, isSavedBuildImported, markSavedBuildImported } from "@/store/savedBuilds";
 
 type BuildStoreModule = typeof import("@/store/buildStore");
 let useBuildStore: BuildStoreModule["useBuildStore"];
@@ -160,5 +160,31 @@ describe("buildStore shared build import", () => {
       .getState()
       .savedBuilds.find((entry) => entry.id === useBuildStore.getState().activeBuildId);
     expect(isSavedBuildImported(activeEntry!)).toBe(false);
+  });
+
+  it("keeps the imported marker when switching away and back without edits", () => {
+    const localBuild = createTestBuildState({
+      raceId: "nord",
+      description: "Local build",
+    });
+    const localEntry = createSavedBuild("Local Build", localBuild);
+    const importedBuild = createTestBuildState({
+      raceId: "breton",
+      description: "Imported build",
+    });
+    const importedEntry = markSavedBuildImported(createSavedBuild("Imported Build", importedBuild));
+    const importedId = importedEntry.id;
+
+    useBuildStore.setState({
+      savedBuilds: [localEntry, importedEntry],
+      activeBuildId: importedId,
+      build: importedBuild,
+    });
+
+    useBuildStore.getState().selectSavedBuildSlot(localEntry.id);
+    useBuildStore.getState().selectSavedBuildSlot(importedId);
+
+    const importedSlot = useBuildStore.getState().savedBuilds.find((entry) => entry.id === importedId);
+    expect(isSavedBuildImported(importedSlot!)).toBe(true);
   });
 });

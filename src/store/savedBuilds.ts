@@ -1,5 +1,5 @@
 import type { BuildState } from "@/engine/buildEngine";
-import { createInitialBuildState, migrateBuildState } from "@/engine/buildEngine";
+import { areBuildStatesEqual, createInitialBuildState, migrateBuildState } from "@/engine/buildEngine";
 
 export interface BuildMilestone {
   id: string;
@@ -294,6 +294,10 @@ export function uniqueBuildName(desiredName: string, builds: SavedBuild[]): stri
 }
 
 export function touchSavedBuild(saved: SavedBuild, build: BuildState): SavedBuild {
+  if (areBuildStatesEqual(saved.build, build)) {
+    return saved;
+  }
+
   return acknowledgeSavedBuildEdits({ ...saved, build, updatedAt: Date.now() });
 }
 
@@ -307,6 +311,13 @@ export function updateSavedBuildInList(
 
     const normalized = normalizeSavedBuild(entry);
     if (normalized.activeMilestoneId) {
+      const activeMilestone = normalized.milestones.find(
+        (milestone) => milestone.id === normalized.activeMilestoneId,
+      );
+      if (activeMilestone && areBuildStatesEqual(activeMilestone.build, build)) {
+        return normalized;
+      }
+
       return acknowledgeSavedBuildEdits({
         ...normalized,
         milestones: normalized.milestones.map((milestone) =>
