@@ -138,6 +138,54 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
     ? (panelRegistry[activePanelId] as ComponentType | undefined)
     : undefined;
 
+  const centerIndex = panelIds.indexOf(centerPanelId);
+  const sideShellClass =
+    "flex min-w-0 flex-1 rounded-full border border-[var(--color-border)]/60 bg-[var(--color-surface)] px-2 py-1 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-xl";
+  const leftTabs = panelIds
+    .map((panelId, index) => ({ panelId, index }))
+    .filter(({ index }) => index < centerIndex);
+  const rightTabs = panelIds
+    .map((panelId, index) => ({ panelId, index }))
+    .filter(({ index }) => index > centerIndex);
+  const centerNav = PANE_NAV.find((item) => item.panelId === centerPanelId);
+  const CenterIcon = centerNav?.Icon ?? LayoutGrid;
+  const centerAriaLabel = centerPanelId ? getPaneLabel(centerPanelId) : "";
+
+  const renderSideTab = (panelId: string, index: number) => {
+    const nav = PANE_NAV.find((item) => item.panelId === panelId);
+    const Icon = nav?.Icon ?? LayoutGrid;
+    const isActive = index === activeIndex;
+    const ariaLabel = getPaneLabel(panelId);
+    const shortLabel = getPaneShortLabel(panelId);
+
+    return (
+      <button
+        key={panelId}
+        id={`planner-swipe-tab-${panelId}`}
+        type="button"
+        role="tab"
+        aria-selected={isActive}
+        aria-label={ariaLabel}
+        aria-controls={`planner-swipe-pane-${panelId}`}
+        onClick={() => goToPane(index)}
+        className={cn(
+          "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-2 py-1 transition-colors duration-200",
+          isActive ? "text-[var(--color-accent)]" : "text-[var(--color-muted)]",
+        )}
+      >
+        <Icon className="h-4 w-4 shrink-0" aria-hidden />
+        <span
+          className={cn(
+            "max-w-full truncate text-[9px] font-medium leading-none tracking-wide",
+            isActive ? "text-[var(--color-accent)]" : "text-[var(--color-muted)]",
+          )}
+        >
+          {shortLabel}
+        </span>
+      </button>
+    );
+  };
+
   return (
     <GoToSwipePaneContext.Provider value={goToPane}>
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -166,69 +214,40 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
           role="tablist"
           aria-label="Planner sections"
         >
-          <div className="pointer-events-auto mx-auto flex max-w-sm items-end justify-between gap-1 rounded-full border border-[var(--color-border)]/60 bg-[var(--color-surface)]/88 px-2 py-1 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-xl">
-            {panelIds.map((panelId, index) => {
-              const nav = PANE_NAV.find((item) => item.panelId === panelId);
-              const Icon = nav?.Icon ?? LayoutGrid;
-              const isActive = index === activeIndex;
-              const ariaLabel = getPaneLabel(panelId);
-              const shortLabel = getPaneShortLabel(panelId);
-              const isCenter = panelId === centerPanelId;
+          <div className="pointer-events-auto mx-auto flex max-w-sm items-end gap-2">
+            {leftTabs.length > 0 && (
+              <div className={sideShellClass}>
+                {leftTabs.map(({ panelId, index }) => renderSideTab(panelId, index))}
+              </div>
+            )}
 
-              if (isCenter) {
-                return (
-                  <button
-                    key={panelId}
-                    id={`planner-swipe-tab-${panelId}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={isCharacterOverviewActive}
-                    aria-label={ariaLabel}
-                    aria-controls={`planner-swipe-pane-${panelId}`}
-                    onClick={goToCharacterOverview}
-                    className={cn(
-                      "relative z-10 -mt-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200",
-                      isCharacterOverviewActive
-                        ? "border-[var(--color-accent)] bg-[var(--color-surface)] text-[var(--color-accent)] shadow-[0_6px_20px_rgba(0,0,0,0.4)]"
-                        : isCenterPaneSubView
-                          ? "border-[var(--color-perk-partial)] bg-[var(--color-perk-partial)]/30 text-[var(--color-perk-partial)] shadow-[0_0_12px_rgba(78,179,245,0.4)]"
-                          : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)] shadow-[0_6px_20px_rgba(0,0,0,0.4)]",
-                    )}
-                  >
-                    <Icon className="h-6 w-6" aria-hidden />
-                  </button>
-                );
-              }
+            {centerPanelId && (
+              <button
+                id={`planner-swipe-tab-${centerPanelId}`}
+                type="button"
+                role="tab"
+                aria-selected={isCharacterOverviewActive}
+                aria-label={centerAriaLabel}
+                aria-controls={`planner-swipe-pane-${centerPanelId}`}
+                onClick={goToCharacterOverview}
+                className={cn(
+                  "flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-[var(--color-surface)] transition-colors duration-200",
+                  isCharacterOverviewActive
+                    ? "border-[var(--color-accent)] text-[var(--color-accent)] shadow-[0_6px_20px_rgba(0,0,0,0.4)]"
+                    : isCenterPaneSubView
+                      ? "border-[var(--color-perk-partial)] text-[var(--color-perk-partial)] shadow-[0_0_12px_rgba(78,179,245,0.4)] ring-2 ring-[var(--color-perk-partial)]/35"
+                      : "border-[var(--color-border)] text-[var(--color-muted)] shadow-[0_6px_20px_rgba(0,0,0,0.4)]",
+                )}
+              >
+                <CenterIcon className="h-6 w-6" aria-hidden />
+              </button>
+            )}
 
-              return (
-                <button
-                  key={panelId}
-                  id={`planner-swipe-tab-${panelId}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-label={ariaLabel}
-                  aria-controls={`planner-swipe-pane-${panelId}`}
-                  onClick={() => goToPane(index)}
-                  className={cn(
-                    "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-2 py-1 transition-colors duration-200",
-                    isActive
-                      ? "text-[var(--color-accent)]"
-                      : "text-[var(--color-muted)]",
-                  )}
-                >
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                  <span
-                    className={cn(
-                      "max-w-full truncate text-[9px] font-medium leading-none tracking-wide",
-                      isActive ? "text-[var(--color-accent)]" : "text-[var(--color-muted)]",
-                    )}
-                  >
-                    {shortLabel}
-                  </span>
-                </button>
-              );
-            })}
+            {rightTabs.length > 0 && (
+              <div className={sideShellClass}>
+                {rightTabs.map(({ panelId, index }) => renderSideTab(panelId, index))}
+              </div>
+            )}
           </div>
         </nav>
       </div>
