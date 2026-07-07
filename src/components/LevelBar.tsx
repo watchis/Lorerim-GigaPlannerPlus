@@ -177,19 +177,23 @@ function BuildIssuesTooltipContent({ messages }: { messages: string[] }) {
 }
 
 function BuildIssuesBanner({
-  summary,
   mobileSummary,
+  desktopSummary,
   messages,
 }: {
-  summary: string;
   mobileSummary: string;
+  desktopSummary: string;
   messages: string[];
 }) {
   const isMobile = useMobileLayout();
   const supportsHover = useSupportsHover();
   const [touchOpen, setTouchOpen] = useState(false);
   const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
-  const displaySummary = isMobile ? mobileSummary : summary;
+  const displaySummary = isMobile
+    ? mobileSummary
+    : messages.length > 1
+      ? desktopSummary
+      : (messages[0] ?? "");
   const showTooltip = isMobile || messages.length > 1;
 
   const bannerClassName = cn(
@@ -729,10 +733,6 @@ function LevelBarContent({
     ...skillReqConflictMessages,
     ...formatPlayerLevelWarningMessages(barLabels, warnings, build.playerLevel),
   ];
-  const alertSummary =
-    alertMessages.length === 1
-      ? alertMessages[0]
-      : formatLabel(barLabels.buildIssuesAlert, { playerLevel: build.playerLevel });
   const showEasyModeWarning = build.playerLevel > standardMaxPlayerLevel;
   const easyModeLevelWarning = formatLabel(barLabels.easyModeLevelWarning, {
     standardMax: standardMaxPlayerLevel,
@@ -840,8 +840,8 @@ function LevelBarContent({
 
       {alertMessages.length > 0 && (
         <BuildIssuesBanner
-          summary={alertSummary}
           mobileSummary={barLabels.buildIssuesAlertMobile}
+          desktopSummary={barLabels.buildIssuesAlertDesktop}
           messages={alertMessages}
         />
       )}
