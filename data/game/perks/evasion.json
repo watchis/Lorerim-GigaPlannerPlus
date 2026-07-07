@@ -2,7 +2,7 @@
   "skillId": "evasion",
   "skillName": "Evasion",
   "grid": {
-    "width": 16,
+    "width": 21,
     "height": 34
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Agility",
       "skillReq": 0,
       "position": {
-        "x": 8,
+        "x": 10,
         "y": 33
       },
       "prerequisites": [],
@@ -31,7 +31,7 @@
       "name": "Light Armor Training",
       "skillReq": 25,
       "position": {
-        "x": 7,
+        "x": 9,
         "y": 22
       },
       "prerequisites": [
@@ -46,7 +46,7 @@
       "name": "Combat Reflexes",
       "skillReq": 75,
       "position": {
-        "x": 12,
+        "x": 16,
         "y": 4
       },
       "prerequisites": [
@@ -62,7 +62,7 @@
       "name": "Meteoric Reflexes",
       "skillReq": 100,
       "position": {
-        "x": 8,
+        "x": 10,
         "y": 0
       },
       "prerequisites": [
@@ -78,7 +78,7 @@
       "name": "Dexterity",
       "skillReq": 50,
       "position": {
-        "x": 1,
+        "x": 2,
         "y": 12
       },
       "prerequisites": [
@@ -93,7 +93,7 @@
       "name": "Wind Walker",
       "skillReq": 75,
       "position": {
-        "x": 3,
+        "x": 5,
         "y": 6
       },
       "prerequisites": [
@@ -115,7 +115,7 @@
       "name": "Vexing Flanker",
       "skillReq": 50,
       "position": {
-        "x": 14,
+        "x": 18,
         "y": 12
       },
       "prerequisites": [
@@ -130,7 +130,7 @@
       "name": "Dodge",
       "skillReq": 25,
       "position": {
-        "x": 14,
+        "x": 18,
         "y": 24
       },
       "prerequisites": [
@@ -145,7 +145,7 @@
       "name": "Agile Spellcasting",
       "skillReq": 25,
       "position": {
-        "x": 0,
+        "x": 1,
         "y": 19
       },
       "prerequisites": [
@@ -160,7 +160,7 @@
       "name": "Agile Spellcasting",
       "skillReq": 50,
       "position": {
-        "x": 0,
+        "x": 1,
         "y": 19
       },
       "prerequisites": [
@@ -212,7 +212,7 @@
       "name": "Athletics",
       "skillReq": 25,
       "position": {
-        "x": 6,
+        "x": 8,
         "y": 13
       },
       "prerequisites": [
@@ -227,7 +227,7 @@
       "name": "Athletics",
       "skillReq": 50,
       "position": {
-        "x": 6,
+        "x": 8,
         "y": 13
       },
       "prerequisites": [
@@ -242,7 +242,7 @@
       "name": "Annoying Mosquitoes",
       "skillReq": 40,
       "position": {
-        "x": 7,
+        "x": 10,
         "y": 7
       },
       "prerequisites": [
@@ -257,7 +257,7 @@
       "name": "Annoying Mosquitoes",
       "skillReq": 60,
       "position": {
-        "x": 7,
+        "x": 10,
         "y": 7
       },
       "prerequisites": [
@@ -272,7 +272,7 @@
       "name": "Evasive Leap",
       "skillReq": 60,
       "position": {
-        "x": 15,
+        "x": 20,
         "y": 18
       },
       "prerequisites": [
@@ -287,7 +287,7 @@
       "name": "As a Leaf",
       "skillReq": 40,
       "position": {
-        "x": 12,
+        "x": 16,
         "y": 19
       },
       "prerequisites": [
