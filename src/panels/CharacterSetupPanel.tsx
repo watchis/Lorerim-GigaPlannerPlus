@@ -327,8 +327,13 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
         </div>
-        <div className="border-y border-[var(--color-border)]/70 py-3">
-          <AttributesAllocator embedded compact={compactAttributes} />
+        <div
+          className={cn(
+            "border-y border-[var(--color-border)]/70",
+            stackedLayout ? "py-2" : "py-3",
+          )}
+        >
+          <AttributesAllocator embedded compact={compactAttributes && !stackedLayout} />
         </div>
         <div className="space-y-1.5">
           <SetupPickerRow

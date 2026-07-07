@@ -6,7 +6,7 @@ interface NumericLevelInputProps {
   min: number;
   max: number;
   onCommit: (value: number) => void;
-  size?: "default" | "compact";
+  size?: "default" | "compact" | "touch";
   className?: string;
 }
 
@@ -69,13 +69,17 @@ export function NumericLevelInput({
       style={
         size === "compact"
           ? { fontSize: 12, lineHeight: 1, fontFamily: "ui-monospace, monospace" }
-          : undefined
+          : size === "touch"
+            ? { fontSize: 14, lineHeight: 1, fontFamily: "ui-monospace, monospace" }
+            : undefined
       }
       className={cn(
         "border-0 bg-transparent text-center tabular-nums text-[var(--color-foreground)] focus:outline-none focus:ring-0",
         size === "compact"
           ? "h-5 w-7 min-w-0 px-0 py-0"
-          : "w-14 px-1 py-1 font-mono text-sm",
+          : size === "touch"
+            ? "h-9 w-10 min-w-0 px-0 py-0"
+            : "w-14 px-1 py-1 font-mono text-sm",
         className,
       )}
     />
