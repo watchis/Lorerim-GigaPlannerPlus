@@ -457,7 +457,6 @@ export const labelsSchema = z.object({
     playerLevelWarningMixed: z.string(),
     playerLevelAttributeOverBudgetSingle: z.string(),
     playerLevelAttributeOverBudgetMultiple: z.string(),
-    buildIssuesAlert: z.string(),
     buildIssuesAlertMobile: z.string(),
     buildIssuesAlertDesktop: z.string(),
     buildIssuesAndMore: z.string(),

@@ -104,7 +104,6 @@
     "playerLevelWarningMixed": "Some skills, perks, and attribute choices exceed limits at level {playerLevel}. Adjust your build or raise your level.",
     "playerLevelAttributeOverBudgetSingle": "1 attribute choice exceeds what's allowed at level {playerLevel}. Remove choices or raise your level.",
     "playerLevelAttributeOverBudgetMultiple": "{count} attribute choices exceed what's allowed at level {playerLevel}. Remove choices or raise your level.",
-    "buildIssuesAlert": "Your build has issues at level {playerLevel}.",
     "buildIssuesAlertMobile": "Your build has {count} {issues}. Tap to see more.",
     "buildIssuesAlertDesktop": "Your build has {count} {issues}. Hover to see more.",
     "buildIssuesAndMore": "And more...",

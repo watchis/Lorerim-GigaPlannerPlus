@@ -109,6 +109,15 @@ describe("computeVisibleBuildIssueCount", () => {
   const gap = 6;
   const andMoreHeight = 20;
 
+  it("returns 0 for an empty list", () => {
+    expect(computeVisibleBuildIssueCount([], andMoreHeight, gap, 200)).toBe(0);
+  });
+
+  it("returns 1 for a single issue without reserving overflow space", () => {
+    expect(computeVisibleBuildIssueCount([40], andMoreHeight, gap, 30)).toBe(1);
+    expect(computeVisibleBuildIssueCount([40], andMoreHeight, gap, 200)).toBe(1);
+  });
+
   it("shows every issue when they all fit within the max height", () => {
     expect(computeVisibleBuildIssueCount([20, 20, 20], andMoreHeight, gap, 200)).toBe(3);
   });
@@ -136,6 +145,11 @@ describe("getBuildIssuesTooltipContentMaxHeight", () => {
 });
 
 describe("shrinkFontSizeToFit", () => {
+  it("keeps the max font size when the container has no width", () => {
+    expect(shrinkFontSizeToFit(14, 9, 280, 0)).toBe(14);
+    expect(shrinkFontSizeToFit(14, 9, 280, -10)).toBe(14);
+  });
+
   it("keeps the max font size when the text already fits", () => {
     expect(shrinkFontSizeToFit(14, 9, 120, 160)).toBe(14);
   });

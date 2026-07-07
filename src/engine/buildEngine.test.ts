@@ -14,7 +14,9 @@ import {
   getMinimumPlayerLevelForBuild,
   getRemainingPerkPoints,
   getRemainingSkillPoints,
+  getRemainingTrainingLevels,
   getRequiredPlayerLevel,
+  getRequiredPlayerLevelFromTraining,
   getSkillLevelIncreaseCost,
   getTrainingBudgetConflict,
   normalizeSkillTraining,
@@ -118,6 +120,19 @@ describe("player level cap", () => {
 describe("training budget conflicts", () => {
   const game = getTestGameData();
 
+  it("returns null when training is within the earned budget", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 5,
+      skillLevels: { block: 25 },
+      skillTrainingRanges: { block: [20, 0, 0, 0] },
+    });
+
+    expect(getTrainingBudgetConflict(game, state, 5)).toBeNull();
+    expect(getRemainingTrainingLevels(game, state)).toBe(5);
+  });
+
   it("reports a conflict when training exceeds earned levels at the current player level", () => {
     const state = createTestBuildState({
       raceId: "nord",
@@ -146,6 +161,36 @@ describe("training budget conflicts", () => {
     const normalized = normalizeSkillTraining(game, state);
     expect(normalized.skillTrainingRanges.block).toEqual([25, 5, 0, 0]);
     expect(computeBuild(game, normalized).trainingLevelsRemaining).toBe(-5);
+  });
+
+  it("still trims training to the per-skill cap during normalize", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 30,
+      skillLevels: { block: 25 },
+      skillTrainingRanges: { block: [25, 25, 25, 25] },
+    });
+
+    const normalized = normalizeSkillTraining(game, state);
+    expect(normalized.skillTrainingRanges.block).toEqual([25, 25, 20, 0]);
+    expect(computeBuild(game, normalized).trainingLevelsRemaining).toBeGreaterThanOrEqual(0);
+  });
+
+  it("excludes training from getRequiredPlayerLevel but includes it in minimum build level", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      playerLevel: 5,
+      skillLevels: { block: 30 },
+      skillTrainingRanges: { block: [25, 5, 0, 0] },
+    });
+
+    expect(getRequiredPlayerLevelFromTraining(game, state)).toBe(6);
+    expect(getMinimumPlayerLevelForBuild(game, state)).toBe(6);
+    expect(getRequiredPlayerLevel(game, state)).toBeLessThan(
+      getMinimumPlayerLevelForBuild(game, state),
+    );
   });
 });
 
