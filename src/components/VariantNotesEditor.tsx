@@ -58,6 +58,10 @@ interface VariantNotesEditorProps {
   textareaRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
+function ToolbarDivider() {
+  return <div className="mx-0.5 h-5 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
+}
+
 function ToolbarButton({
   label,
   onClick,
@@ -74,7 +78,7 @@ function ToolbarButton({
       type="button"
       variant="ghost"
       size="icon"
-      className="h-8 w-8 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+      className="h-9 w-9 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)] sm:h-8 sm:w-8"
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
@@ -135,18 +139,16 @@ function applyFormatToNotes(
   }
 }
 
-export function VariantNotesToolbar({
+function VariantNotesToolbarControls({
   value,
   onChange,
   disabled,
   textareaRef,
-  className,
 }: {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
-  className?: string;
 }) {
   const [headingSelectKey, setHeadingSelectKey] = useState(0);
 
@@ -168,22 +170,23 @@ export function VariantNotesToolbar({
   };
 
   return (
-    <div
-      className={cn(
-        "flex shrink-0 items-center gap-0.5 overflow-x-auto",
-        className,
-      )}
-    >
+    <>
       <Select key={headingSelectKey} onValueChange={applyHeading} disabled={disabled}>
         <SelectTrigger
-          className="h-8 w-[7.25rem] shrink-0 gap-1.5 px-2 text-xs text-[var(--color-muted)]"
+          className="h-9 w-9 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)] sm:h-8 sm:w-[7.25rem] sm:justify-between sm:gap-1.5 sm:px-2"
           aria-label="Heading"
           title="Heading"
         >
           <Heading className="h-3.5 w-3.5 shrink-0" />
-          <SelectValue placeholder="Heading" />
+          <span className="hidden min-w-0 sm:inline-flex sm:flex-1">
+            <SelectValue placeholder="Heading" />
+          </span>
         </SelectTrigger>
-        <SelectContent position="popper" sideOffset={5} className="min-w-[8rem] text-sm">
+        <SelectContent
+          position="popper"
+          sideOffset={5}
+          className="z-[80] max-h-[min(50vh,20rem)] min-w-[8rem] text-sm"
+        >
           <SelectItem value="1">Heading 1</SelectItem>
           <SelectItem value="2">Heading 2</SelectItem>
           <SelectItem value="3">Heading 3</SelectItem>
@@ -192,6 +195,8 @@ export function VariantNotesToolbar({
           <SelectItem value="6">Heading 6</SelectItem>
         </SelectContent>
       </Select>
+
+      <ToolbarDivider />
 
       <ToolbarButton label="Bold" onClick={() => applyFormat("bold")} disabled={disabled}>
         <Bold className="h-3.5 w-3.5" />
@@ -213,6 +218,9 @@ export function VariantNotesToolbar({
       >
         <Strikethrough className="h-3.5 w-3.5" />
       </ToolbarButton>
+
+      <ToolbarDivider />
+
       <ToolbarButton label="Inline code" onClick={() => applyFormat("code")} disabled={disabled}>
         <Code className="h-3.5 w-3.5" />
       </ToolbarButton>
@@ -225,6 +233,9 @@ export function VariantNotesToolbar({
       <ToolbarButton label="Image" onClick={() => applyFormat("image")} disabled={disabled}>
         <Image className="h-3.5 w-3.5" />
       </ToolbarButton>
+
+      <ToolbarDivider />
+
       <ToolbarButton label="Bullet list" onClick={() => applyFormat("list")} disabled={disabled}>
         <List className="h-3.5 w-3.5" />
       </ToolbarButton>
@@ -245,6 +256,43 @@ export function VariantNotesToolbar({
       >
         <Minus className="h-3.5 w-3.5" />
       </ToolbarButton>
+    </>
+  );
+}
+
+export function VariantNotesToolbar({
+  value,
+  onChange,
+  disabled,
+  textareaRef,
+  className,
+  framed = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  className?: string;
+  framed?: boolean;
+}) {
+  return (
+    <div className={cn("w-full min-w-0", className)}>
+      <div
+        className={cn(
+          "notes-markdown-toolbar-scroll overflow-x-auto overscroll-x-contain",
+          framed &&
+            "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40",
+        )}
+      >
+        <div className="flex w-max items-center gap-0.5 px-1 py-1">
+          <VariantNotesToolbarControls
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+            textareaRef={textareaRef}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -264,15 +312,13 @@ export function VariantNotesEditor({
   return (
     <div className="flex h-full min-h-0 flex-col gap-2">
       {showToolbar && (
-        <div
-          ref={toolbarRef}
-          className="flex shrink-0 items-center gap-0.5 overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/40 p-1"
-        >
+        <div ref={toolbarRef}>
           <VariantNotesToolbar
             value={value}
             onChange={onChange}
             disabled={disabled}
             textareaRef={textareaRef}
+            framed
           />
         </div>
       )}
