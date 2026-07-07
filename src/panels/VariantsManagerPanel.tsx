@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
+import { VariantNotesEditor } from "@/components/VariantNotesEditor";
 import { VariantNotesMarkdown } from "@/components/VariantNotesMarkdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -780,7 +781,7 @@ export function VariantsManagerPanel() {
                     type="button"
                     size="sm"
                     className="h-8"
-                    disabled={!notesVariant || notesDraft === persistedNotes}
+                    disabled={!notesVariant}
                     onClick={saveNotesDraft}
                   >
                     {labels["saveNotes"] ?? "Save"}
@@ -803,15 +804,11 @@ export function VariantsManagerPanel() {
 
             <div className="mt-3 min-h-0 flex-1">
               {notesEditing ? (
-                <textarea
+                <VariantNotesEditor
                   value={notesVariant ? notesDraft : ""}
-                  onChange={(event) => setNotesDraft(event.target.value)}
+                  onChange={setNotesDraft}
                   placeholder={notesPlaceholder}
                   disabled={!notesVariant}
-                  className={cn(
-                    "h-full w-full resize-none rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/60 px-3 py-2 font-mono text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30",
-                    !notesVariant && "opacity-60",
-                  )}
                 />
               ) : (
                 <ScrollArea className="h-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60">

@@ -44,6 +44,7 @@ import {
   promoteMilestoneToDefault,
   reorderBuildsInList,
   reorderVariantsInEntry,
+  setVariantNotesOnEntry,
   touchSavedBuild,
   updateSavedBuildInList,
   type SavedBuild,
@@ -848,19 +849,9 @@ export const useBuildStore = create<BuildStore>()(
         setVariantNotes: (variantId, notes) => {
           const { savedBuilds, activeBuildId } = get();
           set({
-            savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) => {
-              if (variantId === null) {
-                return { ...current, defaultVariantNotes: notes, updatedAt: Date.now() };
-              }
-
-              return {
-                ...current,
-                milestones: current.milestones.map((milestone) =>
-                  milestone.id === variantId ? { ...milestone, notes } : milestone,
-                ),
-                updatedAt: Date.now(),
-              };
-            }),
+            savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) =>
+              setVariantNotesOnEntry(current, variantId, notes),
+            ),
           });
         },
 

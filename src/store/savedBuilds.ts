@@ -132,6 +132,25 @@ export function getVariantNotes(entry: SavedBuild, variantId: string | null): st
   return normalized.milestones.find((item) => item.id === variantId)?.notes ?? "";
 }
 
+export function setVariantNotesOnEntry(
+  entry: SavedBuild,
+  variantId: string | null,
+  notes: string,
+): SavedBuild {
+  const normalized = normalizeSavedBuild(entry);
+  if (variantId === null) {
+    return { ...normalized, defaultVariantNotes: notes, updatedAt: Date.now() };
+  }
+
+  return {
+    ...normalized,
+    milestones: normalized.milestones.map((milestone) =>
+      milestone.id === variantId ? { ...milestone, notes } : milestone,
+    ),
+    updatedAt: Date.now(),
+  };
+}
+
 export function getDefaultVariantName(entry: SavedBuild): string {
   return normalizeSavedBuild(entry).defaultVariantName;
 }
