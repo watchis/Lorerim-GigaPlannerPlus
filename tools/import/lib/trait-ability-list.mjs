@@ -12,12 +12,16 @@ const FLM_TRAIT_LIST_LINE = /^FormList\s*=\s*Traits_AbilityList\|(.+)$/i;
 export function readFormIdsFromBuffer(buffer) {
   const ids = [];
   let index = 0;
+
   while ((index = buffer.indexOf("LNAM", index)) !== -1) {
+    if (index + 6 > buffer.length) break;
+
     const size = buffer.readUInt16LE(index + 4);
     const data = buffer.subarray(index + 6, index + 6 + size);
     if (data.length >= 4) ids.push(data.readUInt32LE(0));
-    index += 4;
+    index += 6 + size;
   }
+
   return ids;
 }
 
@@ -59,76 +63,118 @@ async function readWinningFormListFormIds(plugins, formListEdid) {
 
 const mastersCache = new Map();
 
-async function getPluginMasters(pluginPath, mastersByPath = null) {
+function getCachedMasters(pluginPath, mastersByPath = null) {
   if (mastersByPath?.has(pluginPath)) {
     return mastersByPath.get(pluginPath);
   }
-  if (!mastersCache.has(pluginPath)) {
-    mastersCache.set(pluginPath, await readPluginMasters(pluginPath));
-  }
-  return mastersCache.get(pluginPath);
+  return mastersCache.get(pluginPath) ?? null;
 }
 
-async function buildSpellIdentityIndexAsync(plugins, spellRecords, mastersByPath = null) {
+async function ensurePluginMasters(pluginPath, mastersByPath = null) {
+  const cached = getCachedMasters(pluginPath, mastersByPath);
+  if (cached) return cached;
+
+  const masters = await readPluginMasters(pluginPath);
+  mastersCache.set(pluginPath, masters);
+  return masters;
+}
+
+async function findTraitsFormListSourcePlugin(plugins) {
+  let sourcePlugin = null;
+
+  for (const plugin of plugins) {
+    const fh = await open(plugin.path, "r");
+    const offsets = await visitAsync(fh.fd);
+
+    for (const [offset, type] of offsets) {
+      if (type !== "FLST") continue;
+      const buffer = await getRecordBufferAsync(fh.fd, offset);
+      const record = tesData.getRecord(buffer);
+      if (record.compressed) continue;
+      const edid = record.subRecords?.find((sub) => sub.type === "EDID")?.value;
+      if (edid === TRAITS_ABILITY_LIST_EDID) {
+        sourcePlugin = plugin;
+      }
+    }
+
+    await fh.close();
+  }
+
+  return sourcePlugin;
+}
+
+function buildNeededTraitIdentities(formIds, owner, masters) {
+  const neededIdentities = new Set();
+  const identityOrder = [];
+
+  for (const rawFormId of formIds) {
+    const identity = resolveFormIdentity(owner, masters, rawFormId);
+    if (neededIdentities.has(identity)) continue;
+    neededIdentities.add(identity);
+    identityOrder.push(identity);
+  }
+
+  return { neededIdentities, identityOrder };
+}
+
+/**
+ * Map Traits_AbilityList FormIDs to spell EDIDs by scanning spell records until every
+ * needed identity is found (early exit). Avoids building a full spell identity index.
+ */
+export async function resolveFormIdsToSpellEdids(plugins, formIds, spellRecords, options = {}) {
+  if (formIds.length === 0) return [];
+
+  const sourcePlugin =
+    options.sourcePlugin ?? (await findTraitsFormListSourcePlugin(plugins));
+  if (!sourcePlugin) return [];
+
+  const mastersByPath = options.mastersByPath ?? null;
+  const sourceMasters = await ensurePluginMasters(sourcePlugin.path, mastersByPath);
+  const owner = sourcePlugin.pluginName.toLowerCase();
+  const { neededIdentities, identityOrder } = buildNeededTraitIdentities(
+    formIds,
+    owner,
+    sourceMasters,
+  );
+
+  if (neededIdentities.size === 0) return [];
+
   const pluginPathByName = new Map(
     plugins.map((plugin) => [plugin.pluginName.toLowerCase(), plugin.path]),
   );
-  const index = new Map();
+  const identityToEdid = new Map();
+  let unresolved = neededIdentities.size;
+  const mastersByPluginPath = new Map();
 
   for (const spell of spellRecords) {
+    if (unresolved === 0) break;
     if (spell.formId == null) continue;
+
     const pluginName = String(spell.plugin ?? "").toLowerCase();
     const pluginPath = pluginPathByName.get(pluginName);
     if (!pluginPath) continue;
 
-    const masters = await getPluginMasters(pluginPath, mastersByPath);
-    const identity = resolveFormIdentity(pluginName, masters, spell.formId);
-    index.set(identity, spell.edid);
-  }
-
-  return index;
-}
-
-async function resolveFormIdsToSpellEdids(plugins, formIds, spellRecords, options = {}) {
-  if (formIds.length === 0) return [];
-
-  let sourcePlugin = options.sourcePlugin ?? null;
-  if (!sourcePlugin) {
-    for (const plugin of plugins) {
-      const fh = await open(plugin.path, "r");
-      const offsets = await visitAsync(fh.fd);
-      for (const [offset, type] of offsets) {
-        if (type !== "FLST") continue;
-        const buffer = await getRecordBufferAsync(fh.fd, offset);
-        const record = tesData.getRecord(buffer);
-        if (record.compressed) continue;
-        const edid = record.subRecords?.find((sub) => sub.type === "EDID")?.value;
-        if (edid === TRAITS_ABILITY_LIST_EDID) {
-          sourcePlugin = plugin;
-        }
+    let masters = mastersByPluginPath.get(pluginPath);
+    if (masters === undefined) {
+      const cached = getCachedMasters(pluginPath, mastersByPath);
+      if (cached) {
+        masters = cached;
+      } else {
+        masters = await ensurePluginMasters(pluginPath, mastersByPath);
       }
-      await fh.close();
+      mastersByPluginPath.set(pluginPath, masters);
     }
+
+    const identity = resolveFormIdentity(pluginName, masters, spell.formId);
+    if (!neededIdentities.has(identity) || identityToEdid.has(identity)) continue;
+
+    identityToEdid.set(identity, spell.edid);
+    unresolved -= 1;
   }
 
-  if (!sourcePlugin) return [];
-
-  const masters = await getPluginMasters(sourcePlugin.path, options.mastersByPath);
-  const owner = sourcePlugin.pluginName.toLowerCase();
-  const spellByIdentity = await buildSpellIdentityIndexAsync(
-    plugins,
-    spellRecords,
-    options.mastersByPath,
-  );
-  const edids = [];
-
-  for (const rawFormId of formIds) {
-    const identity = resolveFormIdentity(owner, masters, rawFormId);
-    const edid = spellByIdentity.get(identity);
-    if (edid) edids.push(edid);
-  }
-
-  return edids;
+  return identityOrder
+    .map((identity) => identityToEdid.get(identity))
+    .filter(Boolean);
 }
 
 export function parseFlmTraitAbilityAdditions(configText) {
@@ -196,7 +242,12 @@ export async function collectTraitAbilitySpells(
   const baseFormIds =
     options.traitsFormList?.formIds ??
     (await readWinningFormListFormIds(plugins, TRAITS_ABILITY_LIST_EDID));
-  const baseEdids = await resolveFormIdsToSpellEdids(plugins, baseFormIds, spellRecords, traitScanOptions);
+  const baseEdids = await resolveFormIdsToSpellEdids(
+    plugins,
+    baseFormIds,
+    spellRecords,
+    traitScanOptions,
+  );
   const flmEdids = collectFlmTraitAbilityAdditions(installDir, enabledMods);
   const mergedEdids = dedupePreserveOrder([...baseEdids, ...flmEdids]);
 
