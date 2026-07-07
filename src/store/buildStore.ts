@@ -26,6 +26,7 @@ import {
   type ComputedBuild,
 } from "@/engine/buildEngine";
 import {
+  acknowledgeSavedBuildEdits,
   createInitialLibrary,
   createMilestone,
   createSavedBuild,
@@ -34,6 +35,7 @@ import {
   getVariantBuild,
   getVariantCount,
   getVariantName,
+  markSavedBuildImported,
   migrateLegacyStorage,
   nextBuildName,
   uniqueBuildName,
@@ -577,10 +579,12 @@ export const useBuildStore = create<BuildStore>()(
 
           const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
           const activeBuild = getActiveBuildFromPackage(decoded);
-          const newEntry = createSavedBuildFromPackage(
-            gameData.game,
-            decoded,
-            uniqueBuildName(decoded.shared.name, syncedBuilds),
+          const newEntry = markSavedBuildImported(
+            createSavedBuildFromPackage(
+              gameData.game,
+              decoded,
+              uniqueBuildName(decoded.shared.name, syncedBuilds),
+            ),
           );
 
           set({
@@ -661,11 +665,13 @@ export const useBuildStore = create<BuildStore>()(
           const milestones = importedMilestones.map((entry) =>
             createMilestone(entry.name, reconcileBuild(gameData.game, entry.build)),
           );
-          const newEntry = createSavedBuild(
-            uniqueBuildName(name ?? "", syncedBuilds),
-            importedBuild,
-            milestones,
-            defaultVariantName,
+          const newEntry = markSavedBuildImported(
+            createSavedBuild(
+              uniqueBuildName(name ?? "", syncedBuilds),
+              importedBuild,
+              milestones,
+              defaultVariantName,
+            ),
           );
 
           set({
@@ -763,12 +769,12 @@ export const useBuildStore = create<BuildStore>()(
             );
           const milestone = createMilestone(milestoneName, freshBuild);
 
-          const nextEntry: SavedBuild = {
+          const nextEntry: SavedBuild = acknowledgeSavedBuildEdits({
             ...entry,
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
-          };
+          });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
           set({
@@ -793,12 +799,12 @@ export const useBuildStore = create<BuildStore>()(
             reconcileBuild(gameData.game, getVariantBuild(entry, variantId)),
           );
 
-          const nextEntry: SavedBuild = {
+          const nextEntry: SavedBuild = acknowledgeSavedBuildEdits({
             ...entry,
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
-          };
+          });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
           set({
@@ -826,12 +832,12 @@ export const useBuildStore = create<BuildStore>()(
             );
           const milestone = createMilestone(milestoneName, reconciled);
 
-          const nextEntry: SavedBuild = {
+          const nextEntry: SavedBuild = acknowledgeSavedBuildEdits({
             ...entry,
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
-          };
+          });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
           set({
@@ -868,18 +874,18 @@ export const useBuildStore = create<BuildStore>()(
           if (variantId === null) {
             const toPromote = pickMilestoneToPromote(entry.milestones);
             if (!toPromote) return;
-            nextEntry = {
+            nextEntry = acknowledgeSavedBuildEdits({
               ...promoteMilestoneToDefault(entry, toPromote.id),
               updatedAt: Date.now(),
-            };
+            });
           } else {
             const wasActive = entry.activeMilestoneId === variantId;
-            nextEntry = {
+            nextEntry = acknowledgeSavedBuildEdits({
               ...entry,
               milestones: entry.milestones.filter((m) => m.id !== variantId),
               activeMilestoneId: wasActive ? null : entry.activeMilestoneId,
               updatedAt: Date.now(),
-            };
+            });
           }
 
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
@@ -908,16 +914,20 @@ export const useBuildStore = create<BuildStore>()(
           set({
             savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) => {
               if (variantId === null) {
-                return { ...current, defaultVariantName: trimmed, updatedAt: Date.now() };
+                return acknowledgeSavedBuildEdits({
+                  ...current,
+                  defaultVariantName: trimmed,
+                  updatedAt: Date.now(),
+                });
               }
 
-              return {
+              return acknowledgeSavedBuildEdits({
                 ...current,
                 milestones: current.milestones.map((milestone) =>
                   milestone.id === variantId ? { ...milestone, name: trimmed } : milestone,
                 ),
                 updatedAt: Date.now(),
-              };
+              });
             }),
           });
         },

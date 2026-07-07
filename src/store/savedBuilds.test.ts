@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { createTestBuildState } from "@/test/helpers";
-import { createSavedBuild, uniqueBuildName } from "@/store/savedBuilds";
+import {
+  acknowledgeSavedBuildEdits,
+  createSavedBuild,
+  isSavedBuildImported,
+  markSavedBuildImported,
+  touchSavedBuild,
+  uniqueBuildName,
+} from "@/store/savedBuilds";
 
 describe("uniqueBuildName", () => {
   const build = createTestBuildState();
@@ -26,5 +33,29 @@ describe("uniqueBuildName", () => {
       createSavedBuild("Tank copy", build),
     ];
     expect(uniqueBuildName("Tank", builds)).toBe("Tank copy 2");
+  });
+});
+
+describe("imported build markers", () => {
+  const build = createTestBuildState();
+
+  it("marks and detects imported builds", () => {
+    const entry = markSavedBuildImported(createSavedBuild("Imported", build));
+    expect(isSavedBuildImported(entry)).toBe(true);
+    expect(entry.importedAt).toBeTypeOf("number");
+  });
+
+  it("clears the imported marker when build content is touched", () => {
+    const entry = markSavedBuildImported(createSavedBuild("Imported", build));
+    const edited = touchSavedBuild(entry, { ...build, description: "Edited locally" });
+
+    expect(isSavedBuildImported(edited)).toBe(false);
+    expect(edited.importedAt).toBeNull();
+    expect(edited.build.description).toBe("Edited locally");
+  });
+
+  it("acknowledgeSavedBuildEdits is a no-op for non-imported builds", () => {
+    const entry = createSavedBuild("Local", build);
+    expect(acknowledgeSavedBuildEdits(entry)).toBe(entry);
   });
 });

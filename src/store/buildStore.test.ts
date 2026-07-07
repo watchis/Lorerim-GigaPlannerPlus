@@ -20,7 +20,7 @@ vi.stubGlobal("localStorage", localStorageMock);
 
 import { decodeBuildPackage, encodeBuild, encodeSavedBuild } from "@/engine/buildCodec";
 import { createTestBuildState, getTestAppData } from "@/test/helpers";
-import { createSavedBuild } from "@/store/savedBuilds";
+import { createSavedBuild, isSavedBuildImported } from "@/store/savedBuilds";
 
 type BuildStoreModule = typeof import("@/store/buildStore");
 let useBuildStore: BuildStoreModule["useBuildStore"];
@@ -70,6 +70,9 @@ describe("buildStore shared build import", () => {
     expect(state.activeBuildId).not.toBe(previousActiveId);
     expect(state.build.description).toBe("Imported shared build");
     expect(state.build.raceId).toBe("breton");
+    expect(
+      isSavedBuildImported(state.savedBuilds.find((entry) => entry.id === state.activeBuildId)!),
+    ).toBe(true);
   });
 
   it("loadSharedBuild overwrites the active slot instead of creating a new one", () => {
@@ -132,5 +135,30 @@ describe("buildStore shared build import", () => {
     expect(state.activeBuildId).toBe(
       state.savedBuilds.find((entry) => entry.name === "My Build copy")?.id,
     );
+  });
+
+  it("clears the imported marker after the first local build edit", () => {
+    const importedBuild = createTestBuildState({
+      raceId: "breton",
+      description: "Imported duplicate name",
+    });
+    const importedEntry = createSavedBuild("Imported Build", importedBuild);
+    const sharedDecoded = decodeBuildPackage(encodeSavedBuild(importedEntry, game), game);
+
+    useBuildStore.getState().importSharedBuild(sharedDecoded);
+    expect(
+      isSavedBuildImported(
+        useBuildStore.getState().savedBuilds.find(
+          (entry) => entry.id === useBuildStore.getState().activeBuildId,
+        )!,
+      ),
+    ).toBe(true);
+
+    useBuildStore.getState().setDescription("Edited after import");
+
+    const activeEntry = useBuildStore
+      .getState()
+      .savedBuilds.find((entry) => entry.id === useBuildStore.getState().activeBuildId);
+    expect(isSavedBuildImported(activeEntry!)).toBe(false);
   });
 });

@@ -275,6 +275,8 @@
       "subtitle": "Manage, share, import, and export your saved character builds.",
       "openPlanner": "Open Planner",
       "activeBadge": "Active",
+      "importedBadge": "Imported",
+      "importedBadgeHint": "Imported from a share link or code. Cleared after you edit this build.",
       "buildCount": "{count} saved builds",
       "noRace": "No race selected",
       "playerLevel": "Level {level}",
