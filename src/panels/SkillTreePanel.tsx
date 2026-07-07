@@ -406,7 +406,7 @@ export function SkillTreePanel() {
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-1">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-0.5">
           {isTrainingMode ? (
             <SkillTrainingSection
               game={gameData.game}

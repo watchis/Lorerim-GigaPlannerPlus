@@ -113,36 +113,105 @@ interface FitLayoutTuning {
   regionInsetRatio: number;
   boundsExtraPadding: number;
   edgePaddingPx: number;
+  nodeBaseDiameterPx: number;
 }
 
 const DEFAULT_FIT_TUNING: FitLayoutTuning = {
   regionInsetRatio: FIT_REGION_INSET_RATIO,
   boundsExtraPadding: 0.6,
   edgePaddingPx: TREE_VIEW_EDGE_PADDING_PX,
+  nodeBaseDiameterPx: BASE_NODE_DIAMETER_PX,
 };
 
 function getFitLayoutTuning(containerWidth: number, containerHeight: number): FitLayoutTuning {
   const minDim = Math.min(containerWidth, containerHeight);
 
   if (minDim < 360) {
-    return { regionInsetRatio: 0.99, boundsExtraPadding: 0.3, edgePaddingPx: 4 };
+    return {
+      regionInsetRatio: 0.998,
+      boundsExtraPadding: 0.15,
+      edgePaddingPx: 2,
+      nodeBaseDiameterPx: 38,
+    };
   }
   if (minDim < 520) {
-    return { regionInsetRatio: 0.97, boundsExtraPadding: 0.45, edgePaddingPx: 6 };
+    return {
+      regionInsetRatio: 0.985,
+      boundsExtraPadding: 0.3,
+      edgePaddingPx: 3,
+      nodeBaseDiameterPx: 36,
+    };
   }
 
   return DEFAULT_FIT_TUNING;
 }
 
+function resolvePerkTooltipScale(
+  nodeDiameterPx: number,
+  viewportMinDim: number | null,
+): number {
+  const nodeFactor = Math.min(1, Math.max(0.82, nodeDiameterPx / BASE_NODE_DIAMETER_PX));
+  const screenFactor = viewportMinDim
+    ? Math.min(1, Math.max(0.85, viewportMinDim / 460))
+    : 1;
+  return Math.min(1, Math.max(0.8, nodeFactor * screenFactor));
+}
+
+interface TreeViewClampContext {
+  viewport: { width: number; height: number };
+  fitSize: { width: number; height: number };
+  nodeDiameterPx: number;
+}
+
+function clampTreeViewTransform(
+  transform: TreeViewTransform,
+  context: TreeViewClampContext,
+): TreeViewTransform {
+  const { viewport, fitSize, nodeDiameterPx } = context;
+  const zoom = clampTreeZoom(transform.zoom);
+
+  if (zoom <= MIN_TREE_ZOOM) {
+    return DEFAULT_TREE_VIEW_TRANSFORM;
+  }
+
+  const minVisiblePx = Math.max(
+    24,
+    Math.min(
+      nodeDiameterPx * zoom,
+      Math.min(viewport.width, viewport.height) * 0.2,
+    ),
+  );
+
+  const scaledWidth = fitSize.width * zoom;
+  const scaledHeight = fitSize.height * zoom;
+  const halfViewportWidth = viewport.width / 2;
+  const halfViewportHeight = viewport.height / 2;
+
+  const panXMin = minVisiblePx - halfViewportWidth - scaledWidth / 2;
+  const panXMax = halfViewportWidth - minVisiblePx + scaledWidth / 2;
+  const panYMin = minVisiblePx - halfViewportHeight - scaledHeight / 2;
+  const panYMax = halfViewportHeight - minVisiblePx + scaledHeight / 2;
+
+  const clampAxis = (value: number, min: number, max: number) =>
+    min <= max ? Math.min(max, Math.max(min, value)) : (min + max) / 2;
+
+  return {
+    zoom,
+    panX: clampAxis(transform.panX, panXMin, panXMax),
+    panY: clampAxis(transform.panY, panYMin, panYMax),
+  };
+}
+
 function resolvePerkNodeMetrics(
   gridUnitPx: number,
   visiblePerks: Perk[],
+  nodeBaseDiameterPx = BASE_NODE_DIAMETER_PX,
 ): number {
   return resolvePerkNodeDiameterPx(
     gridUnitPx,
     getMinDistinctPerkCenterDistanceGrid(visiblePerks),
     {
-      baseDiameterPx: BASE_NODE_DIAMETER_PX,
+      baseDiameterPx: nodeBaseDiameterPx,
       gridUnitReferencePx: GRID_UNIT_PX,
       minDiameterPx: MIN_NODE_DIAMETER_PX,
     },
@@ -162,7 +231,11 @@ function resolveTreeLayoutMetrics(
 ): { gridUnitPx: number; nodeDiameterPx: number; treeEdgePaddingPx: number } {
   if (!fit || !fitSize) {
     const gridUnitPx = GRID_UNIT_PX;
-    const nodeDiameterPx = resolvePerkNodeMetrics(gridUnitPx, visiblePerks);
+    const nodeDiameterPx = resolvePerkNodeMetrics(
+      gridUnitPx,
+      visiblePerks,
+      fitTuning.nodeBaseDiameterPx,
+    );
     return {
       gridUnitPx,
       nodeDiameterPx,
@@ -174,7 +247,11 @@ function resolveTreeLayoutMetrics(
     fitSize.width / bounds.width,
     fitSize.height / bounds.height,
   );
-  const estimateNodeDiameterPx = resolvePerkNodeMetrics(estimateGridUnitPx, visiblePerks);
+  const estimateNodeDiameterPx = resolvePerkNodeMetrics(
+    estimateGridUnitPx,
+    visiblePerks,
+    fitTuning.nodeBaseDiameterPx,
+  );
   const edgePaddingPx = resolveTreeEdgePaddingPx(
     estimateNodeDiameterPx,
     fitTuning.edgePaddingPx,
@@ -183,7 +260,11 @@ function resolveTreeLayoutMetrics(
   const innerWidth = Math.max(1, fitSize.width - edgePaddingPx * 2);
   const innerHeight = Math.max(1, fitSize.height - edgePaddingPx * 2);
   const gridUnitPx = Math.min(innerWidth / bounds.width, innerHeight / bounds.height);
-  const nodeDiameterPx = resolvePerkNodeMetrics(gridUnitPx, visiblePerks);
+  const nodeDiameterPx = resolvePerkNodeMetrics(
+    gridUnitPx,
+    visiblePerks,
+    fitTuning.nodeBaseDiameterPx,
+  );
 
   return {
     gridUnitPx,
@@ -250,6 +331,7 @@ interface PerkNodeProps {
   onRemove: (perkId: string) => void;
   labels: Record<string, string>;
   showSkillRequirements: boolean;
+  tooltipScale?: number;
 }
 
 function PerkNode({
@@ -273,6 +355,7 @@ function PerkNode({
   onRemove,
   labels,
   showSkillRequirements,
+  tooltipScale = 1,
 }: PerkNodeProps) {
   const supportsHover = useSupportsHover();
   const longPressTimerRef = useRef<number | null>(null);
@@ -553,6 +636,7 @@ function PerkNode({
   return (
     <CursorTooltip
       content={tooltipContent}
+      contentScale={tooltipScale}
       open={supportsHover ? undefined : touchTooltipOpen}
       onOpenChange={supportsHover ? undefined : setTouchTooltipOpen}
       touchAnchor={touchAnchor}
@@ -688,22 +772,30 @@ function PerkTreeView({
     pivotY: number;
   } | null>(null);
   const viewTransformRef = useRef(DEFAULT_TREE_VIEW_TRANSFORM);
+  const clampContextRef = useRef<TreeViewClampContext | null>(null);
   const [viewTransform, setViewTransform] = useState<TreeViewTransform>(DEFAULT_TREE_VIEW_TRANSFORM);
   const [isPanning, setIsPanning] = useState(false);
 
   viewTransformRef.current = viewTransform;
 
-  const updateViewTransform = useCallback((next: TreeViewTransform) => {
-    viewTransformRef.current = next;
-    setViewTransform(next);
+  const applyViewTransform = useCallback((next: TreeViewTransform) => {
+    const context = clampContextRef.current;
+    const resolved =
+      context && next.zoom > MIN_TREE_ZOOM
+        ? clampTreeViewTransform(next, context)
+        : next.zoom <= MIN_TREE_ZOOM
+          ? DEFAULT_TREE_VIEW_TRANSFORM
+          : next;
+    viewTransformRef.current = resolved;
+    setViewTransform(resolved);
   }, []);
 
   useEffect(() => {
-    updateViewTransform(DEFAULT_TREE_VIEW_TRANSFORM);
+    applyViewTransform(DEFAULT_TREE_VIEW_TRANSFORM);
     panDragRef.current = null;
     pinchStateRef.current = null;
     setIsPanning(false);
-  }, [tree.skillId, updateViewTransform]);
+  }, [tree.skillId, applyViewTransform]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -727,12 +819,12 @@ function PerkTreeView({
       ) {
         return;
       }
-      updateViewTransform(next);
+      applyViewTransform(next);
     };
 
     viewport.addEventListener("wheel", handleWheel, { passive: false });
     return () => viewport.removeEventListener("wheel", handleWheel);
-  }, [fit, updateViewTransform]);
+  }, [fit, applyViewTransform]);
 
   const handleViewportPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!fit || viewTransformRef.current.zoom <= MIN_TREE_ZOOM) return;
@@ -755,7 +847,7 @@ function PerkTreeView({
     const drag = panDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
-    updateViewTransform({
+    applyViewTransform({
       ...viewTransformRef.current,
       panX: drag.startPanX + (event.clientX - drag.startX),
       panY: drag.startPanY + (event.clientY - drag.startY),
@@ -806,7 +898,7 @@ function PerkTreeView({
     ) {
       return;
     }
-    updateViewTransform(next);
+    applyViewTransform(next);
   };
 
   const handleTouchEnd = () => {
@@ -857,6 +949,24 @@ function PerkTreeView({
     () => resolveTreeLayoutMetrics(bounds, fit, fitSize, visiblePerks, fitTuning),
     [bounds, fit, fitSize, visiblePerks, fitTuning],
   );
+  const tooltipScale = useMemo(
+    () =>
+      resolvePerkTooltipScale(
+        nodeDiameterPx,
+        containerSize ? Math.min(containerSize.width, containerSize.height) : null,
+      ),
+    [nodeDiameterPx, containerSize],
+  );
+
+  clampContextRef.current =
+    containerSize && fitSize
+      ? {
+          viewport: containerSize,
+          fitSize,
+          nodeDiameterPx,
+        }
+      : null;
+
   const nodeRadiusGrid = nodeDiameterPx / (2 * gridUnitPx);
 
   const edges = useMemo(
@@ -1003,6 +1113,7 @@ function PerkTreeView({
             onRemove={removePerk}
             labels={labels}
             showSkillRequirements={showSkillRequirements}
+            tooltipScale={tooltipScale}
           />
         );
       })}
