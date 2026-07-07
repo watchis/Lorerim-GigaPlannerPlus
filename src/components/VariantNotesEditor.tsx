@@ -63,10 +63,10 @@ export function commitVariantNotesFormat(
 }
 
 function ToolbarDivider() {
-  return <div className="mx-0.5 h-5 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
+  return <div className="mx-0.5 h-6 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
 }
 
-const toolbarIconClass = "h-4 w-4";
+const toolbarIconClass = "h-5 w-5";
 
 function ToolbarButton({
   label,
@@ -88,7 +88,7 @@ function ToolbarButton({
       type="button"
       variant="ghost"
       size="icon"
-      className="h-8 w-8 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+      className="h-9 w-9 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
       onClick={onClick}
       disabled={disabled}
       aria-label={title}
@@ -131,7 +131,7 @@ function VariantNotesToolbarControls({
     <>
       <Select key={headingSelectKey} onValueChange={applyHeading} disabled={disabled}>
         <SelectTrigger
-          className="h-8 w-8 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)]"
+          className="h-9 w-9 shrink-0 justify-center gap-0 p-0 text-[var(--color-muted)]"
           aria-label="Text style"
           title="Text style"
         >
@@ -175,7 +175,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("boldItalic")}
         disabled={disabled}
       >
-        <span className="text-[11px] font-bold italic">B</span>
+        <span className="text-xs font-bold italic">B</span>
       </ToolbarButton>
       <ToolbarButton
         label="Strikethrough"
@@ -202,7 +202,7 @@ function VariantNotesToolbarControls({
         onClick={() => applyFormat("codeBlock")}
         disabled={disabled}
       >
-        <span className="font-mono text-[10px]">{"{ }"}</span>
+        <span className="font-mono text-[11px]">{"{ }"}</span>
       </ToolbarButton>
       <ToolbarButton
         label="Link"
