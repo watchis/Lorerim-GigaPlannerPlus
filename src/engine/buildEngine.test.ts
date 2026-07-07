@@ -317,6 +317,36 @@ describe("race/major/minor changes never lower skills", () => {
       expect(leveled.playerLevel).toBeGreaterThanOrEqual(preserved.playerLevel);
     }
   });
+
+  it("preserves absolute skill levels when removing a major/minor selection (floor decreases)", () => {
+    // Pick a skill that is eligible for major selection and not destiny.
+    const skill = game.skills.find((entry) => entry.majorEligible && entry.id !== "destiny");
+    expect(skill).toBeDefined();
+    const skillId = skill!.id;
+
+    // Find a race that has a non-zero starting skill so we can distinguish race floor from major/minor bonus.
+    const raceWithStarting = game.races.find((race) => (race.startingSkills[skillId] ?? 0) > 0);
+    expect(raceWithStarting).toBeDefined();
+
+    const before = reconcileBuild(
+      game,
+      createTestBuildState({
+        playerLevel: game.mechanics.leveling.baseLevel,
+        raceId: raceWithStarting!.id,
+        majorSkillIds: [skillId],
+        // No explicit stored skillLevels; this is the fragile "floor-only" case.
+        skillLevels: {},
+      }),
+    );
+    const beforeLevel = before.skillLevels[skillId] ?? 0;
+    expect(beforeLevel).toBeGreaterThan(0);
+
+    // Remove the major selection, which would normally lower the floor and (previously) lower the visible level.
+    const candidate = { ...before, majorSkillIds: [] };
+    const preserved = reconcileBuild(game, preserveSkillPointAllocations(game, before, candidate));
+    const afterLevel = preserved.skillLevels[skillId] ?? 0;
+    expect(afterLevel).toBe(beforeLevel);
+  });
 });
 
 describe("buildEngine perk selection", () => {

@@ -253,8 +253,9 @@ export const useBuildStore = create<BuildStore>()(
         setRace: (raceId) => {
           const { gameData, build } = get();
           if (!gameData) return;
-          const candidate = { ...build, raceId };
-          const preserved = preserveSkillPointAllocations(gameData.game, build, candidate);
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, raceId };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
           const reconciled = reconcileBuild(gameData.game, preserved);
           const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
             ensureMinimumPlayerLevel: true,
@@ -321,7 +322,10 @@ export const useBuildStore = create<BuildStore>()(
           }
 
           // Keep absolute skill levels — major/minor only changes the floor bonus, not invested levels.
-          const reconciled = reconcileBuild(gameData.game, { ...build, majorSkillIds });
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, majorSkillIds };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const reconciled = reconcileBuild(gameData.game, preserved);
           const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
             ensureMinimumPlayerLevel: true,
           });
@@ -339,7 +343,10 @@ export const useBuildStore = create<BuildStore>()(
             minorSkillIds.push(skillId);
           }
 
-          const reconciled = reconcileBuild(gameData.game, { ...build, minorSkillIds });
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, minorSkillIds };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const reconciled = reconcileBuild(gameData.game, preserved);
           const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
             ensureMinimumPlayerLevel: true,
           });
