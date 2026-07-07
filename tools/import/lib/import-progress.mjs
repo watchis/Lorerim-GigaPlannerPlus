@@ -152,9 +152,9 @@ export function createImportReporter(options = {}) {
     let lastDetail = "";
     let lastWrite = 0;
 
-    function writeLine(detail, { increment = false } = {}) {
+    function writeLine(detail, { increment = false, replaceDetail = true } = {}) {
       if (increment) current += 1;
-      if (detail) lastDetail = detail;
+      if (detail && replaceDetail) lastDetail = detail;
 
       const ratio = total > 0 ? current / total : 1;
       const percent = Math.floor(ratio * 100);
@@ -177,11 +177,11 @@ export function createImportReporter(options = {}) {
     }
 
     function tick(detail = "") {
-      writeLine(detail, { increment: true });
+      writeLine(detail, { increment: true, replaceDetail: Boolean(detail) });
     }
 
     function update(detail = "") {
-      writeLine(detail, { increment: false });
+      writeLine(detail, { increment: false, replaceDetail: Boolean(detail) });
     }
 
     function finish(detail = "") {

@@ -352,6 +352,7 @@ function resolveTraitText(spellRecord) {
 
 export async function transformTraitRecords(spellRecords, install = null, plugins = [], scanContext = {}) {
   const onProgress = scanContext.onProgress;
+  onProgress?.("Traits", "collecting");
   const traitSpells =
     install && plugins.length > 0
       ? await collectTraitAbilitySpells(
