@@ -437,7 +437,7 @@ export function VariantsManagerPanel() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [notesVariantId, setNotesVariantId] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState("");
-  const [mobilePane, setMobilePane] = useState<"variants" | "notes">("variants");
+  const [activePane, setActivePane] = useState<"manage" | "notes">("manage");
 
   const entry = savedBuilds
     .map((build) => normalizeSavedBuild(build))
@@ -516,11 +516,11 @@ export function VariantsManagerPanel() {
   const openNotes = (variantId: string | null) => {
     setNotesVariantId(variantId);
     setNotesDraft(getVariantNotes(entry, variantId));
-    setMobilePane("notes");
+    setActivePane("notes");
   };
 
-  const closeNotesMobile = () => {
-    setMobilePane("variants");
+  const backToManageVariants = () => {
+    setActivePane("manage");
   };
 
   const resetNotesDraft = () => {
@@ -551,153 +551,131 @@ export function VariantsManagerPanel() {
       <WorkspacePanelHeader
         back={{
           label: labels.back,
-          onClick: closeVariantsManager,
+          onClick: activePane === "notes" ? backToManageVariants : closeVariantsManager,
         }}
-        title={labels.title}
-        subtitle={formatLabel(labels.variantCount, { count: variantCount })}
+        title={activePane === "notes" ? (labels["notesTitle"] ?? (labels["notes"] ?? "Notes")) : labels.title}
+        subtitle={
+          activePane === "notes"
+            ? (notesVariant?.name ?? "")
+            : formatLabel(labels.variantCount, { count: variantCount })
+        }
       />
 
       <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
-        <div className="shrink-0 space-y-4 px-4 py-4">
-          <AddVariantSection
-            labels={labels}
-            backupExtension={backupExtension}
-            fileDragOver={fileDragOver}
-            onCreate={() => createVariant()}
-            onBrowse={() => fileInputRef.current?.click()}
-            onDragOver={(event) => {
-              event.preventDefault();
-              setFileDragOver(true);
-            }}
-            onDragLeave={() => setFileDragOver(false)}
-            onDrop={handleFileDrop}
-          />
+        {activePane === "manage" ? (
+          <>
+            <div className="shrink-0 space-y-4 px-4 py-4">
+              <AddVariantSection
+                labels={labels}
+                backupExtension={backupExtension}
+                fileDragOver={fileDragOver}
+                onCreate={() => createVariant()}
+                onBrowse={() => fileInputRef.current?.click()}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setFileDragOver(true);
+                }}
+                onDragLeave={() => setFileDragOver(false)}
+                onDrop={handleFileDrop}
+              />
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={`${BUILD_BACKUP_EXTENSION},.json,application/json`}
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void handleImportFile(file);
-              event.target.value = "";
-            }}
-          />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={`${BUILD_BACKUP_EXTENSION},.json,application/json`}
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void handleImportFile(file);
+                  event.target.value = "";
+                }}
+              />
 
-          {(importSuccess || importError) && (
-            <StatusBanner
-              type={importSuccess ? "success" : "error"}
-              message={importSuccess ?? importError ?? ""}
-            />
-          )}
-        </div>
+              {(importSuccess || importError) && (
+                <StatusBanner
+                  type={importSuccess ? "success" : "error"}
+                  message={importSuccess ?? importError ?? ""}
+                />
+              )}
+            </div>
 
-        <div className="grid min-h-0 flex-1 gap-3 overflow-hidden px-4 pb-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-          <section
-            className={cn(
-              "flex min-h-0 flex-col gap-2 overflow-hidden",
-              mobilePane !== "variants" && "max-lg:hidden",
-            )}
-          >
+            <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-4 pb-4">
+              <h3 className="shrink-0 px-1 text-sm font-semibold text-[var(--color-foreground)]">
+                {labels.variantsSection}
+              </h3>
+
+              <ScrollArea className="min-h-0 flex-1">
+                <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/20">
+                  {variants.map((variant, index) => {
+                    const key = variantKey(variant.id);
+                    const isActive = activeVariantId === variant.id;
+                    const isRenaming = renamingKey === key;
+                    const notes = getVariantNotes(entry, variant.id);
+
+                    return (
+                      <div
+                        key={key}
+                        className={cn(index > 0 && "border-t border-[var(--color-border)]/50")}
+                      >
+                        <VariantRow
+                          index={index}
+                          variant={{ ...variant, notes }}
+                          isActive={isActive}
+                          isRenaming={isRenaming}
+                          isDragging={draggedIndex === index}
+                          isDragOver={dragOverIndex === index && draggedIndex !== index}
+                          renameValue={renameValue}
+                          canDelete={canDeleteVariant}
+                          canReorder={canReorderVariants}
+                          labels={labels}
+                          variantLabels={variantLabels}
+                          onRenameValueChange={setRenameValue}
+                          onCommitRename={() => commitRename(variant.id)}
+                          onCancelRename={cancelRename}
+                          onSelect={() => selectMilestone(variant.id)}
+                          onCopy={() => copyVariant(variant.id)}
+                          onStartRename={() => startRename(variant.id, variant.name)}
+                          onOpenNotes={() => openNotes(variant.id)}
+                          onExport={() => handleExportVariant(variant.id)}
+                          onDelete={() => deleteVariant(variant.id)}
+                          onDragStart={() => setDraggedIndex(index)}
+                          onDragEnd={clearVariantDrag}
+                          onDragOverItem={() => setDragOverIndex(index)}
+                          onDropItem={(fromIndex) => handleVariantDrop(fromIndex, index)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          </>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4">
             <h3 className="shrink-0 px-1 text-sm font-semibold text-[var(--color-foreground)]">
-              {labels.variantsSection}
+              {labels["notes"] ?? "Notes"}
             </h3>
 
-            <ScrollArea className="min-h-0 flex-1">
-              <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/20">
-                {variants.map((variant, index) => {
-                  const key = variantKey(variant.id);
-                  const isActive = activeVariantId === variant.id;
-                  const isRenaming = renamingKey === key;
-                  const notes = getVariantNotes(entry, variant.id);
-
-                  return (
-                    <div
-                      key={key}
-                      className={cn(index > 0 && "border-t border-[var(--color-border)]/50")}
-                    >
-                      <VariantRow
-                        index={index}
-                        variant={{ ...variant, notes }}
-                        isActive={isActive}
-                        isRenaming={isRenaming}
-                        isDragging={draggedIndex === index}
-                        isDragOver={dragOverIndex === index && draggedIndex !== index}
-                        renameValue={renameValue}
-                        canDelete={canDeleteVariant}
-                        canReorder={canReorderVariants}
-                        labels={labels}
-                        variantLabels={variantLabels}
-                        onRenameValueChange={setRenameValue}
-                        onCommitRename={() => commitRename(variant.id)}
-                        onCancelRename={cancelRename}
-                        onSelect={() => selectMilestone(variant.id)}
-                        onCopy={() => copyVariant(variant.id)}
-                        onStartRename={() => startRename(variant.id, variant.name)}
-                        onOpenNotes={() => openNotes(variant.id)}
-                        onExport={() => handleExportVariant(variant.id)}
-                        onDelete={() => deleteVariant(variant.id)}
-                        onDragStart={() => setDraggedIndex(index)}
-                        onDragEnd={clearVariantDrag}
-                        onDragOverItem={() => setDragOverIndex(index)}
-                        onDropItem={(fromIndex) => handleVariantDrop(fromIndex, index)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </section>
-
-          <section
-            className={cn(
-              "flex min-h-0 flex-col overflow-hidden",
-              mobilePane !== "notes" && "max-lg:hidden",
-            )}
-          >
-            <div className="shrink-0">
-              <div className="flex items-start justify-between gap-3 px-1">
-                <div className="min-w-0">
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
-                    {labels["notes"] ?? "Notes"}
-                  </p>
-                  <p className="mt-1 truncate text-sm font-semibold text-[var(--color-foreground)]">
-                    {notesVariant?.name ?? labels["notesEmptyTitle"] ?? "Select a variant"}
-                  </p>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 lg:hidden"
-                    onClick={closeNotesMobile}
-                  >
-                    {labels.back}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8"
-                    disabled={!notesVariant || notesDraft === persistedNotes}
-                    onClick={resetNotesDraft}
-                  >
-                    {labels["resetNotes"] ?? "Reset"}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="h-8"
-                    disabled={!notesVariant || notesDraft === persistedNotes}
-                    onClick={saveNotesDraft}
-                  >
-                    {labels["saveNotes"] ?? "Save"}
-                  </Button>
-                </div>
-              </div>
+            <div className="mt-2 flex items-center justify-end gap-2 px-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8"
+                disabled={!notesVariant || notesDraft === persistedNotes}
+                onClick={resetNotesDraft}
+              >
+                {labels["resetNotes"] ?? "Reset"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="h-8"
+                disabled={!notesVariant || notesDraft === persistedNotes}
+                onClick={saveNotesDraft}
+              >
+                {labels["saveNotes"] ?? "Save"}
+              </Button>
             </div>
 
             <div className="mt-2 min-h-0 flex-1">
@@ -720,8 +698,8 @@ export function VariantsManagerPanel() {
                 </p>
               )}
             </div>
-          </section>
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
