@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode, type RefObject } from "react";
+import { useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import {
   Bold,
   Code,
@@ -20,34 +20,12 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { formatShortcutLabel, resolveMarkdownShortcut } from "@/lib/markdownKeybindings";
 import {
-  applyMarkdownCodeBlock,
-  applyMarkdownHeading,
-  applyMarkdownHorizontalRule,
-  applyMarkdownImage,
-  applyMarkdownLinePrefix,
-  applyMarkdownLink,
-  applyMarkdownNormalText,
-  applyMarkdownOrderedList,
-  applyMarkdownWrap,
+  applyVariantNotesFormat,
+  type MarkdownFormat,
   type TextEditResult,
 } from "@/lib/markdownFormatting";
-
-type MarkdownFormat =
-  | "bold"
-  | "italic"
-  | "boldItalic"
-  | "strikethrough"
-  | "code"
-  | "codeBlock"
-  | "link"
-  | "image"
-  | "list"
-  | "orderedList"
-  | "blockquote"
-  | "horizontalRule"
-  | "normalText"
-  | `heading-${1 | 2 | 3 | 4 | 5 | 6}`;
 
 interface VariantNotesEditorProps {
   value: string;
@@ -59,21 +37,50 @@ interface VariantNotesEditorProps {
   textareaRef?: RefObject<HTMLTextAreaElement | null>;
 }
 
+function applyFormatToTextarea(
+  format: MarkdownFormat,
+  textarea: HTMLTextAreaElement,
+  value: string,
+): TextEditResult {
+  return applyVariantNotesFormat(format, value, {
+    start: textarea.selectionStart,
+    end: textarea.selectionEnd,
+  });
+}
+
+export function commitVariantNotesFormat(
+  format: MarkdownFormat,
+  textarea: HTMLTextAreaElement,
+  value: string,
+  onChange: (value: string) => void,
+): void {
+  const result = applyFormatToTextarea(format, textarea, value);
+  onChange(result.value);
+  requestAnimationFrame(() => {
+    textarea.focus();
+    textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
+  });
+}
+
 function ToolbarDivider() {
   return <div className="mx-0.5 h-4 w-px shrink-0 bg-[var(--color-border)]/80" aria-hidden />;
 }
 
 function ToolbarButton({
   label,
+  shortcut,
   onClick,
   disabled,
   children,
 }: {
   label: string;
+  shortcut?: string;
   onClick: () => void;
   disabled?: boolean;
   children: ReactNode;
 }) {
+  const title = shortcut ? `${label} (${shortcut})` : label;
+
   return (
     <Button
       type="button"
@@ -82,64 +89,12 @@ function ToolbarButton({
       className="h-7 w-7 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
       onClick={onClick}
       disabled={disabled}
-      aria-label={label}
-      title={label}
+      aria-label={title}
+      title={title}
     >
       {children}
     </Button>
   );
-}
-
-function applyFormatToNotes(
-  format: MarkdownFormat,
-  textarea: HTMLTextAreaElement,
-  value: string,
-): TextEditResult {
-  const selection = {
-    start: textarea.selectionStart,
-    end: textarea.selectionEnd,
-  };
-
-  switch (format) {
-    case "bold":
-      return applyMarkdownWrap(value, selection, "**", "**", "bold");
-    case "italic":
-      return applyMarkdownWrap(value, selection, "*", "*", "italic");
-    case "boldItalic":
-      return applyMarkdownWrap(value, selection, "***", "***", "text");
-    case "strikethrough":
-      return applyMarkdownWrap(value, selection, "~~", "~~", "strike");
-    case "code":
-      return applyMarkdownWrap(value, selection, "`", "`", "code");
-    case "codeBlock":
-      return applyMarkdownCodeBlock(value, selection);
-    case "link":
-      return applyMarkdownLink(value, selection);
-    case "image":
-      return applyMarkdownImage(value, selection);
-    case "list":
-      return applyMarkdownLinePrefix(value, selection, "- ");
-    case "orderedList":
-      return applyMarkdownOrderedList(value, selection);
-    case "blockquote":
-      return applyMarkdownLinePrefix(value, selection, "> ");
-    case "horizontalRule":
-      return applyMarkdownHorizontalRule(value, selection);
-    case "normalText":
-      return applyMarkdownNormalText(value, selection);
-    case "heading-1":
-      return applyMarkdownHeading(value, selection, 1);
-    case "heading-2":
-      return applyMarkdownHeading(value, selection, 2);
-    case "heading-3":
-      return applyMarkdownHeading(value, selection, 3);
-    case "heading-4":
-      return applyMarkdownHeading(value, selection, 4);
-    case "heading-5":
-      return applyMarkdownHeading(value, selection, 5);
-    case "heading-6":
-      return applyMarkdownHeading(value, selection, 6);
-  }
 }
 
 function VariantNotesToolbarControls({
@@ -158,13 +113,7 @@ function VariantNotesToolbarControls({
   const applyFormat = (format: MarkdownFormat) => {
     const textarea = textareaRef.current;
     if (!textarea || disabled) return;
-
-    const result = applyFormatToNotes(format, textarea, value);
-    onChange(result.value);
-    requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
-    });
+    commitVariantNotesFormat(format, textarea, value, onChange);
   };
 
   const applyHeading = (level: string) => {
@@ -203,10 +152,20 @@ function VariantNotesToolbarControls({
 
       <ToolbarDivider />
 
-      <ToolbarButton label="Bold" onClick={() => applyFormat("bold")} disabled={disabled}>
+      <ToolbarButton
+        label="Bold"
+        shortcut={formatShortcutLabel("bold")}
+        onClick={() => applyFormat("bold")}
+        disabled={disabled}
+      >
         <Bold className="h-3 w-3" />
       </ToolbarButton>
-      <ToolbarButton label="Italic" onClick={() => applyFormat("italic")} disabled={disabled}>
+      <ToolbarButton
+        label="Italic"
+        shortcut={formatShortcutLabel("italic")}
+        onClick={() => applyFormat("italic")}
+        disabled={disabled}
+      >
         <Italic className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton
@@ -218,6 +177,7 @@ function VariantNotesToolbarControls({
       </ToolbarButton>
       <ToolbarButton
         label="Strikethrough"
+        shortcut={formatShortcutLabel("strikethrough")}
         onClick={() => applyFormat("strikethrough")}
         disabled={disabled}
       >
@@ -226,13 +186,28 @@ function VariantNotesToolbarControls({
 
       <ToolbarDivider />
 
-      <ToolbarButton label="Inline code" onClick={() => applyFormat("code")} disabled={disabled}>
+      <ToolbarButton
+        label="Inline code"
+        shortcut={formatShortcutLabel("code")}
+        onClick={() => applyFormat("code")}
+        disabled={disabled}
+      >
         <Code className="h-3 w-3" />
       </ToolbarButton>
-      <ToolbarButton label="Code block" onClick={() => applyFormat("codeBlock")} disabled={disabled}>
+      <ToolbarButton
+        label="Code block"
+        shortcut={formatShortcutLabel("codeBlock")}
+        onClick={() => applyFormat("codeBlock")}
+        disabled={disabled}
+      >
         <span className="font-mono text-[9px]">{"{ }"}</span>
       </ToolbarButton>
-      <ToolbarButton label="Link" onClick={() => applyFormat("link")} disabled={disabled}>
+      <ToolbarButton
+        label="Link"
+        shortcut={formatShortcutLabel("link")}
+        onClick={() => applyFormat("link")}
+        disabled={disabled}
+      >
         <Link className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton label="Image" onClick={() => applyFormat("image")} disabled={disabled}>
@@ -241,17 +216,28 @@ function VariantNotesToolbarControls({
 
       <ToolbarDivider />
 
-      <ToolbarButton label="Bullet list" onClick={() => applyFormat("list")} disabled={disabled}>
+      <ToolbarButton
+        label="Bullet list"
+        shortcut={formatShortcutLabel("list")}
+        onClick={() => applyFormat("list")}
+        disabled={disabled}
+      >
         <List className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton
         label="Numbered list"
+        shortcut={formatShortcutLabel("orderedList")}
         onClick={() => applyFormat("orderedList")}
         disabled={disabled}
       >
         <ListOrdered className="h-3 w-3" />
       </ToolbarButton>
-      <ToolbarButton label="Blockquote" onClick={() => applyFormat("blockquote")} disabled={disabled}>
+      <ToolbarButton
+        label="Blockquote"
+        shortcut={formatShortcutLabel("blockquote")}
+        onClick={() => applyFormat("blockquote")}
+        disabled={disabled}
+      >
         <Quote className="h-3 w-3" />
       </ToolbarButton>
       <ToolbarButton
@@ -311,6 +297,16 @@ export function VariantNotesEditor({
   const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalTextareaRef ?? internalTextareaRef;
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (disabled) return;
+
+    const format = resolveMarkdownShortcut(event);
+    if (!format) return;
+
+    event.preventDefault();
+    commitVariantNotesFormat(format, event.currentTarget, value, onChange);
+  };
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-1.5">
       {showToolbar && (
@@ -329,6 +325,7 @@ export function VariantNotesEditor({
         ref={textareaRef}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
         className={cn(
