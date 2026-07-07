@@ -1,4 +1,4 @@
-import { AlertCircle, ChevronsDown, ChevronsUp, Minus, Plus, Wallet } from "lucide-react";
+import { AlertCircle, AlertTriangle, ChevronsDown, ChevronsUp, Minus, Plus, Wallet } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { NumericLevelInput } from "@/components/NumericLevelInput";
@@ -362,7 +362,8 @@ export function LevelBar() {
 
   if (!gameData || !computed) return null;
 
-  const { baseLevel, maxPlayerLevel, initialPerkPoints } = gameData.game.mechanics.leveling;
+  const { baseLevel, maxPlayerLevel, standardMaxPlayerLevel, initialPerkPoints } =
+    gameData.game.mechanics.leveling;
   const minimumPlayerLevel = getMinimumPlayerLevelForBuild(gameData.game, build);
   const ensuredPlayerLevel = ensurePlayerLevelForBuild(gameData.game, build, {
     ensureMinimumPlayerLevel: true,
@@ -454,6 +455,10 @@ export function LevelBar() {
     alertMessages.length === 1
       ? alertMessages[0]
       : formatLabel(barLabels.buildIssuesAlert, { playerLevel: build.playerLevel });
+  const showEasyModeWarning = build.playerLevel > standardMaxPlayerLevel;
+  const easyModeLevelWarning = formatLabel(barLabels.easyModeLevelWarning, {
+    standardMax: standardMaxPlayerLevel,
+  });
 
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">
@@ -504,6 +509,13 @@ export function LevelBar() {
           >
             <ChevronsDown className="h-3.5 w-3.5" />
           </LevelStepperTooltipButton>
+
+          {showEasyModeWarning && (
+            <span className="inline-flex max-w-[14rem] items-start gap-1 text-[10px] leading-snug text-[var(--color-accent)] sm:max-w-none">
+              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+              <span>{easyModeLevelWarning}</span>
+            </span>
+          )}
 
           <MobileBudgetDropdown
             barLabels={barLabels}

@@ -108,7 +108,8 @@
     "setToMinimumLevel": "Set to minimum level",
     "setToMinimumLevelInfo": "Set player level to the lowest level that supports your current perks, skills, attribute choices, and point spending.",
     "ensurePlayerLevel": "Raise to required level",
-    "ensurePlayerLevelInfo": "Raise player level to satisfy skill caps, training, skill gain limits, perk level requirements, and perk/skill point spending."
+    "ensurePlayerLevelInfo": "Raise player level to satisfy skill caps, training, skill gain limits, perk level requirements, and perk/skill point spending.",
+    "easyModeLevelWarning": "Levels above {standardMax} are only for Lorerim's easy mode."
   },
   "panels": {
     "character-setup": {

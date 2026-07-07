@@ -1,7 +1,8 @@
 {
   "leveling": {
     "baseLevel": 1,
-    "maxPlayerLevel": 101,
+    "maxPlayerLevel": 201,
+    "standardMaxPlayerLevel": 101,
     "maxSkillLevel": 100,
     "skillPointsPerLevel": 30,
     "perkPointsPerLevel": 1,
