@@ -47,7 +47,7 @@ export function WorkspacePanelHeader({
             <p className="mt-1 text-xs text-[var(--color-muted)]">{subtitle}</p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex min-w-0 shrink items-center gap-2">
           {headerDropdown}
           {nav && (
             <Button

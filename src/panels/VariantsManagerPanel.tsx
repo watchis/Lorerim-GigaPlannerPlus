@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
+import { VariantOption, variantSelectItemClassName } from "@/components/VariantOption";
 import { VariantNotesEditor } from "@/components/VariantNotesEditor";
 import { VariantNotesMarkdown } from "@/components/VariantNotesMarkdown";
 import { Button } from "@/components/ui/button";
@@ -710,8 +711,20 @@ export function VariantsManagerPanel() {
         headerDropdown={
           activePane === "notes" ? (
             <Select value={notesVariantSelectValue} onValueChange={switchNotesVariant}>
-              <SelectTrigger className="h-8 w-[min(12rem,40vw)] gap-2 px-2 text-xs">
-                <SelectValue placeholder={labels["notesVariant"] ?? "Variant"} />
+              <SelectTrigger className="h-8 min-w-0 w-[min(12rem,40vw)] gap-2 overflow-hidden px-2 text-xs">
+                <SelectValue
+                  className="min-w-0 flex-1 overflow-hidden"
+                  placeholder={labels["notesVariant"] ?? "Variant"}
+                >
+                  {notesVariant ? (
+                    <VariantOption
+                      name={notesVariant.name}
+                      levelText={formatLabel(variantLabels.levelShort, {
+                        level: notesVariant.level,
+                      })}
+                    />
+                  ) : null}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent
                 position="popper"
@@ -722,14 +735,12 @@ export function VariantsManagerPanel() {
                   <SelectItem
                     key={variantKey(variant.id)}
                     value={String(index)}
-                    className="min-h-0 py-2 pl-8 pr-2 text-sm leading-snug focus:bg-[var(--color-surface)]"
+                    className={variantSelectItemClassName}
                   >
-                    <span className="flex w-full min-w-0 items-center justify-between gap-2">
-                      <span className="min-w-0 truncate font-medium">{variant.name}</span>
-                      <span className="shrink-0 rounded-[var(--radius-sm)] bg-[var(--color-background)]/70 px-1.5 py-0.5 font-mono text-xs tabular-nums text-[var(--color-muted)]">
-                        {formatLabel(variantLabels.levelShort, { level: variant.level })}
-                      </span>
-                    </span>
+                    <VariantOption
+                      name={variant.name}
+                      levelText={formatLabel(variantLabels.levelShort, { level: variant.level })}
+                    />
                   </SelectItem>
                 ))}
               </SelectContent>

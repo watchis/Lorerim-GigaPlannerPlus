@@ -16,37 +16,16 @@ import {
 } from "@/store/savedBuilds";
 import { useBuildStore } from "@/store/buildStore";
 import { useUiStore } from "@/store/uiStore";
+import { VariantOption, variantSelectItemClassName } from "@/components/VariantOption";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 
 const DEFAULT_VALUE = "default";
 const MANAGE_VALUE = "__manage__";
 
-const variantItemClassName =
-  "min-h-0 py-2 pl-8 pr-2 text-sm leading-snug focus:bg-[var(--color-surface)]";
-
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
     (result, [key, value]) => result.replace(`{${key}}`, String(value)),
     template,
-  );
-}
-
-function VariantOption({
-  name,
-  level,
-  levelLabel,
-}: {
-  name: string;
-  level: number;
-  levelLabel: string;
-}) {
-  return (
-    <span className="flex w-full min-w-0 items-center justify-between gap-2">
-      <span className="min-w-0 truncate font-medium">{name}</span>
-      <span className="shrink-0 rounded-[var(--radius-sm)] bg-[var(--color-background)]/70 px-1.5 py-0.5 font-mono text-xs tabular-nums text-[var(--color-muted)]">
-        {formatLabel(levelLabel, { level })}
-      </span>
-    </span>
   );
 }
 
@@ -97,12 +76,11 @@ export function BuildVariantsDropdown() {
       </span>
 
       <Select open={open} onOpenChange={setOpen} value={selectValue} onValueChange={handleSelect}>
-        <SelectTrigger className="h-9 gap-2 px-3 text-sm">
-          <SelectValue className="min-w-0 flex-1">
+        <SelectTrigger className="h-9 min-w-0 gap-2 overflow-hidden px-3 text-sm">
+          <SelectValue className="min-w-0 flex-1 overflow-hidden">
             <VariantOption
               name={currentName}
-              level={currentLevel}
-              levelLabel={variantLabels.levelShort}
+              levelText={formatLabel(variantLabels.levelShort, { level: currentLevel })}
             />
           </SelectValue>
         </SelectTrigger>
@@ -118,12 +96,11 @@ export function BuildVariantsDropdown() {
             >
               <SelectItem
                 value={variant.id ?? DEFAULT_VALUE}
-                className={`min-w-0 flex-1 ${variantItemClassName}`}
+                className={`min-w-0 flex-1 ${variantSelectItemClassName}`}
               >
                 <VariantOption
                   name={variant.name}
-                  level={variant.level}
-                  levelLabel={variantLabels.levelShort}
+                  levelText={formatLabel(variantLabels.levelShort, { level: variant.level })}
                 />
               </SelectItem>
               <Button
@@ -141,7 +118,7 @@ export function BuildVariantsDropdown() {
 
           <SelectSeparator className="my-1" />
 
-          <SelectItem value={MANAGE_VALUE} className={variantItemClassName}>
+          <SelectItem value={MANAGE_VALUE} className={variantSelectItemClassName}>
             {variantLabels.manageVariants}
           </SelectItem>
         </SelectContent>
