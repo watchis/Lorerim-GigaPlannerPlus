@@ -10,21 +10,27 @@ export interface BuildIssuesBannerState {
   showTooltip: boolean;
 }
 
+export function formatBuildIssuesSummary(template: string, count: number): string {
+  const issues = count === 1 ? "issue" : "issues";
+  return template.replace("{count}", String(count)).replace("{issues}", issues);
+}
+
 export function getBuildIssuesBannerState({
   isMobile,
   messages,
-  mobileSummary,
-  desktopSummary,
+  mobileSummaryTemplate,
+  desktopSummaryTemplate,
 }: {
   isMobile: boolean;
   messages: string[];
-  mobileSummary: string;
-  desktopSummary: string;
+  mobileSummaryTemplate: string;
+  desktopSummaryTemplate: string;
 }): BuildIssuesBannerState {
+  const count = messages.length;
   const displaySummary = isMobile
-    ? mobileSummary
-    : messages.length > 1
-      ? desktopSummary
+    ? formatBuildIssuesSummary(mobileSummaryTemplate, count)
+    : count > 1
+      ? formatBuildIssuesSummary(desktopSummaryTemplate, count)
       : (messages[0] ?? "");
 
   return {

@@ -22,8 +22,12 @@ describe("loadAppData", () => {
 
     expect(data.game.mechanics.leveling.maxPlayerLevel).toBe(201);
     expect(data.game.mechanics.leveling.standardMaxPlayerLevel).toBe(101);
-    expect(levelBar.buildIssuesAlertMobile).toBe("Your build has issues. Tap to see more.");
-    expect(levelBar.buildIssuesAlertDesktop).toBe("Your build has issues. Hover to see more.");
+    expect(levelBar.buildIssuesAlertMobile).toBe(
+      "Your build has {count} {issues}. Tap to see more.",
+    );
+    expect(levelBar.buildIssuesAlertDesktop).toBe(
+      "Your build has {count} {issues}. Hover to see more.",
+    );
     expect(levelBar.easyModeLevelWarning).toContain("{standardMax}");
   });
 

@@ -1,9 +1,33 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatBuildIssuesSummary,
   getBuildIssuesBannerState,
   shouldShowEasyModeLevelWarning,
   shrinkFontSizeToFit,
 } from "@/lib/levelBarDisplay";
+
+const mobileTemplate = "Your build has {count} {issues}. Tap to see more.";
+const desktopTemplate = "Your build has {count} {issues}. Hover to see more.";
+
+describe("formatBuildIssuesSummary", () => {
+  it("uses singular issue for a count of 1", () => {
+    expect(formatBuildIssuesSummary(mobileTemplate, 1)).toBe(
+      "Your build has 1 issue. Tap to see more.",
+    );
+    expect(formatBuildIssuesSummary(desktopTemplate, 1)).toBe(
+      "Your build has 1 issue. Hover to see more.",
+    );
+  });
+
+  it("uses plural issues for counts greater than 1", () => {
+    expect(formatBuildIssuesSummary(mobileTemplate, 3)).toBe(
+      "Your build has 3 issues. Tap to see more.",
+    );
+    expect(formatBuildIssuesSummary(desktopTemplate, 2)).toBe(
+      "Your build has 2 issues. Hover to see more.",
+    );
+  });
+});
 
 describe("shouldShowEasyModeLevelWarning", () => {
   it("is false at or below the standard max player level", () => {
@@ -19,33 +43,32 @@ describe("shouldShowEasyModeLevelWarning", () => {
 });
 
 describe("getBuildIssuesBannerState", () => {
-  const mobileSummary = "Your build has issues. Tap to see more.";
-  const desktopSummary = "Your build has issues. Hover to see more.";
   const issueA = "Perk points are over budget.";
   const issueB = "Skill points are over budget.";
+  const issueC = "Training is over budget.";
 
-  it("uses the mobile summary and tooltip for any issue count on mobile", () => {
+  it("uses the mobile summary with issue count and tooltip for any issue count", () => {
     expect(
       getBuildIssuesBannerState({
         isMobile: true,
         messages: [issueA],
-        mobileSummary,
-        desktopSummary,
+        mobileSummaryTemplate: mobileTemplate,
+        desktopSummaryTemplate: desktopTemplate,
       }),
     ).toEqual({
-      displaySummary: mobileSummary,
+      displaySummary: "Your build has 1 issue. Tap to see more.",
       showTooltip: true,
     });
 
     expect(
       getBuildIssuesBannerState({
         isMobile: true,
-        messages: [issueA, issueB],
-        mobileSummary,
-        desktopSummary,
+        messages: [issueA, issueB, issueC],
+        mobileSummaryTemplate: mobileTemplate,
+        desktopSummaryTemplate: desktopTemplate,
       }),
     ).toEqual({
-      displaySummary: mobileSummary,
+      displaySummary: "Your build has 3 issues. Tap to see more.",
       showTooltip: true,
     });
   });
@@ -55,8 +78,8 @@ describe("getBuildIssuesBannerState", () => {
       getBuildIssuesBannerState({
         isMobile: false,
         messages: [issueA],
-        mobileSummary,
-        desktopSummary,
+        mobileSummaryTemplate: mobileTemplate,
+        desktopSummaryTemplate: desktopTemplate,
       }),
     ).toEqual({
       displaySummary: issueA,
@@ -64,16 +87,16 @@ describe("getBuildIssuesBannerState", () => {
     });
   });
 
-  it("uses the desktop hover summary when multiple issues exist", () => {
+  it("uses the desktop hover summary with issue count when multiple issues exist", () => {
     expect(
       getBuildIssuesBannerState({
         isMobile: false,
         messages: [issueA, issueB],
-        mobileSummary,
-        desktopSummary,
+        mobileSummaryTemplate: mobileTemplate,
+        desktopSummaryTemplate: desktopTemplate,
       }),
     ).toEqual({
-      displaySummary: desktopSummary,
+      displaySummary: "Your build has 2 issues. Hover to see more.",
       showTooltip: true,
     });
   });

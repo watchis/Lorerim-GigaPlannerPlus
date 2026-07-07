@@ -186,12 +186,12 @@ function BuildIssuesTooltipContent({ messages }: { messages: string[] }) {
 }
 
 function BuildIssuesBanner({
-  mobileSummary,
-  desktopSummary,
+  mobileSummaryTemplate,
+  desktopSummaryTemplate,
   messages,
 }: {
-  mobileSummary: string;
-  desktopSummary: string;
+  mobileSummaryTemplate: string;
+  desktopSummaryTemplate: string;
   messages: string[];
 }) {
   const isMobile = useMobileLayout();
@@ -201,8 +201,8 @@ function BuildIssuesBanner({
   const { displaySummary, showTooltip } = getBuildIssuesBannerState({
     isMobile,
     messages,
-    mobileSummary,
-    desktopSummary,
+    mobileSummaryTemplate,
+    desktopSummaryTemplate,
   });
 
   const bannerClassName = cn(
@@ -244,7 +244,7 @@ function BuildIssuesBanner({
         <button
           type="button"
           className="flex w-full min-w-0 items-center gap-2 border-0 bg-transparent p-0 text-left text-inherit"
-          aria-label={mobileSummary}
+          aria-label={displaySummary}
           onClick={(event) => {
             setTouchAnchor({ x: event.clientX, y: event.clientY });
             setTouchOpen((open) => !open);
@@ -852,8 +852,8 @@ function LevelBarContent({
 
       {alertMessages.length > 0 && (
         <BuildIssuesBanner
-          mobileSummary={barLabels.buildIssuesAlertMobile}
-          desktopSummary={barLabels.buildIssuesAlertDesktop}
+          mobileSummaryTemplate={barLabels.buildIssuesAlertMobile}
+          desktopSummaryTemplate={barLabels.buildIssuesAlertDesktop}
           messages={alertMessages}
         />
       )}
