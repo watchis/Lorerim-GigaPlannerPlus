@@ -309,9 +309,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     });
 
     if (diffText) {
-      progress.step(`Changes detected in ${formatCount(
-        diffText.split(/^diff --git /m).length - 1,
-      )} file(s):`);
+      progress.step(`Changes detected in ${formatCount(countDiffFiles(diffText))} file(s):`);
       console.log(diffText);
     } else {
       progress.step("No changes detected.");
