@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import { createTestBuildState } from "@/test/helpers";
 import {
   acknowledgeSavedBuildEdits,
+  createMilestone,
   createSavedBuild,
   isSavedBuildImported,
   markSavedBuildImported,
+  normalizeSavedBuild,
   touchSavedBuild,
   uniqueBuildName,
+  updateSavedBuildInList,
 } from "@/store/savedBuilds";
 
 describe("uniqueBuildName", () => {
@@ -65,5 +68,55 @@ describe("imported build markers", () => {
   it("acknowledgeSavedBuildEdits is a no-op for non-imported builds", () => {
     const entry = createSavedBuild("Local", build);
     expect(acknowledgeSavedBuildEdits(entry)).toBe(entry);
+  });
+
+  it("createSavedBuild can mark a new slot as imported", () => {
+    const entry = createSavedBuild("Imported", build, [], undefined, { imported: true });
+    expect(isSavedBuildImported(entry)).toBe(true);
+  });
+
+  it("normalizeSavedBuild defaults importedAt to null for legacy entries", () => {
+    const legacy = {
+      ...createSavedBuild("Legacy", build),
+      importedAt: undefined as unknown as null,
+    };
+    expect(normalizeSavedBuild(legacy).importedAt).toBeNull();
+  });
+});
+
+describe("updateSavedBuildInList imported markers", () => {
+  const build = createTestBuildState({ description: "Baseline" });
+
+  it("keeps the imported marker when syncing unchanged build content", () => {
+    const imported = markSavedBuildImported(createSavedBuild("Imported", build));
+    const synced = updateSavedBuildInList([imported], imported.id, build)[0]!;
+
+    expect(isSavedBuildImported(synced)).toBe(true);
+    expect(synced.importedAt).toBe(imported.importedAt);
+  });
+
+  it("clears the imported marker when synced build content changes", () => {
+    const imported = markSavedBuildImported(createSavedBuild("Imported", build));
+    const synced = updateSavedBuildInList(
+      [imported],
+      imported.id,
+      { ...build, deityId: "arkay" },
+    )[0]!;
+
+    expect(isSavedBuildImported(synced)).toBe(false);
+    expect(synced.build.deityId).toBe("arkay");
+  });
+
+  it("keeps the imported marker for unchanged active milestone builds", () => {
+    const milestoneBuild = createTestBuildState({ description: "Milestone" });
+    const milestone = createMilestone("Level 25", milestoneBuild);
+    const imported = markSavedBuildImported(
+      createSavedBuild("Imported", build, [milestone]),
+    );
+    imported.activeMilestoneId = milestone.id;
+
+    const synced = updateSavedBuildInList([imported], imported.id, milestoneBuild)[0]!;
+
+    expect(isSavedBuildImported(synced)).toBe(true);
   });
 });

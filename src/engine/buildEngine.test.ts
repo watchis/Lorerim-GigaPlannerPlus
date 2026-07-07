@@ -27,6 +27,7 @@ import {
   arePrerequisitesMet,
   getPerkById,
   removePerk,
+  areBuildStatesEqual,
 } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 
@@ -562,5 +563,67 @@ describe("computeBuild ally-only perks", () => {
     expect(allySources).toEqual([
       { stat: "priceModifier", value: 10 },
     ]);
+  });
+});
+
+describe("areBuildStatesEqual", () => {
+  it("returns true for identical build snapshots", () => {
+    const build = createTestBuildState({
+      raceId: "nord",
+      deityId: "arkay",
+      selectedPerkIds: ["block-improved-blocking"],
+      skillLevels: { block: 25 },
+      skillTrainingRanges: { block: [1, 0, 0, 0] },
+      description: "Same build",
+    });
+
+    expect(areBuildStatesEqual(build, { ...build })).toBe(true);
+  });
+
+  it("detects differences across planner-editable fields", () => {
+    const base = createTestBuildState({
+      raceId: "nord",
+      birthsignId: "none",
+      deityId: "none",
+      traitIds: ["robust"],
+      majorSkillIds: ["block"],
+      minorSkillIds: ["one-handed"],
+      attributeBonus: { health: 1, magicka: 0, stamina: 0 },
+      characterOptionChoices: { "oghma-infinium": "health" },
+      selectedPerkIds: ["block-improved-blocking"],
+      skillLevels: { block: 20 },
+      skillTrainingRanges: { block: [1, 0, 0, 0] },
+      playerLevel: 5,
+      description: "Baseline",
+    });
+
+    expect(areBuildStatesEqual(base, { ...base, raceId: "breton" })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, birthsignId: "lover" })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, deityId: "arkay" })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, traitIds: [] })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, majorSkillIds: ["smithing"] })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, minorSkillIds: ["block"] })).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        attributeBonus: { health: 2, magicka: 0, stamina: 0 },
+      }),
+    ).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        characterOptionChoices: { "oghma-infinium": "magicka" },
+      }),
+    ).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, selectedPerkIds: [] })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, skillLevels: { block: 21 } })).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        skillTrainingRanges: { block: [2, 0, 0, 0] },
+      }),
+    ).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, playerLevel: 6 })).toBe(false);
+    expect(areBuildStatesEqual(base, { ...base, description: "Changed" })).toBe(false);
   });
 });

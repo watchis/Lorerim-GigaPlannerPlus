@@ -187,4 +187,109 @@ describe("buildStore shared build import", () => {
     const importedSlot = useBuildStore.getState().savedBuilds.find((entry) => entry.id === importedId);
     expect(isSavedBuildImported(importedSlot!)).toBe(true);
   });
+
+  it("keeps the imported marker on the imported slot after switching away", () => {
+    const localBuild = createTestBuildState({ description: "Local build" });
+    const localEntry = createSavedBuild("Local Build", localBuild);
+    const importedBuild = createTestBuildState({ description: "Imported build" });
+    const importedEntry = markSavedBuildImported(createSavedBuild("Imported Build", importedBuild));
+    const importedId = importedEntry.id;
+
+    useBuildStore.setState({
+      savedBuilds: [localEntry, importedEntry],
+      activeBuildId: importedId,
+      build: importedBuild,
+    });
+
+    useBuildStore.getState().selectSavedBuildSlot(localEntry.id);
+
+    const importedSlot = useBuildStore.getState().savedBuilds.find((entry) => entry.id === importedId);
+    expect(useBuildStore.getState().activeBuildId).toBe(localEntry.id);
+    expect(isSavedBuildImported(importedSlot!)).toBe(true);
+  });
+
+  it("importBuildAsSlot marks the new slot imported and deduplicates the name", () => {
+    const importedBuild = createTestBuildState({
+      raceId: "breton",
+      description: "File import",
+    });
+
+    useBuildStore.getState().importBuildAsSlot(importedBuild, "My Build");
+
+    const state = useBuildStore.getState();
+    const importedSlot = state.savedBuilds.find((entry) => entry.name === "My Build copy");
+
+    expect(importedSlot).toBeDefined();
+    expect(isSavedBuildImported(importedSlot!)).toBe(true);
+    expect(state.activeBuildId).toBe(importedSlot?.id);
+    expect(state.build.description).toBe("File import");
+  });
+
+  it("importSharedBuild without shared metadata marks the new slot imported", () => {
+    const importedBuild = createTestBuildState({
+      raceId: "breton",
+      description: "Plain codec import",
+    });
+    const decoded = decodeBuildPackage(encodeBuild(importedBuild, game), game);
+
+    useBuildStore.getState().importSharedBuild(decoded);
+
+    const activeEntry = useBuildStore
+      .getState()
+      .savedBuilds.find((entry) => entry.id === useBuildStore.getState().activeBuildId);
+    expect(activeEntry?.build.description).toBe("Plain codec import");
+    expect(isSavedBuildImported(activeEntry!)).toBe(true);
+  });
+
+  it("loadSharedBuild replaces the active slot without marking it imported", () => {
+    const importedBuild = createTestBuildState({
+      raceId: "breton",
+      description: "Replaced active build",
+    });
+    const decoded = decodeBuildPackage(encodeBuild(importedBuild, game), game);
+    const previousActiveId = useBuildStore.getState().activeBuildId;
+
+    useBuildStore.getState().loadSharedBuild(decoded);
+
+    const activeEntry = useBuildStore
+      .getState()
+      .savedBuilds.find((entry) => entry.id === previousActiveId);
+    expect(activeEntry?.build.description).toBe("Replaced active build");
+    expect(isSavedBuildImported(activeEntry!)).toBe(false);
+  });
+
+  it("renameSavedBuildSlot does not clear the imported marker", () => {
+    const importedBuild = createTestBuildState({ description: "Imported build" });
+    const importedEntry = markSavedBuildImported(createSavedBuild("Imported Build", importedBuild));
+
+    useBuildStore.setState({
+      savedBuilds: [importedEntry],
+      activeBuildId: importedEntry.id,
+      build: importedBuild,
+    });
+
+    useBuildStore.getState().renameSavedBuildSlot(importedEntry.id, "Renamed Import");
+
+    const renamed = useBuildStore.getState().savedBuilds.find((entry) => entry.id === importedEntry.id);
+    expect(renamed?.name).toBe("Renamed Import");
+    expect(isSavedBuildImported(renamed!)).toBe(true);
+  });
+
+  it("clears the imported marker after planner edits such as changing race", () => {
+    const importedBuild = createTestBuildState({
+      raceId: "nord",
+      description: "Imported build",
+    });
+    const importedEntry = createSavedBuild("Imported Build", importedBuild);
+    const sharedDecoded = decodeBuildPackage(encodeSavedBuild(importedEntry, game), game);
+
+    useBuildStore.getState().importSharedBuild(sharedDecoded);
+    useBuildStore.getState().setRace("breton");
+
+    const activeEntry = useBuildStore
+      .getState()
+      .savedBuilds.find((entry) => entry.id === useBuildStore.getState().activeBuildId);
+    expect(activeEntry?.build.raceId).toBe("breton");
+    expect(isSavedBuildImported(activeEntry!)).toBe(false);
+  });
 });
