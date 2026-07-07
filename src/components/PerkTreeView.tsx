@@ -52,6 +52,8 @@ const TREE_VIEW_EDGE_PADDING_PX = 12;
 const MIN_TREE_ZOOM = 1;
 const MAX_TREE_ZOOM = 2.5;
 const PERK_DOUBLE_TAP_MS = 400;
+/** Wait past the double-tap window before showing a touch tooltip. */
+const PERK_TOOLTIP_DELAY_MS = PERK_DOUBLE_TAP_MS + 50;
 const PERK_BADGE_ROW_HEIGHT_PX = 16;
 const PERK_BADGE_GAP_PX = 2;
 const PERK_BADGE_EDGE_MARGIN_PX = 4;
@@ -404,6 +406,7 @@ function PerkNode({
   const badgeRef = useRef<HTMLDivElement>(null);
   const [badgesAbove, setBadgesAbove] = useState(() => position.y >= 75);
   const longPressTriggeredRef = useRef(false);
+  const singleTapTooltipTimerRef = useRef<number | null>(null);
   const lastTapRef = useRef(0);
   const touchInteractionRef = useRef(false);
   const touchClearRef = useRef<number | null>(null);
@@ -414,6 +417,21 @@ function PerkNode({
       window.clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
+  };
+
+  const clearSingleTapTooltipTimer = () => {
+    if (singleTapTooltipTimerRef.current !== null) {
+      window.clearTimeout(singleTapTooltipTimerRef.current);
+      singleTapTooltipTimerRef.current = null;
+    }
+  };
+
+  const scheduleTouchTooltip = () => {
+    clearSingleTapTooltipTimer();
+    singleTapTooltipTimerRef.current = window.setTimeout(() => {
+      singleTapTooltipTimerRef.current = null;
+      showTouchTooltip();
+    }, PERK_TOOLTIP_DELAY_MS);
   };
 
   const markTouchInteraction = () => {
@@ -493,6 +511,7 @@ function PerkNode({
 
     longPressTriggeredRef.current = false;
     clearLongPressTimer();
+    clearSingleTapTooltipTimer();
 
     if (event.pointerType === "mouse") {
       handleMouseDown(event as unknown as MouseEvent<HTMLButtonElement>);
@@ -526,17 +545,19 @@ function PerkNode({
     const now = Date.now();
     if (now - lastTapRef.current < PERK_DOUBLE_TAP_MS) {
       lastTapRef.current = 0;
+      clearSingleTapTooltipTimer();
       onCloseTouchTooltip();
       handleForceAllocate(true);
       return;
     }
 
     lastTapRef.current = now;
-    showTouchTooltip();
+    scheduleTouchTooltip();
   };
 
   const handlePointerCancel = () => {
     clearLongPressTimer();
+    clearSingleTapTooltipTimer();
     longPressTriggeredRef.current = false;
     clearTouchInteraction();
   };
@@ -544,6 +565,7 @@ function PerkNode({
   useEffect(
     () => () => {
       clearLongPressTimer();
+      clearSingleTapTooltipTimer();
       clearTouchInteraction();
     },
     [],
