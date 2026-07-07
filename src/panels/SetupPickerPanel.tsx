@@ -20,7 +20,7 @@ import { SingleSelectPickerView, type SingleSelectOption } from "@/panels/Single
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
-import { usePlannerCompactUI } from "@/layout/plannerLayout";
+import { usePlannerCompactUI, usePlannerStackedLayout } from "@/layout/plannerLayout";
 
 function pickerTitle(picker: SetupPicker, labels: Record<string, string>): string {
   switch (picker) {
@@ -109,6 +109,7 @@ export function SetupPickerPanel() {
   const toggleMinorSkill = useBuildStore((s) => s.toggleMinorSkill);
   const [skillSearchQuery, setSkillSearchQuery] = useState("");
   const compactUI = usePlannerCompactUI();
+  const stackedLayout = usePlannerStackedLayout();
 
   useEffect(() => {
     setSkillSearchQuery("");
@@ -299,6 +300,12 @@ export function SetupPickerPanel() {
             searchPlaceholder={labels.search}
             noMatchesLabel={labels.noMatches}
             selectedLabel={labels.selected}
+            touchPreviewSelect={
+              stackedLayout &&
+              (setupPicker === "race" ||
+                setupPicker === "birthsign" ||
+                setupPicker === "deity")
+            }
           />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">

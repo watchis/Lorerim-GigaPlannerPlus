@@ -57,7 +57,7 @@ export const TooltipContent = forwardRef<
 ));
 TooltipContent.displayName = "TooltipContent";
 
-function useSupportsHover(): boolean {
+export function useSupportsHover(): boolean {
   const [supportsHover, setSupportsHover] = useState(() => {
     if (typeof window === "undefined") return true;
     return window.matchMedia("(hover: hover) and (pointer: fine)").matches;

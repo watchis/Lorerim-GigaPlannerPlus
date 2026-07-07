@@ -6,6 +6,7 @@ import {
   PickerListPanel,
 } from "@/components/picker/PickerListItem";
 import { PickerSearchInput, matchesPickerSearch } from "@/components/PickerSearchInput";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { usePlannerCompactUI, usePlannerStackedLayout } from "@/layout/plannerLayout";
@@ -27,6 +28,8 @@ interface SingleSelectPickerViewProps {
   searchPlaceholder?: string;
   noMatchesLabel?: string;
   selectedLabel?: string;
+  /** On touch layouts, tap list rows to preview; confirm selection from the detail panel. */
+  touchPreviewSelect?: boolean;
 }
 
 export function SingleSelectPickerView({
@@ -36,10 +39,12 @@ export function SingleSelectPickerView({
   searchPlaceholder = "Search...",
   noMatchesLabel = "No matches",
   selectedLabel = "Selected",
+  touchPreviewSelect = false,
 }: SingleSelectPickerViewProps) {
   const stackedLayout = usePlannerStackedLayout();
   const compactUI = usePlannerCompactUI();
   const sideBySide = !compactUI;
+  const useTouchPreview = stackedLayout && touchPreviewSelect;
 
   const [query, setQuery] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(
@@ -70,14 +75,15 @@ export function SingleSelectPickerView({
     <div
       className={cn(
         "flex min-h-0 flex-1 gap-3",
-        sideBySide ? "flex-row" : "min-h-[24rem] flex-col sm:min-h-[28rem]",
-        stackedLayout && !sideBySide && "min-h-[32dvh]",
+        sideBySide ? "flex-row" : "flex-col",
+        stackedLayout && !sideBySide && "gap-2",
       )}
     >
       <PickerListPanel
         className={cn(
-          "h-auto w-full shrink-0",
-          sideBySide ? "h-full w-52 max-w-[45%]" : "max-h-[40dvh] sm:max-h-48",
+          "min-h-0 w-full shrink-0",
+          sideBySide ? "h-full w-52 max-w-[45%]" : "flex-[0_0_42%]",
+          stackedLayout && !sideBySide && "flex-1",
         )}
       >
         <PickerSearchInput
@@ -86,7 +92,7 @@ export function SingleSelectPickerView({
           placeholder={searchPlaceholder}
         />
         <ScrollArea className="picker-list-scroll min-h-0 flex-1">
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             {filteredOptions.length === 0 ? (
               <p className="px-2 py-3 text-center text-xs text-[var(--color-muted)]">
                 {noMatchesLabel}
@@ -101,6 +107,7 @@ export function SingleSelectPickerView({
                   isEnabled={option.isEnabled}
                   onSelect={option.onSelect}
                   onPreview={() => setPreviewId(option.id)}
+                  touchPreviewOnly={useTouchPreview}
                   leading={option.leading}
                 />
               ))
@@ -108,7 +115,7 @@ export function SingleSelectPickerView({
           </div>
         </ScrollArea>
       </PickerListPanel>
-      <PickerDetailPanel>
+      <PickerDetailPanel className={cn(stackedLayout && !sideBySide && "min-h-0 flex-1")}>
         {previewOption ? (
           <>
             <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--color-border)]/70 px-4 py-3">
@@ -125,6 +132,19 @@ export function SingleSelectPickerView({
             <ScrollArea className="min-h-0 flex-1">
               <div className="px-4 py-3">{previewOption.detail}</div>
             </ScrollArea>
+            {useTouchPreview && (
+              <div className="shrink-0 border-t border-[var(--color-border)]/70 p-3">
+                <Button
+                  type="button"
+                  className="h-11 w-full"
+                  variant={previewOption.isSelected ? "outline" : "default"}
+                  disabled={previewOption.isEnabled === false && !previewOption.isSelected}
+                  onClick={previewOption.onSelect}
+                >
+                  {previewOption.isSelected ? selectedLabel : `Select ${previewOption.name}`}
+                </Button>
+              </div>
+            )}
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center p-8 text-sm text-[var(--color-muted)]">

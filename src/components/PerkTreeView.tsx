@@ -574,7 +574,7 @@ function PerkTreeView({
     <div
       className={cn(
         "relative h-full w-full",
-        !fit && "overflow-hidden",
+        !fit && !scrollable && "overflow-hidden",
       )}
       style={
         fit
@@ -677,6 +677,8 @@ function PerkTreeView({
   );
 
   if (scrollable && scrollSize) {
+    const canvasInset = Math.ceil(nodeDiameterPx / 2) + 8;
+
     const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
       if (event.touches.length === 2) {
         pinchStateRef.current = {
@@ -752,10 +754,19 @@ function PerkTreeView({
           onTouchCancel={handleTouchEnd}
         >
           <div
-            className="relative mx-auto shrink-0 p-4"
-            style={{ width: scrollSize.width, height: scrollSize.height }}
+            className="relative mx-auto shrink-0"
+            style={{
+              width: scrollSize.width + canvasInset * 2,
+              height: scrollSize.height + canvasInset * 2,
+              padding: canvasInset,
+            }}
           >
-            {treeCanvas}
+            <div
+              className="relative"
+              style={{ width: scrollSize.width, height: scrollSize.height }}
+            >
+              {treeCanvas}
+            </div>
           </div>
         </div>
       </div>

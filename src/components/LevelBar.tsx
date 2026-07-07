@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
   CursorTooltip,
   InfoTooltipButton,
+  useSupportsHover,
 } from "@/components/ui/tooltip";
 import {
   getBuildPlayerLevelWarnings,
@@ -354,6 +355,7 @@ function LevelStepperTooltipButton({
 export function LevelBar() {
   const { labels } = useThemeConfig();
   const barLabels = labels["level-bar"];
+  const supportsHover = useSupportsHover();
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const computed = useBuildStore((s) => s.computed);
@@ -453,7 +455,10 @@ export function LevelBar() {
   const alertSummary =
     alertMessages.length === 1
       ? alertMessages[0]
-      : formatLabel(barLabels.buildIssuesAlert, { playerLevel: build.playerLevel });
+      : formatLabel(
+          supportsHover ? barLabels.buildIssuesAlert : barLabels.buildIssuesAlertTouch,
+          { playerLevel: build.playerLevel },
+        );
 
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">

@@ -118,7 +118,7 @@ function SetupPickerRow({
           type="button"
           onClick={onOpen}
           className={cn(
-            "group flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-md)] border px-2.5 py-2 text-left transition-colors",
+            "group flex min-h-12 min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-colors",
             isActive
               ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/8"
               : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/40 hover:border-[var(--color-accent-muted)]/60 hover:bg-[var(--color-surface-elevated)]",
@@ -127,6 +127,11 @@ function SetupPickerRow({
           <div className="min-w-0 flex-1">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">
               {label}
+              {remaining !== undefined && (
+                <span className="ml-1.5 font-normal normal-case tracking-normal text-[var(--color-muted)]">
+                  ({remaining} left)
+                </span>
+              )}
             </div>
             {subline !== null && (
               <div
@@ -139,7 +144,7 @@ function SetupPickerRow({
               </div>
             )}
           </div>
-          {remaining !== undefined && (
+          {remaining !== undefined && !multi && (
             <span className="shrink-0 rounded-full bg-[var(--color-background)]/80 px-1.5 py-0.5 text-[10px] tabular-nums text-[var(--color-muted)]">
               {remaining}
             </span>
@@ -240,10 +245,16 @@ export function CharacterSetupPanel() {
   }));
 
   return (
-    <Card className="flex-shrink-0">
+    <Card
+      className={cn(
+        stackedLayout
+          ? "flex min-h-0 flex-1 flex-col overflow-hidden border-0 bg-transparent shadow-none"
+          : "flex-shrink-0",
+      )}
+    >
       <CardHeader
         className={cn(
-          "flex flex-row items-center justify-between space-y-0",
+          "flex shrink-0 flex-row items-center justify-between space-y-0",
           compact ? "pb-1.5" : "pb-2",
         )}
       >
@@ -264,7 +275,13 @@ export function CharacterSetupPanel() {
           <Settings className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent className={cn("space-y-3", compact && "space-y-2 text-[13px]")}>
+      <CardContent
+        className={cn(
+          "space-y-3",
+          compact && "space-y-2 text-[13px]",
+          stackedLayout && "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain pb-2",
+        )}
+      >
         <div className="space-y-1.5">
           <SetupPickerRow
             label={labels.race}
