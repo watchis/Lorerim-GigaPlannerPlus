@@ -436,9 +436,22 @@ function PerkNode({
     touchInteractionRef.current = false;
   };
 
-  const showTouchTooltip = (x: number, y: number) => {
+  const getTooltipAnchor = () => {
+    const circle = circleRef.current?.getBoundingClientRect();
+    if (!circle) return null;
+    return {
+      x: circle.left + circle.width / 2,
+      y: circle.top + circle.height / 2,
+    };
+  };
+
+  const showTouchTooltip = (fallbackX?: number, fallbackY?: number) => {
     if (supportsHover) return;
-    setTouchAnchor({ x, y });
+    const center = getTooltipAnchor();
+    setTouchAnchor({
+      x: center?.x ?? fallbackX ?? 0,
+      y: center?.y ?? fallbackY ?? 0,
+    });
     setTouchTooltipOpen(true);
   };
 
@@ -509,7 +522,7 @@ function PerkNode({
       } else {
         const selected = handleForceAllocate();
         if (selected) {
-          showTouchTooltip(pointerAnchorRef.current.x, pointerAnchorRef.current.y);
+          showTouchTooltip();
         }
       }
     }, 500);
@@ -531,17 +544,16 @@ function PerkNode({
       clearSingleTapTimer();
       lastTapRef.current = 0;
       handleForceAllocate();
-      showTouchTooltip(event.clientX, event.clientY);
+      showTouchTooltip();
       return;
     }
 
     lastTapRef.current = now;
     clearSingleTapTimer();
-    const anchor = { x: event.clientX, y: event.clientY };
     singleTapTimerRef.current = window.setTimeout(() => {
       singleTapTimerRef.current = null;
       tookPerkWithLastClickRef.current = onTryTake(takeTargetId);
-      showTouchTooltip(anchor.x, anchor.y);
+      showTouchTooltip();
     }, 300);
   };
 
@@ -565,7 +577,7 @@ function PerkNode({
     event.preventDefault();
     if (touchInteractionRef.current) return;
     handleForceAllocate();
-    showTouchTooltip(event.clientX, event.clientY);
+    showTouchTooltip();
   };
 
   const isPartialRank =

@@ -17,17 +17,76 @@ import { cn } from "@/lib/utils";
 const TOOLTIP_OFFSET = 12;
 const VIEWPORT_PADDING = 8;
 
-function clampTooltipToViewport(
-  x: number,
-  y: number,
+interface ViewportBounds {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+function getVisualViewportBounds(): ViewportBounds {
+  if (typeof window === "undefined") {
+    return { left: 0, top: 0, width: 0, height: 0 };
+  }
+
+  const viewport = window.visualViewport;
+  return {
+    left: viewport?.offsetLeft ?? 0,
+    top: viewport?.offsetTop ?? 0,
+    width: viewport?.width ?? window.innerWidth,
+    height: viewport?.height ?? window.innerHeight,
+  };
+}
+
+function clampAxis(
+  preferred: number,
+  min: number,
+  max: number,
+  size: number,
+  boundsStart: number,
+  boundsSize: number,
+): number {
+  if (size >= boundsSize - VIEWPORT_PADDING * 2) {
+    return boundsStart + Math.max(VIEWPORT_PADDING, (boundsSize - size) / 2);
+  }
+  if (max < min) return boundsStart + (boundsSize - size) / 2;
+  return Math.min(Math.max(preferred, min), max);
+}
+
+function resolveCursorTooltipPosition(
+  anchorX: number,
+  anchorY: number,
   width: number,
   height: number,
 ): { x: number; y: number } {
-  const maxX = Math.max(VIEWPORT_PADDING, window.innerWidth - width - VIEWPORT_PADDING);
-  const maxY = Math.max(VIEWPORT_PADDING, window.innerHeight - height - VIEWPORT_PADDING);
+  const bounds = getVisualViewportBounds();
+  const padding = VIEWPORT_PADDING;
+  const offset = TOOLTIP_OFFSET;
+  const minX = bounds.left + padding;
+  const minY = bounds.top + padding;
+  const maxX = bounds.left + bounds.width - width - padding;
+  const maxY = bounds.top + bounds.height - height - padding;
+
+  const fits = (x: number, y: number) => x >= minX && y >= minY && x <= maxX && y <= maxY;
+
+  const placements = [
+    { x: anchorX + offset, y: anchorY + offset },
+    { x: anchorX - width - offset, y: anchorY + offset },
+    { x: anchorX + offset, y: anchorY - height - offset },
+    { x: anchorX - width - offset, y: anchorY - height - offset },
+    { x: anchorX - width / 2, y: anchorY + offset },
+    { x: anchorX - width / 2, y: anchorY - height - offset },
+    { x: anchorX + offset, y: anchorY - height / 2 },
+    { x: anchorX - width - offset, y: anchorY - height / 2 },
+  ];
+
+  for (const placement of placements) {
+    if (fits(placement.x, placement.y)) return placement;
+  }
+
   return {
-    x: Math.min(Math.max(x, VIEWPORT_PADDING), maxX),
-    y: Math.min(Math.max(y, VIEWPORT_PADDING), maxY),
+    x: clampAxis(anchorX + offset, minX, maxX, width, bounds.left, bounds.width),
+    y: clampAxis(anchorY + offset, minY, maxY, height, bounds.top, bounds.height),
   };
 }
 
@@ -187,7 +246,7 @@ export function CursorTooltip({
 }) {
   const [hoverOpen, setHoverOpen] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0 });
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const isTouchControlled = controlledOpen !== undefined;
   const open = isTouchControlled ? controlledOpen && !disabled : hoverOpen && !disabled;
@@ -200,19 +259,19 @@ export function CursorTooltip({
   }, [disabled, isTouchControlled, onOpenChange]);
 
   useEffect(() => {
+    if (!open) {
+      setPosition(null);
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (touchAnchor) {
-      setAnchor({
-        x: touchAnchor.x + TOOLTIP_OFFSET,
-        y: touchAnchor.y + TOOLTIP_OFFSET,
-      });
+      setAnchor({ x: touchAnchor.x, y: touchAnchor.y });
     }
   }, [touchAnchor]);
 
   const updateAnchor = (event: MouseEvent) => {
-    setAnchor({
-      x: event.clientX + TOOLTIP_OFFSET,
-      y: event.clientY + TOOLTIP_OFFSET,
-    });
+    setAnchor({ x: event.clientX, y: event.clientY });
   };
 
   useLayoutEffect(() => {
@@ -221,10 +280,10 @@ export function CursorTooltip({
     const el = tooltipRef.current;
     const updateDisplay = () => {
       const { width, height } = el.getBoundingClientRect();
-      const clamped = clampTooltipToViewport(anchor.x, anchor.y, width, height);
+      const resolved = resolveCursorTooltipPosition(anchor.x, anchor.y, width, height);
       setPosition((prev) => {
-        if (prev.x === clamped.x && prev.y === clamped.y) return prev;
-        return clamped;
+        if (prev && prev.x === resolved.x && prev.y === resolved.y) return prev;
+        return resolved;
       });
     };
 
@@ -232,12 +291,24 @@ export function CursorTooltip({
 
     const observer = new ResizeObserver(updateDisplay);
     observer.observe(el);
-    return () => observer.disconnect();
+
+    const viewport = window.visualViewport;
+    viewport?.addEventListener("resize", updateDisplay);
+    viewport?.addEventListener("scroll", updateDisplay);
+    window.addEventListener("resize", updateDisplay);
+
+    return () => {
+      observer.disconnect();
+      viewport?.removeEventListener("resize", updateDisplay);
+      viewport?.removeEventListener("scroll", updateDisplay);
+      window.removeEventListener("resize", updateDisplay);
+    };
   }, [open, anchor, disabled, contentScale]);
 
   const tooltipStyle: CSSProperties = {
-    left: position.x,
-    top: position.y,
+    left: position?.x ?? -9999,
+    top: position?.y ?? -9999,
+    visibility: position ? "visible" : "hidden",
     ...(contentScale !== 1
       ? {
           transform: `scale(${contentScale})`,
