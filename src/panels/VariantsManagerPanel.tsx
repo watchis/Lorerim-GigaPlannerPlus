@@ -62,6 +62,28 @@ function variantKey(id: string | null): string {
   return id ?? "default";
 }
 
+function getInitialNotesState(
+  initialPane: "manage" | "notes",
+  initialVariantId: string | null,
+): { variantIndex: number; draft: string; editing: boolean } {
+  if (initialPane !== "notes") {
+    return { variantIndex: 0, draft: "", editing: false };
+  }
+
+  const entry = getActiveSavedEntry();
+  if (!entry) {
+    return { variantIndex: 0, draft: "", editing: true };
+  }
+
+  const variantIndex = getVariantIndex(entry, initialVariantId);
+  const draft = getVariantNotes(entry, initialVariantId);
+  return {
+    variantIndex,
+    draft,
+    editing: shouldStartNotesEditing(draft),
+  };
+}
+
 function persistPendingVariantNotes(
   activePane: "manage" | "notes",
   variantIndex: number,
@@ -482,13 +504,15 @@ export function VariantsManagerPanel() {
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [notesVariantIndex, setNotesVariantIndex] = useState(0);
-  const [notesDraft, setNotesDraft] = useState("");
-  const [notesEditing, setNotesEditing] = useState(false);
+  const initialNotesState = getInitialNotesState(initialPane, initialVariantId);
+  const [notesVariantIndex, setNotesVariantIndex] = useState(initialNotesState.variantIndex);
+  const [notesDraft, setNotesDraft] = useState(initialNotesState.draft);
+  const [notesEditing, setNotesEditing] = useState(initialNotesState.editing);
   const [activePane, setActivePane] = useState<"manage" | "notes">(initialPane);
   const notesDraftRef = useRef(notesDraft);
   const notesVariantIndexRef = useRef(notesVariantIndex);
   const activePaneRef = useRef(activePane);
+  const notesPaneReadyRef = useRef(false);
   notesDraftRef.current = notesDraft;
   notesVariantIndexRef.current = notesVariantIndex;
   activePaneRef.current = activePane;
@@ -520,11 +544,13 @@ export function VariantsManagerPanel() {
     if (variantNotesRequestId === 0) return;
 
     const targetVariantId = initialVariantId;
-    persistPendingVariantNotes(
-      activePaneRef.current,
-      notesVariantIndexRef.current,
-      notesDraftRef.current,
-    );
+    if (notesPaneReadyRef.current) {
+      persistPendingVariantNotes(
+        activePaneRef.current,
+        notesVariantIndexRef.current,
+        notesDraftRef.current,
+      );
+    }
 
     const { savedBuilds, activeBuildId } = useBuildStore.getState();
     const refreshedEntry = savedBuilds
@@ -538,6 +564,7 @@ export function VariantsManagerPanel() {
     setNotesVariantIndex(targetIndex);
     setNotesDraft(nextNotes);
     setNotesEditing(shouldStartNotesEditing(nextNotes));
+    notesPaneReadyRef.current = true;
   }, [variantNotesRequestId, initialVariantId]);
 
   useEffect(() => {
