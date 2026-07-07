@@ -64,6 +64,8 @@ npm run test:watch    # Vitest watch mode
 
 CI runs `npm test` on every pull request ([`.github/workflows/test.yml`](../.github/workflows/test.yml)).
 
+**Policy:** Every new feature, behavior change, or bug fix must include unit tests. See [`.cursor/rules/unit-testing-requirements.mdc`](../.cursor/rules/unit-testing-requirements.mdc) for coverage expectations, fixtures, and PR checklist.
+
 ---
 
 ## Conventions

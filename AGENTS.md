@@ -24,3 +24,7 @@ Optional dev-only tools (not needed for normal development/testing):
 ### Data model note
 
 This planner models three distinct systems (skill levels, perk points, skill points) — see `.cursor/rules/giga-planner-data-model.mdc`. Game data lives as JSON under `data/`; do not hardcode economy values or level requirements in TypeScript.
+
+### Unit testing note
+
+Every new feature, behavior change, or bug fix must include unit tests — see `.cursor/rules/unit-testing-requirements.mdc`. Co-locate `*.test.ts` (Vitest, `src/`) or `*.test.mjs` (import lib). Use `src/test/helpers.ts` for fixtures. Run `npm test` before pushing; CI enforces this on every pull request.

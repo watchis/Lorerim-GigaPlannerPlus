@@ -1,0 +1,68 @@
+---
+description: Unit testing requirements for new features, bug fixes, and regressions
+alwaysApply: true
+---
+
+# Unit testing requirements
+
+Every new feature, behavior change, or bug fix **must** include unit tests. CI runs `npm test` on every pull request; tests are the primary guard against regressions in this client-only app.
+
+## When tests are required
+
+| Change type | Test requirement |
+|-------------|------------------|
+| New/changed logic in `src/engine/`, `src/lib/`, `src/data/`, `src/layout/` | **Required** — happy path, edge cases, and regression coverage |
+| Bug fix | **Required** — add a test that fails without the fix |
+| New/changed logic in `tools/import/lib/` | **Required** — co-located `*.test.mjs` (Node test runner) |
+| Game data only (`data/**/*.json`) | Optional if behavior is unchanged; add tests when loader or engine behavior changes |
+| Pure UI/CSS/copy with no logic change | Optional — add tests when behavior or accessibility is affected |
+| Data editor (`tools/data-editor/`) | Required for new logic; UI-only changes optional |
+
+## Test tooling
+
+- **App (`src/`)**: [Vitest](https://vitest.dev/) — `npm run test:app`. Co-locate as `*.test.ts` beside the module.
+- **Import lib (`tools/import/lib/`)**: Node built-in test runner — `npm run test:import`. Co-locate as `*.test.mjs`.
+- **Full suite**: `npm test` before pushing (matches [`.github/workflows/test.yml`](../../.github/workflows/test.yml)).
+
+## What to cover
+
+Tests should exercise **behavior**, not implementation details:
+
+1. **Happy path** — the feature works as specified.
+2. **Edge cases** — boundaries, empty inputs, caps, and invalid states the code handles.
+3. **Regression** — the exact failure mode this change fixes or protects (especially for bug fixes).
+
+Avoid trivial tests that only assert constants or mirror the implementation line-for-line. Prefer public APIs and observable outcomes.
+
+## Shared fixtures (`src/`)
+
+Use [`src/test/helpers.ts`](../../src/test/helpers.ts):
+
+- `getTestGameData()` / `getTestAppData()` — real loaded game data
+- `createTestBuildState(overrides)` — build state for engine tests
+
+Add module-local factory helpers (e.g. `makePerk()`) when types need partial fixtures.
+
+## Conventions
+
+- Place tests beside the code they cover (`foo.ts` → `foo.test.ts`).
+- Name `describe` blocks after the module or function group; use clear `it` descriptions.
+- Keep tests deterministic — no timers, network, or `localStorage` unless explicitly mocked.
+- Engine and pure helpers: unit test directly. UI with logic: test extracted pure functions where possible.
+- Do not skip or `.todo` tests to merge — fix or remove.
+
+## PR checklist
+
+Before opening a PR:
+
+1. `npm test` passes locally.
+2. New or changed logic has corresponding tests.
+3. Bug fixes include a regression test.
+4. If something cannot be tested, document why in the PR — do not silently omit tests for testable logic.
+
+## Common mistakes to avoid
+
+- Shipping behavior changes in `buildEngine.ts` without updating `buildEngine.test.ts`.
+- Using hand-rolled mock data that does not match real `GameData` shape — use `getTestGameData()`.
+- Hardcoding economy values in tests instead of reading from loaded mechanics (see [giga-planner-data-model.mdc](./giga-planner-data-model.mdc)).
+- Adding features only exercised through manual UI with no unit coverage for the underlying logic.

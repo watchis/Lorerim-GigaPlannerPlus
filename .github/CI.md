@@ -25,6 +25,8 @@ The test job installs dependencies with `npm ci`, then runs **`npm test`**:
 
 Node **22** is used in CI to match the deploy workflow.
 
+**Policy:** Every new feature, behavior change, or bug fix must include unit tests. See [`.cursor/rules/unit-testing-requirements.mdc`](../.cursor/rules/unit-testing-requirements.mdc) for coverage expectations and conventions.
+
 ---
 
 ## Deploy workflow
