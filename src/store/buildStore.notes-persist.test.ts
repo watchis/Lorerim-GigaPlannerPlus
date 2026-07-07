@@ -125,4 +125,66 @@ describe("buildStore variant notes persistence", () => {
 
     expect(updated?.defaultVariantNotes).toBe("Local planner note");
   });
+
+  it("stores separate notes for default and milestone variants", async () => {
+    const { useBuildStore } = await importBuildStore();
+    const appData = getTestAppData();
+
+    useBuildStore.getState().init(appData);
+    useBuildStore.getState().createVariant("Level 20");
+
+    const { savedBuilds, activeBuildId } = useBuildStore.getState();
+    const entry = savedBuilds.find((item) => item.id === activeBuildId);
+    const milestoneId = entry?.activeMilestoneId;
+    expect(milestoneId).toBeTruthy();
+    if (!milestoneId) return;
+
+    useBuildStore.getState().setVariantNotes(null, "Default variant note");
+    useBuildStore.getState().setVariantNotes(milestoneId, "Milestone variant note");
+
+    const updated = useBuildStore
+      .getState()
+      .savedBuilds.find((item) => item.id === activeBuildId);
+
+    expect(updated?.defaultVariantNotes).toBe("Default variant note");
+    expect(updated?.milestones.find((item) => item.id === milestoneId)?.notes).toBe(
+      "Milestone variant note",
+    );
+  });
+
+  it("keeps both variant notes after sequential saves and reload", async () => {
+    const storage = createLocalStorageMock();
+    vi.stubGlobal("localStorage", storage);
+    vi.stubGlobal("window", { localStorage: storage });
+
+    const { useBuildStore } = await import("@/store/buildStore");
+    const appData = getTestAppData();
+
+    useBuildStore.getState().init(appData);
+    useBuildStore.getState().createVariant("Level 20");
+
+    const { activeBuildId } = useBuildStore.getState();
+    const milestoneId = useBuildStore
+      .getState()
+      .savedBuilds.find((item) => item.id === activeBuildId)?.activeMilestoneId;
+    expect(milestoneId).toBeTruthy();
+    if (!milestoneId) return;
+
+    useBuildStore.getState().setVariantNotes(null, "Default note");
+    useBuildStore.getState().setVariantNotes(milestoneId, "Milestone note");
+
+    vi.resetModules();
+    vi.stubGlobal("localStorage", storage);
+    vi.stubGlobal("window", { localStorage: storage });
+
+    const { useBuildStore: reloadedStore } = await import("@/store/buildStore");
+    reloadedStore.getState().init(appData);
+
+    const entry = reloadedStore
+      .getState()
+      .savedBuilds.find((item) => item.id === activeBuildId);
+
+    expect(entry?.defaultVariantNotes).toBe("Default note");
+    expect(entry?.milestones.find((item) => item.id === milestoneId)?.notes).toBe("Milestone note");
+  });
 });

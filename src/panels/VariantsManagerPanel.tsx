@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEvent } from "react";
 import {
   AlertCircle,
   Archive,
@@ -42,6 +42,8 @@ import {
   getVariantCount,
   getVariantName,
   getVariantNotes,
+  getVariantIdAtIndex,
+  getVariantIndex,
   listBuildVariants,
   normalizeSavedBuild,
 } from "@/store/savedBuilds";
@@ -60,11 +62,9 @@ function variantKey(id: string | null): string {
   return id ?? "default";
 }
 
-const NOTES_VARIANT_DEFAULT_VALUE = "default";
-
 function persistPendingVariantNotes(
   activePane: "manage" | "notes",
-  variantId: string | null,
+  variantIndex: number,
   draft: string,
 ): void {
   if (activePane !== "notes") return;
@@ -75,6 +75,7 @@ function persistPendingVariantNotes(
     .find((build) => build.id === activeBuildId);
   if (!entry) return;
 
+  const variantId = getVariantIdAtIndex(entry, variantIndex);
   const persisted = getVariantNotes(entry, variantId);
   if (draft !== persisted) {
     setVariantNotes(variantId, draft);
@@ -481,15 +482,15 @@ export function VariantsManagerPanel() {
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [notesVariantId, setNotesVariantId] = useState<string | null>(initialVariantId);
+  const [notesVariantIndex, setNotesVariantIndex] = useState(0);
   const [notesDraft, setNotesDraft] = useState("");
   const [notesEditing, setNotesEditing] = useState(false);
   const [activePane, setActivePane] = useState<"manage" | "notes">(initialPane);
   const notesDraftRef = useRef(notesDraft);
-  const notesVariantIdRef = useRef(notesVariantId);
+  const notesVariantIndexRef = useRef(notesVariantIndex);
   const activePaneRef = useRef(activePane);
   notesDraftRef.current = notesDraft;
-  notesVariantIdRef.current = notesVariantId;
+  notesVariantIndexRef.current = notesVariantIndex;
   activePaneRef.current = activePane;
 
   const entry = savedBuilds
@@ -505,13 +506,15 @@ export function VariantsManagerPanel() {
   const modpackVersion = gameData.game.manifest.version;
   const backupExtension = allLabels.panels["build-library"].backupExtension;
 
-  const notesVariant = useMemo(() => {
-    if (notesVariantId === null) {
-      return variants.find((variant) => variant.id === null) ?? variants[0] ?? null;
-    }
-    return variants.find((variant) => variant.id === notesVariantId) ?? variants[0] ?? null;
-  }, [notesVariantId, variants]);
-  const persistedNotes = notesVariant ? getVariantNotes(entry, notesVariant.id) : "";
+  const notesVariant = variants[notesVariantIndex] ?? null;
+  const notesVariantId = notesVariant?.id ?? null;
+  const persistedNotes = notesVariant ? getVariantNotes(entry, notesVariantId) : "";
+
+  useEffect(() => {
+    if (activePane !== "notes") return;
+    if (notesVariantIndex < variants.length) return;
+    setNotesVariantIndex(Math.max(0, variants.length - 1));
+  }, [activePane, notesVariantIndex, variants.length]);
 
   useEffect(() => {
     if (variantNotesRequestId === 0) return;
@@ -519,7 +522,7 @@ export function VariantsManagerPanel() {
     const targetVariantId = initialVariantId;
     persistPendingVariantNotes(
       activePaneRef.current,
-      notesVariantIdRef.current,
+      notesVariantIndexRef.current,
       notesDraftRef.current,
     );
 
@@ -529,9 +532,10 @@ export function VariantsManagerPanel() {
       .find((build) => build.id === activeBuildId);
     if (!refreshedEntry) return;
 
+    const targetIndex = getVariantIndex(refreshedEntry, targetVariantId);
     const nextNotes = getVariantNotes(refreshedEntry, targetVariantId);
     setActivePane("notes");
-    setNotesVariantId(targetVariantId);
+    setNotesVariantIndex(targetIndex);
     setNotesDraft(nextNotes);
     setNotesEditing(shouldStartNotesEditing(nextNotes));
   }, [variantNotesRequestId, initialVariantId]);
@@ -541,7 +545,7 @@ export function VariantsManagerPanel() {
 
     persistPendingVariantNotes(
       activePaneRef.current,
-      notesVariantIdRef.current,
+      notesVariantIndexRef.current,
       notesDraftRef.current,
     );
     setActivePane("manage");
@@ -551,7 +555,7 @@ export function VariantsManagerPanel() {
     return () => {
       persistPendingVariantNotes(
         activePaneRef.current,
-        notesVariantIdRef.current,
+        notesVariantIndexRef.current,
         notesDraftRef.current,
       );
     };
@@ -561,7 +565,7 @@ export function VariantsManagerPanel() {
     const flush = () => {
       persistPendingVariantNotes(
         activePaneRef.current,
-        notesVariantIdRef.current,
+        notesVariantIndexRef.current,
         notesDraftRef.current,
       );
     };
@@ -573,18 +577,23 @@ export function VariantsManagerPanel() {
   useEffect(() => {
     if (activePane !== "notes" || !notesEditing) return;
 
+    const variantIndex = notesVariantIndex;
     const refreshedEntry = getActiveSavedEntry();
     if (!refreshedEntry) return;
 
-    const persisted = getVariantNotes(refreshedEntry, notesVariantIdRef.current);
+    const variantId = getVariantIdAtIndex(refreshedEntry, variantIndex);
+    const persisted = getVariantNotes(refreshedEntry, variantId);
     if (notesDraft === persisted) return;
 
+    const draft = notesDraft;
     const timer = window.setTimeout(() => {
-      setVariantNotes(notesVariantIdRef.current, notesDraft);
+      const latestEntry = getActiveSavedEntry();
+      if (!latestEntry) return;
+      setVariantNotes(getVariantIdAtIndex(latestEntry, variantIndex), draft);
     }, 400);
 
     return () => window.clearTimeout(timer);
-  }, [activePane, notesDraft, notesEditing, setVariantNotes]);
+  }, [activePane, notesDraft, notesEditing, notesVariantIndex, setVariantNotes]);
 
   const startRename = (id: string | null, name: string) => {
     setRenamingKey(variantKey(id));
@@ -643,53 +652,53 @@ export function VariantsManagerPanel() {
   };
 
   const openNotes = (variantId: string | null) => {
-    persistPendingVariantNotes(activePane, notesVariantId, notesDraft);
+    persistPendingVariantNotes(activePane, notesVariantIndex, notesDraft);
 
-    const nextNotes = getVariantNotes(entry, variantId);
-    setNotesVariantId(variantId);
+    const refreshedEntry = getActiveSavedEntry() ?? entry;
+    const targetIndex = getVariantIndex(refreshedEntry, variantId);
+    const nextNotes = getVariantNotes(refreshedEntry, variantId);
+    setNotesVariantIndex(targetIndex);
     setNotesDraft(nextNotes);
     setNotesEditing(shouldStartNotesEditing(nextNotes));
     setActivePane("notes");
   };
 
   const backToManageVariants = () => {
-    persistPendingVariantNotes(activePane, notesVariantId, notesDraft);
+    persistPendingVariantNotes(activePane, notesVariantIndex, notesDraft);
     setActivePane("manage");
   };
 
   const resetNotesDraft = () => {
     if (!notesVariant) return;
-    setNotesDraft(getVariantNotes(entry, notesVariant.id));
+    setNotesDraft(getVariantNotes(entry, notesVariantId));
   };
 
   const saveNotesDraft = () => {
-    const { savedBuilds, activeBuildId } = useBuildStore.getState();
-    const refreshedEntry = savedBuilds
-      .map((build) => normalizeSavedBuild(build))
-      .find((build) => build.id === activeBuildId);
+    const refreshedEntry = getActiveSavedEntry();
     if (!refreshedEntry) return;
 
-    const variantId = notesVariantIdRef.current;
+    const variantId = getVariantIdAtIndex(refreshedEntry, notesVariantIndexRef.current);
     setVariantNotes(variantId, notesDraftRef.current);
     setNotesEditing(false);
   };
 
   const switchNotesVariant = (value: string) => {
-    const variantId = value === NOTES_VARIANT_DEFAULT_VALUE ? null : value;
-    if (variantId === notesVariantId) return;
+    const variantIndex = Number(value);
+    if (Number.isNaN(variantIndex) || variantIndex === notesVariantIndex) return;
 
-    persistPendingVariantNotes(activePane, notesVariantId, notesDraft);
+    persistPendingVariantNotes(activePane, notesVariantIndex, notesDraft);
 
     const refreshedEntry = getActiveSavedEntry();
     if (!refreshedEntry) return;
 
+    const variantId = getVariantIdAtIndex(refreshedEntry, variantIndex);
     const nextNotes = getVariantNotes(refreshedEntry, variantId);
-    setNotesVariantId(variantId);
+    setNotesVariantIndex(variantIndex);
     setNotesDraft(nextNotes);
     setNotesEditing(shouldStartNotesEditing(nextNotes));
   };
 
-  const notesVariantSelectValue = notesVariantId ?? NOTES_VARIANT_DEFAULT_VALUE;
+  const notesVariantSelectValue = String(notesVariantIndex);
 
   const notesPlaceholder =
     labels["notesPlaceholder"] ??
@@ -742,10 +751,10 @@ export function VariantsManagerPanel() {
                 sideOffset={5}
                 className="w-[var(--radix-select-trigger-width)] text-sm [&>div]:p-1"
               >
-                {variants.map((variant) => (
+                {variants.map((variant, index) => (
                   <SelectItem
-                    key={variant.id ?? NOTES_VARIANT_DEFAULT_VALUE}
-                    value={variant.id ?? NOTES_VARIANT_DEFAULT_VALUE}
+                    key={variantKey(variant.id)}
+                    value={String(index)}
                     className="min-h-0 py-2 pl-8 pr-2 text-sm leading-snug focus:bg-[var(--color-surface)]"
                   >
                     <span className="flex w-full min-w-0 items-center justify-between gap-2">
@@ -902,9 +911,10 @@ export function VariantsManagerPanel() {
               </div>
             </div>
 
-            <div className="mt-3 min-h-0 flex-1">
+            <div className="mt-3 min-h-0 flex-1" key={notesVariantIndex}>
               {notesEditing ? (
                 <VariantNotesEditor
+                  key={`edit-${notesVariantIndex}`}
                   value={notesVariant ? notesDraft : ""}
                   onChange={setNotesDraft}
                   placeholder={notesPlaceholder}
@@ -913,7 +923,10 @@ export function VariantsManagerPanel() {
                   textareaRef={notesTextareaRef}
                 />
               ) : (
-                <ScrollArea className="h-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60">
+                <ScrollArea
+                  key={`preview-${notesVariantIndex}`}
+                  className="h-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60"
+                >
                   <div className="px-3 py-2">
                     {notesVariant && notesDraft.trim() ? (
                       <VariantNotesMarkdown content={notesDraft} />

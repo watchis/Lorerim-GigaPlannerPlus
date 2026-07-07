@@ -132,6 +132,16 @@ export function getVariantNotes(entry: SavedBuild, variantId: string | null): st
   return normalized.milestones.find((item) => item.id === variantId)?.notes ?? "";
 }
 
+export function getVariantIndex(entry: SavedBuild, variantId: string | null): number {
+  const variants = listBuildVariants(entry);
+  const index = variants.findIndex((variant) => variant.id === variantId);
+  return index === -1 ? 0 : index;
+}
+
+export function getVariantIdAtIndex(entry: SavedBuild, index: number): string | null {
+  return listBuildVariants(entry)[index]?.id ?? null;
+}
+
 export function setVariantNotesOnEntry(
   entry: SavedBuild,
   variantId: string | null,
@@ -140,6 +150,11 @@ export function setVariantNotesOnEntry(
   const normalized = normalizeSavedBuild(entry);
   if (variantId === null) {
     return { ...normalized, defaultVariantNotes: notes, updatedAt: Date.now() };
+  }
+
+  const milestoneExists = normalized.milestones.some((milestone) => milestone.id === variantId);
+  if (!milestoneExists) {
+    return normalized;
   }
 
   return {

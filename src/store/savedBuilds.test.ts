@@ -3,8 +3,11 @@ import { createTestBuildState } from "@/test/helpers";
 import {
   createMilestone,
   createSavedBuild,
+  getVariantIdAtIndex,
+  getVariantIndex,
   getVariantNotes,
   mergeVariantNotesFromEntry,
+  normalizeSavedBuild,
   setVariantNotesOnEntry,
 } from "@/store/savedBuilds";
 
@@ -65,5 +68,40 @@ describe("savedBuilds variant notes", () => {
     const merged = mergeVariantNotesFromEntry(existing, incoming);
 
     expect(merged.defaultVariantNotes).toBe("Shared note");
+  });
+
+  it("stores independent notes on each milestone variant", () => {
+    const milestoneA = createMilestone("Level 20", build, "");
+    const milestoneB = createMilestone("Level 40", build, "");
+    let entry = createSavedBuild("Tank", build, [milestoneA, milestoneB]);
+
+    entry = setVariantNotesOnEntry(entry, null, "Default note");
+    entry = setVariantNotesOnEntry(entry, milestoneA.id, "Milestone A note");
+    entry = setVariantNotesOnEntry(entry, milestoneB.id, "Milestone B note");
+
+    expect(getVariantNotes(entry, null)).toBe("Default note");
+    expect(getVariantNotes(entry, milestoneA.id)).toBe("Milestone A note");
+    expect(getVariantNotes(entry, milestoneB.id)).toBe("Milestone B note");
+  });
+
+  it("resolves variant ids by stable index", () => {
+    const milestoneA = createMilestone("Level 20", build, "A");
+    const milestoneB = createMilestone("Level 40", build, "B");
+    const entry = createSavedBuild("Tank", build, [milestoneA, milestoneB]);
+
+    expect(getVariantIndex(entry, null)).toBe(0);
+    expect(getVariantIndex(entry, milestoneA.id)).toBe(1);
+    expect(getVariantIndex(entry, milestoneB.id)).toBe(2);
+    expect(getVariantIdAtIndex(entry, 0)).toBeNull();
+    expect(getVariantIdAtIndex(entry, 1)).toBe(milestoneA.id);
+    expect(getVariantIdAtIndex(entry, 2)).toBe(milestoneB.id);
+  });
+
+  it("ignores notes writes for unknown milestone ids", () => {
+    const entry = createSavedBuild("Tank", build);
+    const updated = setVariantNotesOnEntry(entry, "missing-id", "Orphan note");
+
+    expect(updated).toEqual(normalizeSavedBuild(entry));
+    expect(getVariantNotes(updated, null)).toBe("");
   });
 });
