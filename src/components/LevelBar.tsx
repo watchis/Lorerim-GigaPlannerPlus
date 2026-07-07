@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
   CursorTooltip,
+  HoverTapTooltip,
   InfoTooltipButton,
 } from "@/components/ui/tooltip";
 import {
@@ -335,7 +336,7 @@ function LevelStepperTooltipButton({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-9 w-9 shrink-0 md:h-7 md:w-7"
             onClick={onClick}
             disabled={disabled}
             aria-label={label}
@@ -348,6 +349,25 @@ function LevelStepperTooltipButton({
         {info}
       </TooltipContent>
     </Tooltip>
+  );
+}
+
+function EasyModeLevelWarningIcon({ message }: { message: string }) {
+  return (
+    <HoverTapTooltip
+      content={message}
+      side="bottom"
+      align="center"
+      contentClassName="max-w-[16rem] text-xs leading-relaxed"
+    >
+      <button
+        type="button"
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-accent)] transition-colors hover:text-[var(--color-accent-muted)] md:h-7 md:w-7"
+        aria-label={message}
+      >
+        <AlertTriangle className="h-3.5 w-3.5" />
+      </button>
+    </HoverTapTooltip>
   );
 }
 
@@ -463,62 +483,62 @@ export function LevelBar() {
   return (
     <div className="shrink-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/80 px-4 py-2 sm:px-6">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3">
-        <div className="flex w-full min-w-0 flex-col gap-2 md:w-auto">
-          <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-start sm:gap-3">
-            <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
-              {barLabels.playerLevel}
-            </span>
-            <div
-              className={cn(
-                "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
-                showEasyModeWarning
-                  ? "border-[var(--color-accent)]"
-                  : "border-[var(--color-border)]",
-              )}
+        <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 sm:gap-3">
+          <span className="hidden shrink-0 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)] min-[380px]:inline">
+            {barLabels.playerLevel}
+          </span>
+          <div
+            className={cn(
+              "inline-flex shrink-0 items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
+              showEasyModeWarning
+                ? "border-[var(--color-accent)]"
+                : "border-[var(--color-border)]",
+            )}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 md:h-7 md:w-7"
+              onClick={() => setPlayerLevel(build.playerLevel - 1)}
+              disabled={build.playerLevel <= baseLevel}
             >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 md:h-7 md:w-7"
-                onClick={() => setPlayerLevel(build.playerLevel - 1)}
-                disabled={build.playerLevel <= baseLevel}
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </Button>
-              <NumericLevelInput
-                value={build.playerLevel}
-                min={baseLevel}
-                max={maxPlayerLevel}
-                onCommit={setPlayerLevel}
-                className="w-12 sm:w-14"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 md:h-7 md:w-7"
-                onClick={() => setPlayerLevel(build.playerLevel + 1)}
-                disabled={build.playerLevel >= maxPlayerLevel}
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            <LevelStepperTooltipButton
-              label={barLabels.ensurePlayerLevel}
-              info={barLabels.ensurePlayerLevelInfo}
-              onClick={ensurePlayerLevel}
-              disabled={build.playerLevel >= ensuredPlayerLevel}
+              <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <NumericLevelInput
+              value={build.playerLevel}
+              min={baseLevel}
+              max={maxPlayerLevel}
+              onCommit={setPlayerLevel}
+              className="w-11 sm:w-14"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 md:h-7 md:w-7"
+              onClick={() => setPlayerLevel(build.playerLevel + 1)}
+              disabled={build.playerLevel >= maxPlayerLevel}
             >
-              <ChevronsUp className="h-3.5 w-3.5" />
-            </LevelStepperTooltipButton>
-            <LevelStepperTooltipButton
-              label={barLabels.setToMinimumLevel}
-              info={barLabels.setToMinimumLevelInfo}
-              onClick={() => setPlayerLevel(minimumPlayerLevel)}
-              disabled={build.playerLevel <= minimumPlayerLevel}
-            >
-              <ChevronsDown className="h-3.5 w-3.5" />
-            </LevelStepperTooltipButton>
-
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          <LevelStepperTooltipButton
+            label={barLabels.ensurePlayerLevel}
+            info={barLabels.ensurePlayerLevelInfo}
+            onClick={ensurePlayerLevel}
+            disabled={build.playerLevel >= ensuredPlayerLevel}
+          >
+            <ChevronsUp className="h-3.5 w-3.5" />
+          </LevelStepperTooltipButton>
+          <LevelStepperTooltipButton
+            label={barLabels.setToMinimumLevel}
+            info={barLabels.setToMinimumLevelInfo}
+            onClick={() => setPlayerLevel(minimumPlayerLevel)}
+            disabled={build.playerLevel <= minimumPlayerLevel}
+          >
+            <ChevronsDown className="h-3.5 w-3.5" />
+          </LevelStepperTooltipButton>
+          {showEasyModeWarning && <EasyModeLevelWarningIcon message={easyModeLevelWarning} />}
+          <div className="ml-auto shrink-0">
             <MobileBudgetDropdown
               barLabels={barLabels}
               computed={computed}
@@ -530,16 +550,6 @@ export function LevelBar() {
               trainingOverBudget={trainingOverBudget}
             />
           </div>
-
-          {showEasyModeWarning && (
-            <div
-              className="flex w-full min-w-0 items-start gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5 px-2.5 py-1.5 text-[11px] leading-snug text-[var(--color-accent)] sm:text-xs"
-              role="status"
-            >
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-              <span className="min-w-0">{easyModeLevelWarning}</span>
-            </div>
-          )}
         </div>
 
         <div className="hidden items-center gap-3 text-xs md:flex md:flex-wrap">
