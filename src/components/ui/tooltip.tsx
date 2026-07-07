@@ -3,6 +3,7 @@ import { Info } from "lucide-react";
 import {
   forwardRef,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -58,6 +59,35 @@ export function useSupportsHover(): boolean {
   return supportsHover;
 }
 
+type ActiveTouchTooltipListener = (activeId: string | null) => void;
+
+let activeTouchTooltipId: string | null = null;
+const activeTouchTooltipListeners = new Set<ActiveTouchTooltipListener>();
+
+function setActiveTouchTooltipId(next: string | null) {
+  if (activeTouchTooltipId === next) return;
+  activeTouchTooltipId = next;
+  for (const listener of activeTouchTooltipListeners) {
+    listener(activeTouchTooltipId);
+  }
+}
+
+function subscribeActiveTouchTooltipId(listener: ActiveTouchTooltipListener) {
+  activeTouchTooltipListeners.add(listener);
+  listener(activeTouchTooltipId);
+  return () => activeTouchTooltipListeners.delete(listener);
+}
+
+export function claimExclusiveTouchOverlay(id: string) {
+  setActiveTouchTooltipId(id);
+}
+
+export function releaseExclusiveTouchOverlay(id: string) {
+  if (activeTouchTooltipId === id) {
+    setActiveTouchTooltipId(null);
+  }
+}
+
 type HoverTapTooltipProps = {
   children: ReactNode;
   content: ReactNode;
@@ -78,14 +108,45 @@ export function HoverTapTooltip({
 }: HoverTapTooltipProps) {
   const supportsHover = useSupportsHover();
   const [open, setOpen] = useState(false);
+  const id = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [touchPosition, setTouchPosition] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (supportsHover) return;
+    return subscribeActiveTouchTooltipId((activeId) => {
+      if (activeId !== id) {
+        setOpen(false);
+      }
+    });
+  }, [supportsHover, id]);
+
+  useEffect(() => {
+    if (supportsHover) return;
+    if (open) {
+      setActiveTouchTooltipId(id);
+      return;
+    }
+    if (activeTouchTooltipId === id) {
+      setActiveTouchTooltipId(null);
+    }
+  }, [open, supportsHover, id]);
+
+  useEffect(() => {
+    return () => {
+      if (activeTouchTooltipId === id) {
+        setActiveTouchTooltipId(null);
+      }
+    };
+  }, [id]);
 
   useEffect(() => {
     if (!open || supportsHover) return;
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (triggerRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target) || contentRef.current?.contains(target)) return;
       setOpen(false);
     };
 
@@ -93,24 +154,77 @@ export function HoverTapTooltip({
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [open, supportsHover]);
 
-  const handleTap = (event: MouseEvent<HTMLSpanElement>) => {
+  useLayoutEffect(() => {
+    if (supportsHover || !open) return;
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Anchor just below/above trigger; align approximates Radix align behavior.
+    const preferredX =
+      align === "start" ? rect.left : align === "end" ? rect.right : rect.left + rect.width / 2;
+    const preferredY = side === "top" ? rect.top : rect.bottom;
+    const contentEl = contentRef.current;
+    const width = contentEl?.getBoundingClientRect().width ?? 240;
+    const height = contentEl?.getBoundingClientRect().height ?? 40;
+    const resolved = resolveCursorTooltipPosition(preferredX, preferredY, width, height);
+    setTouchPosition(resolved);
+  }, [supportsHover, open, side, align, content]);
+
+  const handleTouchToggle = (event: PointerEvent) => {
     if (supportsHover) return;
+    if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
     event.preventDefault();
     event.stopPropagation();
-    setOpen((value) => !value);
+    setOpen((value) => {
+      const next = !value;
+      if (next) {
+        // Close any other touch tooltip immediately.
+        setActiveTouchTooltipId(id);
+      } else if (activeTouchTooltipId === id) {
+        setActiveTouchTooltipId(null);
+      }
+      return next;
+    });
   };
 
-  return (
-    <Tooltip
-      open={supportsHover ? undefined : open}
-      onOpenChange={supportsHover ? undefined : setOpen}
-    >
-      <TooltipTrigger asChild>
+  if (!supportsHover) {
+    return (
+      <>
         <span
           ref={triggerRef}
-          className={cn("inline-flex", triggerClassName)}
-          onClick={handleTap}
+          className={cn("inline-flex touch-manipulation", triggerClassName)}
+          onPointerUp={handleTouchToggle}
         >
+          {children}
+        </span>
+        {open &&
+          createPortal(
+            <div
+              ref={contentRef}
+              role="tooltip"
+              className={cn(
+                tooltipSurfaceClassName,
+                "fixed max-w-xs animate-in fade-in-0 zoom-in-95",
+                contentClassName,
+              )}
+              style={{
+                left: touchPosition?.x ?? -9999,
+                top: touchPosition?.y ?? -9999,
+                visibility: touchPosition ? "visible" : "hidden",
+              }}
+            >
+              {content}
+            </div>,
+            document.body,
+          )}
+      </>
+    );
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span ref={triggerRef} className={cn("inline-flex", triggerClassName)}>
           {children}
         </span>
       </TooltipTrigger>
@@ -159,6 +273,8 @@ export function CursorTooltip({
   touchAnchor,
   contentScale = 1,
   contentClassName,
+  dismissOnPointerDownOutside = false,
+  dismissOutsideRefs = [],
 }: {
   children: ReactNode;
   content: ReactNode;
@@ -170,6 +286,8 @@ export function CursorTooltip({
   touchAnchor?: { x: number; y: number } | null;
   contentScale?: number;
   contentClassName?: string;
+  dismissOnPointerDownOutside?: boolean;
+  dismissOutsideRefs?: Array<React.RefObject<HTMLElement | null>>;
 }) {
   const [hoverOpen, setHoverOpen] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0 });
@@ -177,6 +295,58 @@ export function CursorTooltip({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const isTouchControlled = controlledOpen !== undefined;
   const open = isTouchControlled ? controlledOpen && !disabled : hoverOpen && !disabled;
+  const id = useId();
+  const controlledOpenRef = useRef(controlledOpen);
+  const onOpenChangeRef = useRef(onOpenChange);
+
+  controlledOpenRef.current = controlledOpen;
+  onOpenChangeRef.current = onOpenChange;
+
+  useEffect(() => {
+    if (!isTouchControlled || disabled) return;
+    return subscribeActiveTouchTooltipId((activeId) => {
+      // Only close when another tooltip becomes active.
+      if (activeId !== null && activeId !== id && controlledOpenRef.current) {
+        onOpenChangeRef.current?.(false);
+      }
+    });
+  }, [isTouchControlled, disabled, id]);
+
+  useEffect(() => {
+    if (!isTouchControlled || disabled) return;
+    if (controlledOpen) {
+      setActiveTouchTooltipId(id);
+      return;
+    }
+    if (activeTouchTooltipId === id) {
+      setActiveTouchTooltipId(null);
+    }
+  }, [isTouchControlled, disabled, id, controlledOpen]);
+
+  useEffect(() => {
+    if (!isTouchControlled || !dismissOnPointerDownOutside) return;
+    if (!open || disabled) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (tooltipRef.current?.contains(target)) return;
+      for (const ref of dismissOutsideRefs) {
+        if (ref.current?.contains(target)) return;
+      }
+      onOpenChangeRef.current?.(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isTouchControlled, dismissOnPointerDownOutside, dismissOutsideRefs, open, disabled]);
+
+  useEffect(() => {
+    return () => {
+      if (activeTouchTooltipId === id) {
+        setActiveTouchTooltipId(null);
+      }
+    };
+  }, [id]);
 
   useEffect(() => {
     if (disabled) {

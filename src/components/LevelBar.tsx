@@ -10,6 +10,8 @@ import {
   CursorTooltip,
   HoverTapTooltip,
   InfoTooltipButton,
+  claimExclusiveTouchOverlay,
+  releaseExclusiveTouchOverlay,
   useSupportsHover,
 } from "@/components/ui/tooltip";
 import {
@@ -300,6 +302,7 @@ function BuildIssuesBanner({
   const supportsHover = useSupportsHover();
   const [touchOpen, setTouchOpen] = useState(false);
   const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
+  const bannerButtonRef = useRef<HTMLButtonElement>(null);
   const { displaySummary, showTooltip } = getBuildIssuesBannerState({
     isMobile,
     messages,
@@ -340,11 +343,14 @@ function BuildIssuesBanner({
         open={touchOpen}
         onOpenChange={setTouchOpen}
         touchAnchor={touchAnchor}
+        dismissOnPointerDownOutside
+        dismissOutsideRefs={[bannerButtonRef]}
         contentClassName={buildIssuesTooltipClassName}
         content={<BuildIssuesTooltipContent messages={messages} andMoreLabel={andMoreLabel} />}
         className={cn(bannerClassName, "cursor-pointer touch-manipulation")}
       >
         <button
+          ref={bannerButtonRef}
           type="button"
           className="flex w-full min-w-0 items-center gap-2 border-0 bg-transparent p-0 text-left text-inherit"
           aria-label={displaySummary}
@@ -494,10 +500,17 @@ function BudgetDropdown({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const overlayId = "budget-dropdown";
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(
     null,
   );
   const hasIssue = perkOverBudget || skillOverBudget || trainingOverBudget;
+
+  useEffect(() => {
+    if (!open) return;
+    claimExclusiveTouchOverlay(overlayId);
+    return () => releaseExclusiveTouchOverlay(overlayId);
+  }, [open]);
 
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) {
@@ -602,7 +615,14 @@ function BudgetDropdown({
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label={barLabels.budgetSummaryTitle ?? "Build budget"}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() =>
+          setOpen((value) => {
+            const next = !value;
+            if (next) claimExclusiveTouchOverlay(overlayId);
+            else releaseExclusiveTouchOverlay(overlayId);
+            return next;
+          })
+        }
       >
         <Wallet className="h-4 w-4" />
       </Button>
