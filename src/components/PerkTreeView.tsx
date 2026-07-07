@@ -51,6 +51,8 @@ const MIN_NODE_DIAMETER_PX = 14;
 const TREE_VIEW_EDGE_PADDING_PX = 12;
 const MIN_TREE_ZOOM = 1;
 const MAX_TREE_ZOOM = 2.5;
+const PERK_DOUBLE_TAP_MS = 400;
+const PERK_SINGLE_TAP_DELAY_MS = PERK_DOUBLE_TAP_MS + 50;
 const PERK_BADGE_ROW_HEIGHT_PX = 16;
 const PERK_BADGE_GAP_PX = 2;
 const PERK_BADGE_EDGE_MARGIN_PX = 4;
@@ -363,6 +365,10 @@ interface PerkNodeProps {
   showSkillRequirements: boolean;
   tooltipScale?: number;
   badgeLayoutRevision?: string;
+  touchTooltipOpen?: boolean;
+  touchAnchor?: { x: number; y: number } | null;
+  onOpenTouchTooltip: (anchor: { x: number; y: number }) => void;
+  onCloseTouchTooltip: () => void;
 }
 
 function PerkNode({
@@ -388,6 +394,10 @@ function PerkNode({
   showSkillRequirements,
   tooltipScale = 1,
   badgeLayoutRevision = "",
+  touchTooltipOpen = false,
+  touchAnchor = null,
+  onOpenTouchTooltip,
+  onCloseTouchTooltip,
 }: PerkNodeProps) {
   const supportsHover = useSupportsHover();
   const longPressTimerRef = useRef<number | null>(null);
@@ -400,8 +410,6 @@ function PerkNode({
   const touchInteractionRef = useRef(false);
   const touchClearRef = useRef<number | null>(null);
   const pointerAnchorRef = useRef({ x: 0, y: 0 });
-  const [touchTooltipOpen, setTouchTooltipOpen] = useState(false);
-  const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
 
   const clearLongPressTimer = () => {
     if (longPressTimerRef.current !== null) {
@@ -445,31 +453,19 @@ function PerkNode({
     };
   };
 
-  const showTouchTooltip = (fallbackX?: number, fallbackY?: number) => {
+  const showTouchTooltip = () => {
     if (supportsHover) return;
     const center = getTooltipAnchor();
-    setTouchAnchor({
-      x: center?.x ?? fallbackX ?? 0,
-      y: center?.y ?? fallbackY ?? 0,
-    });
-    setTouchTooltipOpen(true);
+    if (!center) return;
+    onOpenTouchTooltip(center);
   };
 
-  useEffect(() => {
-    if (!touchTooltipOpen || supportsHover) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-      if (target instanceof Element && target.closest("[data-perk-node]")) return;
-      setTouchTooltipOpen(false);
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [touchTooltipOpen, supportsHover]);
-
-  const handleForceAllocate = () => {
-    if (!isInteractive || tookPerkWithLastClickRef.current) return false;
+  const handleForceAllocate = (fromDoubleAction = false) => {
+    if (!isInteractive) return false;
+    if (!fromDoubleAction && tookPerkWithLastClickRef.current) return false;
+    if (fromDoubleAction) {
+      tookPerkWithLastClickRef.current = false;
+    }
     const tookPerk = onForceTake(perk.id);
     tookPerkWithLastClickRef.current = tookPerk;
     return tookPerk;
@@ -494,7 +490,7 @@ function PerkNode({
     if (event.button !== 0) return;
 
     if (event.detail > 1) {
-      handleForceAllocate();
+      handleForceAllocate(true);
       return;
     }
 
@@ -540,10 +536,10 @@ function PerkNode({
     }
 
     const now = Date.now();
-    if (now - lastTapRef.current < 300) {
+    if (now - lastTapRef.current < PERK_DOUBLE_TAP_MS) {
       clearSingleTapTimer();
       lastTapRef.current = 0;
-      handleForceAllocate();
+      handleForceAllocate(true);
       showTouchTooltip();
       return;
     }
@@ -554,7 +550,7 @@ function PerkNode({
       singleTapTimerRef.current = null;
       tookPerkWithLastClickRef.current = onTryTake(takeTargetId);
       showTouchTooltip();
-    }, 300);
+    }, PERK_SINGLE_TAP_DELAY_MS);
   };
 
   const handlePointerCancel = () => {
@@ -576,7 +572,7 @@ function PerkNode({
   const handleDoubleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (touchInteractionRef.current) return;
-    handleForceAllocate();
+    handleForceAllocate(true);
     showTouchTooltip();
   };
 
@@ -733,7 +729,13 @@ function PerkNode({
       content={tooltipContent}
       contentScale={tooltipScale}
       open={supportsHover ? undefined : touchTooltipOpen}
-      onOpenChange={supportsHover ? undefined : setTouchTooltipOpen}
+      onOpenChange={
+        supportsHover
+          ? undefined
+          : (open) => {
+              if (!open) onCloseTouchTooltip();
+            }
+      }
       touchAnchor={touchAnchor}
       className={cn(
         "absolute -translate-x-1/2 -translate-y-1/2 select-none",
@@ -859,6 +861,11 @@ function PerkTreeView({
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
   const tookPerkWithLastClickRef = useRef(false);
+  const supportsHover = useSupportsHover();
+  const [touchTooltip, setTouchTooltip] = useState<{
+    positionKey: string;
+    anchor: { x: number; y: number };
+  } | null>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const panDragRef = useRef<{
     pointerId: number;
@@ -897,7 +904,32 @@ function PerkTreeView({
     panDragRef.current = null;
     pinchStateRef.current = null;
     setIsPanning(false);
+    setTouchTooltip(null);
   }, [tree.skillId, applyViewTransform]);
+
+  useEffect(() => {
+    if (!touchTooltip || supportsHover) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (target instanceof Element && target.closest("[data-perk-node]")) return;
+      setTouchTooltip(null);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [touchTooltip, supportsHover]);
+
+  const openTouchTooltip = useCallback(
+    (positionKey: string, anchor: { x: number; y: number }) => {
+      setTouchTooltip({ positionKey, anchor });
+    },
+    [],
+  );
+
+  const closeTouchTooltip = useCallback(() => {
+    setTouchTooltip(null);
+  }, []);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -1232,6 +1264,12 @@ function PerkTreeView({
             showSkillRequirements={showSkillRequirements}
             tooltipScale={tooltipScale}
             badgeLayoutRevision={badgeLayoutRevision}
+            touchTooltipOpen={touchTooltip?.positionKey === positionKey}
+            touchAnchor={
+              touchTooltip?.positionKey === positionKey ? touchTooltip.anchor : null
+            }
+            onOpenTouchTooltip={(anchor) => openTouchTooltip(positionKey, anchor)}
+            onCloseTouchTooltip={closeTouchTooltip}
           />
         );
       })}
