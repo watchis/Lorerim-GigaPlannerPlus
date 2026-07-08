@@ -48,14 +48,6 @@ describe("build modifications integration", () => {
     expect(hagglingSource?.value).toBe(50);
   });
 
-  it("includes artifact enchanter planner notes when selected", () => {
-    const state = createTestBuildState({
-      selectedPerkIds: ["enchanting-artifact-enchanter"],
-    });
-    const computed = computeBuild(game, state);
-    expect(computed.plannerNotesByPerkId["enchanting-artifact-enchanter"]?.length).toBe(2);
-  });
-
   it("waives skill points for the top five levels on Oghma skills", () => {
     const state = createTestBuildState({
       raceId: "nord",

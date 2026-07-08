@@ -10,6 +10,7 @@ const DEFAULT_BINDINGS_PATH = "data/game/extension-bindings.json";
  * @property {string} skillId
  * @property {string} name Perk display name (matched canonically)
  * @property {string} extension Extension module id (basename under extensions/perks/)
+ * @property {{ kind: "perkPointsBudget", totalLabel?: "X" | "infinity" }} [allocation]
  */
 
 /**
@@ -41,13 +42,24 @@ function perkBindingKey(skillId, perkName) {
   return `${skillId}:${canonicalPerkName(perkName)}`;
 }
 
-/** @returns {Map<string, string>} binding key → extension id */
-export function buildPerkExtensionLookup(bindings) {
+/** @returns {Map<string, PerkExtensionBinding>} binding key → binding entry */
+export function buildPerkExtensionBindingLookup(bindings) {
   const lookup = new Map();
 
   for (const entry of bindings.perks ?? []) {
     if (!entry?.skillId || !entry?.name || !entry?.extension) continue;
-    lookup.set(perkBindingKey(entry.skillId, entry.name), entry.extension);
+    lookup.set(perkBindingKey(entry.skillId, entry.name), entry);
+  }
+
+  return lookup;
+}
+
+/** @returns {Map<string, string>} binding key → extension id */
+export function buildPerkExtensionLookup(bindings) {
+  const lookup = new Map();
+
+  for (const [key, entry] of buildPerkExtensionBindingLookup(bindings)) {
+    lookup.set(key, entry.extension);
   }
 
   return lookup;
@@ -70,12 +82,19 @@ export function resolvePerkExtension(bindings, skillId, perkName) {
   return lookup.get(perkBindingKey(skillId, perkName));
 }
 
+function allocationMatches(left, right) {
+  if (!left || !right) return false;
+  return left.kind === right.kind && (left.totalLabel ?? null) === (right.totalLabel ?? null);
+}
+
 /**
  * Wire perk JSON nodes to build-time extension plugins.
  * Extension-owned perks keep `effects: []` so import/regen parsers do not overwrite plugin logic.
+ * Repeatable allocation metadata in bindings is re-applied on every import so graph snapshots
+ * and regenerated JSON cannot strip stackable behavior.
  */
 export function applyPerkExtensionBindings(trees, bindings) {
-  const lookup = buildPerkExtensionLookup(bindings);
+  const lookup = buildPerkExtensionBindingLookup(bindings);
   if (lookup.size === 0) return { applied: 0 };
 
   let applied = 0;
@@ -84,11 +103,14 @@ export function applyPerkExtensionBindings(trees, bindings) {
     if (!tree?.skillId || !tree.perks?.length) continue;
 
     for (const perk of tree.perks) {
-      const extension = lookup.get(perkBindingKey(tree.skillId, perk.name));
-      if (!extension) continue;
+      const binding = lookup.get(perkBindingKey(tree.skillId, perk.name));
+      if (!binding) continue;
 
-      perk.extension = extension;
+      perk.extension = binding.extension;
       perk.effects = [];
+      if (binding.allocation) {
+        perk.allocation = { ...binding.allocation };
+      }
       applied += 1;
     }
   }
@@ -107,7 +129,7 @@ export function validateExtensionBindings({
   extensionsDir = "extensions",
 }) {
   const warnings = [];
-  const lookup = buildPerkExtensionLookup(bindings);
+  const bindingLookup = buildPerkExtensionBindingLookup(bindings);
   const optionLookup = buildCharacterOptionExtensionLookup(bindings);
 
   const perksByKey = new Map();
@@ -118,18 +140,27 @@ export function validateExtensionBindings({
     }
   }
 
-  for (const [key, extension] of lookup) {
+  for (const [key, binding] of bindingLookup) {
     const perk = perksByKey.get(key);
     if (!perk) {
-      warnings.push(`extension-bindings perk "${key}" → "${extension}" has no matching imported perk`);
+      warnings.push(`extension-bindings perk "${key}" → "${binding.extension}" has no matching imported perk`);
       continue;
     }
-    if (perk.extension !== extension) {
+    if (perk.extension !== binding.extension) {
       warnings.push(
-        `perk "${perk.name}" (${perk.id}) has extension "${perk.extension ?? ""}" but bindings expect "${extension}"`,
+        `perk "${perk.name}" (${perk.id}) has extension "${perk.extension ?? ""}" but bindings expect "${binding.extension}"`,
       );
     }
+    if (binding.allocation) {
+      if (!allocationMatches(perk.allocation, binding.allocation)) {
+        warnings.push(
+          `perk "${perk.name}" (${perk.id}) allocation ${JSON.stringify(perk.allocation ?? null)} does not match extension-bindings ${JSON.stringify(binding.allocation)}`,
+        );
+      }
+    }
   }
+
+  const referencedPerkExtensions = new Set([...bindingLookup.values()].map((entry) => entry.extension));
 
   const characterOptions = loadJsonIfExists(characterOptionsPath);
   const optionsById = new Map(
@@ -157,7 +188,7 @@ export function validateExtensionBindings({
 
     const referenced = new Set(
       kind === "perks"
-        ? [...lookup.values()]
+        ? referencedPerkExtensions
         : [...optionLookup.values()],
     );
 

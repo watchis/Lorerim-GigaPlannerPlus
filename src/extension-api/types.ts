@@ -5,6 +5,7 @@ import type {
   Effect,
   GameData,
   Perk,
+  PerkAllocation,
 } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
 
@@ -75,6 +76,8 @@ export interface PerkDetailExtrasProps {
 
 export interface PerkExtension {
   readonly id: string;
+  /** Repeatable allocation when JSON metadata is absent (e.g. after import). */
+  readonly allocation?: PerkAllocation;
   getModifications(ctx: PerkExtensionContext): BuildModification[];
   DetailExtras?(props: PerkDetailExtrasProps): ReactNode;
 }

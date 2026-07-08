@@ -300,25 +300,20 @@ export const skillsSchema = z.object({
 
 export const perkPlayerLevelReqsSchema = z.record(z.string(), z.number().int().positive());
 
+/** Repeatable perk allocation model (stored by repeating the perk id in selectedPerkIds). */
+export const perkAllocationSchema = z.object({
+  kind: z.literal("perkPointsBudget"),
+  /** Denominator shown in rank badges: literal `X` or infinity (`∞`). */
+  totalLabel: z.enum(["X", "infinity"]).optional(),
+});
+
 export const perkSchema = z.object({
   id: z.string(),
   name: z.string(),
   skillReq: z.number(),
   playerLevelReq: z.number().int().positive().optional(),
   costsPerkPoint: z.boolean().default(true),
-  /**
-   * Optional allocation model for perks that can be selected multiple times.
-   *
-   * The planner stores multiple allocations by repeating the perk id in
-   * `BuildState.selectedPerkIds`.
-   */
-  allocation: z
-    .object({
-      kind: z.literal("perkPointsBudget"),
-      /** Denominator shown in rank badges: literal `X` or infinity (`∞`). */
-      totalLabel: z.enum(["X", "infinity"]).optional(),
-    })
-    .optional(),
+  allocation: perkAllocationSchema.optional(),
   position: z.object({ x: z.number().int(), y: z.number().int() }),
   prerequisites: z.array(z.string()),
   prerequisitesAny: z.array(z.string()).optional(),
@@ -487,6 +482,7 @@ export type Deity = z.infer<typeof deitySchema>;
 export type Trait = z.infer<typeof traitSchema>;
 export type Skill = z.infer<typeof skillSchema>;
 export type Perk = z.infer<typeof perkSchema>;
+export type PerkAllocation = z.infer<typeof perkAllocationSchema>;
 export type PerkTree = z.infer<typeof perkTreeSchema>;
 export type Theme = z.infer<typeof themeSchema>;
 export type Layout = z.infer<typeof layoutSchema>;
