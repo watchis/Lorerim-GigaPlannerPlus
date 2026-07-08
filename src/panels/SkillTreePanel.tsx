@@ -21,9 +21,9 @@ import {
   getSkillFloor,
   getSkillLevelFromTraining,
   getStoredSkillLevel,
+  getStoredSkillTraining,
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
-import { hasSkillTrainingAssigned } from "@/lib/skillTraining";
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
@@ -77,7 +77,13 @@ function SkillTreeWarningIcon({
   );
 }
 
-function SkillTreeTrainingIndicator({ label }: { label: string }) {
+function SkillTreeTrainingIndicator({
+  label,
+  overBudget,
+}: {
+  label: string;
+  overBudget: boolean;
+}) {
   return (
     <HoverTapTooltip
       content={<p className="text-xs leading-relaxed">{label}</p>}
@@ -85,7 +91,10 @@ function SkillTreeTrainingIndicator({ label }: { label: string }) {
       align="start"
     >
       <span
-        className="mt-px h-2 w-2 shrink-0 rounded-full bg-[var(--color-accent)]"
+        className={cn(
+          "mt-px h-2 w-2 shrink-0 rounded-full",
+          overBudget ? "bg-[var(--color-error)]" : "bg-[var(--color-accent)]",
+        )}
         role="img"
         aria-label={label}
       />
@@ -178,8 +187,11 @@ export function SkillTreePanel() {
     ? 0
     : getSkillLevelFromTraining(gameData.game, build, activeTree.skillId);
   const isTrainingMode = !isDestinyTree && skillWorkspaceMode === "training";
-  const hasTraining = !isDestinyTree &&
-    hasSkillTrainingAssigned(gameData.game, build, activeTree.skillId);
+  const trainingAssignedCount = !isDestinyTree
+    ? getStoredSkillTraining(gameData.game, build, activeTree.skillId)
+    : 0;
+  const hasTraining = trainingAssignedCount > 0;
+  const trainingOverBudget = !isDestinyTree && computed.trainingLevelsRemaining < 0;
   const { perks: overLevelPerks, skillIncreases, destinyPerksOverBudget } =
     getBuildPlayerLevelWarnings(gameData.game, build);
   const skillIncreaseConflict = skillIncreases.find(
@@ -291,7 +303,10 @@ export function SkillTreePanel() {
                 </h2>
                 {hasTraining && (
                   <SkillTreeTrainingIndicator
-                    label={labels.trainingAssignedIndicator ?? "Training assigned"}
+                    overBudget={trainingOverBudget}
+                    label={formatLabel(labels.trainingAssignedIndicator, {
+                      count: trainingAssignedCount,
+                    })}
                   />
                 )}
                 <SkillTreeWarningIcon
@@ -453,7 +468,10 @@ export function SkillTreePanel() {
                 <CardTitle className="min-w-0 truncate text-base">{activeTree.skillName}</CardTitle>
                 {hasTraining && (
                   <SkillTreeTrainingIndicator
-                    label={labels.trainingAssignedIndicator ?? "Training assigned"}
+                    overBudget={trainingOverBudget}
+                    label={formatLabel(labels.trainingAssignedIndicator, {
+                      count: trainingAssignedCount,
+                    })}
                   />
                 )}
                 <SkillTreeWarningIcon

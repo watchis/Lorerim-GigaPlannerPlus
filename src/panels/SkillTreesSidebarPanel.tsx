@@ -10,6 +10,7 @@ import {
   getOrderedPerkTrees,
   getSelectedPerksBelowSkillRequirement,
   getStoredSkillLevel,
+  getStoredSkillTraining,
   isAllocatableSkill,
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
@@ -40,6 +41,7 @@ export function SkillTreesSidebarPanel() {
     (sideWidths?.right ?? Number.POSITIVE_INFINITY) < RESET_ICON_ONLY_MAX_WIDTH;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
   const resetAllPerks = useBuildStore((s) => s.resetAllPerks);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
@@ -64,6 +66,7 @@ export function SkillTreesSidebarPanel() {
     maxColumns: stackedLayout ? 3 : 4,
   });
   const gridColumns = useThreeColumnLayout ? 3 : responsiveColumns;
+  const trainingOverBudget = computed?.trainingLevelsRemaining < 0;
 
   return (
     <Card
@@ -115,6 +118,11 @@ export function SkillTreesSidebarPanel() {
             {trees.map((tree) => {
               const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
               const skillLevel = getStoredSkillLevel(gameData.game, build, tree.skillId);
+              const isDestinyTree = tree.skillId === "destiny";
+              const trainingAssignedCount = !isDestinyTree
+                ? getStoredSkillTraining(gameData.game, build, tree.skillId)
+                : 0;
+              const hasTraining = trainingAssignedCount > 0;
               const isOverCap = isSkillOverPlayerLevelCap(gameData.game, build, tree.skillId);
               const conflictPerkIds = [
                 ...overLevelPerks
@@ -165,15 +173,29 @@ export function SkillTreesSidebarPanel() {
                           : "text-[var(--color-accent-muted)]",
                       )}
                     />
-                    <span
+                    <div
                       className={cn(
-                        "min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]",
+                        "row-start-1 col-start-2 flex min-w-0 items-center gap-1.5",
+                        "min-w-0",
                         gridColumns <= 2 ? "text-xs" : compact ? "text-[10px]" : "text-[11px]",
                       )}
-                      title={tree.skillName}
                     >
-                      {tree.skillName}
-                    </span>
+                      {hasTraining && (
+                        <span
+                          className={cn(
+                            "mt-px h-1.5 w-1.5 shrink-0 rounded-full",
+                            trainingOverBudget ? "bg-[var(--color-error)]" : "bg-[var(--color-accent)]",
+                          )}
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span
+                        className="min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]"
+                        title={tree.skillName}
+                      >
+                        {tree.skillName}
+                      </span>
+                    </div>
                     <span
                       className={cn(
                         "col-start-2 justify-self-start tabular-nums text-[10px] font-medium leading-none",
