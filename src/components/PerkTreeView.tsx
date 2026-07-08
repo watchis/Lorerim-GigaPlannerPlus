@@ -97,6 +97,7 @@ interface PerkTreeViewProps {
   labels: Record<string, string>;
   conflictPerkIds?: string[];
   playerLevelConflictPerkIds?: string[];
+  searchPerkPositionKeys?: ReadonlySet<string>;
   /** Scale the tree to fit and center within the parent area. */
   fit?: boolean;
   className?: string;
@@ -107,6 +108,7 @@ function PerkTreeView({
   labels,
   conflictPerkIds = [],
   playerLevelConflictPerkIds = [],
+  searchPerkPositionKeys,
   fit = false,
   className,
 }: PerkTreeViewProps) {
@@ -531,6 +533,7 @@ function PerkTreeView({
             isAvailable={isAvailable}
             isLocked={isLocked}
             isConflict={isConflict}
+            isSearchMatch={searchPerkPositionKeys?.has(positionKey) ?? false}
             isInteractive
             paintOrder={20 + index}
             nodeDiameterPx={nodeDiameterPx}

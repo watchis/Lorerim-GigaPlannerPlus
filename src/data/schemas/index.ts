@@ -402,6 +402,7 @@ export const labelsSchema = z.object({
     home: z.string(),
     planner: z.string(),
     builds: z.string(),
+    reportBug: z.string(),
   }),
   landing: z.object({
     howItWorksTitle: z.string(),

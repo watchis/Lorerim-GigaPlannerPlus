@@ -84,6 +84,21 @@ body {
     var(--color-background, #0f1117);
 }
 
+@keyframes perk-search-match-glow-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.perk-search-match-glow {
+  animation: perk-search-match-glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 ::selection {
   background: rgba(201, 162, 39, 0.25);
   color: var(--color-foreground, #e8eaef);

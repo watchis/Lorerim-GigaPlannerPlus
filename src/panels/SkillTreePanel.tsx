@@ -1,4 +1,5 @@
 import { AlertCircle, Minus, Plus, RotateCcw } from "lucide-react";
+import { useMemo } from "react";
 import { PerkBadgeVisibilityDropdown } from "@/components/PerkBadgeVisibilityDropdown";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
@@ -32,6 +33,7 @@ import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import { usePlannerStackedLayout } from "@/layout/plannerLayout";
+import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
@@ -156,6 +158,7 @@ export function SkillTreePanel() {
   const setupLabels = usePanelLabels("character-setup");
   const setMiddleView = useUiStore((s) => s.setMiddleView);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
+  const perkSearchQuery = useUiStore((s) => s.perkSearchQuery);
   const skillWorkspaceMode = useUiStore((s) => s.skillWorkspaceMode);
   const setSkillWorkspaceMode = useUiStore((s) => s.setSkillWorkspaceMode);
   const stackedLayout = usePlannerStackedLayout();
@@ -173,6 +176,15 @@ export function SkillTreePanel() {
     trees.find((tree) => tree.skillId === activeSkillTreeId) ?? trees[0];
 
   if (!activeTree) return null;
+
+  const perkSearchTokens = useMemo(
+    () => getPerkSearchTokens(perkSearchQuery),
+    [perkSearchQuery],
+  );
+  const perkSearchPositionKeys = useMemo(
+    () => getPerkSearchPositionKeysForTree(activeTree, perkSearchTokens),
+    [activeTree, perkSearchTokens],
+  );
   const isDestinyTree = activeTree.skillId === "destiny";
 
   const skillReqConflictsOnTree = getSelectedPerksBelowSkillRequirement(
@@ -288,6 +300,7 @@ export function SkillTreePanel() {
       labels={labels}
       conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}
       playerLevelConflictPerkIds={invalidPerkIdsOnTree}
+      searchPerkPositionKeys={perkSearchPositionKeys}
     />
   );
 
@@ -453,50 +466,51 @@ export function SkillTreePanel() {
   }
 
   return (
-    <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <WorkspacePanelHeader
-        back={{
-          label: setupLabels.backToOverview ?? setupLabels.title,
-          onClick: () => setMiddleView("character-info"),
-        }}
-        titleRow={
-          <div className="flex min-w-0 gap-2">
-            <SkillIcon
-              skillId={activeTree.skillId}
-              className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]"
-            />
-            <div className="min-w-0">
-              <div className="flex min-w-0 items-center gap-2">
-                <CardTitle className="min-w-0 truncate text-base">{activeTree.skillName}</CardTitle>
-                {hasTraining && (
-                  <SkillTreeTrainingIndicator
-                    overBudget={trainingOverBudget}
-                    label={formatLabel(labels.trainingAssignedIndicator, {
-                      count: trainingAssignedCount,
-                    })}
+    <Card className="flex min-h-0 flex-1 flex-col">
+      <div className="sticky top-0 z-10 overflow-hidden rounded-t-[var(--radius-lg)] bg-[var(--color-surface)]">
+        <WorkspacePanelHeader
+          back={{
+            label: setupLabels.backToOverview ?? setupLabels.title,
+            onClick: () => setMiddleView("character-info"),
+          }}
+          titleRow={
+            <div className="flex min-w-0 gap-2">
+              <SkillIcon
+                skillId={activeTree.skillId}
+                className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]"
+              />
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-2">
+                  <CardTitle className="min-w-0 truncate text-base">{activeTree.skillName}</CardTitle>
+                  {hasTraining && (
+                    <SkillTreeTrainingIndicator
+                      overBudget={trainingOverBudget}
+                      label={formatLabel(labels.trainingAssignedIndicator, {
+                        count: trainingAssignedCount,
+                      })}
+                    />
+                  )}
+                  <SkillTreeWarningIcon
+                    messages={warningMessages}
+                    ariaLabel={labels.skillTreeWarning}
                   />
-                )}
-                <SkillTreeWarningIcon
-                  messages={warningMessages}
-                  ariaLabel={labels.skillTreeWarning}
-                />
+                </div>
+                <p className="mt-1 text-xs text-[var(--color-muted)]">
+                  {isTrainingMode ? (
+                    labels.trainingModeActive
+                  ) : (
+                    <>
+                      <span className="font-medium tabular-nums text-[var(--color-foreground)]">
+                        {selectedCount}/{activeTree.perks.length}
+                      </span>{" "}
+                      {labels.perksSelected}
+                    </>
+                  )}
+                </p>
               </div>
-              <p className="mt-1 text-xs text-[var(--color-muted)]">
-                {isTrainingMode ? (
-                  labels.trainingModeActive
-                ) : (
-                  <>
-                    <span className="font-medium tabular-nums text-[var(--color-foreground)]">
-                      {selectedCount}/{activeTree.perks.length}
-                    </span>{" "}
-                    {labels.perksSelected}
-                  </>
-                )}
-              </p>
             </div>
-          </div>
-        }
-      />
+          }
+        />
 
       <div
         className={cn(
@@ -612,6 +626,8 @@ export function SkillTreePanel() {
             )}
           </div>
         )}
+      </div>
+
       </div>
 
       <CardContent
