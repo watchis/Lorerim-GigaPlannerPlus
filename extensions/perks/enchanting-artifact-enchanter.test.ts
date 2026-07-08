@@ -16,7 +16,7 @@ describe("enchanting-artifact-enchanter extension", () => {
     expect(perk.allocation).toEqual(artifactEnchanterExtension.allocation);
   });
 
-  it("emits planner notes without numeric effects when selected", () => {
+  it("does not emit planner notes or numeric effects", () => {
     const mods = artifactEnchanterExtension.getModifications({
       game,
       state: createTestBuildState({ selectedPerkIds: ["enchanting-artifact-enchanter"] }),
@@ -26,10 +26,6 @@ describe("enchanting-artifact-enchanter extension", () => {
       isSelected: true,
     });
 
-    expect(mods[0]?.effects).toBeUndefined();
-    expect(mods[0]?.plannerNotes).toEqual([
-      "Enchant one item at 2× strength",
-      "Place up to 3 enchantments at 50% strength each",
-    ]);
+    expect(mods).toEqual([]);
   });
 });
