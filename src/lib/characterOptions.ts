@@ -131,7 +131,7 @@ export interface CharacterOptionSummaryLine {
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
-    (result, [key, value]) => result.replace(`{${key}}`, String(value)),
+    (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
     template,
   );
 }
@@ -177,6 +177,31 @@ export function getCharacterOptionSummaryLines(
             }),
           });
         }
+      }
+    }
+  }
+
+  if (choice.effects) {
+    const increased = choice.effects.find(
+      (effect): effect is Extract<typeof effect, { type: "attribute" }> =>
+        effect.type === "attribute" && effect.value > 0,
+    );
+    const decreased = choice.effects.find(
+      (effect): effect is Extract<typeof effect, { type: "attribute" }> =>
+        effect.type === "attribute" && effect.value < 0,
+    );
+
+    if (increased && decreased) {
+      const template = labels.bittercupAttributeShift;
+      if (template) {
+        lines.push({
+          key: `${option.id}-attribute-shift`,
+          text: formatLabel(template, {
+            increased: attributeLabels[increased.stat] ?? increased.stat,
+            decreased: attributeLabels[decreased.stat] ?? decreased.stat,
+            count: Math.abs(increased.value),
+          }),
+        });
       }
     }
   }

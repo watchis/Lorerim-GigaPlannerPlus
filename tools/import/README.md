@@ -118,10 +118,14 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 - `data/game/perk-player-level-reqs.json` — player level gates from `PERK` `GetLevel` conditions (one entry per rank id)
 - `data/game/race-effects.json` — structured effects parsed from race ability bonus text
 
+### Partially imported
+
+- `data/game/character-options.json` — only the **bittercup** option is rebuilt from Creation Club plugin data (`cckrtsse001` Bittercup MGEF/SPEL magnitudes). Oghma Infinium, Alduin bonus trait, labels, and other options are preserved from the existing file.
+
 ### Never overwritten
 - `data/game/stats.json`
 - `data/game/skills.json`
-- `data/game/character-options.json`
+- `data/game/character-options.json` (except the bittercup option; see **Partially imported** above)
 - `data/ui/*`
 
 ---

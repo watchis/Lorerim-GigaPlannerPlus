@@ -8,6 +8,12 @@ import { raceDataSkillScore } from "./race-data-parser.mjs";
 import { getRecordBufferAsync, mapConcurrent, visitAsync } from "./plugin-io.mjs";
 import { normalizeAltarKey } from "./deity-eligibility.mjs";
 import {
+  BITTERCUP_ALCH_EDID,
+  isBittercupPluginName,
+  isBittercupRecordEdid,
+  parseAttributeValueModMgef,
+} from "./bittercup-from-plugins.mjs";
+import {
   collectBoonMgefFormIds,
   isAltarBlessingMgefEdid,
   parseShrineMgefAltarKey,
@@ -343,6 +349,10 @@ export function collectBoonFromSpellBuffer(buffer, edid, pluginName, lookupArg =
 function wantedTypesForPlugin(pluginName) {
   const wanted = new Set([...IMPORT_RECORD_TYPES, "AVIF", "FLST"]);
   if (WINTERSUN_FAITH_PLUGIN_PATTERN.test(pluginName)) wanted.add("MGEF");
+  if (isBittercupPluginName(pluginName)) {
+    wanted.add("MGEF");
+    wanted.add("ALCH");
+  }
   return wanted;
 }
 
@@ -362,6 +372,9 @@ async function readPluginImportPayload({ pluginName, path }) {
   const lorerimRaceRecords = [];
   const pluginMgefFormIds = new Map();
   const pluginMgefIdentities = new Map();
+  const bittercupMgefRecords = [];
+  const bittercupSpellCandidates = [];
+  let bittercupAlchDescription = null;
 
   for (const [offset, type] of offsets) {
     if (type !== "MGEF" || !wanted.has(type)) continue;
@@ -375,6 +388,18 @@ async function readPluginImportPayload({ pluginName, path }) {
           resolveFormIdentity(ownerPluginLower, masters, parsed.formId),
           parsed.edid,
         );
+
+        if (isBittercupRecordEdid(parsed.edid)) {
+          const valueMod = parseAttributeValueModMgef(buffer);
+          if (valueMod) {
+            bittercupMgefRecords.push({
+              edid: parsed.edid,
+              buffer: Buffer.from(buffer),
+              stat: valueMod.stat,
+              plugin: pluginName,
+            });
+          }
+        }
       }
     } catch {
       // Skip malformed MGEF records.
@@ -421,6 +446,19 @@ async function readPluginImportPayload({ pluginName, path }) {
         ) {
           faithSpellCandidates.push({ edid: spellEdid, buffer: Buffer.from(buffer) });
         }
+
+        if (isBittercupRecordEdid(spellEdid)) {
+          bittercupSpellCandidates.push({
+            edid: spellEdid,
+            buffer: Buffer.from(buffer),
+            lookup: pluginFaithLookup,
+            plugin: pluginName,
+          });
+        }
+      }
+
+      if (type === "ALCH" && BITTERCUP_ALCH_EDID.test(parsed.edid)) {
+        bittercupAlchDescription = parsed.description || parsed.name || bittercupAlchDescription;
       }
 
       records.push(parsed);
@@ -445,6 +483,9 @@ async function readPluginImportPayload({ pluginName, path }) {
     pluginMgefFormIds,
     pluginMgefIdentities,
     lorerimRaceRecords,
+    bittercupMgefRecords,
+    bittercupSpellCandidates,
+    bittercupAlchDescription,
   };
 }
 
@@ -589,6 +630,9 @@ export async function collectImportPluginData(plugins, progress = null, options 
   const lorerimRaceByEdid = new Map();
   const traitsFormList = { formIds: null, sourcePlugin: null };
   const mastersByPath = new Map();
+  const bittercupMgefByEdid = new Map();
+  const bittercupSpellByEdid = new Map();
+  let bittercupAlchDescription = null;
 
   const scan = progress?.pluginScan?.("Scanning plugin records", plugins.length);
   const pluginPayloads = await mapConcurrent(plugins, concurrency, async (plugin) => {
@@ -613,6 +657,16 @@ export async function collectImportPluginData(plugins, progress = null, options 
       mastersByPath,
       payload,
     );
+
+    for (const record of payload.bittercupMgefRecords ?? []) {
+      bittercupMgefByEdid.set(record.edid, record);
+    }
+    for (const candidate of payload.bittercupSpellCandidates ?? []) {
+      bittercupSpellByEdid.set(candidate.edid, candidate);
+    }
+    if (payload.bittercupAlchDescription) {
+      bittercupAlchDescription = payload.bittercupAlchDescription;
+    }
   }
 
   const { altarMagnitudes, boonMagnitudes } = collectFaithSpellMagnitudes(orderedPayloads);
@@ -645,6 +699,9 @@ export async function collectImportPluginData(plugins, progress = null, options 
     lorerimRaceRecords: [...lorerimRaceByEdid.values()],
     traitsFormList,
     mastersByPath,
+    bittercupMgefRecords: [...bittercupMgefByEdid.values()],
+    bittercupSpellCandidates: [...bittercupSpellByEdid.values()],
+    bittercupAlchDescription,
   };
 }
 

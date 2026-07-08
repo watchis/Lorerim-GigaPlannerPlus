@@ -32,6 +32,11 @@ import {
 import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
 import { collectWorshipAltarKeys, deityNameFromAltarKey, normalizeAltarKey, resolveDeityEligibility } from "./deity-eligibility.mjs";
 import { extractFaithEffectsFromPlugins, indexDeityFaithMgef } from "./deity-faith-from-plugins.mjs";
+import { buildBittercupCharacterOption } from "./bittercup-from-plugins.mjs";
+import {
+  loadCharacterOptionsJson,
+  mergeBittercupCharacterOptions,
+} from "./merge-character-options.mjs";
 
 const DESTINY_SKILL_ID = "destiny";
 const DESTINY_COORD_SCALE = 2;
@@ -867,4 +872,18 @@ export function transformDeityRecords(
 
   const none = existingEntries.find((deity) => deity.id === "none");
   return { deities: none ? [none, ...deities] : deities };
+}
+
+export function transformBittercupCharacterOptions(scan, characterOptionsPath) {
+  const existing = loadCharacterOptionsJson(characterOptionsPath);
+  const bittercupOption = buildBittercupCharacterOption({
+    mgefRecords: scan.mgefRecords ?? [],
+    spellCandidates: scan.spellCandidates ?? [],
+    alchDescription: scan.alchDescription ?? "",
+  });
+
+  return {
+    ...mergeBittercupCharacterOptions(existing, bittercupOption),
+    importedMagnitudes: bittercupOption.importedMagnitudes,
+  };
 }

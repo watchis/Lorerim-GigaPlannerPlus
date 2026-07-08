@@ -39,6 +39,63 @@
         { "id": "none", "label": "alduinBonusTraitNone" },
         { "id": "claimed", "label": "alduinBonusTraitClaimed" }
       ]
+    },
+    {
+      "id": "bittercup",
+      "titleLabel": "bittercup",
+      "descriptionLabel": "bittercupDescription",
+      "defaultChoice": "none",
+      "choices": [
+        { "id": "none", "label": "bittercupNone" },
+        {
+          "id": "health-magicka",
+          "label": "bittercupHealthUpMagickaDown",
+          "effects": [
+            { "type": "attribute", "stat": "health", "value": 20 },
+            { "type": "attribute", "stat": "magicka", "value": -20 }
+          ]
+        },
+        {
+          "id": "health-stamina",
+          "label": "bittercupHealthUpStaminaDown",
+          "effects": [
+            { "type": "attribute", "stat": "health", "value": 20 },
+            { "type": "attribute", "stat": "stamina", "value": -20 }
+          ]
+        },
+        {
+          "id": "magicka-health",
+          "label": "bittercupMagickaUpHealthDown",
+          "effects": [
+            { "type": "attribute", "stat": "magicka", "value": 20 },
+            { "type": "attribute", "stat": "health", "value": -20 }
+          ]
+        },
+        {
+          "id": "magicka-stamina",
+          "label": "bittercupMagickaUpStaminaDown",
+          "effects": [
+            { "type": "attribute", "stat": "magicka", "value": 20 },
+            { "type": "attribute", "stat": "stamina", "value": -20 }
+          ]
+        },
+        {
+          "id": "stamina-health",
+          "label": "bittercupStaminaUpHealthDown",
+          "effects": [
+            { "type": "attribute", "stat": "stamina", "value": 20 },
+            { "type": "attribute", "stat": "health", "value": -20 }
+          ]
+        },
+        {
+          "id": "stamina-magicka",
+          "label": "bittercupStaminaUpMagickaDown",
+          "effects": [
+            { "type": "attribute", "stat": "stamina", "value": 20 },
+            { "type": "attribute", "stat": "magicka", "value": -20 }
+          ]
+        }
+      ]
     }
   ]
 }
