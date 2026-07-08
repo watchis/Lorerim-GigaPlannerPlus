@@ -17,8 +17,9 @@ const ACTOR_VALUE_SKILL_MAP = {
   18: "alteration",
   19: "conjuration",
   20: "destruction",
-  21: "enchanting",
+  21: "illusion",
   22: "restoration",
+  23: "enchanting",
 };
 
 const RACE_DATA_FLOAT_OFFSETS = {
