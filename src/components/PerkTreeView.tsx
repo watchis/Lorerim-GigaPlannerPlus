@@ -600,27 +600,7 @@ function PerkTreeView({
               >
                 <div className="relative h-full w-full">{treeCanvas}</div>
               </div>
-            ) : (
-              // During initial mount the container can briefly report 0x0. If we
-              // wait for `fitSize`, the tree never appears (blank center pane).
-              // Render a deterministic fallback using the tree's own bounds.
-              <div
-                className="relative shrink-0 box-border"
-                style={{
-                  aspectRatio: `${bounds.width} / ${bounds.height}`,
-                  width: `min(100%, ${bounds.width * GRID_UNIT_PX}px)`,
-                  padding: treeEdgePaddingPx,
-                  ...(isTransformedView
-                    ? {
-                        transform: `translate(${viewTransform.panX}px, ${viewTransform.panY}px) scale(${viewTransform.zoom})`,
-                        transformOrigin: "center center",
-                      }
-                    : undefined),
-                }}
-              >
-                <div className="relative h-full w-full">{treeCanvas}</div>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
