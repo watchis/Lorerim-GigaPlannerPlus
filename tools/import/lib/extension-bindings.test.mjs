@@ -46,6 +46,28 @@ assert.deepEqual(trees["speech.json"].perks[0].effects, []);
 assert.equal(trees["speech.json"].perks[1].extension, undefined);
 assert.ok(trees["speech.json"].perks[1].effects.length > 0);
 
+const enchantingTrees = {
+  "enchanting.json": {
+    skillId: "enchanting",
+    perks: [
+      {
+        id: "enchanting-artifact-enchanter",
+        name: "Artifact Enchanter",
+        description: "With great skill and dedication...",
+        effects: [{ type: "derivedStat", stat: "priceModifier", value: 5, isPercent: true }],
+      },
+    ],
+  },
+};
+const { applied: enchantingApplied } = applyPerkExtensionBindings(enchantingTrees, bindings);
+assert.equal(enchantingApplied, 1);
+assert.equal(enchantingTrees["enchanting.json"].perks[0].extension, "enchanting-artifact-enchanter");
+assert.deepEqual(enchantingTrees["enchanting.json"].perks[0].effects, []);
+assert.deepEqual(enchantingTrees["enchanting.json"].perks[0].allocation, {
+  kind: "perkPointsBudget",
+  totalLabel: "infinity",
+});
+
 const perksDir = mkdtempSync(join(tmpdir(), "giga-extension-bindings-"));
 writeFileSync(
   join(perksDir, "speech.json"),

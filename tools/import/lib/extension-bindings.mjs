@@ -10,6 +10,7 @@ const DEFAULT_BINDINGS_PATH = "data/game/extension-bindings.json";
  * @property {string} skillId
  * @property {string} name Perk display name (matched canonically)
  * @property {string} extension Extension module id (basename under extensions/perks/)
+ * @property {{ kind: "perkPointsBudget", totalLabel?: "X" | "infinity" }} [allocation]
  */
 
 /**
@@ -41,13 +42,24 @@ function perkBindingKey(skillId, perkName) {
   return `${skillId}:${canonicalPerkName(perkName)}`;
 }
 
-/** @returns {Map<string, string>} binding key → extension id */
-export function buildPerkExtensionLookup(bindings) {
+/** @returns {Map<string, PerkExtensionBinding>} binding key → binding entry */
+export function buildPerkExtensionBindingLookup(bindings) {
   const lookup = new Map();
 
   for (const entry of bindings.perks ?? []) {
     if (!entry?.skillId || !entry?.name || !entry?.extension) continue;
-    lookup.set(perkBindingKey(entry.skillId, entry.name), entry.extension);
+    lookup.set(perkBindingKey(entry.skillId, entry.name), entry);
+  }
+
+  return lookup;
+}
+
+/** @returns {Map<string, string>} binding key → extension id */
+export function buildPerkExtensionLookup(bindings) {
+  const lookup = new Map();
+
+  for (const [key, entry] of buildPerkExtensionBindingLookup(bindings)) {
+    lookup.set(key, entry.extension);
   }
 
   return lookup;
@@ -75,7 +87,7 @@ export function resolvePerkExtension(bindings, skillId, perkName) {
  * Extension-owned perks keep `effects: []` so import/regen parsers do not overwrite plugin logic.
  */
 export function applyPerkExtensionBindings(trees, bindings) {
-  const lookup = buildPerkExtensionLookup(bindings);
+  const lookup = buildPerkExtensionBindingLookup(bindings);
   if (lookup.size === 0) return { applied: 0 };
 
   let applied = 0;
@@ -84,11 +96,14 @@ export function applyPerkExtensionBindings(trees, bindings) {
     if (!tree?.skillId || !tree.perks?.length) continue;
 
     for (const perk of tree.perks) {
-      const extension = lookup.get(perkBindingKey(tree.skillId, perk.name));
-      if (!extension) continue;
+      const binding = lookup.get(perkBindingKey(tree.skillId, perk.name));
+      if (!binding) continue;
 
-      perk.extension = extension;
+      perk.extension = binding.extension;
       perk.effects = [];
+      if (binding.allocation) {
+        perk.allocation = { ...binding.allocation };
+      }
       applied += 1;
     }
   }

@@ -36,4 +36,23 @@ describe("enrichPerk authoritative effects", () => {
 
     expect(enrichPerk(perk).effects).toEqual([]);
   });
+
+  it("applies repeatable allocation from extension plugins when JSON omits it", () => {
+    const perk: Perk = {
+      id: "enchanting-artifact-enchanter",
+      name: "Artifact Enchanter",
+      extension: "enchanting-artifact-enchanter",
+      skillReq: 100,
+      costsPerkPoint: true,
+      position: { x: 0, y: 0 },
+      prerequisites: [],
+      description: "With great skill and dedication...",
+      effects: [],
+    };
+
+    expect(enrichPerk(perk).allocation).toEqual({
+      kind: "perkPointsBudget",
+      totalLabel: "infinity",
+    });
+  });
 });

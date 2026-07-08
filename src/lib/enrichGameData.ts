@@ -1,10 +1,16 @@
-import type { Birthsign, Deity, Effect, Perk, Race, Trait } from "@/data/schemas";
+import type { Birthsign, Deity, Effect, Perk, PerkAllocation, Race, Trait } from "@/data/schemas";
 import {
   extractConditionalBonusDetails,
   mergeEffects,
   parseBonusEffects,
   resolveBonusEffects,
 } from "@/lib/resolveOptionEffects";
+import { getPerkExtension } from "@/extensions/loadExtensions";
+
+function resolvePerkAllocation(perk: Perk): PerkAllocation | undefined {
+  if (!perk.extension) return perk.allocation;
+  return getPerkExtension(perk.extension)?.allocation ?? perk.allocation;
+}
 
 export function enrichRaceEffects(race: Race): Effect[] {
   return mergeEffects(...race.bonuses.map((bonus) => parseBonusEffects(bonus)));
@@ -34,7 +40,12 @@ export function enrichDeity(deity: Deity): Deity {
 
 export function enrichPerk(perk: Perk): Perk {
   if (perk.extension) {
-    return { ...perk, effects: perk.effects ?? [] };
+    const allocation = resolvePerkAllocation(perk);
+    return {
+      ...perk,
+      effects: perk.effects ?? [],
+      ...(allocation ? { allocation } : {}),
+    };
   }
   return { ...perk, effects: resolveBonusEffects(perk.description, perk.effects) };
 }

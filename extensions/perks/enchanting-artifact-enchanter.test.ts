@@ -8,6 +8,14 @@ describe("enchanting-artifact-enchanter extension", () => {
     (entry) => entry.id === "enchanting-artifact-enchanter",
   )!;
 
+  it("declares repeatable perk-point allocation", () => {
+    expect(artifactEnchanterExtension.allocation).toEqual({
+      kind: "perkPointsBudget",
+      totalLabel: "infinity",
+    });
+    expect(perk.allocation).toEqual(artifactEnchanterExtension.allocation);
+  });
+
   it("emits planner notes without numeric effects when selected", () => {
     const mods = artifactEnchanterExtension.getModifications({
       game,
