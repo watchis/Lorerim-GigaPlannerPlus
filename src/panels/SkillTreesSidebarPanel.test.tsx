@@ -98,6 +98,7 @@ describe("SkillTreesSidebarPanel", () => {
     const stickyEl = container?.querySelector(".sticky");
     expect(stickyEl).toBeTruthy();
     expect((stickyEl as HTMLDivElement).className).toContain("top-0");
+    expect((stickyEl as HTMLDivElement).className).toContain("rounded-t");
   });
 });
 

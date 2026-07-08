@@ -89,6 +89,7 @@ describe("CharacterSetupPanel", () => {
     const stickyEl = container?.querySelector(".sticky");
     expect(stickyEl).toBeTruthy();
     expect((stickyEl as HTMLElement).className).toContain("top-0");
+    expect((stickyEl as HTMLElement).className).toContain("rounded-t");
   });
 });
 
