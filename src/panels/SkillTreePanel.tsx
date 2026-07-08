@@ -25,6 +25,7 @@ import {
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
+import { getMobileSkillTreeTitleClassName } from "@/lib/skillTreePanelTitle";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
@@ -298,7 +299,7 @@ export function SkillTreePanel() {
                   skillId={activeTree.skillId}
                   className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]"
                 />
-                <h2 className="truncate font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-foreground)]">
+                <h2 className={getMobileSkillTreeTitleClassName()}>
                   {activeTree.skillName}
                 </h2>
                 {hasTraining && (
