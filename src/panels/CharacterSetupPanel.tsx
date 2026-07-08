@@ -256,7 +256,7 @@ export function CharacterSetupPanel() {
         className={cn(
           "flex shrink-0 flex-row items-center justify-between space-y-0",
           !stackedLayout &&
-            "sticky top-0 z-10 rounded-t-[var(--radius-lg)] bg-[var(--color-surface)] border-b border-[var(--color-border)]/50",
+            "sticky top-[1px] z-10 rounded-t-[var(--radius-lg)] bg-[var(--color-surface)] border-b border-[var(--color-border)]/50",
           stackedLayout
             ? "border-b border-[var(--color-border)]/50 px-3 py-2.5"
             : compact
