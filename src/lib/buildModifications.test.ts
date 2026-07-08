@@ -5,7 +5,9 @@ import {
   computeBuild,
   computeSkillPointsSpentOnSkill,
   computeSkillPointsToReach,
+  getEffectiveSkillFloor,
   getSkillFloor,
+  getStoredSkillLevel,
   reconcileBuild,
 } from "@/engine/buildEngine";
 import { getTestGameData, createTestBuildState } from "@/test/helpers";
@@ -72,7 +74,7 @@ describe("build modifications integration", () => {
 
     expect(spentWithOghma).toBeLessThan(spentWithoutOghma);
     expect(spentWithOghma).toBe(
-      computeSkillPointsToReach(game.mechanics, 10, 70),
+      computeSkillPointsToReach(game.mechanics, 15, 70),
     );
   });
 
@@ -93,19 +95,53 @@ describe("build modifications integration", () => {
     );
   });
 
-  it("raises the floor when an Oghma skill is selected", () => {
-    const state = createTestBuildState({
+  it("raises and restores the Oghma skill floor by five", () => {
+    const base = createTestBuildState({
       raceId: "nord",
-      characterOptionChoices: { "oghma-infinium": "claimed" },
-      oghmaSkillIds: ["block"],
-      skillLevels: { block: 75 },
+      skillLevels: { block: 10 },
+    });
+    expect(getEffectiveSkillFloor(game, base, "block")).toBe(10);
+
+    const withOghma = reconcileBuild(
+      game,
+      createTestBuildState({
+        ...base,
+        characterOptionChoices: { "oghma-infinium": "claimed" },
+        oghmaSkillIds: ["block"],
+      }),
+    );
+    expect(getEffectiveSkillFloor(game, withOghma, "block")).toBe(15);
+    expect(withOghma.skillLevels.block).toBe(15);
+
+    const reconciledOff = reconcileBuild(
+      game,
+      createTestBuildState({
+        ...withOghma,
+        characterOptionChoices: { "oghma-infinium": "none" },
+      }),
+    );
+    expect(getEffectiveSkillFloor(game, reconciledOff, "block")).toBe(10);
+    expect(reconciledOff.skillLevels.block).toBe(15);
+  });
+
+  it("refunds training when Oghma makes trained top levels free", () => {
+    const before = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      skillLevels: { block: 30 },
+      skillTrainingRanges: { block: [25, 5, 0, 0] },
     });
 
-    expect(getSkillFloor(game, state, "block")).toBe(10);
-    const stored = reconcileBuild(game, state);
-    expect(stored.skillLevels.block).toBe(75);
-    expect(computeSkillPointsSpentOnSkill(game, stored, "block")).toBe(
-      computeSkillPointsToReach(game.mechanics, 10, 70),
+    const after = reconcileBuild(
+      game,
+      createTestBuildState({
+        ...before,
+        characterOptionChoices: { "oghma-infinium": "claimed" },
+        oghmaSkillIds: ["block"],
+      }),
     );
+
+    expect(after.skillTrainingRanges.block).toEqual([25, 0, 0, 0]);
+    expect(after.skillLevels.block).toBe(30);
   });
 });

@@ -4,13 +4,17 @@ import {
   computeTrainingSkillPointCredit,
   distributeTrainingCountAcrossTiers,
   formatTrainingTierRange,
+  getMaxTrainingOnSkill,
+  getSkillLevelRequiredForTrainingRanges,
   getTrainingTierDefinitions,
   hasSkillTrainingAssigned,
+  normalizeTrainingRangesForSkill,
   sumTrainingRanges,
+  trimTrainingRangesForFreeTopLevels,
   trimTrainingRangesToBudget,
 } from "@/lib/skillTraining";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
-import { getSkillFloor } from "@/engine/buildEngine";
+import { getEffectiveSkillFloor, getSkillFloor } from "@/engine/buildEngine";
 
 describe("skillTraining", () => {
   const game = getTestGameData();
@@ -76,5 +80,53 @@ describe("skillTraining", () => {
     expect(
       clampTrainingRangeCount(game, state, "block", 1, 5, floor, [25, 0, 0, 0]),
     ).toBe(5);
+  });
+
+  it("reduces per-skill training capacity by Oghma free top levels", () => {
+    const withoutOghma = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+    });
+    const withOghma = createTestBuildState({
+      ...withoutOghma,
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
+    });
+    const floor = getEffectiveSkillFloor(game, withOghma, "block");
+
+    expect(getMaxTrainingOnSkill(game, withoutOghma, "block", floor)).toBe(90 - floor);
+    expect(getMaxTrainingOnSkill(game, withOghma, "block", floor)).toBe(90 - floor - 5);
+  });
+
+  it("refunds training that falls in Oghma free top levels", () => {
+    const floor = 15;
+    const ranges = [25, 5, 0, 0];
+    expect(getSkillLevelRequiredForTrainingRanges(game, floor, ranges)).toBe(30);
+
+    const trimmed = trimTrainingRangesForFreeTopLevels(game, floor, ranges, 25);
+    expect(getSkillLevelRequiredForTrainingRanges(game, floor, trimmed)).toBe(25);
+    expect(sumTrainingRanges(trimmed)).toBeLessThan(sumTrainingRanges(ranges));
+  });
+
+  it("normalizes training ranges for Oghma free levels and reduced capacity", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
+      skillLevels: { block: 30 },
+      skillTrainingRanges: { block: [25, 5, 0, 0] },
+    });
+    const floor = getEffectiveSkillFloor(game, state, "block");
+    const normalized = normalizeTrainingRangesForSkill(
+      game,
+      state,
+      "block",
+      [25, 5, 0, 0],
+      floor,
+      30,
+    );
+
+    expect(getSkillLevelRequiredForTrainingRanges(game, floor, normalized)).toBe(25);
   });
 });

@@ -1,5 +1,6 @@
 import type { GameData, Mechanics } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
+import { getSkillLevelGrantFreeTopLevels } from "@/lib/skillLevelGrants";
 
 export interface TrainingTierDefinition {
   minLevel: number;
@@ -113,11 +114,60 @@ export function trimTrainingRangesToBudget(
 
 export function getMaxTrainingOnSkill(
   game: GameData,
-  _state: BuildState,
-  _skillId: string,
+  state: BuildState,
+  skillId: string,
   floor: number,
 ): number {
-  return Math.max(0, getMaxTrainingSkillLevel(game) - floor);
+  const freeTop = getSkillLevelGrantFreeTopLevels(game, state, skillId);
+  return Math.max(0, getMaxTrainingSkillLevel(game) - floor - freeTop);
+}
+
+/** Remove trained levels that fall in Oghma's free top-level band. */
+export function trimTrainingRangesForFreeTopLevels(
+  game: GameData,
+  floor: number,
+  ranges: number[],
+  maxResultLevel: number,
+): number[] {
+  const next = [...ranges];
+
+  while (
+    sumTrainingRanges(next) > 0 &&
+    getSkillLevelRequiredForTrainingRanges(game, floor, next) > maxResultLevel
+  ) {
+    let removed = false;
+    for (let index = next.length - 1; index >= 0; index--) {
+      if (next[index] > 0) {
+        next[index] -= 1;
+        removed = true;
+        break;
+      }
+    }
+    if (!removed) break;
+  }
+
+  return next;
+}
+
+export function normalizeTrainingRangesForSkill(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+  ranges: number[],
+  floor: number,
+  skillLevel: number,
+): number[] {
+  const maxOnSkill = getMaxTrainingOnSkill(game, state, skillId, floor);
+  let normalized = trimTrainingRangesToBudget(game, ranges, maxOnSkill);
+
+  const freeTop = getSkillLevelGrantFreeTopLevels(game, state, skillId);
+  if (freeTop > 0) {
+    const maxTrainingLevel = Math.max(floor, skillLevel - freeTop);
+    normalized = trimTrainingRangesForFreeTopLevels(game, floor, normalized, maxTrainingLevel);
+    normalized = trimTrainingRangesToBudget(game, normalized, maxOnSkill);
+  }
+
+  return normalized;
 }
 
 export function clampTrainingRangeCount(

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getActiveOghmaSkillIds,
+  getOghmaFloorBonus,
   isOghmaInfiniumActive,
   migrateOghmaInfiniumBuild,
 } from "@/lib/oghmaInfinium";
@@ -30,6 +31,17 @@ describe("oghmaInfinium helpers", () => {
       oghmaSkillIds: ["block", "smithing"],
     });
     expect(getActiveOghmaSkillIds(unchecked)).toEqual([]);
+  });
+
+  it("adds five to the effective floor for selected skills", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      majorSkillIds: ["block"],
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
+    });
+    expect(getOghmaFloorBonus(game, state, "block")).toBe(5);
+    expect(getOghmaFloorBonus(game, state, "smithing")).toBe(0);
   });
 
   it("migrates legacy warrior path to claimed with preset skills", () => {

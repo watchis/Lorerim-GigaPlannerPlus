@@ -45,6 +45,11 @@ export function isOghmaSkillActive(state: BuildState, skillId: string): boolean 
   return getActiveOghmaSkillIds(state).includes(skillId);
 }
 
+export function getOghmaFloorBonus(game: GameData, state: BuildState, skillId: string): number {
+  if (!isOghmaSkillActive(state, skillId)) return 0;
+  return getOghmaFreeSkillLevels(game);
+}
+
 export function migrateOghmaInfiniumBuild(_game: GameData, build: BuildState): BuildState {
   const choice = build.characterOptionChoices[OGHMA_INFINIUM_OPTION_ID];
   if (!choice || choice === "none" || choice === OGHMA_INFINIUM_CLAIMED_CHOICE) {
