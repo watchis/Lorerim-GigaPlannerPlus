@@ -14,6 +14,12 @@ import { PlannerSwipePanels } from "@/layout/PlannerSwipePanels";
 
 export { panelRegistry };
 
+export function isFullHeightPanel(panelId: string): boolean {
+  // Panels that manage their own internal scroll (so their content areas can
+  // use `overflow-y-auto`).
+  return panelId === "skill-trees" || panelId === "character-setup" || panelId === "skill-trees-sidebar";
+}
+
 const defaultLayoutMetrics: PlannerLayoutMetrics = {
   useThreeColumnLayout: false,
   scale: 1,
@@ -68,14 +74,12 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
                   key={colIndex}
                   className={cn(
                     "flex min-h-0 flex-col gap-4",
-                    colIndex === 1
-                      ? "overflow-hidden"
-                      : "overflow-y-auto overflow-x-hidden",
+                    colIndex === 1 ? "overflow-hidden" : "overflow-hidden overflow-x-hidden",
                   )}
                 >
                   {column.panels.map((panelId) => {
                     const Panel = panelRegistry[panelId];
-                    const isFullHeight = panelId === "skill-trees";
+                    const fullHeight = isFullHeightPanel(panelId);
 
                     if (!Panel) {
                       return (
@@ -91,7 +95,7 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
                     return (
                       <div
                         key={panelId}
-                        className={cn(isFullHeight && "flex min-h-0 flex-1 flex-col")}
+                        className={cn(fullHeight && "flex min-h-0 flex-1 flex-col")}
                       >
                         <Panel />
                       </div>
