@@ -142,9 +142,13 @@ export function acknowledgeSavedBuildEdits(entry: SavedBuild): SavedBuild {
 export function normalizeSavedBuild(entry: SavedBuild): SavedBuild {
   return {
     ...entry,
+    build: migrateBuildState(entry.build),
     defaultVariantName: entry.defaultVariantName?.trim() || DEFAULT_VARIANT_NAME,
     defaultVariantNotes: entry.defaultVariantNotes ?? "",
-    milestones: entry.milestones ?? [],
+    milestones: (entry.milestones ?? []).map((milestone) => ({
+      ...milestone,
+      build: migrateBuildState(milestone.build),
+    })),
     activeMilestoneId: entry.activeMilestoneId ?? null,
     importedAt: entry.importedAt ?? null,
     modpackVersion: entry.modpackVersion?.trim() || entry.modpackVersion,

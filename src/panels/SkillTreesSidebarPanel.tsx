@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { PerkTreeMiniView } from "@/components/PerkTreeMiniView";
+import { SkillLevelBonusIndicator } from "@/components/SkillLevelBonusIndicator";
 import { BuildVariantsDropdown } from "@/components/BuildVariantsDropdown";
 import { SkillIcon } from "@/components/SkillIcon";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
@@ -12,7 +13,6 @@ import {
   getOrderedPerkTrees,
   getSelectedPerksBelowSkillRequirement,
   getStoredSkillLevel,
-  getStoredSkillTraining,
   isAllocatableSkill,
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
@@ -21,6 +21,7 @@ import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useGoToSwipePane } from "@/layout/PlannerSwipePanels";
 import { getPerkSearchPositionKeysForTrees, getPerkSearchTokens } from "@/lib/perkSearch";
+import { getSkillLevelBonusLines } from "@/lib/skillLevelBonuses";
 import {
   usePlannerLayoutScale,
   usePlannerSideWidths,
@@ -44,7 +45,6 @@ export function SkillTreesSidebarPanel() {
     (sideWidths?.right ?? Number.POSITIVE_INFINITY) < RESET_ICON_ONLY_MAX_WIDTH;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
-  const computed = useBuildStore((s) => s.computed);
   const resetAllPerks = useBuildStore((s) => s.resetAllPerks);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
@@ -77,7 +77,6 @@ export function SkillTreesSidebarPanel() {
       : useThreeColumnLayout
         ? 3
         : responsiveColumns;
-  const trainingOverBudget = (computed?.trainingLevelsRemaining ?? 0) < 0;
   const perkSearchTokens = useMemo(() => getPerkSearchTokens(perkSearchQuery), [perkSearchQuery]);
   const perkSearchPositionKeysBySkillId = useMemo(
     () => getPerkSearchPositionKeysForTrees(allTrees, perkSearchTokens),
@@ -139,10 +138,9 @@ export function SkillTreesSidebarPanel() {
             const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
             const skillLevel = getStoredSkillLevel(gameData.game, build, tree.skillId);
             const isDestinyTree = tree.skillId === "destiny";
-            const trainingAssignedCount = !isDestinyTree
-              ? getStoredSkillTraining(gameData.game, build, tree.skillId)
-              : 0;
-            const hasTraining = trainingAssignedCount > 0;
+            const skillBonusLines = !isDestinyTree
+              ? getSkillLevelBonusLines(gameData.game, build, tree.skillId, labels)
+              : [];
             const isOverCap = isSkillOverPlayerLevelCap(gameData.game, build, tree.skillId);
             const conflictPerkIds = [
               ...overLevelPerks
@@ -195,25 +193,23 @@ export function SkillTreesSidebarPanel() {
                     className={cn(
                       "row-start-1 col-start-2 flex min-w-0 items-center gap-1.5",
                       "min-w-0",
-                      gridColumns <= 2 ? "text-xs" : compact ? "text-[10px]" : "text-[11px]",
+                      "text-[10px]",
                     )}
                   >
                     <span
-                      className="min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]"
+                      className="align-middle min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]"
                       title={tree.skillName}
                     >
                       {tree.skillName}
                     </span>
-                    {hasTraining && (
-                      <span
-                        className={cn(
-                          "mt-px h-1.5 w-1.5 shrink-0 rounded-full",
-                          trainingOverBudget ? "bg-[var(--color-error)]" : "bg-[var(--color-accent)]",
-                          trainingOverBudget ? "animate-pulse" : undefined,
-                        )}
-                        aria-hidden="true"
-                      />
-                    )}
+                    <SkillLevelBonusIndicator
+                      lines={skillBonusLines}
+                      size="compact"
+                      reserveSpace
+                      ariaLabel={labels.skillBonusIndicator ?? "View skill level bonuses"}
+                      onClick={(event) => event.stopPropagation()}
+                      onPointerDown={(event) => event.stopPropagation()}
+                    />
                   </div>
                   <span
                     className={cn(

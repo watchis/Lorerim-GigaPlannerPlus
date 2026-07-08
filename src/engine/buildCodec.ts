@@ -1,7 +1,7 @@
 import { gzipSync, gunzipSync } from "fflate";
 import type { GameData } from "@/data/schemas";
 import { migrateBuildState, type BuildState } from "@/engine/buildEngine";
-import { getSkillFloor, reconcileBuild } from "@/engine/buildEngine";
+import { getEffectiveSkillFloor, reconcileBuild } from "@/engine/buildEngine";
 import { migrateLegacySkillTrainingCounts } from "@/lib/skillTraining";
 import {
   createBuildCodecRegistry,
@@ -153,7 +153,7 @@ function compactPayloadFromBuild(
 
   const skillLevelEntries: [number, number][] = [];
   for (const skillId of registry.skills) {
-    const floor = getSkillFloor(registry.game, state, skillId);
+    const floor = getEffectiveSkillFloor(registry.game, state, skillId);
     const level = state.skillLevels[skillId];
     if (level !== undefined && level !== floor) {
       const skillIndex = lookupIndex(registry.skillIndex, skillId, "skill");

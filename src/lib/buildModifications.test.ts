@@ -95,6 +95,18 @@ describe("build modifications integration", () => {
     );
   });
 
+  it("combines race, major, and Oghma floor bonuses for Imperial speech", () => {
+    const state = createTestBuildState({
+      raceId: "imperial",
+      majorSkillIds: ["speech"],
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["speech"],
+    });
+
+    expect(getSkillFloor(game, state, "speech")).toBe(25);
+    expect(getEffectiveSkillFloor(game, state, "speech")).toBe(30);
+  });
+
   it("raises and restores the Oghma skill floor by five", () => {
     const base = createTestBuildState({
       raceId: "nord",

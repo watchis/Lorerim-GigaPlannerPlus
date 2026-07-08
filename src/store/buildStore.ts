@@ -15,7 +15,7 @@ import {
   clampPlayerLevel,
   ensurePlayerLevelForBuild,
   getEarnedAttributeChoices,
-  getSkillFloor,
+  getEffectiveSkillFloor,
   isAllocatableSkill,
   preserveSkillPointAllocations,
   reconcileBuild,
@@ -527,7 +527,7 @@ export const useBuildStore = create<BuildStore>()(
           const tree = gameData.game.perkTrees[skillId];
           if (!tree) return;
 
-          const floor = getSkillFloor(gameData.game, build, skillId);
+          const floor = getEffectiveSkillFloor(gameData.game, build, skillId);
           const skillPerkIds = new Set(tree.perks.map((p) => p.id));
           const selectedPerkIds = build.selectedPerkIds.filter((id) => !skillPerkIds.has(id));
           const skillTrainingRanges = { ...build.skillTrainingRanges };
@@ -569,7 +569,7 @@ export const useBuildStore = create<BuildStore>()(
           const skillTrainingRanges = { ...build.skillTrainingRanges };
           for (const skillId of gameData.game.manifest.skills) {
             if (!isAllocatableSkill(gameData.game, skillId)) continue;
-            skillLevels[skillId] = getSkillFloor(gameData.game, build, skillId);
+            skillLevels[skillId] = getEffectiveSkillFloor(gameData.game, build, skillId);
             delete skillTrainingRanges[skillId];
           }
 

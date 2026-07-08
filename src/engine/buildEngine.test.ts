@@ -674,6 +674,14 @@ describe("areBuildStatesEqual", () => {
     expect(areBuildStatesEqual(build, { ...build })).toBe(true);
   });
 
+  it("treats missing oghmaSkillIds as an empty selection", () => {
+    const build = createTestBuildState({ oghmaSkillIds: [] });
+    const legacy = createTestBuildState();
+    delete (legacy as { oghmaSkillIds?: string[] }).oghmaSkillIds;
+
+    expect(areBuildStatesEqual(build, legacy)).toBe(true);
+  });
+
   it("detects differences across planner-editable fields", () => {
     const base = createTestBuildState({
       raceId: "nord",
@@ -720,5 +728,11 @@ describe("areBuildStatesEqual", () => {
     ).toBe(false);
     expect(areBuildStatesEqual(base, { ...base, playerLevel: 6 })).toBe(false);
     expect(areBuildStatesEqual(base, { ...base, description: "Changed" })).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        oghmaSkillIds: ["smithing"],
+      }),
+    ).toBe(false);
   });
 });

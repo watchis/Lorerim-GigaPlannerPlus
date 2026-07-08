@@ -1,5 +1,5 @@
 import { AlertCircle, Minus, Plus, RotateCcw } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { PerkBadgeVisibilityDropdown } from "@/components/PerkBadgeVisibilityDropdown";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
@@ -19,21 +19,28 @@ import {
   getMaxSkillLevel,
   getRemainingDestinyPerkPoints,
   getSelectedPerksBelowSkillRequirement,
-  getSkillFloor,
+  getEffectiveSkillFloor,
   getSkillLevelFromTraining,
   getStoredSkillLevel,
-  getStoredSkillTraining,
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
 import {
-  getMobileSkillTreeTitleClassName,
+  getSkillTreeTitleActionsClassName,
+  getSkillTreeTitleIconClassName,
+  getSkillTreeTitleNameClassName,
+  getSkillTreeTitleNameGroupClassName,
+  getSkillTreeTitleRowClassName,
+  getSkillTreeTitleSubtitleClassName,
 } from "@/lib/skillTreePanelTitle";
+import type { SkillLevelBonusLine } from "@/lib/skillLevelBonuses";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
+import { SkillLevelBonusIndicator } from "@/components/SkillLevelBonusIndicator";
+import { getSkillLevelBonusLines } from "@/lib/skillLevelBonuses";
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
@@ -82,29 +89,51 @@ function SkillTreeWarningIcon({
   );
 }
 
-function SkillTreeTrainingIndicator({
-  label,
-  overBudget,
+function SkillTreeTitleRow({
+  skillId,
+  skillName,
+  skillBonusLines,
+  warningMessages,
+  warningAriaLabel,
+  bonusAriaLabel,
+  subtitle,
+  useCardTitle = false,
 }: {
-  label: string;
-  overBudget: boolean;
+  skillId: string;
+  skillName: string;
+  skillBonusLines: SkillLevelBonusLine[];
+  warningMessages: string[];
+  warningAriaLabel: string;
+  bonusAriaLabel: string;
+  subtitle?: ReactNode;
+  useCardTitle?: boolean;
 }) {
+  const nameClassName = getSkillTreeTitleNameClassName();
+
   return (
-    <HoverTapTooltip
-      content={<p className="text-xs leading-relaxed">{label}</p>}
-      side="bottom"
-      align="start"
-    >
-      <span
-        className={cn(
-          "mt-px h-2 w-2 shrink-0 rounded-full",
-          overBudget ? "bg-[var(--color-error)]" : "bg-[var(--color-accent)]",
-          overBudget ? "animate-pulse" : undefined,
+    <div className={getSkillTreeTitleRowClassName()}>
+      <SkillIcon skillId={skillId} className={getSkillTreeTitleIconClassName()} />
+      <div className={getSkillTreeTitleNameGroupClassName()}>
+        {useCardTitle ? (
+          <CardTitle className={nameClassName} title={skillName}>
+            {skillName}
+          </CardTitle>
+        ) : (
+          <h2 className={nameClassName} title={skillName}>
+            {skillName}
+          </h2>
         )}
-        role="img"
-        aria-label={label}
-      />
-    </HoverTapTooltip>
+        <SkillLevelBonusIndicator
+          lines={skillBonusLines}
+          reserveSpace
+          ariaLabel={bonusAriaLabel}
+        />
+      </div>
+      <div className={getSkillTreeTitleActionsClassName()}>
+        <SkillTreeWarningIcon messages={warningMessages} ariaLabel={warningAriaLabel} />
+      </div>
+      {subtitle ? <p className={getSkillTreeTitleSubtitleClassName()}>{subtitle}</p> : null}
+    </div>
   );
 }
 
@@ -193,7 +222,9 @@ export function SkillTreePanel() {
   ).filter((perk) => perk.skillId === activeTree.skillId);
   const hasSkillReqConflict = !isDestinyTree && skillReqConflictsOnTree.length > 0;
 
-  const floor = isDestinyTree ? 0 : getSkillFloor(gameData.game, build, activeTree.skillId);
+  const floor = isDestinyTree
+    ? 0
+    : getEffectiveSkillFloor(gameData.game, build, activeTree.skillId);
   const skillLevelCap = isDestinyTree ? 0 : getMaxSkillLevel(gameData.game);
   const maxAllowedAtLevel = isDestinyTree
     ? 0
@@ -203,11 +234,9 @@ export function SkillTreePanel() {
     ? 0
     : getSkillLevelFromTraining(gameData.game, build, activeTree.skillId);
   const isTrainingMode = !isDestinyTree && skillWorkspaceMode === "training";
-  const trainingAssignedCount = !isDestinyTree
-    ? getStoredSkillTraining(gameData.game, build, activeTree.skillId)
-    : 0;
-  const hasTraining = trainingAssignedCount > 0;
-  const trainingOverBudget = !isDestinyTree && computed.trainingLevelsRemaining < 0;
+  const skillBonusLines = !isDestinyTree
+    ? getSkillLevelBonusLines(gameData.game, build, activeTree.skillId, labels)
+    : [];
   const { perks: overLevelPerks, skillIncreases, destinyPerksOverBudget } =
     getBuildPlayerLevelWarnings(gameData.game, build);
   const skillIncreaseConflict = skillIncreases.find(
@@ -232,6 +261,16 @@ export function SkillTreePanel() {
   const selectedCount = activeTree.perks.filter((perk) =>
     build.selectedPerkIds.includes(perk.id),
   ).length;
+  const skillTreeSubtitle = isTrainingMode ? (
+    labels.trainingModeActive
+  ) : (
+    <>
+      <span className="font-medium tabular-nums text-[var(--color-foreground)]">
+        {selectedCount}/{activeTree.perks.length}
+      </span>{" "}
+      {labels.perksSelected}
+    </>
+  );
 
   const conflictMessage = hasSkillReqConflict
     ? skillReqConflictsOnTree.length === 1
@@ -310,37 +349,15 @@ export function SkillTreePanel() {
         <header className="shrink-0 border-b border-[var(--color-border)]/50 px-3 py-2.5">
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
-              <div className="flex min-w-0 items-center gap-2">
-                <SkillIcon
-                  skillId={activeTree.skillId}
-                  className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]"
-                />
-                <h2 className={getMobileSkillTreeTitleClassName()}>{activeTree.skillName}</h2>
-                {hasTraining && (
-                  <SkillTreeTrainingIndicator
-                    overBudget={trainingOverBudget}
-                    label={formatLabel(labels.trainingAssignedIndicator, {
-                      count: trainingAssignedCount,
-                    })}
-                  />
-                )}
-                <SkillTreeWarningIcon
-                  messages={warningMessages}
-                  ariaLabel={labels.skillTreeWarning}
-                />
-              </div>
-              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-                {isTrainingMode ? (
-                  labels.trainingModeActive
-                ) : (
-                  <>
-                    <span className="font-medium tabular-nums text-[var(--color-foreground)]">
-                      {selectedCount}/{activeTree.perks.length}
-                    </span>{" "}
-                    {labels.perksSelected}
-                  </>
-                )}
-              </p>
+              <SkillTreeTitleRow
+                skillId={activeTree.skillId}
+                skillName={activeTree.skillName}
+                skillBonusLines={skillBonusLines}
+                warningMessages={warningMessages}
+                warningAriaLabel={labels.skillTreeWarning}
+                bonusAriaLabel={labels.skillBonusIndicator ?? "View skill level bonuses"}
+                subtitle={skillTreeSubtitle}
+              />
             </div>
             {!isDestinyTree && (
               <div className="flex shrink-0 items-center gap-0.5">
@@ -474,40 +491,17 @@ export function SkillTreePanel() {
             onClick: () => setMiddleView("character-info"),
           }}
           titleRow={
-            <div className="flex min-w-0 gap-2">
-              <SkillIcon
+            <div className="min-w-0">
+              <SkillTreeTitleRow
                 skillId={activeTree.skillId}
-                className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]"
+                skillName={activeTree.skillName}
+                skillBonusLines={skillBonusLines}
+                warningMessages={warningMessages}
+                warningAriaLabel={labels.skillTreeWarning}
+                bonusAriaLabel={labels.skillBonusIndicator ?? "View skill level bonuses"}
+                subtitle={skillTreeSubtitle}
+                useCardTitle
               />
-              <div className="min-w-0">
-                <div className="flex min-w-0 items-center gap-2">
-                  <CardTitle className="min-w-0 truncate text-base">{activeTree.skillName}</CardTitle>
-                  {hasTraining && (
-                    <SkillTreeTrainingIndicator
-                      overBudget={trainingOverBudget}
-                      label={formatLabel(labels.trainingAssignedIndicator, {
-                        count: trainingAssignedCount,
-                      })}
-                    />
-                  )}
-                  <SkillTreeWarningIcon
-                    messages={warningMessages}
-                    ariaLabel={labels.skillTreeWarning}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-[var(--color-muted)]">
-                  {isTrainingMode ? (
-                    labels.trainingModeActive
-                  ) : (
-                    <>
-                      <span className="font-medium tabular-nums text-[var(--color-foreground)]">
-                        {selectedCount}/{activeTree.perks.length}
-                      </span>{" "}
-                      {labels.perksSelected}
-                    </>
-                  )}
-                </p>
-              </div>
             </div>
           }
         />

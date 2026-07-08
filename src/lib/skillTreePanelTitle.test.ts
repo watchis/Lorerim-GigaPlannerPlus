@@ -1,24 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
-  getMobileSkillTreeTitleClassName,
   getSkillTreeTitleActionsClassName,
-  getSkillTreeTitleContentClassName,
+  getSkillTreeTitleNameClassName,
+  getSkillTreeTitleNameGroupClassName,
+  getSkillTreeTitleRowClassName,
+  getSkillTreeTitleSubtitleClassName,
 } from "@/lib/skillTreePanelTitle";
 
 describe("skillTreePanelTitle", () => {
-  it("uses accent color (gold) for the mobile skill tree title", () => {
-    expect(getMobileSkillTreeTitleClassName()).toContain(
-      "text-[var(--color-accent)]",
-    );
-    expect(getMobileSkillTreeTitleClassName()).not.toContain(
-      "text-[var(--color-foreground)]",
-    );
+  it("uses accent color (gold) for the skill tree title name", () => {
+    expect(getSkillTreeTitleNameClassName()).toContain("text-[var(--color-accent)]");
+    expect(getSkillTreeTitleNameClassName()).not.toContain("text-[var(--color-foreground)]");
   });
 
-  it("keeps the title flexible and indicator actions always visible", () => {
-    expect(getSkillTreeTitleContentClassName()).toContain("min-w-0");
-    expect(getSkillTreeTitleContentClassName()).toContain("flex-1");
+  it("aligns the subtitle with the skill name column in the title grid", () => {
+    expect(getSkillTreeTitleRowClassName()).toContain("grid");
+    expect(getSkillTreeTitleNameGroupClassName()).toContain("col-start-2");
+    expect(getSkillTreeTitleSubtitleClassName()).toContain("col-start-2");
+    expect(getSkillTreeTitleSubtitleClassName()).toContain("row-start-2");
     expect(getSkillTreeTitleActionsClassName()).toContain("shrink-0");
   });
 });
-

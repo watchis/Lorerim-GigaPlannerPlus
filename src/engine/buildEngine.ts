@@ -477,7 +477,7 @@ export function computeTotalSkillPointsForLevels(
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    const floor = getSkillFloor(game, state, skillId);
+    const floor = getEffectiveSkillFloor(game, state, skillId);
     total += computePaidSkillPoints(game, state, skillId, levels[skillId] ?? floor);
   }
 
@@ -929,7 +929,7 @@ export function computeSkillLevels(
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    const floor = getSkillFloor(game, state, skillId);
+    const floor = getEffectiveSkillFloor(game, state, skillId);
     const stored = state.skillLevels[skillId] ?? floor;
     levels[skillId] = clampSkillLevel(game, state, skillId, stored);
   }
@@ -1462,7 +1462,7 @@ function ensureSkillLevelForAllocation(
   skillId: string,
   targetLevel: number,
 ): BuildState | null {
-  const floor = getSkillFloor(game, build, skillId);
+  const floor = getEffectiveSkillFloor(game, build, skillId);
   const desiredLevel = Math.min(getMaxSkillLevel(game), Math.max(floor, targetLevel));
 
   if (getStoredSkillLevel(game, build, skillId) >= desiredLevel) {
@@ -1904,43 +1904,63 @@ export function getRaceById(game: GameData, raceId: string | null): Race | undef
 export function migrateBuildState(
   build: BuildState & { blessingId?: string | null },
 ): BuildState {
+  const withOghma: BuildState = {
+    ...build,
+    oghmaSkillIds: build.oghmaSkillIds ?? [],
+  };
+
   if ("blessingId" in build && build.blessingId !== undefined) {
-    const { blessingId, ...rest } = build;
+    const { blessingId, ...rest } = withOghma;
     return { ...rest, deityId: blessingId ?? "none" };
   }
-  return build;
+
+  return withOghma;
 }
 
-function stringArraysEqual(a: string[], b: string[]): boolean {
-  return a.length === b.length && a.every((value, index) => value === b[index]);
+function stringArraysEqual(a: string[] | undefined, b: string[] | undefined): boolean {
+  const left = a ?? [];
+  const right = b ?? [];
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function numberArraysEqual(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
-function stringRecordEqual(a: Record<string, string>, b: Record<string, string>): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+function stringRecordEqual(
+  a: Record<string, string> | undefined,
+  b: Record<string, string> | undefined,
+): boolean {
+  const left = a ?? {};
+  const right = b ?? {};
+  const aKeys = Object.keys(left);
+  const bKeys = Object.keys(right);
   if (aKeys.length !== bKeys.length) return false;
-  return aKeys.every((key) => a[key] === b[key]);
+  return aKeys.every((key) => left[key] === right[key]);
 }
 
-function numberRecordEqual(a: Record<string, number>, b: Record<string, number>): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+function numberRecordEqual(
+  a: Record<string, number> | undefined,
+  b: Record<string, number> | undefined,
+): boolean {
+  const left = a ?? {};
+  const right = b ?? {};
+  const aKeys = Object.keys(left);
+  const bKeys = Object.keys(right);
   if (aKeys.length !== bKeys.length) return false;
-  return aKeys.every((key) => a[key] === b[key]);
+  return aKeys.every((key) => left[key] === right[key]);
 }
 
 function trainingRangesEqual(
-  a: Record<string, number[]>,
-  b: Record<string, number[]>,
+  a: Record<string, number[]> | undefined,
+  b: Record<string, number[]> | undefined,
 ): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+  const left = a ?? {};
+  const right = b ?? {};
+  const aKeys = Object.keys(left);
+  const bKeys = Object.keys(right);
   if (aKeys.length !== bKeys.length) return false;
-  return aKeys.every((key) => numberArraysEqual(a[key] ?? [], b[key] ?? []));
+  return aKeys.every((key) => numberArraysEqual(left[key] ?? [], right[key] ?? []));
 }
 
 export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
