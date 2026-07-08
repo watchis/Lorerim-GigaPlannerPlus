@@ -1655,10 +1655,31 @@ function collectSelectedDependents(
   return dependents;
 }
 
+function countPerkAllocations(selectedPerkIds: string[], perkId: string): number {
+  return selectedPerkIds.filter((id) => id === perkId).length;
+}
+
+function removeOnePerkAllocation(selectedPerkIds: string[], perkId: string): string[] {
+  const index = selectedPerkIds.lastIndexOf(perkId);
+  if (index < 0) return selectedPerkIds;
+  return [...selectedPerkIds.slice(0, index), ...selectedPerkIds.slice(index + 1)];
+}
+
 /** Right-click removal: the clicked perk and selected perks further up its dependency chain. */
 export function removePerk(game: GameData, build: BuildState, perkId: string): BuildState {
   if (!build.selectedPerkIds.includes(perkId)) {
     return build;
+  }
+
+  const perk = getPerkById(game, perkId);
+  if (
+    perk?.allocation?.kind === "perkPointsBudget" &&
+    countPerkAllocations(build.selectedPerkIds, perkId) > 1
+  ) {
+    return {
+      ...build,
+      selectedPerkIds: removeOnePerkAllocation(build.selectedPerkIds, perkId),
+    };
   }
 
   const selected = new Set(build.selectedPerkIds);

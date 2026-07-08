@@ -599,6 +599,31 @@ describe("buildEngine perk selection", () => {
     const afterThird = tryTakePerk(game, afterSecond!, artifactId);
     expect(afterThird).toBeNull();
   });
+
+  it("removes one stackable allocation per right-click", () => {
+    const artifactId = "enchanting-artifact-enchanter";
+    const build = createTestBuildState({
+      playerLevel: 50,
+      selectedPerkIds: [
+        "enchanting-enchantment-mastery",
+        artifactId,
+        artifactId,
+        artifactId,
+      ],
+      skillLevels: { enchanting: 100 },
+    });
+
+    const afterOne = removePerk(game, build, artifactId);
+    expect(afterOne.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(2);
+    expect(afterOne.selectedPerkIds).toContain("enchanting-enchantment-mastery");
+
+    const afterTwo = removePerk(game, afterOne, artifactId);
+    expect(afterTwo.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(1);
+
+    const afterThree = removePerk(game, afterTwo, artifactId);
+    expect(afterThree.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(0);
+    expect(afterThree.selectedPerkIds).toContain("enchanting-enchantment-mastery");
+  });
 });
 
 describe("computeBuild ally-only perks", () => {
