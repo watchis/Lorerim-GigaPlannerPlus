@@ -3,7 +3,7 @@ import { NumericLevelInput } from "@/components/NumericLevelInput";
 import { Button } from "@/components/ui/button";
 import {
   getMaxTrainingSkillLevel,
-  getSkillFloor,
+  getEffectiveSkillFloor,
   getSkillTrainingRanges,
   getStoredSkillTraining,
   getTrainingTierDefinitions,
@@ -40,7 +40,7 @@ export function SkillTrainingSection({
   const compactUI = usePlannerCompactUI();
   const compact = stackedLayout || compactUI;
 
-  const floor = getSkillFloor(game, build, skillId);
+  const floor = getEffectiveSkillFloor(game, build, skillId);
   const tiers = getTrainingTierDefinitions(game);
   const ranges = getSkillTrainingRanges(game, build, skillId);
   const trainedOnSkill = getStoredSkillTraining(game, build, skillId);

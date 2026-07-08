@@ -15,13 +15,12 @@ import { collectConditionalBonuses, type ConditionalBonusEntry } from "@/lib/con
 import {
   clampTrainingRangeCount,
   computeTrainingSkillPointCredit,
-  getMaxTrainingOnSkill,
   getSkillLevelRequiredForTrainingRanges,
   getSkillTrainingRanges,
   getTrainingTierDefinitions,
   migrateLegacySkillTrainingCounts,
+  normalizeTrainingRangesForSkill,
   sumTrainingRanges,
-  trimTrainingRangesToBudget,
 } from "@/lib/skillTraining";
 import {
   getFrontPerkIdAtPosition,
@@ -35,7 +34,13 @@ import {
   getBypassSkillIncreaseGrantBonus,
   getSkillLevelGrantBonus,
   getSkillLevelGrantFloorBonus,
+  getSkillLevelGrantFreeTopLevels,
 } from "@/lib/skillLevelGrants";
+import {
+  getOghmaSkillLimit,
+  getOghmaFloorBonus,
+  migrateOghmaInfiniumBuild,
+} from "@/lib/oghmaInfinium";
 export {
   formatTrainingTierRange,
   getMaxTrainingSkillLevel,
@@ -56,6 +61,7 @@ export interface BuildState {
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
+  oghmaSkillIds: string[];
   attributeBonus: Attributes;
   characterOptionChoices: Record<string, string>;
   selectedPerkIds: string[];
@@ -215,7 +221,7 @@ export function getSkillLevelBaseline(
   baseline: SkillLevelBaseline,
 ): number {
   if (baseline === "skillFloor") {
-    return getSkillFloor(game, state, skillId);
+    return getEffectiveSkillFloor(game, state, skillId);
   }
   if (baseline === "raceStarting") {
     const race = resolveRace(game, state.raceId);
@@ -266,8 +272,16 @@ export function computeSkillPointsToReach(
   return total;
 }
 
+export function getEffectiveSkillFloor(game: GameData, state: BuildState, skillId: string): number {
+  return (
+    getSkillFloor(game, state, skillId) +
+    getSkillLevelGrantFloorBonus(game, state, skillId) +
+    getOghmaFloorBonus(game, state, skillId)
+  );
+}
+
 export function getStoredSkillLevel(game: GameData, state: BuildState, skillId: string): number {
-  const floor = getSkillFloor(game, state, skillId) + getSkillLevelGrantFloorBonus(game, state, skillId);
+  const floor = getEffectiveSkillFloor(game, state, skillId);
   const stored = state.skillLevels[skillId] ?? floor;
   return Math.min(getMaxSkillLevel(game), Math.max(floor, stored));
 }
@@ -301,7 +315,7 @@ export function getSkillLevelFromTraining(
   state: BuildState,
   skillId: string,
 ): number {
-  const floor = getSkillFloor(game, state, skillId);
+  const floor = getEffectiveSkillFloor(game, state, skillId);
   return getSkillLevelRequiredForTrainingRanges(
     game,
     floor,
@@ -391,14 +405,21 @@ export function preserveSkillPointAllocations(
     if (!isAllocatableSkill(game, skillId)) continue;
 
     const previousLevel = getStoredSkillLevel(game, previousBuild, skillId);
-    const previousFloor = getSkillFloor(game, previousBuild, skillId);
+    const previousFloor = getEffectiveSkillFloor(game, previousBuild, skillId);
     const previousRanges = getSkillTrainingRanges(game, previousBuild, skillId);
-    const floor = getSkillFloor(game, { ...nextBuild, skillLevels, skillTrainingRanges }, skillId);
-    const maxOnSkill = getMaxTrainingOnSkill(game, nextBuild, skillId, floor);
-    const preservedRanges = trimTrainingRangesToBudget(
+    const floor = getEffectiveSkillFloor(
       game,
+      { ...nextBuild, skillLevels, skillTrainingRanges },
+      skillId,
+    );
+    const skillLevel = Math.max(previousLevel, floor);
+    const preservedRanges = normalizeTrainingRangesForSkill(
+      game,
+      { ...nextBuild, skillLevels, skillTrainingRanges },
+      skillId,
       previousRanges,
-      maxOnSkill,
+      floor,
+      skillLevel,
     );
 
     if (sumTrainingRanges(preservedRanges) > 0) {
@@ -408,12 +429,14 @@ export function preserveSkillPointAllocations(
     }
 
     const nextState = { ...nextBuild, skillLevels, skillTrainingRanges };
-    const nextFloor = getSkillFloor(game, nextState, skillId);
     const trainingFloor = getSkillLevelFromTraining(game, nextState, skillId);
     const hadInvestmentAboveFloor = previousLevel > previousFloor;
-    // If the user invested above the floor, preserve the absolute level across floor changes.
-    // Otherwise, just allow the floor to change (prevents race floors from "stacking" on empty builds).
-    const targetLevel = hadInvestmentAboveFloor ? previousLevel : nextFloor;
+    const oghmaFloorChanged =
+      getOghmaFloorBonus(game, previousBuild, skillId) !==
+      getOghmaFloorBonus(game, nextState, skillId);
+    const targetLevel = oghmaFloorChanged || hadInvestmentAboveFloor
+      ? Math.max(previousLevel, floor)
+      : floor;
     skillLevels[skillId] = Math.min(getMaxSkillLevel(game), Math.max(trainingFloor, targetLevel));
   }
 
@@ -428,12 +451,14 @@ function computePaidSkillPoints(
 ): number {
   const { skillPointBaseline, skillPointFreeThroughFloor } = game.mechanics.leveling;
   const pointBase = getSkillLevelBaseline(game, state, skillId, skillPointBaseline);
-  const floor = getSkillFloor(game, state, skillId);
+  const floor = getEffectiveSkillFloor(game, state, skillId);
   const effectiveLevel = Math.max(floor, Math.min(getMaxSkillLevel(game), level));
   const chargeFrom = skillPointFreeThroughFloor
     ? Math.max(pointBase, floor)
     : pointBase;
-  const gross = computeSkillPointsToReach(game.mechanics, chargeFrom, effectiveLevel);
+  const freeTopLevels = getSkillLevelGrantFreeTopLevels(game, state, skillId);
+  const paidToLevel = Math.max(chargeFrom, effectiveLevel - freeTopLevels);
+  const gross = computeSkillPointsToReach(game.mechanics, chargeFrom, paidToLevel);
   const trainingCredit = computeTrainingSkillPointCredit(
     game.mechanics,
     game,
@@ -452,7 +477,7 @@ export function computeTotalSkillPointsForLevels(
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    const floor = getSkillFloor(game, state, skillId);
+    const floor = getEffectiveSkillFloor(game, state, skillId);
     total += computePaidSkillPoints(game, state, skillId, levels[skillId] ?? floor);
   }
 
@@ -742,7 +767,7 @@ export function applySkillTrainingRangeChange(
   count: number,
   options?: BuildReconcileOptions,
 ): BuildState {
-  const floor = getSkillFloor(game, build, skillId);
+  const floor = getEffectiveSkillFloor(game, build, skillId);
   const currentRanges = getSkillTrainingRanges(game, build, skillId);
 
   const nextCount = clampTrainingRangeCount(
@@ -807,17 +832,28 @@ export function reconcileBuild(
     build.playerLevel ?? game.mechanics.leveling.baseLevel,
   );
 
-  const leveledBuild = migrateSkillTrainingStorage(game, {
-    ...build,
-    birthsignId: build.birthsignId ?? legacyBirthsignId ?? "none",
-    playerLevel,
-    skillTrainingRanges: build.skillTrainingRanges ?? {},
-    characterOptionChoices: normalizeCharacterOptionChoices(
-      game,
-      build.characterOptionChoices,
-      legacyOghmaChoice,
-    ),
-  });
+  const leveledBuild = migrateSkillTrainingStorage(
+    game,
+    (() => {
+      const migratedOghma = migrateOghmaInfiniumBuild(game, {
+        ...build,
+        birthsignId: build.birthsignId ?? legacyBirthsignId ?? "none",
+        playerLevel,
+        skillTrainingRanges: build.skillTrainingRanges ?? {},
+        oghmaSkillIds: build.oghmaSkillIds ?? [],
+        characterOptionChoices: build.characterOptionChoices ?? {},
+      });
+
+      return {
+        ...migratedOghma,
+        characterOptionChoices: normalizeCharacterOptionChoices(
+          game,
+          migratedOghma.characterOptionChoices,
+          legacyOghmaChoice,
+        ),
+      };
+    })(),
+  );
 
   const traitLimit =
     game.manifest.limits.traits + sumCollectedBudgetEffects(collectBuildChanges(game, leveledBuild)).traitSlots;
@@ -881,7 +917,7 @@ export function clampSkillLevel(
   skillId: string,
   level: number,
 ): number {
-  const floor = getSkillFloor(game, state, skillId);
+  const floor = getEffectiveSkillFloor(game, state, skillId);
   return Math.min(getMaxSkillLevel(game), Math.max(floor, level));
 }
 
@@ -893,7 +929,7 @@ export function computeSkillLevels(
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    const floor = getSkillFloor(game, state, skillId);
+    const floor = getEffectiveSkillFloor(game, state, skillId);
     const stored = state.skillLevels[skillId] ?? floor;
     levels[skillId] = clampSkillLevel(game, state, skillId, stored);
   }
@@ -1038,10 +1074,17 @@ export function normalizeSkillTraining(
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
 
-    const floor = getSkillFloor(game, build, skillId);
-    const maxOnSkill = getMaxTrainingOnSkill(game, build, skillId, floor);
+    const floor = getEffectiveSkillFloor(game, build, skillId);
     const storedRanges = getSkillTrainingRanges(game, build, skillId);
-    const ranges = trimTrainingRangesToBudget(game, storedRanges, maxOnSkill);
+    const skillLevel = getStoredSkillLevel(game, build, skillId);
+    const ranges = normalizeTrainingRangesForSkill(
+      game,
+      build,
+      skillId,
+      storedRanges,
+      floor,
+      skillLevel,
+    );
 
     if (sumTrainingRanges(ranges) > 0) {
       skillTrainingRanges[skillId] = ranges;
@@ -1052,7 +1095,7 @@ export function normalizeSkillTraining(
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
 
-    const stored = skillLevels[skillId] ?? getSkillFloor(game, build, skillId);
+    const stored = skillLevels[skillId] ?? getEffectiveSkillFloor(game, build, skillId);
     const trainingFloor = getSkillLevelFromTraining(
       game,
       { ...build, skillTrainingRanges },
@@ -1107,9 +1150,12 @@ export function normalizeBuildSkillLevels(
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    const floor = getSkillFloor(game, build, skillId);
+    const floor = getEffectiveSkillFloor(game, build, skillId);
     const stored = skillLevels[skillId] ?? floor;
-    skillLevels[skillId] = clampSkillLevel(game, build, skillId, stored);
+    skillLevels[skillId] = Math.min(
+      getMaxSkillLevel(game),
+      Math.max(floor, stored),
+    );
   }
 
   const nextBuild = normalizeSkillTraining(game, { ...build, skillLevels }, options);
@@ -1416,7 +1462,7 @@ function ensureSkillLevelForAllocation(
   skillId: string,
   targetLevel: number,
 ): BuildState | null {
-  const floor = getSkillFloor(game, build, skillId);
+  const floor = getEffectiveSkillFloor(game, build, skillId);
   const desiredLevel = Math.min(getMaxSkillLevel(game), Math.max(floor, targetLevel));
 
   if (getStoredSkillLevel(game, build, skillId) >= desiredLevel) {
@@ -1822,6 +1868,16 @@ export function canSelectMajorSkill(game: GameData, state: BuildState, skillId: 
   return skill?.majorEligible ?? false;
 }
 
+export function canSelectOghmaSkill(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+): boolean {
+  if (!isAllocatableSkill(game, skillId)) return false;
+  if (state.oghmaSkillIds.includes(skillId)) return true;
+  return state.oghmaSkillIds.length < getOghmaSkillLimit(game);
+}
+
 export function canSelectMinorSkill(game: GameData, state: BuildState, skillId: string): boolean {
   if (state.minorSkillIds.includes(skillId)) return true;
   if (state.minorSkillIds.length >= game.manifest.limits.minorSkills) return false;
@@ -1848,43 +1904,63 @@ export function getRaceById(game: GameData, raceId: string | null): Race | undef
 export function migrateBuildState(
   build: BuildState & { blessingId?: string | null },
 ): BuildState {
+  const withOghma: BuildState = {
+    ...build,
+    oghmaSkillIds: build.oghmaSkillIds ?? [],
+  };
+
   if ("blessingId" in build && build.blessingId !== undefined) {
-    const { blessingId, ...rest } = build;
+    const { blessingId, ...rest } = withOghma;
     return { ...rest, deityId: blessingId ?? "none" };
   }
-  return build;
+
+  return withOghma;
 }
 
-function stringArraysEqual(a: string[], b: string[]): boolean {
-  return a.length === b.length && a.every((value, index) => value === b[index]);
+function stringArraysEqual(a: string[] | undefined, b: string[] | undefined): boolean {
+  const left = a ?? [];
+  const right = b ?? [];
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function numberArraysEqual(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
-function stringRecordEqual(a: Record<string, string>, b: Record<string, string>): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+function stringRecordEqual(
+  a: Record<string, string> | undefined,
+  b: Record<string, string> | undefined,
+): boolean {
+  const left = a ?? {};
+  const right = b ?? {};
+  const aKeys = Object.keys(left);
+  const bKeys = Object.keys(right);
   if (aKeys.length !== bKeys.length) return false;
-  return aKeys.every((key) => a[key] === b[key]);
+  return aKeys.every((key) => left[key] === right[key]);
 }
 
-function numberRecordEqual(a: Record<string, number>, b: Record<string, number>): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+function numberRecordEqual(
+  a: Record<string, number> | undefined,
+  b: Record<string, number> | undefined,
+): boolean {
+  const left = a ?? {};
+  const right = b ?? {};
+  const aKeys = Object.keys(left);
+  const bKeys = Object.keys(right);
   if (aKeys.length !== bKeys.length) return false;
-  return aKeys.every((key) => a[key] === b[key]);
+  return aKeys.every((key) => left[key] === right[key]);
 }
 
 function trainingRangesEqual(
-  a: Record<string, number[]>,
-  b: Record<string, number[]>,
+  a: Record<string, number[]> | undefined,
+  b: Record<string, number[]> | undefined,
 ): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+  const left = a ?? {};
+  const right = b ?? {};
+  const aKeys = Object.keys(left);
+  const bKeys = Object.keys(right);
   if (aKeys.length !== bKeys.length) return false;
-  return aKeys.every((key) => numberArraysEqual(a[key] ?? [], b[key] ?? []));
+  return aKeys.every((key) => numberArraysEqual(left[key] ?? [], right[key] ?? []));
 }
 
 export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
@@ -1895,6 +1971,7 @@ export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
     stringArraysEqual(a.traitIds, b.traitIds) &&
     stringArraysEqual(a.majorSkillIds, b.majorSkillIds) &&
     stringArraysEqual(a.minorSkillIds, b.minorSkillIds) &&
+    stringArraysEqual(a.oghmaSkillIds, b.oghmaSkillIds) &&
     a.attributeBonus.health === b.attributeBonus.health &&
     a.attributeBonus.magicka === b.attributeBonus.magicka &&
     a.attributeBonus.stamina === b.attributeBonus.stamina &&
@@ -1915,6 +1992,7 @@ export function createInitialBuildState(): BuildState {
     traitIds: [],
     majorSkillIds: [],
     minorSkillIds: [],
+    oghmaSkillIds: [],
     attributeBonus: emptyAttributes(),
     characterOptionChoices: {},
     selectedPerkIds: [],

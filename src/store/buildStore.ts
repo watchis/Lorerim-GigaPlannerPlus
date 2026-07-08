@@ -7,6 +7,7 @@ import {
   applySkillTrainingRangeChange,
   canSelectMajorSkill,
   canSelectMinorSkill,
+  canSelectOghmaSkill,
   canSelectTrait,
   computeBuild,
   createInitialBuildState,
@@ -14,7 +15,7 @@ import {
   clampPlayerLevel,
   ensurePlayerLevelForBuild,
   getEarnedAttributeChoices,
-  getSkillFloor,
+  getEffectiveSkillFloor,
   isAllocatableSkill,
   preserveSkillPointAllocations,
   reconcileBuild,
@@ -57,6 +58,7 @@ import {
   LIBRARY_STORAGE_KEY,
 } from "@/store/savedBuilds";
 import type { DecodedBuildPackage } from "@/engine/buildCodec";
+import { isOghmaInfiniumActive } from "@/lib/oghmaInfinium";
 
 function recompute(data: AppData, build: BuildState): ComputedBuild {
   return computeBuild(data.game, build);
@@ -118,6 +120,7 @@ interface BuildStore {
   toggleTrait: (traitId: string) => void;
   toggleMajorSkill: (skillId: string) => void;
   toggleMinorSkill: (skillId: string) => void;
+  toggleOghmaSkill: (skillId: string) => void;
   adjustAttribute: (stat: keyof Attributes, delta: number) => void;
   setPlayerLevel: (level: number) => void;
   ensurePlayerLevel: () => void;
@@ -278,6 +281,7 @@ export const useBuildStore = create<BuildStore>()(
             ...build,
             playerLevel: build.playerLevel ?? baseLevel,
             characterOptionChoices: build.characterOptionChoices ?? {},
+            oghmaSkillIds: build.oghmaSkillIds ?? [],
           }));
           set({
             gameData: data,
@@ -322,11 +326,14 @@ export const useBuildStore = create<BuildStore>()(
             [optionId]: choiceId,
           };
 
-          commitBuild(
-            set,
-            get,
-            reconcileBuild(gameData.game, { ...build, characterOptionChoices }),
-          );
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, characterOptionChoices };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const reconciled = reconcileBuild(gameData.game, preserved);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
         },
 
         toggleTrait: (traitId) => {
@@ -382,6 +389,27 @@ export const useBuildStore = create<BuildStore>()(
 
           const previous = reconcileBuild(gameData.game, build);
           const candidate = { ...previous, minorSkillIds };
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const reconciled = reconcileBuild(gameData.game, preserved);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+            ensureMinimumPlayerLevel: true,
+          });
+          commitBuild(set, get, leveled);
+        },
+
+        toggleOghmaSkill: (skillId) => {
+          const { gameData, build } = get();
+          if (!gameData || !isOghmaInfiniumActive(build)) return;
+
+          let oghmaSkillIds = [...build.oghmaSkillIds];
+          if (oghmaSkillIds.includes(skillId)) {
+            oghmaSkillIds = oghmaSkillIds.filter((id) => id !== skillId);
+          } else if (canSelectOghmaSkill(gameData.game, build, skillId)) {
+            oghmaSkillIds.push(skillId);
+          }
+
+          const previous = reconcileBuild(gameData.game, build);
+          const candidate = { ...previous, oghmaSkillIds };
           const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
           const reconciled = reconcileBuild(gameData.game, preserved);
           const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
@@ -499,7 +527,7 @@ export const useBuildStore = create<BuildStore>()(
           const tree = gameData.game.perkTrees[skillId];
           if (!tree) return;
 
-          const floor = getSkillFloor(gameData.game, build, skillId);
+          const floor = getEffectiveSkillFloor(gameData.game, build, skillId);
           const skillPerkIds = new Set(tree.perks.map((p) => p.id));
           const selectedPerkIds = build.selectedPerkIds.filter((id) => !skillPerkIds.has(id));
           const skillTrainingRanges = { ...build.skillTrainingRanges };
@@ -541,7 +569,7 @@ export const useBuildStore = create<BuildStore>()(
           const skillTrainingRanges = { ...build.skillTrainingRanges };
           for (const skillId of gameData.game.manifest.skills) {
             if (!isAllocatableSkill(gameData.game, skillId)) continue;
-            skillLevels[skillId] = getSkillFloor(gameData.game, build, skillId);
+            skillLevels[skillId] = getEffectiveSkillFloor(gameData.game, build, skillId);
             delete skillTrainingRanges[skillId];
           }
 

@@ -28,7 +28,9 @@
   },
   "oghmaInfinium": {
     "perkPoints": 3,
-    "attributeBonus": [0, 0, 0]
+    "attributeBonus": [0, 0, 0],
+    "freeSkillLevels": 5,
+    "maxSkills": 6
   },
   "majorSkillBonus": 10,
   "minorSkillBonus": 5,

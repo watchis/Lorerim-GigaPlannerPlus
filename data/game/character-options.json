@@ -6,9 +6,10 @@
       "descriptionLabel": "oghmaDescription",
       "defaultChoice": "none",
       "extension": "oghma-infinium",
-      "controlType": "select",
+      "controlType": "toggle",
       "choices": [
         { "id": "none", "label": "oghmaNone" },
+        { "id": "claimed", "label": "oghmaClaimed" },
         { "id": "warrior", "label": "oghmaWarrior" },
         { "id": "mage", "label": "oghmaMage" },
         { "id": "thief", "label": "oghmaThief" }

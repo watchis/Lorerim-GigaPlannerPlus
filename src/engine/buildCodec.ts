@@ -1,7 +1,7 @@
 import { gzipSync, gunzipSync } from "fflate";
 import type { GameData } from "@/data/schemas";
 import { migrateBuildState, type BuildState } from "@/engine/buildEngine";
-import { getSkillFloor, reconcileBuild } from "@/engine/buildEngine";
+import { getEffectiveSkillFloor, reconcileBuild } from "@/engine/buildEngine";
 import { migrateLegacySkillTrainingCounts } from "@/lib/skillTraining";
 import {
   createBuildCodecRegistry,
@@ -50,6 +50,7 @@ type CompactBuildPayload = {
   l?: [number, number][];
   tr?: number[][];
   co?: [number, number][];
+  oi?: number[];
   d?: string;
 };
 
@@ -152,7 +153,7 @@ function compactPayloadFromBuild(
 
   const skillLevelEntries: [number, number][] = [];
   for (const skillId of registry.skills) {
-    const floor = getSkillFloor(registry.game, state, skillId);
+    const floor = getEffectiveSkillFloor(registry.game, state, skillId);
     const level = state.skillLevels[skillId];
     if (level !== undefined && level !== floor) {
       const skillIndex = lookupIndex(registry.skillIndex, skillId, "skill");
@@ -198,6 +199,10 @@ function compactPayloadFromBuild(
   }
   if (characterOptionEntries.length > 0) {
     payload.co = characterOptionEntries;
+  }
+
+  if (state.oghmaSkillIds.length > 0) {
+    payload.oi = indexList(state.oghmaSkillIds, registry.skillIndex, "skill");
   }
 
   if (state.description.trim()) {
@@ -266,6 +271,7 @@ function buildStateFromCompactPayload(
     traitIds: (payload.t ?? []).map((index) => lookupId(registry.traits, index, "trait")!),
     majorSkillIds: (payload.M ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
     minorSkillIds: (payload.m ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
+    oghmaSkillIds: (payload.oi ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
     attributeBonus: {
       health: attrs[0] ?? 0,
       magicka: attrs[1] ?? 0,
@@ -418,6 +424,7 @@ function payloadToBuildState(partial: {
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
+  oghmaSkillIds?: string[];
   attributeBonus: BuildState["attributeBonus"];
   characterOptionChoices?: BuildState["characterOptionChoices"];
   selectedPerkIds: string[];
@@ -433,6 +440,7 @@ function payloadToBuildState(partial: {
     traitIds: partial.traitIds,
     majorSkillIds: partial.majorSkillIds,
     minorSkillIds: partial.minorSkillIds,
+    oghmaSkillIds: partial.oghmaSkillIds ?? [],
     attributeBonus: partial.attributeBonus,
     characterOptionChoices: partial.characterOptionChoices ?? {},
     selectedPerkIds: partial.selectedPerkIds,

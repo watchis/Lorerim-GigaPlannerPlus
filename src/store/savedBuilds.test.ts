@@ -255,6 +255,22 @@ describe("updateSavedBuildInList imported markers", () => {
     expect(isSavedBuildImported(synced)).toBe(true);
     expect(synced.modpackVersion).toBe(oldModpackVersion);
   });
+
+  it("does not throw when legacy milestone builds are missing oghmaSkillIds", () => {
+    const currentBuild = createTestBuildState({ oghmaSkillIds: [] });
+    const legacyMilestoneBuild = createTestBuildState({ description: "Milestone" });
+    delete (legacyMilestoneBuild as { oghmaSkillIds?: string[] }).oghmaSkillIds;
+
+    const milestone = createMilestone("Level 25", legacyMilestoneBuild);
+    const entry = {
+      ...createSavedBuild("Imported", build, [milestone]),
+      activeMilestoneId: milestone.id,
+    };
+
+    expect(() =>
+      updateSavedBuildInList([entry], entry.id, currentBuild, newModpackVersion),
+    ).not.toThrow();
+  });
 });
 
 describe("migrateSavedBuildsModpackVersion", () => {

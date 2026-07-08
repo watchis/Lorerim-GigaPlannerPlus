@@ -9,6 +9,7 @@ export interface SkillGrantBreakdownEntry {
   bypassPlayerLevelCap: boolean;
   bypassSkillIncreaseLimit: boolean;
   raiseFloor: boolean;
+  freeTopLevels: number;
   sourceName: string;
   sourceLabelKey?: string;
 }
@@ -30,6 +31,7 @@ export function getSkillLevelGrantBreakdown(
       bypassPlayerLevelCap: grant.bypassPlayerLevelCap ?? false,
       bypassSkillIncreaseLimit: grant.bypassSkillIncreaseLimit ?? false,
       raiseFloor: grant.raiseFloor ?? false,
+      freeTopLevels: grant.freeTopLevels ?? 0,
       sourceName: grant.source.name ?? grant.source.labelKey ?? "unknown",
       sourceLabelKey: grant.source.labelKey,
     }));
@@ -73,4 +75,14 @@ export function getBypassSkillIncreaseGrantBonus(
   return getCollectedGrants(game, state)
     .filter((grant) => grant.skillId === skillId && grant.bypassSkillIncreaseLimit)
     .reduce((total, grant) => total + grant.bonus, 0);
+}
+
+export function getSkillLevelGrantFreeTopLevels(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+): number {
+  return getCollectedGrants(game, state)
+    .filter((grant) => grant.skillId === skillId && (grant.freeTopLevels ?? 0) > 0)
+    .reduce((total, grant) => Math.max(total, grant.freeTopLevels ?? 0), 0);
 }

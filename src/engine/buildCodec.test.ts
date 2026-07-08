@@ -34,7 +34,7 @@ describe("buildCodec", () => {
     expect(decoded.description).toBe("Test build");
   });
 
-  it("round-trips character option choices", () => {
+  it("round-trips character option choices and migrates legacy Oghma paths", () => {
     const state = createTestBuildState({
       characterOptionChoices: {
         "oghma-infinium": "warrior",
@@ -45,9 +45,27 @@ describe("buildCodec", () => {
     const decoded = decodeBuild(encodeBuild(state, game), game);
 
     expect(decoded.characterOptionChoices).toEqual({
-      "oghma-infinium": "warrior",
+      "oghma-infinium": "claimed",
       "alduin-bonus-trait": "claimed",
     });
+    expect(decoded.oghmaSkillIds).toEqual([
+      "one-handed",
+      "two-handed",
+      "block",
+      "heavy-armor",
+      "smithing",
+      "enchanting",
+    ]);
+  });
+
+  it("round-trips Oghma skill selections", () => {
+    const state = createTestBuildState({
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block", "smithing"],
+    });
+
+    const decoded = decodeBuild(encodeBuild(state, game), game);
+    expect(decoded.oghmaSkillIds).toEqual(["block", "smithing"]);
   });
 
   it("round-trips skill training ranges", () => {

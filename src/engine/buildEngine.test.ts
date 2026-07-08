@@ -674,6 +674,14 @@ describe("areBuildStatesEqual", () => {
     expect(areBuildStatesEqual(build, { ...build })).toBe(true);
   });
 
+  it("treats missing oghmaSkillIds as an empty selection", () => {
+    const build = createTestBuildState({ oghmaSkillIds: [] });
+    const legacy = createTestBuildState();
+    delete (legacy as { oghmaSkillIds?: string[] }).oghmaSkillIds;
+
+    expect(areBuildStatesEqual(build, legacy)).toBe(true);
+  });
+
   it("detects differences across planner-editable fields", () => {
     const base = createTestBuildState({
       raceId: "nord",
@@ -683,7 +691,8 @@ describe("areBuildStatesEqual", () => {
       majorSkillIds: ["block"],
       minorSkillIds: ["one-handed"],
       attributeBonus: { health: 1, magicka: 0, stamina: 0 },
-      characterOptionChoices: { "oghma-infinium": "health" },
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
       selectedPerkIds: ["block-improved-blocking"],
       skillLevels: { block: 20 },
       skillTrainingRanges: { block: [1, 0, 0, 0] },
@@ -706,7 +715,7 @@ describe("areBuildStatesEqual", () => {
     expect(
       areBuildStatesEqual(base, {
         ...base,
-        characterOptionChoices: { "oghma-infinium": "magicka" },
+        characterOptionChoices: { "oghma-infinium": "none" },
       }),
     ).toBe(false);
     expect(areBuildStatesEqual(base, { ...base, selectedPerkIds: [] })).toBe(false);
@@ -719,5 +728,11 @@ describe("areBuildStatesEqual", () => {
     ).toBe(false);
     expect(areBuildStatesEqual(base, { ...base, playerLevel: 6 })).toBe(false);
     expect(areBuildStatesEqual(base, { ...base, description: "Changed" })).toBe(false);
+    expect(
+      areBuildStatesEqual(base, {
+        ...base,
+        oghmaSkillIds: ["smithing"],
+      }),
+    ).toBe(false);
   });
 });

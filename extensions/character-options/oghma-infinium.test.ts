@@ -18,12 +18,13 @@ describe("oghma-infinium extension", () => {
     expect(mods).toEqual([]);
   });
 
-  it("grants perk points and six skill bonuses per warrior path", () => {
-    const choice = option.choices.find((entry) => entry.id === "warrior")!;
+  it("grants perk points and free-top-level grants for selected skills", () => {
+    const choice = option.choices.find((entry) => entry.id === "claimed")!;
     const mods = oghmaExtension.getModifications({
       game,
       state: createTestBuildState({
-        characterOptionChoices: { "oghma-infinium": "warrior" },
+        characterOptionChoices: { "oghma-infinium": "claimed" },
+        oghmaSkillIds: ["block", "one-handed"],
       }),
       option,
       choice,
@@ -32,8 +33,8 @@ describe("oghma-infinium extension", () => {
 
     expect(mods).toHaveLength(1);
     expect(mods[0]?.effects).toEqual([{ type: "perkPoints", value: 3 }]);
-    expect(mods[0]?.skillLevelGrants).toHaveLength(6);
-    expect(mods[0]?.skillLevelGrants?.every((grant) => grant.bonus === 5)).toBe(true);
-    expect(mods[0]?.skillLevelGrants?.every((grant) => grant.bypassPlayerLevelCap)).toBe(true);
+    expect(mods[0]?.skillLevelGrants).toHaveLength(2);
+    expect(mods[0]?.skillLevelGrants?.every((grant) => grant.freeTopLevels === 5)).toBe(true);
+    expect(mods[0]?.skillLevelGrants?.every((grant) => grant.bonus === 0)).toBe(true);
   });
 });
