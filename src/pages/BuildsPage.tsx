@@ -41,7 +41,10 @@ import {
   readBackupFile,
 } from "@/lib/buildIO";
 import { cn } from "@/lib/utils";
-import { getModpackVersionForBuildCard } from "@/lib/modpackVersion";
+import {
+  getModpackVersionForBuildCard,
+  isModpackVersionMismatch,
+} from "@/lib/modpackVersion";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import type { SavedBuild } from "@/store/savedBuilds";
@@ -497,6 +500,15 @@ function SavedBuildCard({
   const [draftName, setDraftName] = useState(entry.name);
   const activeBuild = getActiveSavedBuildBuild(entry);
   const summary = getBuildSummary(activeBuild, game, labels);
+  const currentModpackVersion = game.manifest.version;
+  const modpackLabel = getModpackVersionForBuildCard({
+    savedModpackVersion: entry.modpackVersion,
+    currentModpackVersion,
+  });
+  const modpackMismatch = isModpackVersionMismatch({
+    savedModpackVersion: entry.modpackVersion,
+    currentModpackVersion,
+  });
 
   const startEditing = () => {
     setDraftName(entry.name);
@@ -633,11 +645,8 @@ function SavedBuildCard({
         </div>
         <p className="mt-1 text-xs text-[var(--color-muted)]">
           {summary.raceLabel} · Level {summary.level} ·{" "}
-          {getModpackVersionForBuildCard({
-            savedModpackVersion: entry.modpackVersion,
-            currentModpackVersion: game.manifest.version,
-          })}{" "}
-          · {formatUpdatedAt(entry.updatedAt)}
+          <span className={cn(modpackMismatch && "text-[var(--color-accent)]")}>{modpackLabel}</span> ·{" "}
+          {formatUpdatedAt(entry.updatedAt)}
         </p>
       </div>
 
