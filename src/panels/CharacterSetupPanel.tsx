@@ -249,7 +249,7 @@ export function CharacterSetupPanel() {
       className={cn(
         stackedLayout
           ? "flex min-h-0 flex-1 flex-col overflow-hidden border-0 bg-transparent shadow-none"
-          : "flex min-h-0 flex-1 flex-col overflow-hidden",
+          : "flex min-h-0 flex-col overflow-hidden max-h-full",
       )}
     >
       <CardHeader
