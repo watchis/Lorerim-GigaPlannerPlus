@@ -44,6 +44,14 @@ export function sumTrainingRanges(ranges: number[]): number {
   return ranges.reduce((total, count) => total + count, 0);
 }
 
+export function hasSkillTrainingAssigned(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+): boolean {
+  return sumTrainingRanges(getSkillTrainingRanges(game, state, skillId)) > 0;
+}
+
 /** Skill points waived by training: one tier cost per trained level in that tier. */
 export function computeTrainingSkillPointCredit(
   mechanics: Mechanics,

@@ -230,6 +230,7 @@
       "trainingSkillLevel": "Level from training",
       "trainingGlobalRemaining": "Training remaining",
       "trainingMaxLevel": "Max trainable level: {max}",
+      "trainingAssignedIndicator": "Training assigned",
       "perksSelected": "perks selected",
       "destinyPoints": "Destiny points",
       "locked": "Locked",

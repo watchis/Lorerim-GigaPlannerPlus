@@ -23,6 +23,7 @@ import {
   getStoredSkillLevel,
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
+import { hasSkillTrainingAssigned } from "@/lib/skillTraining";
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
@@ -72,6 +73,22 @@ function SkillTreeWarningIcon({
       >
         <AlertCircle className="h-4 w-4" />
       </button>
+    </HoverTapTooltip>
+  );
+}
+
+function SkillTreeTrainingIndicator({ label }: { label: string }) {
+  return (
+    <HoverTapTooltip
+      content={<p className="text-xs leading-relaxed">{label}</p>}
+      side="bottom"
+      align="start"
+    >
+      <span
+        className="mt-px h-2 w-2 shrink-0 rounded-full bg-[var(--color-accent)]"
+        role="img"
+        aria-label={label}
+      />
     </HoverTapTooltip>
   );
 }
@@ -161,6 +178,8 @@ export function SkillTreePanel() {
     ? 0
     : getSkillLevelFromTraining(gameData.game, build, activeTree.skillId);
   const isTrainingMode = !isDestinyTree && skillWorkspaceMode === "training";
+  const hasTraining = !isDestinyTree &&
+    hasSkillTrainingAssigned(gameData.game, build, activeTree.skillId);
   const { perks: overLevelPerks, skillIncreases, destinyPerksOverBudget } =
     getBuildPlayerLevelWarnings(gameData.game, build);
   const skillIncreaseConflict = skillIncreases.find(
@@ -270,6 +289,11 @@ export function SkillTreePanel() {
                 <h2 className="truncate font-[family-name:var(--font-heading)] text-base font-semibold text-[var(--color-foreground)]">
                   {activeTree.skillName}
                 </h2>
+                {hasTraining && (
+                  <SkillTreeTrainingIndicator
+                    label={labels.trainingAssignedIndicator ?? "Training assigned"}
+                  />
+                )}
                 <SkillTreeWarningIcon
                   messages={warningMessages}
                   ariaLabel={labels.skillTreeWarning}
@@ -427,6 +451,11 @@ export function SkillTreePanel() {
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-2">
                 <CardTitle className="min-w-0 truncate text-base">{activeTree.skillName}</CardTitle>
+                {hasTraining && (
+                  <SkillTreeTrainingIndicator
+                    label={labels.trainingAssignedIndicator ?? "Training assigned"}
+                  />
+                )}
                 <SkillTreeWarningIcon
                   messages={warningMessages}
                   ariaLabel={labels.skillTreeWarning}
