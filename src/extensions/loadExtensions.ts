@@ -1,14 +1,23 @@
 import type { GameData } from "@/data/schemas";
 import type { CharacterOptionExtension, PerkExtension } from "@/extension-api";
 
+// Array globs with negated patterns — required for Vite 8 / Rolldown production builds.
+// The legacy `!(*.test).ts` fast-glob form resolves in dev but yields an empty map in `vite build`.
 const characterOptionModules = import.meta.glob(
-  "../../extensions/character-options/!(*.test).ts",
+  [
+    "../../extensions/character-options/*.ts",
+    "!../../extensions/character-options/*.test.ts",
+  ],
   { eager: true },
 );
 
-const perkModules = import.meta.glob("../../extensions/perks/!(*.test).ts", {
-  eager: true,
-});
+const perkModules = import.meta.glob(
+  [
+    "../../extensions/perks/*.ts",
+    "!../../extensions/perks/*.test.ts",
+  ],
+  { eager: true },
+);
 
 function loadExtensionMap<T extends { id: string }>(
   modules: Record<string, unknown>,
