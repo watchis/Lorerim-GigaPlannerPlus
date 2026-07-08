@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   computePerkTreeEdges,
   getPerkGridCenter,
+  getPerkAllocationRank,
   getPerkPositionKey,
   getPerkStackRank,
   getPerkTreeCompactViewBox,
@@ -112,6 +113,7 @@ export function PerkTreeMiniView({
 }: PerkTreeMiniViewProps) {
   const glowFilterId = useId().replace(/:/g, "");
   const selectedPerkIds = useBuildStore((s) => s.build.selectedPerkIds);
+  const perkPointsRemaining = useBuildStore((s) => s.computed?.perkPointsRemaining ?? 0);
   const gridBounds = useMemo(() => getPerkTreeGridBounds(tree), [tree]);
   const { width, height, origin } = gridBounds;
 
@@ -150,13 +152,14 @@ export function PerkTreeMiniView({
   const partialRankPositionKeys = useMemo(() => {
     const keys = new Set<string>();
     for (const [positionKey, stack] of stacksByPosition) {
-      const stackRank = getPerkStackRank(stack, selectedPerkIds);
+      const stackRank =
+        stack.length > 1 ? getPerkStackRank(stack, selectedPerkIds) : getPerkAllocationRank(stack[0], selectedPerkIds, perkPointsRemaining);
       if (stackRank && stackRank.current > 0 && stackRank.current < stackRank.total) {
         keys.add(positionKey);
       }
     }
     return keys;
-  }, [stacksByPosition, selectedPerkIds]);
+  }, [stacksByPosition, selectedPerkIds, perkPointsRemaining]);
 
   const viewBox = useMemo(() => {
     if (!compact) {

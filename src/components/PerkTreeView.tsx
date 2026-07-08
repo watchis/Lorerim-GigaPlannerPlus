@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { getPerkNodeRequirements } from "@/lib/perkRequirements";
 import {
   computePerkTreeEdgesPercentInBounds,
+  getPerkAllocationRank,
   getNextRankInStack,
   getPerkPercentPositionInBounds,
   getPerkPositionKey,
@@ -469,7 +470,10 @@ function PerkTreeView({
       {paintOrderedPerks.map((perk, index) => {
         const positionKey = getPerkPositionKey(perk.position);
         const stack = stacksByPosition.get(positionKey) ?? [perk];
-        const stackRank = getPerkStackRank(stack, build.selectedPerkIds);
+          const stackRank =
+            stack.length > 1
+              ? getPerkStackRank(stack, build.selectedPerkIds)
+              : getPerkAllocationRank(perk, build.selectedPerkIds, perkPointsRemaining);
         const nextRank = getNextRankInStack(stack, build.selectedPerkIds);
         const isSelected = build.selectedPerkIds.includes(perk.id);
         const prereqsMet = arePrerequisitesMet(gameData.game, build, perk);

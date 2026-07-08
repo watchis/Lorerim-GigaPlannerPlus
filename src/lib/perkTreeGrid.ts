@@ -285,6 +285,33 @@ export function getPerkStackRank(perks: Perk[], selectedPerkIds: string[]): Perk
   };
 }
 
+/**
+ * Rank indicator for perks that can be allocated multiple times.
+ *
+ * The planner stores multiple allocations by repeating the perk id in
+ * `BuildState.selectedPerkIds`. When `perk.allocation.kind` is
+ * `perkPointsBudget`, each allocation costs one perk point (respecting
+ * `perk.costsPerkPoint`) and the maximum allocatable total is derived from
+ * the current perk-point budget.
+ */
+export function getPerkAllocationRank(
+  perk: Perk,
+  selectedPerkIds: string[],
+  perkPointsRemaining: number,
+): PerkStackRank | null {
+  if (perk.allocation?.kind !== "perkPointsBudget") return null;
+
+  const current = selectedPerkIds.filter((id) => id === perk.id).length;
+
+  if (!perk.costsPerkPoint) {
+    // Budget is irrelevant when the perk does not cost points.
+    return { current, total: current };
+  }
+
+  const total = Math.max(current, current + perkPointsRemaining);
+  return { current, total };
+}
+
 /** Next tier after the highest selected rank at this stack position. */
 export function getNextRankInStack(perks: Perk[], selectedPerkIds: string[]): Perk | undefined {
   if (perks.length <= 1) return undefined;

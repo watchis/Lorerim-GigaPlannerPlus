@@ -4,6 +4,7 @@ import {
   computePerkTreeEdges,
   getFrontPerkIdAtPosition,
   getMinDistinctPerkCenterDistanceGrid,
+  getPerkAllocationRank,
   getNextRankInStack,
   getPerkStackRank,
   getPerkTreeGridBounds,
@@ -54,6 +55,17 @@ describe("perkTreeGrid", () => {
     expect(getPerkStackRank(stack, [])).toEqual({ current: 0, total: 2 });
     expect(getPerkStackRank(stack, ["rank-25"])).toEqual({ current: 1, total: 2 });
     expect(getPerkStackRank(stack, ["rank-25", "rank-50"])).toEqual({ current: 2, total: 2 });
+  });
+
+  it("reports allocation rank for stackable perk points budgets", () => {
+    const perk: Perk = {
+      ...makePerk("stackable", 0),
+      allocation: { kind: "perkPointsBudget" },
+    };
+
+    expect(getPerkAllocationRank(perk, [], 3)).toEqual({ current: 0, total: 3 });
+    expect(getPerkAllocationRank(perk, ["stackable"], 2)).toEqual({ current: 1, total: 3 });
+    expect(getPerkAllocationRank(perk, ["stackable", "stackable"], 0)).toEqual({ current: 2, total: 2 });
   });
 
   it("returns the next rank after the highest selected tier", () => {

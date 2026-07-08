@@ -378,7 +378,7 @@ export function PerkNode({
         {isConflict
           ? labels.buildProblemLegend
           : isSelected
-            ? nextRank
+            ? stackRank && stackRank.current < stackRank.total
               ? labels.upgradeAvailable
               : labels.selected
             : isLocked
