@@ -176,6 +176,7 @@
     {
       "id": "enchanting-artifact-enchanter",
       "name": "Artifact Enchanter",
+      "extension": "enchanting-artifact-enchanter",
       "skillReq": 100,
       "allocation": {
         "kind": "perkPointsBudget"

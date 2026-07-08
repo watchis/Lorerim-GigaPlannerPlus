@@ -22,6 +22,14 @@ export const effectSchema = z.discriminatedUnion("type", [
     type: z.literal("flag"),
     stat: z.string(),
   }),
+  z.object({
+    type: z.literal("perkPoints"),
+    value: z.number(),
+  }),
+  z.object({
+    type: z.literal("traitSlot"),
+    value: z.number(),
+  }),
 ]);
 
 const skillLevelBaselineSchema = z.enum(["raceStarting", "skillFloor"]);
@@ -74,10 +82,12 @@ export const mechanicsSchema = z
       skillLevelCosts: z.array(skillLevelCostTierSchema).min(1),
       attributePointsPerLevel: z.tuple([z.number(), z.number(), z.number()]),
     }),
-    oghmaInfinium: z.object({
-      perkPoints: z.number(),
-      attributeBonus: z.tuple([z.number(), z.number(), z.number()]),
-    }),
+    oghmaInfinium: z
+      .object({
+        perkPoints: z.number(),
+        attributeBonus: z.tuple([z.number(), z.number(), z.number()]),
+      })
+      .optional(),
     majorSkillBonus: z.number(),
     minorSkillBonus: z.number(),
     derivedStats: z.array(
@@ -127,26 +137,13 @@ export const mechanicsSchema = z
     }
   });
 
-const characterOptionMechanicsBindingSchema = z.enum(["oghmaInfinium"]);
+const characterOptionControlTypeSchema = z.enum(["select", "toggle", "buttons"]);
 
 const characterOptionChoiceSchema = z
   .object({
     id: z.string(),
     label: z.string(),
-    attributeStat: attributeStatSchema.optional(),
-    attributeBonusIndex: z.number().int().nonnegative().optional(),
     effects: z.array(effectSchema).optional(),
-  })
-  .superRefine((choice, ctx) => {
-    const hasStat = choice.attributeStat !== undefined;
-    const hasIndex = choice.attributeBonusIndex !== undefined;
-    if (hasStat !== hasIndex) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "attributeStat and attributeBonusIndex must be set together",
-        path: hasStat ? ["attributeBonusIndex"] : ["attributeStat"],
-      });
-    }
   });
 
 export const characterOptionSchema = z
@@ -155,10 +152,8 @@ export const characterOptionSchema = z
     titleLabel: z.string(),
     descriptionLabel: z.string().optional(),
     defaultChoice: z.string(),
-    mechanicsBinding: characterOptionMechanicsBindingSchema.optional(),
-    perkPointsSummaryLabel: z.string().optional(),
-    attributeBonusSummaryLabel: z.string().optional(),
-    grantsTraitSlot: z.boolean().optional(),
+    extension: z.string().optional(),
+    controlType: characterOptionControlTypeSchema.optional(),
     choices: z.array(characterOptionChoiceSchema).min(1),
   })
   .superRefine((option, ctx) => {
@@ -180,18 +175,6 @@ export const characterOptionSchema = z
         message: `defaultChoice "${option.defaultChoice}" is not a valid choice id`,
         path: ["defaultChoice"],
       });
-    }
-
-    if (option.mechanicsBinding) {
-      for (const choice of option.choices) {
-        if (choice.attributeBonusIndex !== undefined && choice.attributeBonusIndex > 2) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "attributeBonusIndex must be 0, 1, or 2 for mechanics-bound options",
-            path: ["choices"],
-          });
-        }
-      }
     }
   });
 
@@ -339,6 +322,7 @@ export const perkSchema = z.object({
   prerequisitesAny: z.array(z.string()).optional(),
   description: z.string(),
   effects: z.array(effectSchema),
+  extension: z.string().optional(),
 });
 
 export const perkTreeSchema = z

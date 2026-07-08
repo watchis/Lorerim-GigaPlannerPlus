@@ -29,6 +29,11 @@ import {
   buildPerkPlayerLevelReqs,
   normalizeStackPrerequisites,
 } from "./append-missing-perks.mjs";
+import {
+  applyPerkExtensionBindings,
+  loadExtensionBindings,
+  validateExtensionBindings,
+} from "./extension-bindings.mjs";
 import { pruneAllPerkTrees } from "./prune-orphan-perks.mjs";
 import { collectWorshipAltarKeys, deityNameFromAltarKey, normalizeAltarKey, resolveDeityEligibility } from "./deity-eligibility.mjs";
 import { extractFaithEffectsFromPlugins, indexDeityFaithMgef } from "./deity-faith-from-plugins.mjs";
@@ -321,6 +326,8 @@ export function transformPerkRecords(
   const removedPerks = pruneAllPerkTrees(trees, { membership });
   applyPerkLayoutOverrides(trees, layoutOverrides);
   applyPerkGraphSnapshots(trees, graphSnapshots);
+  const extensionBindings = loadExtensionBindings();
+  const { applied: extensionBindingsApplied } = applyPerkExtensionBindings(trees, extensionBindings);
   for (const tree of Object.values(trees)) {
     normalizeStackPrerequisites(tree);
   }
@@ -330,7 +337,20 @@ export function transformPerkRecords(
     existingLevelReqsByGraphKey,
   );
 
-  return { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs };
+  const extensionBindingWarnings = validateExtensionBindings({
+    bindings: extensionBindings,
+    trees,
+  });
+
+  return {
+    trees,
+    indexEntries,
+    addedPerks,
+    removedPerks,
+    playerLevelReqs,
+    extensionBindingsApplied,
+    extensionBindingWarnings,
+  };
 }
 
 function resolveTraitText(spellRecord) {

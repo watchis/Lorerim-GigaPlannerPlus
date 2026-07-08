@@ -3,6 +3,7 @@ import {
   extractConditionalBonusDetails,
   mergeEffects,
   parseBonusEffects,
+  resolveBonusEffects,
 } from "@/lib/resolveOptionEffects";
 
 export function enrichRaceEffects(race: Race): Effect[] {
@@ -10,7 +11,7 @@ export function enrichRaceEffects(race: Race): Effect[] {
 }
 
 export function enrichTrait(trait: Trait): Trait {
-  const effects = parseBonusEffects(trait.bonus);
+  const effects = resolveBonusEffects(trait.bonus, trait.effects);
   return {
     ...trait,
     effects,
@@ -19,7 +20,7 @@ export function enrichTrait(trait: Trait): Trait {
 }
 
 export function enrichBirthsign(birthsign: Birthsign): Birthsign {
-  const effects = parseBonusEffects(birthsign.bonus);
+  const effects = resolveBonusEffects(birthsign.bonus, birthsign.effects);
   return {
     ...birthsign,
     effects,
@@ -28,9 +29,12 @@ export function enrichBirthsign(birthsign: Birthsign): Birthsign {
 }
 
 export function enrichDeity(deity: Deity): Deity {
-  return { ...deity, effects: parseBonusEffects(deity.shrine) };
+  return { ...deity, effects: resolveBonusEffects(deity.shrine, deity.effects) };
 }
 
 export function enrichPerk(perk: Perk): Perk {
-  return { ...perk, effects: parseBonusEffects(perk.description) };
+  if (perk.extension) {
+    return { ...perk, effects: perk.effects ?? [] };
+  }
+  return { ...perk, effects: resolveBonusEffects(perk.description, perk.effects) };
 }

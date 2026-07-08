@@ -37,7 +37,7 @@ describe("buildCodec", () => {
   it("round-trips character option choices", () => {
     const state = createTestBuildState({
       characterOptionChoices: {
-        "oghma-infinium": "health",
+        "oghma-infinium": "warrior",
         "alduin-bonus-trait": "claimed",
       },
     });
@@ -45,7 +45,7 @@ describe("buildCodec", () => {
     const decoded = decodeBuild(encodeBuild(state, game), game);
 
     expect(decoded.characterOptionChoices).toEqual({
-      "oghma-infinium": "health",
+      "oghma-infinium": "warrior",
       "alduin-bonus-trait": "claimed",
     });
   });

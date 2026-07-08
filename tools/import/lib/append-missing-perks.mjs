@@ -10,6 +10,7 @@ import {
 } from "./perk-import-filter.mjs";
 import { classifyPerkTreeSkill, isAllocatablePerkSkill } from "./perk-skill-classifier.mjs";
 import { cleanDescription, cleanName, slugify } from "./transform-utils.mjs";
+import { loadExtensionBindings, resolvePerkExtension } from "./extension-bindings.mjs";
 import { parseBonusEffects } from "./parse-bonus-effects.mjs";
 import { applyPerkMetadata, stackRankFromPerkId } from "./perk-tree-metadata.mjs";
 import { applyGigaPlannerTreeLayout } from "./giga-planner-layout.mjs";
@@ -207,10 +208,23 @@ function buildBestRecordByCanonicalName(treePerkRecords) {
   return byCanonical;
 }
 
-function createPerkNode(skillId, record, usedIds, position, tree, metadataIndex, rankBaseId, rankIndex = 0) {
+function createPerkNode(
+  skillId,
+  record,
+  usedIds,
+  position,
+  tree,
+  metadataIndex,
+  rankBaseId,
+  rankIndex = 0,
+  extensionBindings = null,
+) {
   const name = cleanName(record.name);
   const description = cleanDescription(record.description ?? "");
   const id = rankBaseId ? `${rankBaseId}-r${rankIndex + 1}` : uniquePerkId(skillId, record, usedIds);
+  const extension = extensionBindings
+    ? resolvePerkExtension(extensionBindings, skillId, name)
+    : undefined;
 
   const perk = {
     id,
@@ -219,8 +233,9 @@ function createPerkNode(skillId, record, usedIds, position, tree, metadataIndex,
     position: { ...position },
     prerequisites: [],
     description,
-    effects: parseBonusEffects(description),
+    effects: extension ? [] : parseBonusEffects(description),
     prerequisitesAny: [],
+    ...(extension ? { extension } : {}),
   };
 
   if (record.perkMeta?.playerLevelReq > 1) {
@@ -333,6 +348,7 @@ function appendPerkStack(
   plannerNamesBySkill,
   added,
   source,
+  extensionBindings,
 ) {
   const rankRecords = collectRankChain(record, recordByIdentity);
   let rankBaseId = null;
@@ -347,6 +363,7 @@ function appendPerkStack(
       null,
       rankIndex === 0 ? null : rankBaseId,
       rankIndex,
+      extensionBindings,
     );
     if (rankIndex === 0) rankBaseId = perk.id;
     tree.perks.push(perk);
@@ -362,7 +379,15 @@ function appendPerkStack(
   addPlannerName(plannerNamesBySkill, skillId, record.name);
 }
 
-function appendFromAvifSections(trees, membership, recordByIdentity, metadataIndex, plannerNamesBySkill, added) {
+function appendFromAvifSections(
+  trees,
+  membership,
+  recordByIdentity,
+  metadataIndex,
+  plannerNamesBySkill,
+  added,
+  extensionBindings,
+) {
   for (const [skillId, avifTree] of membership.finalizedAvif) {
     if (!isAllocatablePerkSkill(skillId)) continue;
 
@@ -398,6 +423,7 @@ function appendFromAvifSections(trees, membership, recordByIdentity, metadataInd
         plannerNamesBySkill,
         added,
         "avif",
+        extensionBindings,
       );
     }
   }
@@ -410,6 +436,7 @@ function appendFromSupplementalPrefixes(
   allPerkRecords,
   plannerNamesBySkill,
   added,
+  extensionBindings,
 ) {
   const supplementalRecords = collectTreePerkRecords(allPerkRecords).filter(isSupplementalTreePerk);
   const bestByCanonical = buildBestRecordByCanonicalName(supplementalRecords);
@@ -440,6 +467,7 @@ function appendFromSupplementalPrefixes(
       plannerNamesBySkill,
       added,
       "supplemental",
+      extensionBindings,
     );
     registerSupplementalAnchor(membership, skillId, record.name);
   }
@@ -451,6 +479,7 @@ function appendFromPrefixHeuristics(
   metadataIndex,
   plannerNamesBySkill,
   added,
+  extensionBindings,
 ) {
   const bestByCanonical = buildBestRecordByCanonicalName(treePerkRecords);
 
@@ -475,6 +504,9 @@ function appendFromPrefixHeuristics(
       placement.position,
       tree,
       metadataIndex,
+      null,
+      0,
+      extensionBindings,
     );
     tree.perks.push(perk);
     usedIds.add(perk.id);
@@ -490,12 +522,21 @@ export function appendMissingPerkNodes(
   membership = null,
   perkRecords = null,
 ) {
+  const extensionBindings = loadExtensionBindings();
   const plannerNamesBySkill = buildPlannerCanonicalNamesBySkill(trees);
   const added = [];
 
   if (membership?.hasAvifData) {
     const recordByIdentity = buildPerkRecordByIdentity(perkRecords ?? treePerkRecords);
-    appendFromAvifSections(trees, membership, recordByIdentity, metadataIndex, plannerNamesBySkill, added);
+    appendFromAvifSections(
+      trees,
+      membership,
+      recordByIdentity,
+      metadataIndex,
+      plannerNamesBySkill,
+      added,
+      extensionBindings,
+    );
     appendFromSupplementalPrefixes(
       trees,
       membership,
@@ -503,9 +544,17 @@ export function appendMissingPerkNodes(
       perkRecords ?? treePerkRecords,
       plannerNamesBySkill,
       added,
+      extensionBindings,
     );
   } else {
-    appendFromPrefixHeuristics(trees, treePerkRecords, metadataIndex, plannerNamesBySkill, added);
+    appendFromPrefixHeuristics(
+      trees,
+      treePerkRecords,
+      metadataIndex,
+      plannerNamesBySkill,
+      added,
+      extensionBindings,
+    );
   }
 
   for (const [filename, tree] of Object.entries(trees)) {

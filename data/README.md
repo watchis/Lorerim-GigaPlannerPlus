@@ -36,6 +36,7 @@ data/
     birthsigns.json             # Birthsign / standing stone choices
     deities.json                 # Wintersun deity choices
     character-options.json      # Optional setup toggles (Oghma, Alduin trait, etc.)
+    extension-bindings.json     # Importer registry: perk/option → extensions/ plugin id
     perk-player-level-reqs.json # Perk id → minimum player level (sidecar file)
     perks/
       index.json                # skill id → tree filename
@@ -199,13 +200,14 @@ Picker content under `birthsigns` / `deities`. Each entry has display fields plu
 
 Optional setup choices beyond race/stone/deity.
 
-Each option: `id`, `titleLabel`, `defaultChoice`, `choices[]`.
+Each option: `id`, `titleLabel`, `defaultChoice`, `choices[]`, optional `extension`, optional `controlType` (`select` | `toggle` | `buttons`).
 
 - **`titleLabel` / choice `label`** — keys into `labels.json` → `panels.character-options` (not literal UI text).
-- **`mechanicsBinding`** — e.g. `"oghmaInfinium"` wires choices to `mechanics.oghmaInfinium` (requires paired `attributeStat` + `attributeBonusIndex` on choices).
-- **`grantsTraitSlot`** — when true, the “claimed” choice adds an extra trait slot (Alduin).
+- **`extension`** — references a build-time plugin in [`extensions/character-options/`](../extensions/README.md) for complex rewards (Oghma paths, cap-bypassing skill grants).
+- **`choice.effects`** — simple modifiers (`perkPoints`, `traitSlot`, `attribute`, etc.) when no extension is needed (e.g. Alduin trait slot).
+- **`controlType`** — generic UI when the extension does not supply a custom `Control` component.
 
-Add matching label keys under `labels.panels.character-options` when adding options.
+Add matching label keys under `labels.panels.character-options` when adding options. See **[extensions/README.md](../extensions/README.md)** for plugin authoring.
 
 ### `perk-player-level-reqs.json`
 
@@ -246,7 +248,8 @@ Each perk node:
 | `prerequisites` | yes | Array of perk ids; **all** must be selected |
 | `prerequisitesAny` | no | Array of perk ids; **at least one** must be selected |
 | `description` | yes | Tooltip text; mechanical detail for players |
-| `effects` | yes | Usually `[]`; structured effects if modeled in the planner |
+| `effects` | yes | Usually `[]`; structured effects when modeled in the planner |
+| `extension` | no | References [`extensions/perks/`](../extensions/README.md) for dynamic or non-stat perks (e.g. Haggling, Artifact Enchanter) |
 | `costsPerkPoint` | no | Default `true`; set `false` for free nodes (e.g. Destiny root, some Smithing nodes) |
 | `playerLevelReq` | no | **Avoid inline** — use `perk-player-level-reqs.json` instead |
 
@@ -288,12 +291,22 @@ Used in races, race-effects, traits, standing stones, deities, perks, and charac
 { "type": "flag", "stat": "waterbreathing" }
 ```
 
+```json
+{ "type": "perkPoints", "value": 3 }
+```
+
+```json
+{ "type": "traitSlot", "value": 1 }
+```
+
 - **`attribute`** — `stat` is `health`, `magicka`, or `stamina`; flat bonus to attributes.
 - **`derivedStat`** — `stat` must exist in `stats.json` (or `mechanics.derivedStats` for formula-driven stats). Set `isPercent` when the value is a percentage; omit or match `stats.json` `valueKind`.
 - **`skillPointsPerLevel`** — extra skill points earned each level up.
 - **`flag`** — boolean ability; `stat` id should use `valueKind: "flag"` in `stats.json`.
+- **`perkPoints`** — bonus perk points added to the build budget (character options, etc.).
+- **`traitSlot`** — extra trait slot beyond `manifest.limits.traits`.
 
-Perk `effects` are often empty because mechanical detail lives in `description` text. Populate `effects` when the planner should show the bonus in derived stats or summaries.
+Perk `effects` are often empty because mechanical detail lives in `description` text. Populate `effects` when the planner should show the bonus in derived stats, or add an **`extension`** plugin when logic is dynamic (skill-scaled stats, crafting rules). See [`extensions/README.md`](../extensions/README.md).
 
 ---
 

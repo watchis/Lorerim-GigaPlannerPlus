@@ -187,7 +187,15 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   const transformProgress = progress.track("Transform steps", 5);
 
   transformProgress.tick("Perk trees");
-  const { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs } = transformPerkRecords(
+  const {
+    trees,
+    indexEntries,
+    addedPerks,
+    removedPerks,
+    playerLevelReqs,
+    extensionBindingsApplied,
+    extensionBindingWarnings,
+  } = transformPerkRecords(
     perkRecords,
     perksDir,
     install.installDir,
@@ -202,8 +210,14 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
       (addedPerks.length > 0 ? ` (+${formatCount(addedPerks.length)} new)` : "") +
       (removedPerks.length > 0
         ? ` (−${formatCount(removedPerks.reduce((sum, entry) => sum + entry.count, 0))} removed)`
+        : "") +
+      (extensionBindingsApplied > 0
+        ? ` (${formatCount(extensionBindingsApplied)} extension-linked)`
         : ""),
   );
+  for (const warning of extensionBindingWarnings ?? []) {
+    progress.step(`Warning: ${warning}`);
+  }
 
   transformProgress.tick("Traits");
   const traits = await transformTraitRecords(spellRecords, install, plugins, {

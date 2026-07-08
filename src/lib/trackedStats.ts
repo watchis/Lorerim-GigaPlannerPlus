@@ -1,6 +1,6 @@
 import type { Effect, GameData, Mechanics, Race, StatDefinition } from "@/data/schemas";
 import type { Attributes, BuildState } from "@/engine/buildEngine";
-import { getSelectedCharacterOptionChoice } from "@/lib/characterOptions";
+import { collectBuildChanges } from "@/lib/buildModifications";
 
 export interface BonusSource {
   name: string;
@@ -30,6 +30,8 @@ interface AggregatedEffects {
   attributes: Attributes;
   derivedStats: Record<string, number>;
   skillPointsPerLevel: number;
+  perkPoints: number;
+  traitSlots: number;
   flags: Set<string>;
 }
 
@@ -50,10 +52,20 @@ export function aggregateEffects(effects: Effect[]): AggregatedEffects {
   const derivedStats: Record<string, number> = {};
   const flags = new Set<string>();
   let skillPointsPerLevel = 0;
+  let perkPoints = 0;
+  let traitSlots = 0;
 
   for (const effect of effects) {
     if (effect.type === "skillPointsPerLevel") {
       skillPointsPerLevel += effect.value;
+      continue;
+    }
+    if (effect.type === "perkPoints") {
+      perkPoints += effect.value;
+      continue;
+    }
+    if (effect.type === "traitSlot") {
+      traitSlots += effect.value;
       continue;
     }
     if (effect.type === "flag") {
@@ -67,7 +79,7 @@ export function aggregateEffects(effects: Effect[]): AggregatedEffects {
     derivedStats[effect.stat] = (derivedStats[effect.stat] ?? 0) + effect.value;
   }
 
-  return { attributes, derivedStats, skillPointsPerLevel, flags };
+  return { attributes, derivedStats, skillPointsPerLevel, perkPoints, traitSlots, flags };
 }
 
 function resolveRace(game: GameData, raceId: string | null): Race | undefined {
@@ -166,6 +178,28 @@ function applySourcedEffect(
     return;
   }
 
+  if (effect.type === "perkPoints") {
+    addNumericEntry(totals, "perkPoints", effect.value);
+    addBonusSource(sources, "perkPoints", {
+      name: source.name,
+      labelKey: source.labelKey,
+      value: effect.value,
+      valueKind: "flat",
+    });
+    return;
+  }
+
+  if (effect.type === "traitSlot") {
+    addNumericEntry(totals, "traitSlots", effect.value);
+    addBonusSource(sources, "traitSlots", {
+      name: source.name,
+      labelKey: source.labelKey,
+      value: effect.value,
+      valueKind: "flat",
+    });
+    return;
+  }
+
   if (effect.type === "flag") {
     addBonusSource(sources, effect.stat, {
       name: source.name,
@@ -221,89 +255,9 @@ function computeAttributeDerivedValue(
   return Math.round(base * 100) / 100;
 }
 
-function addCharacterOptionMechanicsAttributeSources(
-  game: GameData,
-  state: BuildState,
-  totals: Map<string, number>,
-  sources: Map<string, BonusSource[]>,
-): void {
-  for (const option of game.characterOptions) {
-    if (!option.mechanicsBinding) continue;
-
-    const choice = getSelectedCharacterOptionChoice(option, state.characterOptionChoices);
-    if (choice.id === option.defaultChoice) continue;
-    if (choice.attributeStat === undefined || choice.attributeBonusIndex === undefined) continue;
-
-    const profile = game.mechanics[option.mechanicsBinding];
-    const bonus = profile.attributeBonus[choice.attributeBonusIndex] ?? 0;
-    if (bonus === 0) continue;
-
-    addNumericEntry(totals, choice.attributeStat, bonus);
-    addBonusSource(sources, choice.attributeStat, {
-      name: option.titleLabel,
-      labelKey: option.titleLabel,
-      value: bonus,
-      valueKind: "flat",
-    });
-  }
-}
 
 export function collectSourcedEffects(game: GameData, state: BuildState): SourcedEffect[] {
-  const sourced: SourcedEffect[] = [];
-
-  const race = resolveRace(game, state.raceId);
-  if (race) {
-    for (const effect of race.effects) {
-      sourced.push({ source: race.name, effect });
-    }
-  }
-
-  const birthsign = game.birthsigns.find((entry) => entry.id === state.birthsignId);
-  if (birthsign) {
-    for (const effect of birthsign.effects) {
-      sourced.push({ source: birthsign.name, effect });
-    }
-  }
-
-  const deity = game.deities.find((entry) => entry.id === state.deityId);
-  if (deity) {
-    for (const effect of deity.effects) {
-      sourced.push({ source: deity.name, effect });
-    }
-  }
-
-  for (const traitId of state.traitIds) {
-    const trait = game.traits.find((entry) => entry.id === traitId);
-    if (!trait) continue;
-    for (const effect of trait.effects) {
-      sourced.push({ source: trait.name, effect });
-    }
-  }
-
-  for (const option of game.characterOptions) {
-    const choice = getSelectedCharacterOptionChoice(option, state.characterOptionChoices);
-    if (choice.id === option.defaultChoice) continue;
-    if (!choice.effects) continue;
-    for (const effect of choice.effects) {
-      sourced.push({
-        source: option.titleLabel,
-        labelKey: option.titleLabel,
-        effect,
-      });
-    }
-  }
-
-  for (const perkId of state.selectedPerkIds) {
-    for (const tree of Object.values(game.perkTrees)) {
-      const perk = tree.perks.find((entry) => entry.id === perkId);
-      if (!perk) continue;
-      for (const effect of perk.effects) {
-        sourced.push({ source: perk.name, effect });
-      }
-    }
-  }
-
-  return sourced;
+  return collectBuildChanges(game, state).sourcedEffects;
 }
 
 export function computeTrackedStats(
@@ -339,8 +293,6 @@ export function computeTrackedStats(
       });
     }
   }
-
-  addCharacterOptionMechanicsAttributeSources(game, state, totals, sources);
 
   for (const { source, labelKey, effect } of sourcedEffects) {
     applySourcedEffect(game, totals, sources, effect, { name: source, labelKey });
