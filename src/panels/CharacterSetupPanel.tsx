@@ -255,6 +255,8 @@ export function CharacterSetupPanel() {
       <CardHeader
         className={cn(
           "flex shrink-0 flex-row items-center justify-between space-y-0",
+          !stackedLayout &&
+            "sticky top-0 z-10 bg-[var(--color-surface)]/95 backdrop-blur-sm border-b border-[var(--color-border)]/50",
           stackedLayout
             ? "border-b border-[var(--color-border)]/50 px-3 py-2.5"
             : compact
