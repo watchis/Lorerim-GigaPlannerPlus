@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -12,11 +12,20 @@ import { BUG_REPORT_URL } from "@/lib/bugReport";
 
 const appData = getTestAppData();
 
+async function flushDeferredOutsideListener() {
+  await act(async () => {
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 0);
+    });
+  });
+}
+
 describe("AppShell mobile navigation", () => {
   let container: HTMLDivElement | null = null;
   let root: Root | null = null;
 
   afterEach(() => {
+    vi.useRealTimers();
     if (root) {
       act(() => root?.unmount());
     }
@@ -59,7 +68,7 @@ describe("AppShell mobile navigation", () => {
     expect(reportLink?.getAttribute("rel")).toBe("noopener noreferrer");
   });
 
-  it("closes the mobile menu when clicking outside of it", () => {
+  it("closes the mobile menu when clicking outside of it", async () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -87,6 +96,8 @@ describe("AppShell mobile navigation", () => {
 
     expect(document.getElementById("mobile-nav")).toBeTruthy();
 
+    await flushDeferredOutsideListener();
+
     const main = document.querySelector("main");
     expect(main).toBeTruthy();
 
@@ -98,7 +109,7 @@ describe("AppShell mobile navigation", () => {
     expect(document.querySelector('button[aria-label="Open menu"]')).toBeTruthy();
   });
 
-  it("processes outside clicks before closing the mobile menu", () => {
+  it("processes outside clicks before closing the mobile menu", async () => {
     let outsideClicked = false;
 
     container = document.createElement("div");
@@ -143,6 +154,8 @@ describe("AppShell mobile navigation", () => {
       menuButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
+    await flushDeferredOutsideListener();
+
     const outsideTarget = document.querySelector('[data-testid="outside-target"]');
     expect(outsideTarget).toBeTruthy();
 
@@ -152,5 +165,130 @@ describe("AppShell mobile navigation", () => {
 
     expect(outsideClicked).toBe(true);
     expect(document.getElementById("mobile-nav")).toBeNull();
+  });
+
+  function getMenuButton() {
+    return document.querySelector(
+      'button[aria-label="Open menu"], button[aria-label="Close menu"]',
+    );
+  }
+
+  it("can be reopened after being opened and closed via the toggle", () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(
+        createElement(
+          ThemeProvider,
+          { theme: appData.ui.theme, labels: appData.ui.labels },
+          createElement(
+            MemoryRouter,
+            { initialEntries: ["/"] },
+            createElement(AppShell),
+          ),
+        ),
+      );
+    });
+
+    act(() => {
+      getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeTruthy();
+
+    act(() => {
+      getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeNull();
+
+    act(() => {
+      getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeTruthy();
+  });
+
+  it("can be reopened after being opened and closed via an outside click", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(
+        createElement(
+          ThemeProvider,
+          { theme: appData.ui.theme, labels: appData.ui.labels },
+          createElement(
+            MemoryRouter,
+            { initialEntries: ["/"] },
+            createElement(AppShell),
+          ),
+        ),
+      );
+    });
+
+    act(() => {
+      getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeTruthy();
+
+    await flushDeferredOutsideListener();
+
+    act(() => {
+      document.querySelector("main")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeNull();
+
+    act(() => {
+      getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeTruthy();
+  });
+
+  describe("deferred outside click listener", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("does not attach until after the opening click", () => {
+    vi.useFakeTimers();
+
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(
+        createElement(
+          ThemeProvider,
+          { theme: appData.ui.theme, labels: appData.ui.labels },
+          createElement(
+            MemoryRouter,
+            { initialEntries: ["/"] },
+            createElement(AppShell),
+          ),
+        ),
+      );
+    });
+
+    act(() => {
+      getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeTruthy();
+
+    act(() => {
+      document.querySelector("main")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeTruthy();
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    act(() => {
+      document.querySelector("main")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(document.getElementById("mobile-nav")).toBeNull();
+    });
   });
 });

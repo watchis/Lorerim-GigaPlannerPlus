@@ -40,9 +40,16 @@ export function AppShell() {
       setMobileNavOpen(false);
     };
 
+    let cancelled = false;
+    const listenerTimeout = window.setTimeout(() => {
+      if (cancelled) return;
+      document.addEventListener("click", handleOutsideClick);
+    }, 0);
+
     window.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("click", handleOutsideClick);
     return () => {
+      cancelled = true;
+      window.clearTimeout(listenerTimeout);
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("click", handleOutsideClick);
@@ -108,7 +115,10 @@ export function AppShell() {
             aria-expanded={mobileNavOpen}
             aria-controls="mobile-nav"
             aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-            onClick={() => setMobileNavOpen((open) => !open)}
+            onClick={(event) => {
+              event.stopPropagation();
+              setMobileNavOpen((open) => !open);
+            }}
           >
             {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
