@@ -49,6 +49,8 @@ export interface ExportedLibrary {
     build: BuildState;
     defaultVariantName?: string;
     defaultVariantNotes?: string;
+    /** Per-build modpack version (newer format). */
+    modpackVersion?: string;
     milestones?: ExportedMilestone[];
     updatedAt: number;
   }>;
@@ -140,6 +142,7 @@ export function createExportedLibrary(
       ...(entry.defaultVariantNotes?.trim() ? { defaultVariantNotes: entry.defaultVariantNotes } : {}),
       ...(entry.milestones.length > 0 ? { milestones: serializeMilestones(entry.milestones) } : {}),
       updatedAt: entry.updatedAt,
+      modpackVersion: entry.modpackVersion ?? modpackVersion,
     })),
     exportedAt: new Date().toISOString(),
   };

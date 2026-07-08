@@ -596,7 +596,7 @@ export function VariantsManagerPanel() {
       }
 
       const exported = parseExportedVariant(data);
-      importVariant(exported.build, exported.name, exported.notes);
+      importVariant(exported.build, exported.name, exported.notes, exported.modpackVersion);
       showImportSuccess(labels.importedVariant);
     } catch (error) {
       setImportError(error instanceof Error ? error.message : labels.importError);
@@ -615,9 +615,10 @@ export function VariantsManagerPanel() {
     const name = getVariantName(entry, variantId);
     const build = getVariantBuild(entry, variantId);
     const notes = getVariantNotes(entry, variantId);
+    const effectiveModpackVersion = entry.modpackVersion ?? modpackVersion;
     downloadBackupFile(
       buildBackupFilename(name),
-      createExportedVariant(name, build, modpackVersion, notes),
+      createExportedVariant(name, build, effectiveModpackVersion, notes),
     );
   };
 
