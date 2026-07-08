@@ -71,8 +71,8 @@ export function SkillTreesSidebarPanel() {
   return (
     <Card
       className={cn(
-        "flex flex-col overflow-hidden",
-        stackedLayout ? "min-h-0 flex-1" : "h-fit max-h-full",
+        "flex flex-col",
+        stackedLayout ? "min-h-0 flex-1 overflow-hidden" : "h-fit max-h-full overflow-visible",
       )}
     >
       <CardHeader
