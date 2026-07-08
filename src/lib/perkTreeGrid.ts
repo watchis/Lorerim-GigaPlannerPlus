@@ -266,7 +266,22 @@ export function getVisiblePerksForTree(tree: PerkTree, selectedPerkIds: string[]
 
 export interface PerkStackRank {
   current: number;
-  total: number;
+  /** Fixed maximum for multi-rank perk stacks. */
+  total?: number;
+  /** Unbounded denominator for repeatable allocations (`X` or `∞`). */
+  unbounded?: "X" | "infinity";
+}
+
+export function formatPerkStackRank(rank: PerkStackRank): string {
+  const denominator =
+    rank.unbounded === "infinity" ? "∞" : rank.unbounded === "X" ? "X" : String(rank.total ?? 0);
+  return `${rank.current}/${denominator}`;
+}
+
+/** Whether another rank or allocation can still be added. */
+export function canUpgradePerkStackRank(rank: PerkStackRank, canAllocateMore: boolean): boolean {
+  if (rank.unbounded) return canAllocateMore;
+  return rank.total !== undefined && rank.current < rank.total;
 }
 
 /** Rank indicator for multi-level perks; returns null for single-rank nodes. */
@@ -289,27 +304,16 @@ export function getPerkStackRank(perks: Perk[], selectedPerkIds: string[]): Perk
  * Rank indicator for perks that can be allocated multiple times.
  *
  * The planner stores multiple allocations by repeating the perk id in
- * `BuildState.selectedPerkIds`. When `perk.allocation.kind` is
- * `perkPointsBudget`, each allocation costs one perk point (respecting
- * `perk.costsPerkPoint`) and the maximum allocatable total is derived from
- * the current perk-point budget.
+ * `BuildState.selectedPerkIds`. The denominator is a symbolic unbounded label
+ * (`X` or `∞`), not a computed perk-point cap.
  */
-export function getPerkAllocationRank(
-  perk: Perk,
-  selectedPerkIds: string[],
-  perkPointsRemaining: number,
-): PerkStackRank | null {
+export function getPerkAllocationRank(perk: Perk, selectedPerkIds: string[]): PerkStackRank | null {
   if (perk.allocation?.kind !== "perkPointsBudget") return null;
 
   const current = selectedPerkIds.filter((id) => id === perk.id).length;
+  const unbounded = perk.allocation.totalLabel ?? "X";
 
-  if (!perk.costsPerkPoint) {
-    // Budget is irrelevant when the perk does not cost points.
-    return { current, total: current };
-  }
-
-  const total = Math.max(current, current + perkPointsRemaining);
-  return { current, total };
+  return { current, unbounded };
 }
 
 /** Next tier after the highest selected rank at this stack position. */

@@ -7,6 +7,7 @@ import {
   getPerkAllocationRank,
   getPerkPositionKey,
   getPerkStackRank,
+  canUpgradePerkStackRank,
   getPerkTreeCompactViewBox,
   getPerkTreeGridBounds,
   getVisiblePerksForTree,
@@ -153,8 +154,16 @@ export function PerkTreeMiniView({
     const keys = new Set<string>();
     for (const [positionKey, stack] of stacksByPosition) {
       const stackRank =
-        stack.length > 1 ? getPerkStackRank(stack, selectedPerkIds) : getPerkAllocationRank(stack[0], selectedPerkIds, perkPointsRemaining);
-      if (stackRank && stackRank.current > 0 && stackRank.current < stackRank.total) {
+        stack.length > 1
+          ? getPerkStackRank(stack, selectedPerkIds)
+          : getPerkAllocationRank(stack[0], selectedPerkIds);
+      if (!stackRank || stackRank.current <= 0) continue;
+
+      const canAllocateMore = stackRank.unbounded
+        ? perkPointsRemaining > 0
+        : stackRank.total !== undefined && stackRank.current < stackRank.total;
+
+      if (canUpgradePerkStackRank(stackRank, canAllocateMore)) {
         keys.add(positionKey);
       }
     }

@@ -330,6 +330,8 @@ export const perkSchema = z.object({
   allocation: z
     .object({
       kind: z.literal("perkPointsBudget"),
+      /** Denominator shown in rank badges: literal `X` or infinity (`∞`). */
+      totalLabel: z.enum(["X", "infinity"]).optional(),
     })
     .optional(),
   position: z.object({ x: z.number().int(), y: z.number().int() }),

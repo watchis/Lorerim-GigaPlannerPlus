@@ -470,10 +470,10 @@ function PerkTreeView({
       {paintOrderedPerks.map((perk, index) => {
         const positionKey = getPerkPositionKey(perk.position);
         const stack = stacksByPosition.get(positionKey) ?? [perk];
-          const stackRank =
-            stack.length > 1
-              ? getPerkStackRank(stack, build.selectedPerkIds)
-              : getPerkAllocationRank(perk, build.selectedPerkIds, perkPointsRemaining);
+        const stackRank =
+          stack.length > 1
+            ? getPerkStackRank(stack, build.selectedPerkIds)
+            : getPerkAllocationRank(perk, build.selectedPerkIds);
         const nextRank = getNextRankInStack(stack, build.selectedPerkIds);
         const isSelected = build.selectedPerkIds.includes(perk.id);
         const prereqsMet = arePrerequisitesMet(gameData.game, build, perk);
@@ -513,6 +513,8 @@ function PerkTreeView({
 
         const isAvailable = !isSelected && prereqsMet && meetsPerkReq;
         const isLocked = !isSelected && (!prereqsMet || !meetsPerkReq);
+        const canUpgradeRank =
+          isSelected && (stackRank?.unbounded ? prereqsMet && meetsPerkReq : nextRank !== undefined);
 
         return (
           <PerkNode
@@ -523,6 +525,7 @@ function PerkTreeView({
             badgeRequirements={nodeBadgeRequirements}
             takeTargetId={takeTargetId}
             stackRank={stackRank}
+            canUpgradeRank={canUpgradeRank}
             nextRank={nextRank}
             isSelected={isSelected}
             isAvailable={isAvailable}
