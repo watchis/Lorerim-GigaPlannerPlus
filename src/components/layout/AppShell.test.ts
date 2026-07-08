@@ -20,6 +20,11 @@ async function flushDeferredOutsideListener() {
   });
 }
 
+function isMobileMenuOpen(): boolean {
+  const nav = document.getElementById("mobile-nav");
+  return nav != null && !nav.hasAttribute("hidden");
+}
+
 describe("AppShell mobile navigation", () => {
   let container: HTMLDivElement | null = null;
   let root: Root | null = null;
@@ -94,7 +99,7 @@ describe("AppShell mobile navigation", () => {
       menuButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(document.getElementById("mobile-nav")).toBeTruthy();
+    expect(isMobileMenuOpen()).toBe(true);
 
     await flushDeferredOutsideListener();
 
@@ -105,7 +110,7 @@ describe("AppShell mobile navigation", () => {
       main?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(document.getElementById("mobile-nav")).toBeNull();
+    expect(isMobileMenuOpen()).toBe(false);
     expect(document.querySelector('button[aria-label="Open menu"]')).toBeTruthy();
   });
 
@@ -164,7 +169,7 @@ describe("AppShell mobile navigation", () => {
     });
 
     expect(outsideClicked).toBe(true);
-    expect(document.getElementById("mobile-nav")).toBeNull();
+    expect(isMobileMenuOpen()).toBe(false);
   });
 
   function getMenuButton() {
@@ -195,17 +200,17 @@ describe("AppShell mobile navigation", () => {
     act(() => {
       getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeTruthy();
+    expect(isMobileMenuOpen()).toBe(true);
 
     act(() => {
       getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeNull();
+    expect(isMobileMenuOpen()).toBe(false);
 
     act(() => {
       getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeTruthy();
+    expect(isMobileMenuOpen()).toBe(true);
   });
 
   it("can be reopened after being opened and closed via an outside click", async () => {
@@ -230,19 +235,19 @@ describe("AppShell mobile navigation", () => {
     act(() => {
       getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeTruthy();
+    expect(isMobileMenuOpen()).toBe(true);
 
     await flushDeferredOutsideListener();
 
     act(() => {
       document.querySelector("main")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeNull();
+    expect(isMobileMenuOpen()).toBe(false);
 
     act(() => {
       getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeTruthy();
+    expect(isMobileMenuOpen()).toBe(true);
   });
 
   describe("deferred outside click listener", () => {
@@ -274,12 +279,12 @@ describe("AppShell mobile navigation", () => {
     act(() => {
       getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeTruthy();
+    expect(isMobileMenuOpen()).toBe(true);
 
     act(() => {
       document.querySelector("main")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeTruthy();
+    expect(isMobileMenuOpen()).toBe(true);
 
     act(() => {
       vi.runAllTimers();
@@ -288,7 +293,54 @@ describe("AppShell mobile navigation", () => {
     act(() => {
       document.querySelector("main")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(document.getElementById("mobile-nav")).toBeNull();
+    expect(isMobileMenuOpen()).toBe(false);
     });
+  });
+
+  it("closes the mobile menu after navigating via a nav link", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(
+        createElement(
+          ThemeProvider,
+          { theme: appData.ui.theme, labels: appData.ui.labels },
+          createElement(
+            MemoryRouter,
+            { initialEntries: ["/"] },
+            createElement(
+              Routes,
+              null,
+              createElement(
+                Route,
+                { element: createElement(AppShell) },
+                createElement(Route, { index: true, element: createElement("div", null, "home") }),
+                createElement(Route, {
+                  path: "planner",
+                  element: createElement("div", null, "planner"),
+                }),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+
+    act(() => {
+      getMenuButton()?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(isMobileMenuOpen()).toBe(true);
+
+    const plannerLink = document.querySelector('a[href="/planner"]');
+    expect(plannerLink).toBeTruthy();
+
+    await act(async () => {
+      plannerLink?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(isMobileMenuOpen()).toBe(false);
+    expect(document.body.textContent).toContain("planner");
   });
 });
