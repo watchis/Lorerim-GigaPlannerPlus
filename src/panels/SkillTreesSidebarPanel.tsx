@@ -72,7 +72,7 @@ export function SkillTreesSidebarPanel() {
     maxColumns: stackedLayout ? 3 : 4,
   });
   const gridColumns =
-    gridWidth > 0 && gridWidth <= 250
+    gridWidth > 0 && gridWidth <= 300
       ? 2
       : useThreeColumnLayout
         ? 3
@@ -132,7 +132,7 @@ export function SkillTreesSidebarPanel() {
           style={{
             gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
             // Prevent the mini perk tree preview from collapsing when the viewport is short.
-            gridAutoRows: "minmax(150px, auto)",
+            gridAutoRows: "minmax(145px, auto)",
           }}
         >
           {trees.map((tree) => {
@@ -168,7 +168,7 @@ export function SkillTreesSidebarPanel() {
                 }}
                 className={cn(
                   "grid grid-rows-[auto_minmax(0,1fr)] gap-1 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
-                  "min-h-[150px]",
+                  "min-h-[145px]",
                   compact ? "p-1" : "p-1.5",
                   hasProblem &&
                     "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
