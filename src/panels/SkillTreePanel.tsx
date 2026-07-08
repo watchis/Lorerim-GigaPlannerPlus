@@ -95,8 +95,9 @@ function SkillTreeTrainingIndicator({
     >
       <span
         className={cn(
-          "mt-px h-2 w-2 shrink-0 rounded-full animate-pulse",
+          "mt-px h-2 w-2 shrink-0 rounded-full",
           overBudget ? "bg-[var(--color-error)]" : "bg-[var(--color-accent)]",
+          overBudget ? "animate-pulse" : undefined,
         )}
         role="img"
         aria-label={label}

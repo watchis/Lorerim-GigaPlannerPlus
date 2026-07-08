@@ -189,8 +189,9 @@ export function SkillTreesSidebarPanel() {
                       {hasTraining && (
                         <span
                           className={cn(
-                            "mt-px h-1.5 w-1.5 shrink-0 rounded-full animate-pulse",
+                            "mt-px h-1.5 w-1.5 shrink-0 rounded-full",
                             trainingOverBudget ? "bg-[var(--color-error)]" : "bg-[var(--color-accent)]",
+                            trainingOverBudget ? "animate-pulse" : undefined,
                           )}
                           aria-hidden="true"
                         />
