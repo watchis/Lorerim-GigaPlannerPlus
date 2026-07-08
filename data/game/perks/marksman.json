@@ -80,7 +80,7 @@
       "prerequisites": [
         "marksman-eagle-eye"
       ],
-      "description": "You have learned to draw and fire in one single movement. [+50% draw speed with heavy bows, +100% with light bows]",
+      "description": "You have learned to draw and fire in one single movement. [+60% draw speed with heavy bows, +120% with light bows]",
       "effects": [],
       "prerequisitesAny": []
     },
@@ -95,7 +95,7 @@
       "prerequisites": [
         "marksman-eagle-eye"
       ],
-      "description": "Your have familiarized yourself with the mechanics of your crossbow. [+50% reload speed with heavy crossbows, +100% with light crossbows]",
+      "description": "Your have familiarized yourself with the mechanics of your crossbow. [+40% reload speed with heavy crossbows, +80% with light crossbows, +25% crossbow tempering]",
       "effects": [],
       "prerequisitesAny": []
     },

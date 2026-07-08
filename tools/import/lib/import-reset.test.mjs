@@ -232,11 +232,55 @@ assert.equal(orcish.id, "smithing-orcish-smithing");
 assert.deepEqual(orcish.prerequisites, []);
 assert.deepEqual(orcish.prerequisitesAny, ["smithing-light", "smithing-dwarven"]);
 
+writeFileSync(
+  join(perksDir, "enchanting.json"),
+  JSON.stringify({
+    skillId: "enchanting",
+    perks: [
+      {
+        id: "enchanting-artifact-enchanter",
+        name: "Artifact Enchanter",
+        skillReq: 100,
+        allocation: { kind: "perkPointsBudget" },
+        position: { x: 9, y: 0 },
+        prerequisites: ["enchanting-enchantment-mastery"],
+        prerequisitesAny: [],
+      },
+    ],
+  }),
+);
+
+const allocationSnapshots = loadPerkGraphSnapshots(perksDir);
+const allocationTrees = {
+  "enchanting.json": {
+    skillId: "enchanting",
+    perks: [
+      {
+        id: "enchanting-generated-artifact",
+        name: "Artifact Enchanter",
+        skillReq: 100,
+        position: { x: 9, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: [],
+      },
+    ],
+  },
+};
+applyPerkGraphSnapshots(allocationTrees, allocationSnapshots);
+assert.deepEqual(allocationTrees["enchanting.json"].perks[0].allocation, {
+  kind: "perkPointsBudget",
+});
+
 mkdirSync(join(perksDir, "nested"), { recursive: true });
 writeFileSync(join(perksDir, "orphan.json"), "{}");
 writeFileSync(join(perksDir, "smithing.json"), readFileSync(join(perksDir, "smithing.json")));
 
-const removed = removeStalePerkFiles(perksDir, ["smithing.json", "block.json", "destiny.json"]);
+const removed = removeStalePerkFiles(perksDir, [
+  "smithing.json",
+  "block.json",
+  "destiny.json",
+  "enchanting.json",
+]);
 assert.deepEqual(removed, ["orphan.json"]);
 assert.ok(!existsSync(join(perksDir, "orphan.json")));
 
