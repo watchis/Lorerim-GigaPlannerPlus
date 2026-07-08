@@ -83,6 +83,8 @@ npm run regen:effects
 
 Run after bulk text changes to refresh `effects` arrays in `data/game/`. Extension perks skip runtime parsing when `extension` is set.
 
+Importer wiring: add perk bindings to [`data/game/extension-bindings.json`](../data/game/extension-bindings.json) so `import:lorerim` sets `"extension"` on the matching perk node. Character options set `extension` directly in `character-options.json` (import validates against the same registry).
+
 ## API evolution
 
 New engine capabilities (new modification types) require a one-time change to `src/extension-api/` and the build collector. Extensions cannot invent semantics the API does not expose.

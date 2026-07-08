@@ -44,6 +44,10 @@ for (const file of readdirSync(perksDir).filter(
   const path = join(perksDir, file);
   const tree = JSON.parse(readFileSync(path, "utf8"));
   for (const perk of tree.perks) {
+    if (perk.extension) {
+      perk.effects = perk.effects ?? [];
+      continue;
+    }
     perk.effects = parseBonusEffects(perk.description ?? "");
   }
   writeJson(path, tree);

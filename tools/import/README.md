@@ -122,7 +122,28 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 - `data/game/stats.json`
 - `data/game/skills.json`
 - `data/game/character-options.json`
+- `data/game/extension-bindings.json` — registry linking perks/options to extension plugins (applied during import; not generated from plugins)
 - `data/ui/*`
+
+### Extension plugins
+
+Complex perks and character options use build-time TypeScript plugins under [`extensions/`](../../extensions/README.md). The importer wires perk JSON to those plugins via [`data/game/extension-bindings.json`](../../data/game/extension-bindings.json):
+
+| Step | What happens |
+|------|----------------|
+| Bindings registry | Maps `skillId` + perk name (or character `optionId`) → `extension` id |
+| Perk import | After layout/graph merge, `applyPerkExtensionBindings` sets `extension` on matching nodes and clears `effects` |
+| Graph snapshots | Existing `extension` fields survive perk rebuilds |
+| `regen:effects` | Skips perks with `extension` set |
+| Validation | Import warns when bindings, JSON, or `extensions/*.ts` files drift |
+
+To add a new extension-backed perk after creating `extensions/perks/<id>.ts`:
+
+1. Add an entry to `extension-bindings.json` (`skillId`, `name`, `extension`).
+2. Re-run `import:lorerim` (or hand-set `"extension"` on the perk node).
+3. Run `npm run regen:extension-stub` if you still need the plugin scaffold.
+
+Character options keep `extension` in `character-options.json` (never overwritten); bindings validate that file at import time.
 
 ---
 
@@ -146,6 +167,7 @@ tools/import/
     giga-planner-layout.json # static legacy layout coordinates
     import-progress.mjs    # CLI progress reporting helpers
     import-reset.mjs       # empty perk shells, hand-tuned overrides, layout preservation, stale file cleanup
+    extension-bindings.mjs # perk/option → extension plugin registry (reads data/game/extension-bindings.json)
     lorerim-install.mjs    # MO2 discovery, loadorder.txt, plugin paths
     lorerim-transform.mjs  # plugin records → planner JSON
     lorerim-version.mjs    # modpack version from Wabbajack + install fingerprints

@@ -1,0 +1,20 @@
+{
+  "perks": [
+    {
+      "skillId": "speech",
+      "name": "Haggling",
+      "extension": "speech-haggling"
+    },
+    {
+      "skillId": "enchanting",
+      "name": "Artifact Enchanter",
+      "extension": "enchanting-artifact-enchanter"
+    }
+  ],
+  "characterOptions": [
+    {
+      "optionId": "oghma-infinium",
+      "extension": "oghma-infinium"
+    }
+  ]
+}

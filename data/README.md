@@ -36,6 +36,7 @@ data/
     birthsigns.json             # Birthsign / standing stone choices
     deities.json                 # Wintersun deity choices
     character-options.json      # Optional setup toggles (Oghma, Alduin trait, etc.)
+    extension-bindings.json     # Importer registry: perk/option → extensions/ plugin id
     perk-player-level-reqs.json # Perk id → minimum player level (sidecar file)
     perks/
       index.json                # skill id → tree filename
