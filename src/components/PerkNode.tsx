@@ -16,6 +16,7 @@ import {
   PERK_DOUBLE_TAP_MS,
   PERK_TOOLTIP_DELAY_MS,
   perkAbbreviation,
+  resolvePerkSearchMatchGlow,
 } from "@/lib/perkTreeViewLayout";
 import {
   DEFAULT_PERK_BADGE_PLACEMENT,
@@ -291,6 +292,7 @@ export function PerkNode({
     isSelected && stackRank !== null && stackRank.current < stackRank.total;
 
   const labelFontPx = Math.max(8, Math.round(nodeDiameterPx * 0.30));
+  const searchMatchGlow = isSearchMatch ? resolvePerkSearchMatchGlow(nodeDiameterPx) : null;
   const circleClassName = cn(
     "flex shrink-0 items-center justify-center rounded-full border-2 font-semibold leading-none transition-all",
     isConflict &&
@@ -315,8 +317,7 @@ export function PerkNode({
       isLocked &&
       !isSelected &&
       "border-[var(--color-perk-locked)] bg-[var(--color-surface)]/80 text-[var(--color-muted)] opacity-55 group-hover:opacity-80",
-    isSearchMatch &&
-      "drop-shadow-[0_0_7px_rgba(255,255,255,0.95)] drop-shadow-[0_0_14px_rgba(255,255,255,0.65)] animate-pulse",
+    isSearchMatch && "animate-pulse",
   );
 
   const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements, {
@@ -430,7 +431,12 @@ export function PerkNode({
           ref={circleRef}
           data-perk-circle
           className={circleClassName}
-          style={{ width: nodeDiameterPx, height: nodeDiameterPx, fontSize: labelFontPx }}
+          style={{
+            width: nodeDiameterPx,
+            height: nodeDiameterPx,
+            fontSize: labelFontPx,
+            ...(searchMatchGlow ? { filter: searchMatchGlow.filter } : {}),
+          }}
         >
           <span className="leading-none">{perkAbbreviation(perk.name)}</span>
         </span>

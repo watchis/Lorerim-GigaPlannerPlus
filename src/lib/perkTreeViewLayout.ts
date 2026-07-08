@@ -7,6 +7,11 @@ import {
 export const GRID_UNIT_PX = 26;
 export const BASE_NODE_DIAMETER_PX = 32;
 export const MIN_NODE_DIAMETER_PX = 14;
+/** Default inner/outer blur radii for perk search glow at {@link BASE_NODE_DIAMETER_PX}. */
+export const PERK_SEARCH_MATCH_GLOW_INNER_BLUR_PX = 7;
+export const PERK_SEARCH_MATCH_GLOW_OUTER_BLUR_PX = 14;
+export const PERK_SEARCH_MATCH_GLOW_INNER_OPACITY = 1;
+export const PERK_SEARCH_MATCH_GLOW_OUTER_OPACITY = 0.72;
 /** Extra padding between perk tree content and the viewport edge in full-tree view. */
 export const TREE_VIEW_EDGE_PADDING_PX = 6;
 export const MIN_TREE_ZOOM = 1;
@@ -317,6 +322,22 @@ export function resolvePerkTooltipScale(
     ? Math.min(1, Math.max(0.85, viewportMinDim / 460))
     : 1;
   return Math.min(1, Math.max(0.8, nodeFactor * screenFactor));
+}
+
+export interface PerkSearchMatchGlow {
+  innerBlurPx: number;
+  outerBlurPx: number;
+  filter: string;
+}
+
+export function resolvePerkSearchMatchGlow(nodeDiameterPx: number): PerkSearchMatchGlow {
+  const scale = nodeDiameterPx / BASE_NODE_DIAMETER_PX;
+  const innerBlurPx = Math.max(1, PERK_SEARCH_MATCH_GLOW_INNER_BLUR_PX * scale);
+  const outerBlurPx = Math.max(innerBlurPx + 1, PERK_SEARCH_MATCH_GLOW_OUTER_BLUR_PX * scale);
+  const filter =
+    `drop-shadow(0 0 ${innerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_INNER_OPACITY})) ` +
+    `drop-shadow(0 0 ${outerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_OUTER_OPACITY}))`;
+  return { innerBlurPx, outerBlurPx, filter };
 }
 
 export function clampTreeViewTransform(
