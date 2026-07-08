@@ -92,7 +92,7 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
                     return (
                       <div
                         key={panelId}
-                        className={cn(fullHeight && "flex min-h-0 flex-col max-h-full")}
+                        className={cn(fullHeight && "flex min-h-0 flex-1 flex-col")}
                       >
                         <Panel />
                       </div>
