@@ -22,6 +22,7 @@ describe("loadExtensions", () => {
 
   it("includes extension modules in the production bundle", async () => {
     const result = await build({
+      configFile: false,
       root: projectRoot,
       plugins: [react()],
       resolve: {
