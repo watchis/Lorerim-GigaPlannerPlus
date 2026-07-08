@@ -5,7 +5,7 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { getSkillGridColumnCount, useContainerSize } from "@/lib/useContainerSize";
+import { useContainerSize } from "@/lib/useContainerSize";
 import { PickerSearchInput } from "@/components/PickerSearchInput";
 import {
   getBuildPlayerLevelWarnings,
@@ -27,6 +27,7 @@ import {
   usePlannerStackedLayout,
   usePlannerThreeColumnLayout,
 } from "@/layout/plannerLayout";
+import { getSkillTreesSidebarGridColumns } from "@/lib/skillTreesSidebarGrid";
 
 const RESET_ICON_ONLY_MAX_WIDTH = 280;
 const CENTER_SWIPE_PANE_INDEX = 1;
@@ -67,12 +68,13 @@ export function SkillTreesSidebarPanel() {
   const skillIncreaseConflictIds = new Set(skillIncreases.map((skill) => skill.skillId));
 
   const { ref: gridContainerRef, width: gridWidth } = useContainerSize<HTMLDivElement>();
-  const responsiveColumns = getSkillGridColumnCount(gridWidth, {
-    // Keep cards readable: cap at 3 columns and fall back to 2 when cards get too narrow.
-    minCellWidth: stackedLayout ? 120 : 120,
-    maxColumns: 3,
+  const gapPx = compact ? 4 : 6; // tailwind: gap-1=4px, gap-1.5=6px
+  const originalCardWidthPx = stackedLayout ? 120 : 100;
+  const gridColumns = getSkillTreesSidebarGridColumns({
+    containerWidthPx: gridWidth,
+    gapPx,
+    originalCardWidthPx,
   });
-  const gridColumns = useThreeColumnLayout ? 3 : responsiveColumns;
   const trainingOverBudget = (computed?.trainingLevelsRemaining ?? 0) < 0;
   const perkSearchTokens = useMemo(() => getPerkSearchTokens(perkSearchQuery), [perkSearchQuery]);
   const perkSearchPositionKeysBySkillId = useMemo(
