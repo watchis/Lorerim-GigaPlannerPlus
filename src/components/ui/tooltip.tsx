@@ -10,6 +10,7 @@ import {
   type ComponentPropsWithoutRef,
   type CSSProperties,
   type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -75,7 +76,9 @@ function setActiveTouchTooltipId(next: string | null) {
 function subscribeActiveTouchTooltipId(listener: ActiveTouchTooltipListener) {
   activeTouchTooltipListeners.add(listener);
   listener(activeTouchTooltipId);
-  return () => activeTouchTooltipListeners.delete(listener);
+  return () => {
+    activeTouchTooltipListeners.delete(listener);
+  };
 }
 
 export function claimExclusiveTouchOverlay(id: string) {
@@ -170,7 +173,7 @@ export function HoverTapTooltip({
     setTouchPosition(resolved);
   }, [supportsHover, open, side, align, content]);
 
-  const handleTouchToggle = (event: PointerEvent) => {
+  const handleTouchToggle = (event: ReactPointerEvent<HTMLSpanElement>) => {
     if (supportsHover) return;
     if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
     event.preventDefault();

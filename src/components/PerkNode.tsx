@@ -79,6 +79,7 @@ export interface PerkNodeProps {
   touchAnchor?: { x: number; y: number } | null;
   onOpenTouchTooltip: (anchor: { x: number; y: number }) => void;
   onCloseTouchTooltip: () => void;
+  plannerNotes?: string[];
 }
 
 export function PerkNode({
@@ -108,6 +109,7 @@ export function PerkNode({
   touchAnchor = null,
   onOpenTouchTooltip,
   onCloseTouchTooltip,
+  plannerNotes = [],
 }: PerkNodeProps) {
   const supportsHover = useSupportsHover();
   const longPressTimerRef = useRef<number | null>(null);
@@ -411,6 +413,13 @@ export function PerkNode({
         </p>
       )}
       <p className="mt-2 text-xs leading-relaxed">{perk.description}</p>
+      {plannerNotes.length > 0 && (
+        <ul className="mt-2 space-y-1 text-xs leading-relaxed text-[var(--color-muted)]">
+          {plannerNotes.map((note) => (
+            <li key={note}>• {note}</li>
+          ))}
+        </ul>
+      )}
       {nextRank && isSelected && renderNextRankSection(nextRank, labels)}
       <p className="mt-2 text-xs font-medium text-[var(--color-muted)]">
         {isConflict

@@ -42,6 +42,7 @@ import {
 } from "@/lib/enrichGameData";
 import { mergeEffects } from "@/lib/resolveOptionEffects";
 import { meaningfulPlayerLevelReq } from "@/lib/perkRequirements";
+import { validateExtensionRegistry } from "@/extensions/loadExtensions";
 
 function parse<T>(schema: { parse: (data: unknown) => T }, data: unknown, name: string): T {
   try {
@@ -114,7 +115,7 @@ export function loadAppData(): AppData {
   const layout = parse(layoutSchema, layoutJson, "layout.json");
   const labels = parse(labelsSchema, labelsJson, "labels.json");
 
-  return {
+  const appData: AppData = {
     game: {
       manifest,
       mechanics,
@@ -129,4 +130,8 @@ export function loadAppData(): AppData {
     },
     ui: { theme, layout, labels },
   };
+
+  validateExtensionRegistry(appData.game);
+
+  return appData;
 }

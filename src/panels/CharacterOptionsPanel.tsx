@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { CharacterOption } from "@/data/schemas";
+import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
 import {
   getCharacterOptionSummaryLines,
   getSelectedCharacterOptionChoice,
@@ -79,26 +80,29 @@ function RewardBadge({ children }: { children: ReactNode }) {
   );
 }
 
-interface OghmaOptionControlProps {
+interface SelectOptionControlProps {
   option: CharacterOption;
   selectedChoiceId: string;
   labels: Record<string, string>;
   onSelect: (choiceId: string) => void;
 }
 
-function OghmaOptionControl({
+function SelectOptionControl({
   option,
   selectedChoiceId,
   labels,
   onSelect,
-}: OghmaOptionControlProps) {
+}: SelectOptionControlProps) {
   const isActive = selectedChoiceId !== option.defaultChoice;
+  const description = option.descriptionLabel ? labels[option.descriptionLabel] : undefined;
 
   return (
     <OptionSection
       title={labels[option.titleLabel] ?? option.titleLabel}
-      description={labels.oghmaDescription}
+      description={description}
       active={isActive}
+      onClear={isActive ? () => onSelect(option.defaultChoice) : undefined}
+      clearLabel={labels.clearSelection}
     >
       <Select value={selectedChoiceId} onValueChange={onSelect}>
         <SelectTrigger>
@@ -175,19 +179,19 @@ function GenericChoiceOptionControl({
   );
 }
 
-interface TraitSlotOptionControlProps {
+interface ToggleOptionControlProps {
   option: CharacterOption;
   selectedChoiceId: string;
   labels: Record<string, string>;
   onSelect: (choiceId: string) => void;
 }
 
-function TraitSlotOptionControl({
+function ToggleOptionControl({
   option,
   selectedChoiceId,
   labels,
   onSelect,
-}: TraitSlotOptionControlProps) {
+}: ToggleOptionControlProps) {
   const claimedChoice =
     option.choices.find((choice) => choice.id !== option.defaultChoice)?.id ?? "claimed";
   const checked = selectedChoiceId !== option.defaultChoice;
@@ -221,7 +225,9 @@ function TraitSlotOptionControl({
         <div className="min-w-0 flex-1">
           <span className="text-sm font-medium text-[var(--color-foreground)]">
             {checked
-              ? (labels.alduinBonusTraitClaimed ?? "Claimed")
+              ? (labels[claimedChoice] ??
+                labels.alduinBonusTraitClaimed ??
+                "Claimed")
               : (labels.alduinBonusTraitNone ?? "Not claimed")}
           </span>
         </div>
@@ -269,12 +275,14 @@ export function CharacterOptionsPanel() {
   const activeRewardLines = characterOptions.flatMap((option) => {
     const choice = getSelectedCharacterOptionChoice(option, build.characterOptionChoices);
     if (choice.id === option.defaultChoice) return [];
-
-    if (option.grantsTraitSlot) {
-      return [{ key: `${option.id}-trait-slot`, text: labels.traitSlotReward ?? "+1 trait slot" }];
-    }
-
-    return getCharacterOptionSummaryLines(game, option, choice, labels, attributeLabels);
+    return getCharacterOptionSummaryLines(
+      game,
+      option,
+      choice,
+      labels,
+      attributeLabels,
+      build,
+    );
   });
 
   return (
@@ -299,10 +307,14 @@ export function CharacterOptionsPanel() {
                 build.characterOptionChoices[option.id] ?? option.defaultChoice;
               const onSelect = (choiceId: string) =>
                 setCharacterOptionChoice(option.id, choiceId);
+              const extension = option.extension
+                ? getCharacterOptionExtension(option.extension)
+                : undefined;
+              const Control = extension?.Control;
 
-              if (option.grantsTraitSlot) {
+              if (Control) {
                 return (
-                  <TraitSlotOptionControl
+                  <Control
                     key={option.id}
                     option={option}
                     selectedChoiceId={selectedChoiceId}
@@ -312,9 +324,22 @@ export function CharacterOptionsPanel() {
                 );
               }
 
-              if (option.mechanicsBinding === "oghmaInfinium") {
+              const controlType = option.controlType ?? "buttons";
+              if (controlType === "select") {
                 return (
-                  <OghmaOptionControl
+                  <SelectOptionControl
+                    key={option.id}
+                    option={option}
+                    selectedChoiceId={selectedChoiceId}
+                    labels={labels}
+                    onSelect={onSelect}
+                  />
+                );
+              }
+
+              if (controlType === "toggle") {
+                return (
+                  <ToggleOptionControl
                     key={option.id}
                     option={option}
                     selectedChoiceId={selectedChoiceId}

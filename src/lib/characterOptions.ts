@@ -1,23 +1,17 @@
 import type {
-  AttributeStat,
   CharacterOption,
   CharacterOptionChoice,
   GameData,
-  Mechanics,
 } from "@/data/schemas";
+import type { CharacterOptionSummaryLine } from "@/extension-api";
+import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
 import type { BuildState } from "@/engine/buildEngine";
 
-interface MechanicsRewardProfile {
-  perkPoints: number;
-  attributeBonus: [number, number, number];
-}
-
-function getMechanicsRewardProfile(
-  mechanics: Mechanics,
-  binding: NonNullable<CharacterOption["mechanicsBinding"]>,
-): MechanicsRewardProfile {
-  return mechanics[binding];
-}
+const LEGACY_OGHMA_CHOICE_MAP: Record<string, string> = {
+  health: "warrior",
+  magicka: "mage",
+  stamina: "thief",
+};
 
 export function getSelectedCharacterOptionChoice(
   option: CharacterOption,
@@ -36,7 +30,7 @@ export function normalizeCharacterOptionChoices(
   legacyOghmaChoice?: number,
 ): Record<string, string> {
   const normalized: Record<string, string> = {};
-  const legacyOghmaIds = ["none", "health", "magicka", "stamina"] as const;
+  const legacyOghmaIds = ["none", "warrior", "mage", "thief"] as const;
 
   for (const option of game.characterOptions) {
     let selected = choices?.[option.id];
@@ -51,8 +45,12 @@ export function normalizeCharacterOptionChoices(
       selected = legacyOghmaIds[legacyOghmaChoice];
     }
 
+    if (selected && LEGACY_OGHMA_CHOICE_MAP[selected]) {
+      selected = LEGACY_OGHMA_CHOICE_MAP[selected];
+    }
+
     if (
-      option.grantsTraitSlot &&
+      option.controlType === "toggle" &&
       selected !== undefined &&
       selected !== option.defaultChoice &&
       selected !== "claimed"
@@ -67,116 +65,46 @@ export function normalizeCharacterOptionChoices(
   return normalized;
 }
 
-export function getCharacterOptionPerkPointBonus(game: GameData, state: BuildState): number {
-  let total = 0;
-
-  for (const option of game.characterOptions) {
-    const choice = getSelectedCharacterOptionChoice(option, state.characterOptionChoices);
-    if (choice.id === option.defaultChoice || !option.mechanicsBinding) continue;
-
-    total += getMechanicsRewardProfile(game.mechanics, option.mechanicsBinding).perkPoints;
-  }
-
-  return total;
-}
-
-export function getCharacterOptionAttributeBonus(
-  game: GameData,
-  state: BuildState,
-  stat: AttributeStat,
-): number {
-  let total = 0;
-
-  for (const option of game.characterOptions) {
-    const choice = getSelectedCharacterOptionChoice(option, state.characterOptionChoices);
-    if (choice.id === option.defaultChoice) continue;
-
-    if (choice.effects) {
-      for (const effect of choice.effects) {
-        if (effect.type === "attribute" && effect.stat === stat) {
-          total += effect.value;
-        }
-      }
-    }
-
-    if (
-      option.mechanicsBinding &&
-      choice.attributeStat === stat &&
-      choice.attributeBonusIndex !== undefined
-    ) {
-      const profile = getMechanicsRewardProfile(game.mechanics, option.mechanicsBinding);
-      total += profile.attributeBonus[choice.attributeBonusIndex] ?? 0;
-    }
-  }
-
-  return total;
-}
-
-export function getCharacterOptionTraitSlotBonus(game: GameData, state: BuildState): number {
-  let total = 0;
-
-  for (const option of game.characterOptions) {
-    if (!option.grantsTraitSlot) continue;
-    const choice = getSelectedCharacterOptionChoice(option, state.characterOptionChoices);
-    if (choice.id !== option.defaultChoice) total += 1;
-  }
-
-  return total;
-}
-
-export interface CharacterOptionSummaryLine {
-  key: string;
-  text: string;
-}
-
-function formatLabel(template: string, values: Record<string, string | number>): string {
-  return Object.entries(values).reduce(
-    (result, [key, value]) => result.replace(`{${key}}`, String(value)),
-    template,
-  );
-}
+export type { CharacterOptionSummaryLine };
 
 export function getCharacterOptionSummaryLines(
   game: GameData,
   option: CharacterOption,
   choice: CharacterOptionChoice,
   labels: Record<string, string>,
-  attributeLabels: Record<string, string>,
+  _attributeLabels: Record<string, string>,
+  state: BuildState,
 ): CharacterOptionSummaryLine[] {
   if (choice.id === option.defaultChoice) return [];
 
+  if (option.extension) {
+    const extension = getCharacterOptionExtension(option.extension);
+    if (extension?.getSummaryLines) {
+      return extension.getSummaryLines({
+        game,
+        state,
+        option,
+        choice,
+        labels,
+      });
+    }
+  }
+
   const lines: CharacterOptionSummaryLine[] = [];
-
-  if (option.mechanicsBinding) {
-    const profile = getMechanicsRewardProfile(game.mechanics, option.mechanicsBinding);
-
-    if (profile.perkPoints > 0 && option.perkPointsSummaryLabel) {
-      const template = labels[option.perkPointsSummaryLabel];
-      if (template) {
+  if (choice.effects) {
+    for (const effect of choice.effects) {
+      if (effect.type === "traitSlot" && effect.value > 0) {
         lines.push({
-          key: `${option.id}-perk-points`,
-          text: formatLabel(template, { count: profile.perkPoints }),
+          key: `${option.id}-trait-slot`,
+          text: labels.traitSlotReward ?? "+1 trait slot",
         });
       }
-    }
-
-    if (
-      choice.attributeStat !== undefined &&
-      choice.attributeBonusIndex !== undefined &&
-      option.attributeBonusSummaryLabel
-    ) {
-      const bonus = profile.attributeBonus[choice.attributeBonusIndex] ?? 0;
-      if (bonus > 0) {
-        const template = labels[option.attributeBonusSummaryLabel];
-        if (template) {
-          lines.push({
-            key: `${option.id}-attribute-bonus`,
-            text: formatLabel(template, {
-              count: bonus,
-              attribute: attributeLabels[choice.attributeStat] ?? choice.attributeStat,
-            }),
-          });
-        }
+      if (effect.type === "perkPoints" && effect.value > 0) {
+        const template = labels.oghmaPerkPoints ?? "+{count} perk points";
+        lines.push({
+          key: `${option.id}-perk-points`,
+          text: template.replace("{count}", String(effect.value)),
+        });
       }
     }
   }

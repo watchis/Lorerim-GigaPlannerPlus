@@ -11,8 +11,8 @@ import {
   arePrerequisitesMet,
   computeDestinyPerkPointsSpent,
   getEarnedDestinyPerkPoints,
+  getEffectiveSkillLevel,
   getPerkSkillId,
-  getStoredSkillLevel,
 } from "@/engine/buildEngine";
 import type { PerkTree } from "@/data/schemas";
 import { PerkNode } from "@/components/PerkNode";
@@ -110,6 +110,7 @@ function PerkTreeView({
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const perkPointsRemaining = useBuildStore((s) => s.computed?.perkPointsRemaining ?? 0);
+  const plannerNotesByPerkId = useBuildStore((s) => s.computed?.plannerNotesByPerkId ?? {});
   const tryTakePerk = useBuildStore((s) => s.tryTakePerk);
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
   const removePerk = useBuildStore((s) => s.removePerk);
@@ -484,7 +485,7 @@ function PerkTreeView({
             ? !takeTargetPerk.costsPerkPoint || destinyRemaining >= 1
             : (() => {
                 const skillId = getPerkSkillId(gameData.game, takeTargetPerk.id);
-                const skillLevel = skillId ? getStoredSkillLevel(gameData.game, build, skillId) : 0;
+                const skillLevel = skillId ? getEffectiveSkillLevel(gameData.game, build, skillId) : 0;
                 if (skillLevel < takeTargetPerk.skillReq) return false;
                 if (!takeTargetPerk.costsPerkPoint) return true;
                 return perkPointsRemaining >= 1;
@@ -524,6 +525,7 @@ function PerkTreeView({
             }
             onOpenTouchTooltip={(anchor) => openTouchTooltip(positionKey, anchor)}
             onCloseTouchTooltip={closeTouchTooltip}
+            plannerNotes={plannerNotesByPerkId[tooltipPerk.id] ?? []}
           />
         );
       })}

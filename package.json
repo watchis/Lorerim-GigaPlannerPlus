@@ -20,7 +20,9 @@
     "import:apply-perk-layout": "node tools/import/apply-giga-planner-layout.mjs",
     "import:compare-avif": "node tools/import/compare-avif-perks.mjs",
     "import:probe-sources": "node tools/import/probe-plugin-sources.mjs",
-    "import:prune-perks": "node tools/import/prune-orphan-perks.mjs"
+    "import:prune-perks": "node tools/import/prune-orphan-perks.mjs",
+    "regen:effects": "node tools/import/lib/regenerate-option-effects.mjs",
+    "regen:extension-stub": "node tools/regen-extension-stub.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.11",

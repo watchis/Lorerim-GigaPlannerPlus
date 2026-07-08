@@ -3,30 +3,15 @@
     {
       "id": "oghma-infinium",
       "titleLabel": "oghmaInfinium",
+      "descriptionLabel": "oghmaDescription",
       "defaultChoice": "none",
-      "mechanicsBinding": "oghmaInfinium",
-      "perkPointsSummaryLabel": "oghmaPerkPoints",
-      "attributeBonusSummaryLabel": "oghmaAttributeBonus",
+      "extension": "oghma-infinium",
+      "controlType": "select",
       "choices": [
         { "id": "none", "label": "oghmaNone" },
-        {
-          "id": "health",
-          "label": "oghmaHealth",
-          "attributeStat": "health",
-          "attributeBonusIndex": 0
-        },
-        {
-          "id": "magicka",
-          "label": "oghmaMagicka",
-          "attributeStat": "magicka",
-          "attributeBonusIndex": 1
-        },
-        {
-          "id": "stamina",
-          "label": "oghmaStamina",
-          "attributeStat": "stamina",
-          "attributeBonusIndex": 2
-        }
+        { "id": "warrior", "label": "oghmaWarrior" },
+        { "id": "mage", "label": "oghmaMage" },
+        { "id": "thief", "label": "oghmaThief" }
       ]
     },
     {
@@ -34,10 +19,14 @@
       "titleLabel": "alduinBonusTrait",
       "descriptionLabel": "alduinBonusTraitDescription",
       "defaultChoice": "none",
-      "grantsTraitSlot": true,
+      "controlType": "toggle",
       "choices": [
         { "id": "none", "label": "alduinBonusTraitNone" },
-        { "id": "claimed", "label": "alduinBonusTraitClaimed" }
+        {
+          "id": "claimed",
+          "label": "alduinBonusTraitClaimed",
+          "effects": [{ "type": "traitSlot", "value": 1 }]
+        }
       ]
     }
   ]

@@ -9,6 +9,7 @@
     {
       "id": "speech-haggling",
       "name": "Haggling",
+      "extension": "speech-haggling",
       "skillReq": 0,
       "position": {
         "x": 19,
