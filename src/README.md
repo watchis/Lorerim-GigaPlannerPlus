@@ -15,6 +15,7 @@ src/
   engine/         # Build state, economy, codec, reconciliation
   layout/         # Layout-driven panel registry
   lib/            # Pure helpers (perk grid, training, effects, formatting)
+  pages/          # Route-level views (landing, planner, builds)
   panels/         # Layout panels wired from data/ui/layout.json
   store/          # Zustand stores (build, UI, saved builds)
   test/           # Shared Vitest helpers
@@ -60,7 +61,7 @@ npm test              # both
 npm run test:watch    # Vitest watch mode
 ```
 
-**Shared fixtures:** `src/test/helpers.ts` (`loadAppData()`, `createTestBuildState()`).
+**Shared fixtures:** `src/test/helpers.ts` — `getTestAppData()`, `getTestGameData()`, `createTestBuildState()`.
 
 CI runs `npm test` on every pull request ([`.github/workflows/test.yml`](../.github/workflows/test.yml)).
 
@@ -73,4 +74,4 @@ CI runs `npm test` on every pull request ([`.github/workflows/test.yml`](../.git
 - **Engine logic** belongs in `engine/`; UI reads computed values from the store.
 - **Player level requirements** for perks come from `data/game/perk-player-level-reqs.json` (populated by the LoreRim importer from `PERK` `GetLevel` conditions), merged at load as `perk.playerLevelReq` — do not parse `[Requires Level N]` from descriptions.
 - **Theme and copy** come from `data/ui/`; avoid literal UI strings in components when a label key exists.
-- **Panel registration** — new layout panels need a React component **and** an entry in `layout/LayoutRenderer.tsx` → `panelRegistry`.
+- **Panel registration** — new layout panels need a React component **and** an entry in `layout/panelRegistry.ts`.

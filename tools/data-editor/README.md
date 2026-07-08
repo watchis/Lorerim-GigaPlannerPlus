@@ -56,5 +56,5 @@ tools/data-editor/
 | Task | Tool |
 |------|------|
 | Move perk nodes, resize grids, wire prerequisites | **Data editor** (this tool) |
-| Refresh perk names/descriptions from LoreRim plugins | [`import:lorerim`](../import/README.md) |
+| Rebuild perk trees and other game data from LoreRim plugins | [`import:lorerim`](../import/README.md) |
 | Edit economy, labels, or race starting values | Text editor / IDE → [`data/README.md`](../../data/README.md) |

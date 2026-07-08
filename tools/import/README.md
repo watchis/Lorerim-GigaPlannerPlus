@@ -177,6 +177,17 @@ node tools/import/probe-race-data.mjs "D:/path/to/SomeMod.esp"
 
 **Note:** `npm run import:prune-perks` uses the legacy standalone prune script without AVIF membership context. Prefer `import:lorerim` for full rebuilds; standalone prune can remove perks the main importer would keep.
 
+### Other npm scripts
+
+| Script | Purpose |
+|--------|---------|
+| `import:perks` | Perk trees only (legacy; no plugin skip cache or traits/races/deities) — prefer `import:lorerim` |
+| `import:sync-perk-layout` | Regenerate `lib/giga-planner-layout.json` from current `data/game/perks/` |
+| `import:apply-perk-layout` | Apply vendored GigaPlanner layout coords to perk trees |
+| `import:fix-perk-positions` | Repair perk nodes placed outside grid bounds |
+| `import:compare-avif` | Diff AVIF membership vs planner JSON |
+| `import:probe-sources` | Show which MO2 mod owns each plugin in load order |
+
 ---
 
 ## After updating
