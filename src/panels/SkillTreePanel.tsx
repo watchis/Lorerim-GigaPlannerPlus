@@ -453,7 +453,7 @@ export function SkillTreePanel() {
   }
 
   return (
-    <Card className="flex min-h-0 flex-1 flex-col">
+    <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="sticky top-0 z-10 bg-[var(--color-surface)]">
         <WorkspacePanelHeader
           back={{
