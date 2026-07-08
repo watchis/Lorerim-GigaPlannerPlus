@@ -32,7 +32,7 @@ export function AppShell() {
       if (event.key === "Escape") setMobileNavOpen(false);
     };
 
-    const handlePointerDown = (event: PointerEvent) => {
+    const handleOutsideClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (mobileNavRef.current?.contains(target)) return;
@@ -41,11 +41,11 @@ export function AppShell() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("click", handleOutsideClick);
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("click", handleOutsideClick);
     };
   }, [mobileNavOpen]);
 

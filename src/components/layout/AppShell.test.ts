@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 import { getTestAppData } from "@/test/helpers";
@@ -91,10 +91,66 @@ describe("AppShell mobile navigation", () => {
     expect(main).toBeTruthy();
 
     act(() => {
-      main?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      main?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     expect(document.getElementById("mobile-nav")).toBeNull();
     expect(document.querySelector('button[aria-label="Open menu"]')).toBeTruthy();
+  });
+
+  it("processes outside clicks before closing the mobile menu", () => {
+    let outsideClicked = false;
+
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(
+        createElement(
+          ThemeProvider,
+          { theme: appData.ui.theme, labels: appData.ui.labels },
+          createElement(
+            MemoryRouter,
+            { initialEntries: ["/"] },
+            createElement(
+              Routes,
+              null,
+              createElement(
+                Route,
+                { element: createElement(AppShell) },
+                createElement(Route, {
+                  index: true,
+                  element: createElement("button", {
+                    type: "button",
+                    "data-testid": "outside-target",
+                    onClick: () => {
+                      outsideClicked = true;
+                    },
+                  }),
+                }),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+
+    const menuButton = document.querySelector('button[aria-label="Open menu"]');
+    expect(menuButton).toBeTruthy();
+
+    act(() => {
+      menuButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const outsideTarget = document.querySelector('[data-testid="outside-target"]');
+    expect(outsideTarget).toBeTruthy();
+
+    act(() => {
+      outsideTarget?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(outsideClicked).toBe(true);
+    expect(document.getElementById("mobile-nav")).toBeNull();
   });
 });
