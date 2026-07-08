@@ -25,7 +25,11 @@ import {
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
-import { getMobileSkillTreeTitleClassName } from "@/lib/skillTreePanelTitle";
+import {
+  getMobileSkillTreeTitleClassName,
+  getSkillTreeTitleActionsClassName,
+  getSkillTreeTitleContentClassName,
+} from "@/lib/skillTreePanelTitle";
 import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
@@ -299,21 +303,25 @@ export function SkillTreePanel() {
                   skillId={activeTree.skillId}
                   className="h-5 w-5 shrink-0 text-[var(--color-accent-muted)]"
                 />
-                <h2 className={getMobileSkillTreeTitleClassName()}>
-                  {activeTree.skillName}
-                </h2>
-                {hasTraining && (
-                  <SkillTreeTrainingIndicator
-                    overBudget={trainingOverBudget}
-                    label={formatLabel(labels.trainingAssignedIndicator, {
-                      count: trainingAssignedCount,
-                    })}
+                <div className={getSkillTreeTitleContentClassName()}>
+                  <h2 className={getMobileSkillTreeTitleClassName()}>
+                    {activeTree.skillName}
+                  </h2>
+                </div>
+                <div className={getSkillTreeTitleActionsClassName()}>
+                  {hasTraining && (
+                    <SkillTreeTrainingIndicator
+                      overBudget={trainingOverBudget}
+                      label={formatLabel(labels.trainingAssignedIndicator, {
+                        count: trainingAssignedCount,
+                      })}
+                    />
+                  )}
+                  <SkillTreeWarningIcon
+                    messages={warningMessages}
+                    ariaLabel={labels.skillTreeWarning}
                   />
-                )}
-                <SkillTreeWarningIcon
-                  messages={warningMessages}
-                  ariaLabel={labels.skillTreeWarning}
-                />
+                </div>
               </div>
               <p className="mt-0.5 text-xs text-[var(--color-muted)]">
                 {isTrainingMode ? (
@@ -466,19 +474,23 @@ export function SkillTreePanel() {
             />
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-2">
-                <CardTitle className="min-w-0 truncate text-base">{activeTree.skillName}</CardTitle>
-                {hasTraining && (
-                  <SkillTreeTrainingIndicator
-                    overBudget={trainingOverBudget}
-                    label={formatLabel(labels.trainingAssignedIndicator, {
-                      count: trainingAssignedCount,
-                    })}
+                <div className={getSkillTreeTitleContentClassName()}>
+                  <CardTitle className="min-w-0 truncate text-base">{activeTree.skillName}</CardTitle>
+                </div>
+                <div className={getSkillTreeTitleActionsClassName()}>
+                  {hasTraining && (
+                    <SkillTreeTrainingIndicator
+                      overBudget={trainingOverBudget}
+                      label={formatLabel(labels.trainingAssignedIndicator, {
+                        count: trainingAssignedCount,
+                      })}
+                    />
+                  )}
+                  <SkillTreeWarningIcon
+                    messages={warningMessages}
+                    ariaLabel={labels.skillTreeWarning}
                   />
-                )}
-                <SkillTreeWarningIcon
-                  messages={warningMessages}
-                  ariaLabel={labels.skillTreeWarning}
-                />
+                </div>
               </div>
               <p className="mt-1 text-xs text-[var(--color-muted)]">
                 {isTrainingMode ? (
