@@ -39,6 +39,7 @@ describe("buildCodec", () => {
       characterOptionChoices: {
         "oghma-infinium": "health",
         "alduin-bonus-trait": "claimed",
+        bittercup: "health-magicka",
       },
     });
 
@@ -47,6 +48,7 @@ describe("buildCodec", () => {
     expect(decoded.characterOptionChoices).toEqual({
       "oghma-infinium": "health",
       "alduin-bonus-trait": "claimed",
+      bittercup: "health-magicka",
     });
   });
 

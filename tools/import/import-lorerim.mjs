@@ -14,6 +14,7 @@ import {
   transformRaceRecords,
   transformStandingStoneRecords,
   transformTraitRecords,
+  transformBittercupCharacterOptions,
 } from "./lib/lorerim-transform.mjs";
 import { loadJsonIfExists } from "./lib/transform-utils.mjs";
 import { removeStalePerkFiles, findStalePerkFiles } from "./lib/import-reset.mjs";
@@ -44,6 +45,7 @@ function buildFilesToWrite({
   birthsigns,
   deities,
   manifest,
+  characterOptions,
   trees,
 }) {
   return [
@@ -55,6 +57,7 @@ function buildFilesToWrite({
     ["birthsigns.json", birthsigns],
     ["deities.json", deities],
     ["manifest.json", manifest],
+    ["character-options.json", characterOptions],
     ...Object.entries(trees).map(([filename, tree]) => [`perks/${filename}`, tree]),
   ];
 }
@@ -171,6 +174,9 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     lorerimRaceRecords,
     traitsFormList,
     mastersByPath,
+    bittercupMgefRecords,
+    bittercupSpellCandidates,
+    bittercupAlchDescription,
   } = await collectImportPluginData(plugins, progress);
   progress.activity("Building perk metadata index…");
   const avifMembership = buildAvifMembershipIndex(
@@ -184,7 +190,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
   );
 
   progress.phase("Transforming game data", 3, 5);
-  const transformProgress = progress.track("Transform steps", 5);
+  const transformProgress = progress.track("Transform steps", 6);
 
   transformProgress.tick("Perk trees");
   const { trees, indexEntries, addedPerks, removedPerks, playerLevelReqs } = transformPerkRecords(
@@ -246,7 +252,20 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     boonMagnitudes,
   );
   progress.step(`Deities — ${formatCount(deities.deities.length)} entries`);
-  transformProgress.finish("5 data sets transformed");
+
+  transformProgress.tick("Character options");
+  const characterOptions = transformBittercupCharacterOptions(
+    {
+      mgefRecords: bittercupMgefRecords,
+      spellCandidates: bittercupSpellCandidates,
+      alchDescription: bittercupAlchDescription,
+    },
+    join(dataDir, "character-options.json"),
+  );
+  progress.step(
+    `Character options — bittercup magnitudes +${characterOptions.importedMagnitudes?.increase ?? "?"} / -${characterOptions.importedMagnitudes?.decrease ?? "?"}`,
+  );
+  transformProgress.finish("6 data sets transformed");
 
   progress.phase("Resolving modpack version", 4, 5);
   const existingManifest = loadJsonIfExists(join(dataDir, "manifest.json"));
@@ -297,6 +316,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
       birthsigns,
       deities,
       manifest,
+      characterOptions: { options: characterOptions.options },
       trees,
     });
     const staleFiles = findStalePerkFiles(perksDir, Object.keys(trees));
@@ -332,6 +352,7 @@ export async function importLorerimData(argv = process.argv.slice(2)) {
     birthsigns,
     deities,
     manifest,
+    characterOptions: { options: characterOptions.options },
     trees,
   });
 

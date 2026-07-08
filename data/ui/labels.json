@@ -178,7 +178,17 @@
       "alduinBonusTraitDescription": "Grants one additional trait on the Traits page.",
       "alduinBonusTraitNone": "Not claimed",
       "alduinBonusTraitClaimed": "Claimed",
-      "traitSlotReward": "+1 trait slot"
+      "traitSlotReward": "+1 trait slot",
+      "bittercup": "Bittercup",
+      "bittercupDescription": "Permanently shifts attributes: raises one and lowers another.",
+      "bittercupNone": "Not used",
+      "bittercupHealthUpMagickaDown": "+Health, −Magicka",
+      "bittercupHealthUpStaminaDown": "+Health, −Stamina",
+      "bittercupMagickaUpHealthDown": "+Magicka, −Health",
+      "bittercupMagickaUpStaminaDown": "+Magicka, −Stamina",
+      "bittercupStaminaUpHealthDown": "+Stamina, −Health",
+      "bittercupStaminaUpMagickaDown": "+Stamina, −Magicka",
+      "bittercupAttributeShift": "{increased} +{count}, {decreased} −{count}"
     },
     "attributes": {
       "title": "Attributes",
