@@ -68,6 +68,51 @@ assert.deepEqual(enchantingTrees["enchanting.json"].perks[0].allocation, {
   totalLabel: "infinity",
 });
 
+const snapshotPerksDir = mkdtempSync(join(tmpdir(), "giga-extension-allocation-snapshot-"));
+writeFileSync(
+  join(snapshotPerksDir, "enchanting.json"),
+  JSON.stringify({
+    skillId: "enchanting",
+    perks: [
+      {
+        id: "enchanting-artifact-enchanter",
+        name: "Artifact Enchanter",
+        skillReq: 100,
+        extension: "enchanting-artifact-enchanter",
+        allocation: { kind: "perkPointsBudget", totalLabel: "X" },
+        effects: [],
+        position: { x: 9, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: [],
+      },
+    ],
+  }),
+);
+const extensionSnapshots = loadPerkGraphSnapshots(snapshotPerksDir);
+const importLikeTrees = {
+  "enchanting.json": {
+    skillId: "enchanting",
+    perks: [
+      {
+        id: "enchanting-artifact-enchanter-new",
+        name: "Artifact Enchanter",
+        skillReq: 100,
+        effects: [{ type: "derivedStat", stat: "priceModifier", value: 99, isPercent: true }],
+        position: { x: 9, y: 0 },
+        prerequisites: [],
+        prerequisitesAny: [],
+      },
+    ],
+  },
+};
+applyPerkGraphSnapshots(importLikeTrees, extensionSnapshots);
+assert.equal(importLikeTrees["enchanting.json"].perks[0].allocation, undefined);
+applyPerkExtensionBindings(importLikeTrees, bindings);
+assert.deepEqual(importLikeTrees["enchanting.json"].perks[0].allocation, {
+  kind: "perkPointsBudget",
+  totalLabel: "infinity",
+});
+
 const perksDir = mkdtempSync(join(tmpdir(), "giga-extension-bindings-"));
 writeFileSync(
   join(perksDir, "speech.json"),
@@ -127,6 +172,7 @@ const warnings = validateExtensionBindings({
           id: "enchanting-artifact-enchanter",
           name: "Artifact Enchanter",
           extension: "enchanting-artifact-enchanter",
+          allocation: { kind: "perkPointsBudget", totalLabel: "infinity" },
           effects: [],
         },
       ],
@@ -136,6 +182,33 @@ const warnings = validateExtensionBindings({
   extensionsDir: join(root, "extensions"),
 });
 assert.equal(warnings.length, 0, warnings.join("\n"));
+
+const driftWarnings = validateExtensionBindings({
+  bindings,
+  trees: {
+    "speech.json": {
+      skillId: "speech",
+      perks: [{ id: "speech-haggling", name: "Haggling", extension: "speech-haggling", effects: [] }],
+    },
+    "enchanting.json": {
+      skillId: "enchanting",
+      perks: [
+        {
+          id: "enchanting-artifact-enchanter",
+          name: "Artifact Enchanter",
+          extension: "enchanting-artifact-enchanter",
+          effects: [],
+        },
+      ],
+    },
+  },
+  characterOptionsPath: "data/game/character-options.json",
+  extensionsDir: join(root, "extensions"),
+});
+assert.equal(
+  driftWarnings.filter((warning) => warning.includes("allocation")).length,
+  1,
+);
 
 const lookup = buildPerkExtensionLookup(bindings);
 assert.equal(lookup.get("speech:haggling"), "speech-haggling");

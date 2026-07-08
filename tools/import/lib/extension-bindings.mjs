@@ -82,9 +82,16 @@ export function resolvePerkExtension(bindings, skillId, perkName) {
   return lookup.get(perkBindingKey(skillId, perkName));
 }
 
+function allocationMatches(left, right) {
+  if (!left || !right) return false;
+  return left.kind === right.kind && (left.totalLabel ?? null) === (right.totalLabel ?? null);
+}
+
 /**
  * Wire perk JSON nodes to build-time extension plugins.
  * Extension-owned perks keep `effects: []` so import/regen parsers do not overwrite plugin logic.
+ * Repeatable allocation metadata in bindings is re-applied on every import so graph snapshots
+ * and regenerated JSON cannot strip stackable behavior.
  */
 export function applyPerkExtensionBindings(trees, bindings) {
   const lookup = buildPerkExtensionBindingLookup(bindings);
@@ -103,6 +110,8 @@ export function applyPerkExtensionBindings(trees, bindings) {
       perk.effects = [];
       if (binding.allocation) {
         perk.allocation = { ...binding.allocation };
+      } else {
+        delete perk.allocation;
       }
       applied += 1;
     }
@@ -122,7 +131,7 @@ export function validateExtensionBindings({
   extensionsDir = "extensions",
 }) {
   const warnings = [];
-  const lookup = buildPerkExtensionLookup(bindings);
+  const bindingLookup = buildPerkExtensionBindingLookup(bindings);
   const optionLookup = buildCharacterOptionExtensionLookup(bindings);
 
   const perksByKey = new Map();
@@ -133,18 +142,27 @@ export function validateExtensionBindings({
     }
   }
 
-  for (const [key, extension] of lookup) {
+  for (const [key, binding] of bindingLookup) {
     const perk = perksByKey.get(key);
     if (!perk) {
-      warnings.push(`extension-bindings perk "${key}" → "${extension}" has no matching imported perk`);
+      warnings.push(`extension-bindings perk "${key}" → "${binding.extension}" has no matching imported perk`);
       continue;
     }
-    if (perk.extension !== extension) {
+    if (perk.extension !== binding.extension) {
       warnings.push(
-        `perk "${perk.name}" (${perk.id}) has extension "${perk.extension ?? ""}" but bindings expect "${extension}"`,
+        `perk "${perk.name}" (${perk.id}) has extension "${perk.extension ?? ""}" but bindings expect "${binding.extension}"`,
       );
     }
+    if (binding.allocation) {
+      if (!allocationMatches(perk.allocation, binding.allocation)) {
+        warnings.push(
+          `perk "${perk.name}" (${perk.id}) allocation ${JSON.stringify(perk.allocation ?? null)} does not match extension-bindings ${JSON.stringify(binding.allocation)}`,
+        );
+      }
+    }
   }
+
+  const referencedPerkExtensions = new Set([...bindingLookup.values()].map((entry) => entry.extension));
 
   const characterOptions = loadJsonIfExists(characterOptionsPath);
   const optionsById = new Map(
@@ -172,7 +190,7 @@ export function validateExtensionBindings({
 
     const referenced = new Set(
       kind === "perks"
-        ? [...lookup.values()]
+        ? referencedPerkExtensions
         : [...optionLookup.values()],
     );
 
