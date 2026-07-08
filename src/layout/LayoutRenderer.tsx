@@ -72,10 +72,7 @@ export function LayoutRenderer({ layout }: LayoutRendererProps) {
               {layout.columns.map((column, colIndex) => (
                 <div
                   key={colIndex}
-                  className={cn(
-                    "flex min-h-0 flex-col gap-4",
-                    colIndex === 1 ? "overflow-hidden" : "overflow-hidden overflow-x-hidden",
-                  )}
+                  className="flex min-h-0 flex-col gap-4 overflow-hidden overflow-x-hidden"
                 >
                   {column.panels.map((panelId) => {
                     const Panel = panelRegistry[panelId];
