@@ -180,6 +180,12 @@ export function SkillTreesSidebarPanel() {
                         gridColumns <= 2 ? "text-xs" : compact ? "text-[10px]" : "text-[11px]",
                       )}
                     >
+                      <span
+                        className="min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]"
+                        title={tree.skillName}
+                      >
+                        {tree.skillName}
+                      </span>
                       {hasTraining && (
                         <span
                           className={cn(
@@ -189,12 +195,6 @@ export function SkillTreesSidebarPanel() {
                           aria-hidden="true"
                         />
                       )}
-                      <span
-                        className="min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]"
-                        title={tree.skillName}
-                      >
-                        {tree.skillName}
-                      </span>
                     </div>
                     <span
                       className={cn(
