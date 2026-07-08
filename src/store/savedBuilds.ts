@@ -19,6 +19,11 @@ export interface SavedBuild {
   milestones: BuildMilestone[];
   activeMilestoneId: string | null;
   updatedAt: number;
+  /**
+   * Modpack version that the build was last edited on.
+   * Stored for display on the build cards; older libraries may not have it.
+   */
+  modpackVersion?: string;
   importedAt: number | null;
 }
 
@@ -165,10 +170,16 @@ export function setVariantNotesOnEntry(
   entry: SavedBuild,
   variantId: string | null,
   notes: string,
+  modpackVersion: string,
 ): SavedBuild {
   const normalized = normalizeSavedBuild(entry);
   if (variantId === null) {
-    return { ...normalized, defaultVariantNotes: notes, updatedAt: Date.now() };
+    return {
+      ...normalized,
+      defaultVariantNotes: notes,
+      updatedAt: Date.now(),
+      modpackVersion,
+    };
   }
 
   const milestoneExists = normalized.milestones.some((milestone) => milestone.id === variantId);
@@ -182,6 +193,7 @@ export function setVariantNotesOnEntry(
       milestone.id === variantId ? { ...milestone, notes } : milestone,
     ),
     updatedAt: Date.now(),
+    modpackVersion,
   };
 }
 
@@ -378,18 +390,19 @@ export function uniqueBuildName(desiredName: string, builds: SavedBuild[]): stri
   return `${base} ${index}`;
 }
 
-export function touchSavedBuild(saved: SavedBuild, build: BuildState): SavedBuild {
+export function touchSavedBuild(saved: SavedBuild, build: BuildState, modpackVersion: string): SavedBuild {
   if (areBuildStatesEqual(saved.build, build)) {
     return saved;
   }
 
-  return acknowledgeSavedBuildEdits({ ...saved, build, updatedAt: Date.now() });
+  return acknowledgeSavedBuildEdits({ ...saved, build, updatedAt: Date.now(), modpackVersion });
 }
 
 export function updateSavedBuildInList(
   builds: SavedBuild[],
   activeBuildId: string,
   build: BuildState,
+  modpackVersion: string,
 ): SavedBuild[] {
   return builds.map((entry) => {
     if (entry.id !== activeBuildId) return entry;
@@ -411,10 +424,11 @@ export function updateSavedBuildInList(
             : milestone,
         ),
         updatedAt: Date.now(),
+        modpackVersion,
       });
     }
 
-    return touchSavedBuild(normalized, build);
+    return touchSavedBuild(normalized, build, modpackVersion);
   });
 }
 

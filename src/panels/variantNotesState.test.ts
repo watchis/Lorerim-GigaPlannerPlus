@@ -13,6 +13,7 @@ import {
 
 describe("variantNotesState", () => {
   const build = createInitialBuildState();
+  const modpackVersion = "5.0.4.2";
 
   it("opens milestone notes without starting from an empty default draft", () => {
     const milestone = createMilestone("Milestone 1", build, "Milestone note");
@@ -20,6 +21,7 @@ describe("variantNotesState", () => {
       createSavedBuild("Tank", build, [milestone]),
       null,
       "Default note",
+      modpackVersion,
     );
 
     const initial = getInitialNotesState("notes", milestone.id, entry);
