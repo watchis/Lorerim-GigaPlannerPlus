@@ -163,7 +163,7 @@ export function SkillTreesSidebarPanel() {
                   }
                 }}
                 className={cn(
-                  "grid grid-rows-[auto_auto] min-h-[6.5rem] gap-1 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
+                  "grid grid-rows-[auto_1fr] min-h-[6.5rem] gap-1 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
                   compact ? "p-1" : "p-1.5",
                   hasProblem &&
                     "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
@@ -219,7 +219,7 @@ export function SkillTreesSidebarPanel() {
                     {skillLevel}
                   </span>
                 </div>
-                <div className="flex min-h-0 w-full aspect-[3/4] items-center justify-center overflow-hidden p-px">
+                <div className="flex min-h-0 w-full max-h-full self-center aspect-[3/4] items-center justify-center overflow-hidden p-px">
                   <PerkTreeMiniView
                     tree={tree}
                     compact
