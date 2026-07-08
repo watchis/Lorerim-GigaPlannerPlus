@@ -77,7 +77,7 @@ export function SkillTreesSidebarPanel() {
     >
       <CardHeader
         className={cn(
-          "flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50",
+          "sticky top-0 z-10 flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]/95 backdrop-blur-sm",
           stackedLayout ? "px-3 py-2.5" : compact ? "gap-2 px-2 py-2" : "px-3 py-3",
         )}
       >
