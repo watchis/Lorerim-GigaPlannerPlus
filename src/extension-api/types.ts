@@ -14,6 +14,8 @@ export interface SkillLevelGrant {
   bypassPlayerLevelCap?: boolean;
   bypassSkillIncreaseLimit?: boolean;
   raiseFloor?: boolean;
+  /** Highest N skill levels are free of skill-point cost (Oghma Infinium). */
+  freeTopLevels?: number;
 }
 
 export interface ModificationSource {
@@ -39,6 +41,7 @@ export interface CharacterOptionControlProps {
   selectedChoiceId: string;
   labels: Record<string, string>;
   onSelect: (choiceId: string) => void;
+  onOpenOghmaSkillsPicker?: () => void;
 }
 
 export interface CharacterOptionContext {

@@ -86,6 +86,8 @@ export const mechanicsSchema = z
       .object({
         perkPoints: z.number(),
         attributeBonus: z.tuple([z.number(), z.number(), z.number()]),
+        freeSkillLevels: z.number().optional(),
+        maxSkills: z.number().optional(),
       })
       .optional(),
     majorSkillBonus: z.number(),

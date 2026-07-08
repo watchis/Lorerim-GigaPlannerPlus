@@ -50,6 +50,7 @@ type CompactBuildPayload = {
   l?: [number, number][];
   tr?: number[][];
   co?: [number, number][];
+  oi?: number[];
   d?: string;
 };
 
@@ -200,6 +201,10 @@ function compactPayloadFromBuild(
     payload.co = characterOptionEntries;
   }
 
+  if (state.oghmaSkillIds.length > 0) {
+    payload.oi = indexList(state.oghmaSkillIds, registry.skillIndex, "skill");
+  }
+
   if (state.description.trim()) {
     payload.d = state.description;
   }
@@ -266,6 +271,7 @@ function buildStateFromCompactPayload(
     traitIds: (payload.t ?? []).map((index) => lookupId(registry.traits, index, "trait")!),
     majorSkillIds: (payload.M ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
     minorSkillIds: (payload.m ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
+    oghmaSkillIds: (payload.oi ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
     attributeBonus: {
       health: attrs[0] ?? 0,
       magicka: attrs[1] ?? 0,
@@ -418,6 +424,7 @@ function payloadToBuildState(partial: {
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
+  oghmaSkillIds?: string[];
   attributeBonus: BuildState["attributeBonus"];
   characterOptionChoices?: BuildState["characterOptionChoices"];
   selectedPerkIds: string[];
@@ -433,6 +440,7 @@ function payloadToBuildState(partial: {
     traitIds: partial.traitIds,
     majorSkillIds: partial.majorSkillIds,
     minorSkillIds: partial.minorSkillIds,
+    oghmaSkillIds: partial.oghmaSkillIds ?? [],
     attributeBonus: partial.attributeBonus,
     characterOptionChoices: partial.characterOptionChoices ?? {},
     selectedPerkIds: partial.selectedPerkIds,

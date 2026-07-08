@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { Check, Sparkles, X } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { OghmaInfiniumControl } from "@/components/character-options/OghmaInfiniumControl";
+import { OghmaSkillsPickerPanel } from "@/components/character-options/OghmaSkillsPickerPanel";
 import type { CharacterOption } from "@/data/schemas";
 import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
 import {
@@ -266,8 +269,13 @@ export function CharacterOptionsPanel() {
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const setCharacterOptionChoice = useBuildStore((s) => s.setCharacterOptionChoice);
+  const [oghmaSkillsPickerOpen, setOghmaSkillsPickerOpen] = useState(false);
 
   if (!gameData) return null;
+
+  if (oghmaSkillsPickerOpen) {
+    return <OghmaSkillsPickerPanel onBack={() => setOghmaSkillsPickerOpen(false)} />;
+  }
 
   const { game } = gameData;
   const { characterOptions } = game;
@@ -310,7 +318,10 @@ export function CharacterOptionsPanel() {
               const extension = option.extension
                 ? getCharacterOptionExtension(option.extension)
                 : undefined;
-              const Control = extension?.Control;
+              const Control =
+                option.extension === "oghma-infinium"
+                  ? OghmaInfiniumControl
+                  : extension?.Control;
 
               if (Control) {
                 return (
@@ -320,6 +331,11 @@ export function CharacterOptionsPanel() {
                     selectedChoiceId={selectedChoiceId}
                     labels={labels}
                     onSelect={onSelect}
+                    onOpenOghmaSkillsPicker={
+                      option.extension === "oghma-infinium"
+                        ? () => setOghmaSkillsPickerOpen(true)
+                        : undefined
+                    }
                   />
                 );
               }

@@ -35,7 +35,14 @@ import {
   getBypassSkillIncreaseGrantBonus,
   getSkillLevelGrantBonus,
   getSkillLevelGrantFloorBonus,
+  getSkillLevelGrantFreeTopLevels,
 } from "@/lib/skillLevelGrants";
+import {
+  getOghmaFreeSkillLevels,
+  getOghmaSkillLimit,
+  isOghmaSkillActive,
+  migrateOghmaInfiniumBuild,
+} from "@/lib/oghmaInfinium";
 export {
   formatTrainingTierRange,
   getMaxTrainingSkillLevel,
@@ -56,6 +63,7 @@ export interface BuildState {
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
+  oghmaSkillIds: string[];
   attributeBonus: Attributes;
   characterOptionChoices: Record<string, string>;
   selectedPerkIds: string[];
@@ -267,8 +275,14 @@ export function computeSkillPointsToReach(
 }
 
 export function getStoredSkillLevel(game: GameData, state: BuildState, skillId: string): number {
-  const floor = getSkillFloor(game, state, skillId) + getSkillLevelGrantFloorBonus(game, state, skillId);
-  const stored = state.skillLevels[skillId] ?? floor;
+  const baseFloor = getSkillFloor(game, state, skillId) + getSkillLevelGrantFloorBonus(game, state, skillId);
+  const rawStored = state.skillLevels[skillId];
+  const oghmaFloor =
+    isOghmaSkillActive(state, skillId) && rawStored !== undefined
+      ? Math.max(baseFloor, rawStored - getOghmaFreeSkillLevels(game))
+      : 0;
+  const floor = Math.max(baseFloor, oghmaFloor);
+  const stored = rawStored ?? floor;
   return Math.min(getMaxSkillLevel(game), Math.max(floor, stored));
 }
 
@@ -433,7 +447,9 @@ function computePaidSkillPoints(
   const chargeFrom = skillPointFreeThroughFloor
     ? Math.max(pointBase, floor)
     : pointBase;
-  const gross = computeSkillPointsToReach(game.mechanics, chargeFrom, effectiveLevel);
+  const freeTopLevels = getSkillLevelGrantFreeTopLevels(game, state, skillId);
+  const paidToLevel = Math.max(chargeFrom, effectiveLevel - freeTopLevels);
+  const gross = computeSkillPointsToReach(game.mechanics, chargeFrom, paidToLevel);
   const trainingCredit = computeTrainingSkillPointCredit(
     game.mechanics,
     game,
@@ -807,17 +823,28 @@ export function reconcileBuild(
     build.playerLevel ?? game.mechanics.leveling.baseLevel,
   );
 
-  const leveledBuild = migrateSkillTrainingStorage(game, {
-    ...build,
-    birthsignId: build.birthsignId ?? legacyBirthsignId ?? "none",
-    playerLevel,
-    skillTrainingRanges: build.skillTrainingRanges ?? {},
-    characterOptionChoices: normalizeCharacterOptionChoices(
-      game,
-      build.characterOptionChoices,
-      legacyOghmaChoice,
-    ),
-  });
+  const leveledBuild = migrateSkillTrainingStorage(
+    game,
+    (() => {
+      const migratedOghma = migrateOghmaInfiniumBuild(game, {
+        ...build,
+        birthsignId: build.birthsignId ?? legacyBirthsignId ?? "none",
+        playerLevel,
+        skillTrainingRanges: build.skillTrainingRanges ?? {},
+        oghmaSkillIds: build.oghmaSkillIds ?? [],
+        characterOptionChoices: build.characterOptionChoices ?? {},
+      });
+
+      return {
+        ...migratedOghma,
+        characterOptionChoices: normalizeCharacterOptionChoices(
+          game,
+          migratedOghma.characterOptionChoices,
+          legacyOghmaChoice,
+        ),
+      };
+    })(),
+  );
 
   const traitLimit =
     game.manifest.limits.traits + sumCollectedBudgetEffects(collectBuildChanges(game, leveledBuild)).traitSlots;
@@ -1822,6 +1849,16 @@ export function canSelectMajorSkill(game: GameData, state: BuildState, skillId: 
   return skill?.majorEligible ?? false;
 }
 
+export function canSelectOghmaSkill(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+): boolean {
+  if (!isAllocatableSkill(game, skillId)) return false;
+  if (state.oghmaSkillIds.includes(skillId)) return true;
+  return state.oghmaSkillIds.length < getOghmaSkillLimit(game);
+}
+
 export function canSelectMinorSkill(game: GameData, state: BuildState, skillId: string): boolean {
   if (state.minorSkillIds.includes(skillId)) return true;
   if (state.minorSkillIds.length >= game.manifest.limits.minorSkills) return false;
@@ -1895,6 +1932,7 @@ export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
     stringArraysEqual(a.traitIds, b.traitIds) &&
     stringArraysEqual(a.majorSkillIds, b.majorSkillIds) &&
     stringArraysEqual(a.minorSkillIds, b.minorSkillIds) &&
+    stringArraysEqual(a.oghmaSkillIds, b.oghmaSkillIds) &&
     a.attributeBonus.health === b.attributeBonus.health &&
     a.attributeBonus.magicka === b.attributeBonus.magicka &&
     a.attributeBonus.stamina === b.attributeBonus.stamina &&
@@ -1915,6 +1953,7 @@ export function createInitialBuildState(): BuildState {
     traitIds: [],
     majorSkillIds: [],
     minorSkillIds: [],
+    oghmaSkillIds: [],
     attributeBonus: emptyAttributes(),
     characterOptionChoices: {},
     selectedPerkIds: [],

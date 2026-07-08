@@ -1,70 +1,56 @@
 import { defineCharacterOption } from "@/extension-api";
-
-const PERK_POINT_BONUS = 3;
-const SKILL_LEVEL_BONUS = 5;
-
-const PATH_SKILLS: Record<string, string[]> = {
-  warrior: ["one-handed", "two-handed", "block", "heavy-armor", "smithing", "enchanting"],
-  mage: [
-    "destruction",
-    "conjuration",
-    "alteration",
-    "illusion",
-    "restoration",
-    "enchanting",
-  ],
-  thief: ["sneak", "evasion", "finesse", "wayfarer", "speech", "alchemy"],
-  health: ["one-handed", "two-handed", "block", "heavy-armor", "smithing", "enchanting"],
-  magicka: [
-    "destruction",
-    "conjuration",
-    "alteration",
-    "illusion",
-    "restoration",
-    "enchanting",
-  ],
-  stamina: ["sneak", "evasion", "finesse", "wayfarer", "speech", "alchemy"],
-};
+import {
+  getActiveOghmaSkillIds,
+  getOghmaFreeSkillLevels,
+  getOghmaPerkPointBonus,
+  OGHMA_INFINIUM_CLAIMED_CHOICE,
+} from "@/lib/oghmaInfinium";
 
 export default defineCharacterOption({
   id: "oghma-infinium",
-  getModifications({ choice, option }) {
+  getModifications({ choice, option, game, state }) {
     if (choice.id === option.defaultChoice) return [];
 
-    const skills = PATH_SKILLS[choice.id] ?? [];
+    const skillIds = getActiveOghmaSkillIds(state);
+    const freeTopLevels = getOghmaFreeSkillLevels(game);
+
     return [
       {
         source: { labelKey: option.titleLabel },
-        effects: [{ type: "perkPoints", value: PERK_POINT_BONUS }],
-        skillLevelGrants: skills.map((skillId) => ({
+        effects: [{ type: "perkPoints", value: getOghmaPerkPointBonus(game) }],
+        skillLevelGrants: skillIds.map((skillId) => ({
           skillId,
-          bonus: SKILL_LEVEL_BONUS,
-          bypassPlayerLevelCap: true,
-          bypassSkillIncreaseLimit: true,
+          bonus: 0,
+          freeTopLevels,
         })),
       },
     ];
   },
-  getSummaryLines({ choice, option, labels }) {
+  getSummaryLines({ choice, option, labels, game, state }) {
     if (choice.id === option.defaultChoice) return [];
 
     const lines = [];
     const perkTemplate = labels.oghmaPerkPoints;
+    const perkPoints = getOghmaPerkPointBonus(game);
     if (perkTemplate) {
       lines.push({
         key: `${option.id}-perk-points`,
-        text: perkTemplate.replace("{count}", String(PERK_POINT_BONUS)),
+        text: perkTemplate.replace("{count}", String(perkPoints)),
       });
     }
 
     const skillTemplate = labels.oghmaSkillLevels;
-    if (skillTemplate) {
+    const freeTopLevels = getOghmaFreeSkillLevels(game);
+    const selectedCount = getActiveOghmaSkillIds(state).length;
+    if (skillTemplate && selectedCount > 0) {
       lines.push({
         key: `${option.id}-skill-levels`,
-        text: skillTemplate.replace("{count}", String(SKILL_LEVEL_BONUS)),
+        text: skillTemplate.replace("{count}", String(freeTopLevels)),
       });
     }
 
     return lines;
   },
 });
+
+export { OGHMA_INFINIUM_CLAIMED_CHOICE };

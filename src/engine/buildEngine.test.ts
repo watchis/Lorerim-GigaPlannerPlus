@@ -683,7 +683,8 @@ describe("areBuildStatesEqual", () => {
       majorSkillIds: ["block"],
       minorSkillIds: ["one-handed"],
       attributeBonus: { health: 1, magicka: 0, stamina: 0 },
-      characterOptionChoices: { "oghma-infinium": "health" },
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
       selectedPerkIds: ["block-improved-blocking"],
       skillLevels: { block: 20 },
       skillTrainingRanges: { block: [1, 0, 0, 0] },
@@ -706,7 +707,7 @@ describe("areBuildStatesEqual", () => {
     expect(
       areBuildStatesEqual(base, {
         ...base,
-        characterOptionChoices: { "oghma-infinium": "magicka" },
+        characterOptionChoices: { "oghma-infinium": "none" },
       }),
     ).toBe(false);
     expect(areBuildStatesEqual(base, { ...base, selectedPerkIds: [] })).toBe(false);

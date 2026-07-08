@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { aggregateEffects } from "@/lib/trackedStats";
 import { sumCollectedBudgetEffects, collectBuildChanges } from "@/lib/buildModifications";
-import { computeBuild } from "@/engine/buildEngine";
+import {
+  computeBuild,
+  computeSkillPointsSpentOnSkill,
+  computeSkillPointsToReach,
+  getSkillFloor,
+  reconcileBuild,
+} from "@/engine/buildEngine";
 import { getTestGameData, createTestBuildState } from "@/test/helpers";
 
 describe("build modifications integration", () => {
@@ -19,7 +25,7 @@ describe("build modifications integration", () => {
   it("applies Oghma perk points and Alduin trait slot from extensions/effects", () => {
     const state = createTestBuildState({
       characterOptionChoices: {
-        "oghma-infinium": "mage",
+        "oghma-infinium": "claimed",
         "alduin-bonus-trait": "claimed",
       },
     });
@@ -48,13 +54,58 @@ describe("build modifications integration", () => {
     expect(computed.plannerNotesByPerkId["enchanting-artifact-enchanter"]?.length).toBe(2);
   });
 
-  it("grants effective skill levels from Oghma without raising stored level cap conflicts", () => {
+  it("waives skill points for the top five levels on Oghma skills", () => {
     const state = createTestBuildState({
-      playerLevel: 1,
-      characterOptionChoices: { "oghma-infinium": "warrior" },
-      skillLevels: { block: 15 },
+      raceId: "nord",
+      playerLevel: 80,
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
+      skillLevels: { block: 75 },
     });
-    const computed = computeBuild(game, state);
-    expect(computed.skillLevels.block).toBe(20);
+
+    const spentWithOghma = computeSkillPointsSpentOnSkill(game, state, "block");
+    const withoutOghma = createTestBuildState({
+      ...state,
+      characterOptionChoices: { "oghma-infinium": "none" },
+    });
+    const spentWithoutOghma = computeSkillPointsSpentOnSkill(game, withoutOghma, "block");
+
+    expect(spentWithOghma).toBeLessThan(spentWithoutOghma);
+    expect(spentWithOghma).toBe(
+      computeSkillPointsToReach(game.mechanics, 10, 70),
+    );
+  });
+
+  it("keeps stored skill levels when Oghma is turned off", () => {
+    const withOghma = createTestBuildState({
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
+      skillLevels: { block: 75 },
+    });
+    const withoutOghma = createTestBuildState({
+      ...withOghma,
+      characterOptionChoices: { "oghma-infinium": "none" },
+    });
+
+    expect(withoutOghma.skillLevels.block).toBe(75);
+    expect(computeSkillPointsSpentOnSkill(game, withoutOghma, "block")).toBeGreaterThan(
+      computeSkillPointsSpentOnSkill(game, withOghma, "block"),
+    );
+  });
+
+  it("raises the floor when an Oghma skill is selected", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      characterOptionChoices: { "oghma-infinium": "claimed" },
+      oghmaSkillIds: ["block"],
+      skillLevels: { block: 75 },
+    });
+
+    expect(getSkillFloor(game, state, "block")).toBe(10);
+    const stored = reconcileBuild(game, state);
+    expect(stored.skillLevels.block).toBe(75);
+    expect(computeSkillPointsSpentOnSkill(game, stored, "block")).toBe(
+      computeSkillPointsToReach(game.mechanics, 10, 70),
+    );
   });
 });
