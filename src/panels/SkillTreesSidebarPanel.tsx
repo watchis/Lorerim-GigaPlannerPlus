@@ -71,13 +71,12 @@ export function SkillTreesSidebarPanel() {
   return (
     <Card
       className={cn(
-        "flex flex-col",
-        stackedLayout ? "min-h-0 flex-1 overflow-hidden" : "h-fit max-h-full overflow-visible",
+        "flex min-h-0 flex-1 flex-col overflow-hidden",
       )}
     >
       <CardHeader
         className={cn(
-          "sticky top-[2px] z-10 overflow-hidden rounded-t-[var(--radius-lg)] flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50 bg-[var(--color-surface)]",
+          "flex-shrink-0 flex-col items-stretch gap-3 space-y-0 border-b border-[var(--color-border)]/50",
           stackedLayout ? "px-3 py-2.5" : compact ? "gap-2 px-2 py-2" : "px-3 py-3",
         )}
       >
@@ -103,7 +102,7 @@ export function SkillTreesSidebarPanel() {
       </CardHeader>
       <CardContent
         className={cn(
-          stackedLayout && "min-h-0 flex-1 overflow-y-auto overscroll-y-contain",
+          "min-h-0 flex-1 overflow-y-auto overscroll-y-contain",
           compact ? "p-1" : "p-2",
         )}
       >

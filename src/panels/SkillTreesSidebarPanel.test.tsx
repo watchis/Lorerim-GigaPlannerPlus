@@ -90,15 +90,14 @@ describe("SkillTreesSidebarPanel", () => {
     vi.restoreAllMocks();
   });
 
-  it("keeps the pane header sticky while the column scrolls", () => {
+  it("keeps the header outside the pane scroll area", () => {
     act(() => {
       root!.render(createElement(SkillTreesSidebarPanel));
     });
 
-    const stickyEl = container?.querySelector(".sticky");
-    expect(stickyEl).toBeTruthy();
-    expect((stickyEl as HTMLDivElement).className).toContain("top-[2px]");
-    expect((stickyEl as HTMLDivElement).className).toContain("rounded-t");
+    const scrollEl = container?.querySelector(".overflow-y-auto");
+    expect(scrollEl).toBeTruthy();
+    expect((scrollEl as HTMLDivElement).className).toContain("flex-1");
   });
 });
 
