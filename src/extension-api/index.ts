@@ -12,8 +12,6 @@ export type {
   SourcedSkillLevelGrant,
 } from "./types";
 
-export type { PerkAllocation } from "@/data/schemas";
-
 export { scaleDerivedStatBySkillLevel } from "./helpers";
 
 import type { CharacterOptionExtension, PerkExtension } from "./types";

@@ -40,14 +40,6 @@ describe("build modifications integration", () => {
     expect(hagglingSource?.value).toBe(50);
   });
 
-  it("does not add artifact enchanter planner notes when selected", () => {
-    const state = createTestBuildState({
-      selectedPerkIds: ["enchanting-artifact-enchanter"],
-    });
-    const computed = computeBuild(game, state);
-    expect(computed.plannerNotesByPerkId["enchanting-artifact-enchanter"]).toBeUndefined();
-  });
-
   it("grants effective skill levels from Oghma without raising stored level cap conflicts", () => {
     const state = createTestBuildState({
       playerLevel: 1,

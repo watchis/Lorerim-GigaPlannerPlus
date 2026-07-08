@@ -133,11 +133,9 @@ Complex perks and character options use build-time TypeScript plugins under [`ex
 |------|----------------|
 | Bindings registry | Maps `skillId` + perk name (or character `optionId`) → `extension` id |
 | Perk import | After layout/graph merge, `applyPerkExtensionBindings` sets `extension` on matching nodes, clears `effects`, and re-applies `allocation` from bindings |
-| Graph snapshots | Existing `extension` fields survive perk rebuilds; **allocation for extension perks is not restored from snapshots** (bindings are authoritative) |
+| Graph snapshots | Existing `extension` fields survive perk rebuilds; allocation for extension perks comes from bindings, not snapshots |
 | `regen:effects` | Skips perks with `extension` set |
 | Validation | Import warns when bindings, JSON allocation, or `extensions/*.ts` files drift |
-
-Repeatable perks (e.g. Artifact Enchanter) must declare `allocation` in both `extension-bindings.json` and the extension module. Import always re-applies that metadata after graph snapshots so rebuilds cannot strip stackable behavior.
 
 To add a new extension-backed perk after creating `extensions/perks/<id>.ts`:
 

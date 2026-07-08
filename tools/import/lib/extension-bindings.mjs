@@ -110,8 +110,6 @@ export function applyPerkExtensionBindings(trees, bindings) {
       perk.effects = [];
       if (binding.allocation) {
         perk.allocation = { ...binding.allocation };
-      } else {
-        delete perk.allocation;
       }
       applied += 1;
     }
