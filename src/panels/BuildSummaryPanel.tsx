@@ -27,7 +27,12 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
 
   if (!gameData) return null;
 
-  const activeEntry = updateSavedBuildInList(savedBuilds, activeBuildId, build).find(
+  const activeEntry = updateSavedBuildInList(
+    savedBuilds,
+    activeBuildId,
+    build,
+    gameData.game.manifest.version,
+  ).find(
     (entry) => entry.id === activeBuildId,
   );
   const buildCode = activeEntry

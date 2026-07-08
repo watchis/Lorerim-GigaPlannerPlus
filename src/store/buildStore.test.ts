@@ -19,6 +19,7 @@ const localStorageMock = vi.hoisted(() => {
 vi.stubGlobal("localStorage", localStorageMock);
 
 import { decodeBuildPackage, encodeBuild, encodeSavedBuild } from "@/engine/buildCodec";
+import { createExportedBuild, createExportedLibrary } from "@/lib/buildIO";
 import { createTestBuildState, getTestAppData } from "@/test/helpers";
 import { createSavedBuild, isSavedBuildImported, markSavedBuildImported } from "@/store/savedBuilds";
 
@@ -291,5 +292,60 @@ describe("buildStore shared build import", () => {
       .savedBuilds.find((entry) => entry.id === useBuildStore.getState().activeBuildId);
     expect(activeEntry?.build.raceId).toBe("breton");
     expect(isSavedBuildImported(activeEntry!)).toBe(false);
+  });
+
+  it("importBuildLibrary preserves per-build modpackVersion from exported backups", () => {
+    const buildA = createTestBuildState({ description: "Build A" });
+    const buildB = createTestBuildState({ description: "Build B" });
+
+    const entryA = {
+      ...createSavedBuild("Exported A", buildA),
+      modpackVersion: "4.9.0.1",
+    };
+    const entryB = {
+      ...createSavedBuild("Exported B", buildB),
+      modpackVersion: "5.0.4.2",
+    };
+
+    const exported = createExportedLibrary([entryA, entryB], appData.game.manifest.version);
+
+    useBuildStore.getState().importBuildLibrary(exported.savedBuilds, exported.modpackVersion);
+
+    const state = useBuildStore.getState();
+    const restoredA = state.savedBuilds.find((e) => e.name === "Exported A")!;
+    const restoredB = state.savedBuilds.find((e) => e.name === "Exported B")!;
+
+    expect(restoredA.modpackVersion).toBe("4.9.0.1");
+    expect(restoredB.modpackVersion).toBe("5.0.4.2");
+  });
+
+  it("importBuildAsSlot preserves exported modpackVersion", () => {
+    const importedBuild = createTestBuildState({ description: "Imported build slot" });
+    const entry = {
+      ...createSavedBuild("Imported Slot", importedBuild),
+      modpackVersion: "4.9.0.1",
+    };
+
+    const exported = createExportedBuild(
+      entry.name,
+      entry.build,
+      entry.modpackVersion!,
+      [],
+      entry.defaultVariantName,
+      entry.defaultVariantNotes,
+    );
+
+    useBuildStore.getState().importBuildAsSlot(
+      exported.build,
+      exported.name,
+      exported.milestones,
+      exported.defaultVariantName,
+      exported.defaultVariantNotes,
+      exported.modpackVersion,
+    );
+
+    const state = useBuildStore.getState();
+    const restored = state.savedBuilds.find((e) => e.name === "Imported Slot")!;
+    expect(restored.modpackVersion).toBe("4.9.0.1");
   });
 });

@@ -52,6 +52,7 @@ interface UiStore {
   activeSkillTreeId: string | null;
   skillWorkspaceMode: SkillWorkspaceMode;
   perkBadgeVisibility: PerkBadgeVisibility;
+  perkSearchQuery: string;
   setSetupPicker: (picker: SetupPicker | null) => void;
   toggleSetupPicker: (picker: SetupPicker) => void;
   openCharacterOptions: () => void;
@@ -66,6 +67,7 @@ interface UiStore {
   setSkillWorkspaceMode: (mode: SkillWorkspaceMode) => void;
   setPerkBadgeVisibility: (visibility: PerkBadgeVisibility) => void;
   togglePerkBadgeVisibility: (key: PerkBadgeVisibilityKey) => void;
+  setPerkSearchQuery: (query: string) => void;
 }
 
 function getDefaultPerkBadgeVisibility(): PerkBadgeVisibility {
@@ -99,6 +101,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
   perkBadgeVisibility: getDefaultPerkBadgeVisibility(),
+  perkSearchQuery: "",
   setSetupPicker: (picker) =>
     set({ setupPicker: picker, characterOptionsOpen: false, variantsManagerOpen: false }),
   toggleSetupPicker: (picker) => {
@@ -196,4 +199,5 @@ export const useUiStore = create<UiStore>((set, get) => ({
         [key]: !state.perkBadgeVisibility[key],
       },
     })),
+  setPerkSearchQuery: (query) => set({ perkSearchQuery: query }),
 }));

@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import { act, createElement, type ReactNode } from "react";
+import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 vi.mock("@/theme/ThemeProvider", () => ({

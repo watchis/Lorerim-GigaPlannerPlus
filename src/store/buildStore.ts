@@ -38,6 +38,7 @@ import {
   getVariantName,
   getVariantNotes,
   mergeVariantNotesFromEntry,
+  migrateSavedBuildsModpackVersion,
   markSavedBuildImported,
   migrateLegacyStorage,
   nextBuildName,
@@ -65,8 +66,9 @@ function syncActiveEntryBuild(
   savedBuilds: SavedBuild[],
   activeBuildId: string,
   build: BuildState,
+  modpackVersion: string,
 ): SavedBuild[] {
-  return updateSavedBuildInList(savedBuilds, activeBuildId, build);
+  return updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
 }
 
 function getActiveBuildFromPackage(decoded: DecodedBuildPackage): BuildState {
@@ -98,6 +100,7 @@ function createSavedBuildFromPackage(
     ...createSavedBuild(name, defaultBuild, milestoneEntries, defaultVariantName),
     defaultVariantNotes: decoded.shared?.defaultVariantNotes ?? "",
     activeMilestoneId,
+    modpackVersion: game.manifest.version,
   });
 }
 
@@ -142,6 +145,7 @@ interface BuildStore {
     milestones?: Array<{ name: string; build: BuildState; notes?: string }>,
     defaultVariantName?: string,
     defaultVariantNotes?: string,
+    modpackVersion?: string,
   ) => void;
   importBuildLibrary: (
     entries: Array<{
@@ -151,13 +155,15 @@ interface BuildStore {
       defaultVariantName?: string;
       defaultVariantNotes?: string;
       updatedAt?: number;
+      modpackVersion?: string;
     }>,
+    modpackVersion?: string,
   ) => void;
   reorderSavedBuildSlot: (fromIndex: number, toIndex: number) => void;
   selectMilestone: (milestoneId: string | null) => void;
   createVariant: (name?: string) => void;
   copyVariant: (variantId: string | null) => void;
-  importVariant: (build: BuildState, name?: string, notes?: string) => void;
+  importVariant: (build: BuildState, name?: string, notes?: string, modpackVersion?: string) => void;
   deleteActiveVariant: () => void;
   renameActiveVariant: (name: string) => void;
   deleteVariant: (variantId: string | null) => void;
@@ -186,7 +192,12 @@ function commitBuild(
 
   set({
     build: nextBuild,
-    savedBuilds: updateSavedBuildInList(savedBuilds, activeBuildId, nextBuild),
+    savedBuilds: updateSavedBuildInList(
+      savedBuilds,
+      activeBuildId,
+      nextBuild,
+      gameData.game.manifest.version,
+    ),
     computed: recompute(gameData, nextBuild),
   });
 }
@@ -199,9 +210,18 @@ function commitMainBuild(
   const { gameData, savedBuilds, activeBuildId } = get();
   if (!gameData) return;
 
-  const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, get().build);
+  const syncedBuilds = syncActiveEntryBuild(
+    savedBuilds,
+    activeBuildId,
+    get().build,
+    gameData.game.manifest.version,
+  );
   const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, (entry) => ({
-    ...touchSavedBuild({ ...entry, activeMilestoneId: null }, nextBuild),
+    ...touchSavedBuild(
+      { ...entry, activeMilestoneId: null },
+      nextBuild,
+      gameData.game.manifest.version,
+    ),
     activeMilestoneId: null,
   }));
 
@@ -249,12 +269,22 @@ export const useBuildStore = create<BuildStore>()(
         init: (data) => {
           const { build } = get();
           const baseLevel = data.game.mechanics.leveling.baseLevel;
+          const currentModpackVersion = data.game.manifest.version;
+          const nextSavedBuilds = migrateSavedBuildsModpackVersion(
+            get().savedBuilds,
+            currentModpackVersion,
+          );
           const migratedBuild = reconcileBuild(data.game, migrateBuildState({
             ...build,
             playerLevel: build.playerLevel ?? baseLevel,
             characterOptionChoices: build.characterOptionChoices ?? {},
           }));
-          set({ gameData: data, build: migratedBuild, computed: recompute(data, migratedBuild) });
+          set({
+            gameData: data,
+            savedBuilds: nextSavedBuilds,
+            build: migratedBuild,
+            computed: recompute(data, migratedBuild),
+          });
         },
 
         setRace: (raceId) => {
@@ -541,6 +571,7 @@ export const useBuildStore = create<BuildStore>()(
         loadSharedBuild: (decoded) => {
           const { gameData, savedBuilds, activeBuildId } = get();
           if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
 
           if (!decoded.shared) {
             get().loadBuild(decoded.build);
@@ -565,6 +596,7 @@ export const useBuildStore = create<BuildStore>()(
               ...mergedNotes,
               id: entry.id,
               updatedAt: Date.now(),
+              modpackVersion,
             };
           });
 
@@ -581,13 +613,14 @@ export const useBuildStore = create<BuildStore>()(
         importSharedBuild: (decoded) => {
           const { gameData, savedBuilds, build, activeBuildId } = get();
           if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
 
           if (!decoded.shared) {
             get().importBuildAsSlot(decoded.build);
             return;
           }
 
-          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
+          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
           const activeBuild = getActiveBuildFromPackage(decoded);
           const newEntry = markSavedBuildImported(
             createSavedBuildFromPackage(
@@ -615,10 +648,14 @@ export const useBuildStore = create<BuildStore>()(
         createSavedBuildSlot: (name) => {
           const { savedBuilds, build, activeBuildId, gameData } = get();
           if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
 
-          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
+          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
           const freshBuild = createInitialBuildState();
-          const newEntry = createSavedBuild(name?.trim() || nextBuildName(syncedBuilds), freshBuild);
+          const newEntry = {
+            ...createSavedBuild(name?.trim() || nextBuildName(syncedBuilds), freshBuild),
+            modpackVersion,
+          };
 
           set({
             savedBuilds: [...syncedBuilds, newEntry],
@@ -631,8 +668,9 @@ export const useBuildStore = create<BuildStore>()(
         deleteSavedBuildSlot: (id) => {
           const { savedBuilds, activeBuildId, build, gameData } = get();
           if (!gameData || savedBuilds.length <= 1) return;
+          const modpackVersion = gameData.game.manifest.version;
 
-          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
+          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
           const remaining = syncedBuilds.filter((entry) => entry.id !== id);
           if (remaining.length === 0) return;
 
@@ -651,19 +689,24 @@ export const useBuildStore = create<BuildStore>()(
           const trimmed = name.trim();
           if (!trimmed) return;
 
-          const { savedBuilds } = get();
+          const { savedBuilds, gameData } = get();
+          const modpackVersion = gameData?.game.manifest.version ?? "";
           set({
             savedBuilds: savedBuilds.map((entry) =>
-              entry.id === id ? { ...entry, name: trimmed, updatedAt: Date.now() } : entry,
+              entry.id === id
+                ? { ...entry, name: trimmed, updatedAt: Date.now(), modpackVersion }
+                : entry,
             ),
           });
         },
 
         selectSavedBuildSlot: (id) => {
-          const { savedBuilds, activeBuildId, build } = get();
+          const { savedBuilds, activeBuildId, build, gameData } = get();
+          if (!gameData) return;
           if (id === activeBuildId) return;
 
-          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
+          const modpackVersion = gameData.game.manifest.version;
+          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
           activateBuild(set, get, id, syncedBuilds);
         },
 
@@ -673,22 +716,31 @@ export const useBuildStore = create<BuildStore>()(
           importedMilestones = [],
           defaultVariantName,
           defaultVariantNotes,
+          modpackVersion,
         ) => {
           const { savedBuilds, build, activeBuildId, gameData } = get();
           if (!gameData) return;
+          const currentModpackVersion = gameData.game.manifest.version;
+          const importedModpackVersion = modpackVersion ?? currentModpackVersion;
 
-          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
+          const syncedBuilds = updateSavedBuildInList(
+            savedBuilds,
+            activeBuildId,
+            build,
+            currentModpackVersion,
+          );
           const milestones = importedMilestones.map((entry) =>
             createMilestone(entry.name, reconcileBuild(gameData.game, entry.build), entry.notes ?? ""),
           );
-          const newEntry = markSavedBuildImported(
-            createSavedBuild(
+          const newEntry = markSavedBuildImported({
+            ...createSavedBuild(
               uniqueBuildName(name ?? "", syncedBuilds),
               importedBuild,
               milestones,
               defaultVariantName,
             ),
-          );
+            modpackVersion: importedModpackVersion,
+          });
           if (defaultVariantNotes != null) {
             newEntry.defaultVariantNotes = defaultVariantNotes;
           }
@@ -701,11 +753,16 @@ export const useBuildStore = create<BuildStore>()(
           });
         },
 
-        importBuildLibrary: (entries) => {
+        importBuildLibrary: (entries, modpackVersion) => {
           const { gameData } = get();
           if (!gameData || entries.length === 0) return;
+          const currentModpackVersion = gameData.game.manifest.version;
+          const importedModpackVersion = modpackVersion ?? currentModpackVersion;
 
           const imported = entries.map((entry) => {
+            const entryModpackVersion = entry.modpackVersion?.trim()
+              ? entry.modpackVersion.trim()
+              : importedModpackVersion;
             const milestones = (entry.milestones ?? []).map((milestone) =>
               createMilestone(
                 milestone.name,
@@ -713,12 +770,15 @@ export const useBuildStore = create<BuildStore>()(
                 milestone.notes ?? "",
               ),
             );
-            return createSavedBuild(
-              entry.name,
-              entry.build,
-              milestones,
-              entry.defaultVariantName,
-            );
+            return {
+              ...createSavedBuild(
+                entry.name,
+                entry.build,
+                milestones,
+                entry.defaultVariantName,
+              ),
+              modpackVersion: entryModpackVersion,
+            };
           });
           for (let i = 0; i < imported.length; i += 1) {
             if (entries[i]?.defaultVariantName) {
@@ -748,16 +808,19 @@ export const useBuildStore = create<BuildStore>()(
         },
 
         reorderSavedBuildSlot: (fromIndex, toIndex) => {
-          const { savedBuilds, activeBuildId, build } = get();
-          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build);
+          const { savedBuilds, activeBuildId, build, gameData } = get();
+          if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
+          const syncedBuilds = updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
           set({ savedBuilds: reorderBuildsInList(syncedBuilds, fromIndex, toIndex) });
         },
 
         selectMilestone: (milestoneId) => {
           const { gameData, savedBuilds, activeBuildId, build } = get();
           if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
 
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
@@ -781,7 +844,8 @@ export const useBuildStore = create<BuildStore>()(
           const { gameData, savedBuilds, activeBuildId, build } = get();
           if (!gameData) return;
 
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const modpackVersion = gameData.game.manifest.version;
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
@@ -800,6 +864,7 @@ export const useBuildStore = create<BuildStore>()(
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
+            modpackVersion,
           });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
@@ -814,7 +879,8 @@ export const useBuildStore = create<BuildStore>()(
           const { gameData, savedBuilds, activeBuildId, build } = get();
           if (!gameData) return;
 
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const modpackVersion = gameData.game.manifest.version;
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
@@ -832,6 +898,7 @@ export const useBuildStore = create<BuildStore>()(
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
+            modpackVersion,
           });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
@@ -842,11 +909,17 @@ export const useBuildStore = create<BuildStore>()(
           });
         },
 
-        importVariant: (importedBuild, name, notes) => {
+        importVariant: (importedBuild, name, notes, modpackVersion) => {
           const { gameData, savedBuilds, activeBuildId, build } = get();
           if (!gameData) return;
 
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const effectiveModpackVersion = modpackVersion ?? gameData.game.manifest.version;
+          const syncedBuilds = syncActiveEntryBuild(
+            savedBuilds,
+            activeBuildId,
+            build,
+            effectiveModpackVersion,
+          );
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
@@ -865,6 +938,7 @@ export const useBuildStore = create<BuildStore>()(
             milestones: [...entry.milestones, milestone],
             activeMilestoneId: milestone.id,
             updatedAt: Date.now(),
+            modpackVersion: effectiveModpackVersion,
           });
           const nextBuilds = updateActiveEntry(syncedBuilds, activeBuildId, () => nextEntry);
 
@@ -876,10 +950,12 @@ export const useBuildStore = create<BuildStore>()(
         },
 
         setVariantNotes: (variantId, notes) => {
-          const { savedBuilds, activeBuildId } = get();
+          const { savedBuilds, activeBuildId, gameData } = get();
+          if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
           set({
             savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) =>
-              setVariantNotesOnEntry(current, variantId, notes),
+              setVariantNotesOnEntry(current, variantId, notes, modpackVersion),
             ),
           });
         },
@@ -902,7 +978,8 @@ export const useBuildStore = create<BuildStore>()(
           const { gameData, savedBuilds, activeBuildId, build } = get();
           if (!gameData) return;
 
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const modpackVersion = gameData.game.manifest.version;
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry || getVariantCount(entry) <= 1) return;
 
@@ -914,6 +991,7 @@ export const useBuildStore = create<BuildStore>()(
             nextEntry = acknowledgeSavedBuildEdits({
               ...promoteMilestoneToDefault(entry, toPromote.id),
               updatedAt: Date.now(),
+              modpackVersion,
             });
           } else {
             const wasActive = entry.activeMilestoneId === variantId;
@@ -922,6 +1000,7 @@ export const useBuildStore = create<BuildStore>()(
               milestones: entry.milestones.filter((m) => m.id !== variantId),
               activeMilestoneId: wasActive ? null : entry.activeMilestoneId,
               updatedAt: Date.now(),
+              modpackVersion,
             });
           }
 
@@ -947,7 +1026,9 @@ export const useBuildStore = create<BuildStore>()(
           const trimmed = name.trim();
           if (!trimmed) return;
 
-          const { savedBuilds, activeBuildId } = get();
+          const { savedBuilds, activeBuildId, gameData } = get();
+          if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
           set({
             savedBuilds: updateActiveEntry(savedBuilds, activeBuildId, (current) => {
               if (variantId === null) {
@@ -955,6 +1036,7 @@ export const useBuildStore = create<BuildStore>()(
                   ...current,
                   defaultVariantName: trimmed,
                   updatedAt: Date.now(),
+                  modpackVersion,
                 });
               }
 
@@ -964,19 +1046,23 @@ export const useBuildStore = create<BuildStore>()(
                   milestone.id === variantId ? { ...milestone, name: trimmed } : milestone,
                 ),
                 updatedAt: Date.now(),
+                modpackVersion,
               });
             }),
           });
         },
 
         reorderVariants: (fromIndex, toIndex) => {
-          const { savedBuilds, activeBuildId, build } = get();
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build);
+          const { savedBuilds, activeBuildId, build, gameData } = get();
+          if (!gameData) return;
+          const modpackVersion = gameData.game.manifest.version;
+          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
 
           set({
             savedBuilds: updateActiveEntry(syncedBuilds, activeBuildId, (entry) => ({
               ...reorderVariantsInEntry(entry, fromIndex, toIndex),
               updatedAt: Date.now(),
+              modpackVersion,
             })),
           });
         },

@@ -41,6 +41,10 @@ import {
   readBackupFile,
 } from "@/lib/buildIO";
 import { cn } from "@/lib/utils";
+import {
+  getModpackVersionForBuildCard,
+  getModpackVersionMismatchLevel,
+} from "@/lib/modpackVersion";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import type { SavedBuild } from "@/store/savedBuilds";
@@ -85,7 +89,6 @@ function getBuildSummary(build: BuildState, game: GameData, labels: Record<strin
   return {
     raceLabel: raceName ?? labels.noRace,
     level,
-    perkCount: build.selectedPerkIds.length,
   };
 }
 
@@ -464,7 +467,6 @@ interface SavedBuildCardProps {
   canReorder: boolean;
   canDelete: boolean;
   labels: Record<string, string>;
-  milestoneLabels: Record<string, string>;
   game: GameData;
   onSelect: () => void;
   onDragStart: () => void;
@@ -484,7 +486,6 @@ function SavedBuildCard({
   canReorder,
   canDelete,
   labels,
-  milestoneLabels,
   game,
   onSelect,
   onDragStart,
@@ -499,6 +500,15 @@ function SavedBuildCard({
   const [draftName, setDraftName] = useState(entry.name);
   const activeBuild = getActiveSavedBuildBuild(entry);
   const summary = getBuildSummary(activeBuild, game, labels);
+  const currentModpackVersion = game.manifest.version;
+  const modpackLabel = getModpackVersionForBuildCard({
+    savedModpackVersion: entry.modpackVersion,
+    currentModpackVersion,
+  });
+  const modpackMismatchLevel = getModpackVersionMismatchLevel({
+    savedModpackVersion: entry.modpackVersion,
+    currentModpackVersion,
+  });
 
   const startEditing = () => {
     setDraftName(entry.name);
@@ -634,9 +644,15 @@ function SavedBuildCard({
           )}
         </div>
         <p className="mt-1 text-xs text-[var(--color-muted)]">
-          {summary.raceLabel} ·{" "}
-          {formatLabel(milestoneLabels.stepMeta, { level: summary.level, perks: summary.perkCount })} ·{" "}
-          {formatUpdatedAt(entry.updatedAt)}
+          {summary.raceLabel} · Level {summary.level} ·{" "}
+          <span
+            className={cn(
+              modpackMismatchLevel === "warning" && "text-[var(--color-accent)]",
+              modpackMismatchLevel === "error" && "text-[var(--color-error)]",
+            )}
+          >
+            {modpackLabel}
+          </span> · {formatUpdatedAt(entry.updatedAt)}
         </p>
       </div>
 
@@ -656,7 +672,6 @@ export function BuildsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { labels: allLabels } = useThemeConfig();
   const labels = usePanelLabels("build-library");
-  const milestoneLabels = allLabels.milestones;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
@@ -701,7 +716,7 @@ export function BuildsPage() {
   const modpackVersion = gameData.game.manifest.version;
   const activeBuild = savedBuilds.find((entry) => entry.id === activeBuildId);
   const syncedActiveBuild = activeBuild
-    ? updateSavedBuildInList(savedBuilds, activeBuildId, build).find(
+    ? updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion).find(
         (entry) => entry.id === activeBuildId,
       )
     : null;
@@ -745,7 +760,7 @@ export function BuildsPage() {
         if (library.savedBuilds.length === 0) {
           throw new Error(labels.importEmptyLibrary);
         }
-        importBuildLibrary(library.savedBuilds);
+        importBuildLibrary(library.savedBuilds, library.modpackVersion);
         showSuccess(labels.importedLibrary, "file");
       } else {
         const exported = parseExportedBuild(data);
@@ -755,6 +770,7 @@ export function BuildsPage() {
           exported.milestones,
           exported.defaultVariantName,
           exported.defaultVariantNotes,
+          exported.modpackVersion,
         );
         showSuccess(labels.importedAsNew, "file");
       }
@@ -799,7 +815,7 @@ export function BuildsPage() {
       createExportedBuild(
         name,
         entry?.build ?? build,
-        modpackVersion,
+        entry?.modpackVersion ?? modpackVersion,
         entry?.milestones ?? [],
         entry ? getDefaultVariantName(entry) : undefined,
         entry?.defaultVariantNotes,
@@ -924,7 +940,6 @@ export function BuildsPage() {
                       canReorder={savedBuilds.length > 1 && !isFilteringBuilds}
                       canDelete={savedBuilds.length > 1}
                       labels={labels}
-                      milestoneLabels={milestoneLabels}
                       game={gameData.game}
                       onSelect={() => selectSavedBuildSlot(entry.id)}
                       onDragStart={() => setDraggedIndex(index)}

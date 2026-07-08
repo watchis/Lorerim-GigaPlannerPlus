@@ -17,6 +17,7 @@ import {
   perkAbbreviation,
   rectsOverlap,
   resolvePerkBadgePlacement,
+  resolvePerkSearchMatchGlow,
   resolvePerkTooltipScale,
   resolveTreeEdgePaddingPx,
   zoomTreeViewAtPoint,
@@ -232,6 +233,31 @@ describe("perkTreeViewLayout", () => {
 
       expect(getViewportPointFromCenter(viewport, 200, 100)).toEqual({ x: 0, y: 0 });
       expect(getViewportPointFromCenter(viewport, 300, 150)).toEqual({ x: 100, y: 50 });
+    });
+  });
+
+  describe("resolvePerkSearchMatchGlow", () => {
+    it("uses default blur radii at the base node diameter", () => {
+      const glow = resolvePerkSearchMatchGlow(32);
+
+      expect(glow.innerBlurPx).toBe(7);
+      expect(glow.outerBlurPx).toBe(14);
+      expect(glow.boxShadow).toContain("0 0 7px rgba(255,255,255,1)");
+      expect(glow.boxShadow).toContain("0 0 14px rgba(255,255,255,0.72)");
+    });
+
+    it("scales blur radii proportionally with node diameter", () => {
+      const glow = resolvePerkSearchMatchGlow(16);
+
+      expect(glow.innerBlurPx).toBe(3.5);
+      expect(glow.outerBlurPx).toBe(7);
+    });
+
+    it("keeps a minimum inner blur for very small nodes", () => {
+      const glow = resolvePerkSearchMatchGlow(14);
+
+      expect(glow.innerBlurPx).toBeGreaterThanOrEqual(1);
+      expect(glow.outerBlurPx).toBeGreaterThan(glow.innerBlurPx);
     });
   });
 
