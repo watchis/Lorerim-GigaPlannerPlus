@@ -132,10 +132,10 @@ Complex perks and character options use build-time TypeScript plugins under [`ex
 | Step | What happens |
 |------|----------------|
 | Bindings registry | Maps `skillId` + perk name (or character `optionId`) → `extension` id |
-| Perk import | After layout/graph merge, `applyPerkExtensionBindings` sets `extension` on matching nodes and clears `effects` |
-| Graph snapshots | Existing `extension` fields survive perk rebuilds |
+| Perk import | After layout/graph merge, `applyPerkExtensionBindings` sets `extension` on matching nodes, clears `effects`, and re-applies `allocation` from bindings |
+| Graph snapshots | Existing `extension` fields survive perk rebuilds; allocation for extension perks comes from bindings, not snapshots |
 | `regen:effects` | Skips perks with `extension` set |
-| Validation | Import warns when bindings, JSON, or `extensions/*.ts` files drift |
+| Validation | Import warns when bindings, JSON allocation, or `extensions/*.ts` files drift |
 
 To add a new extension-backed perk after creating `extensions/perks/<id>.ts`:
 

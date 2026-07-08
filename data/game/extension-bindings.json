@@ -8,7 +8,11 @@
     {
       "skillId": "enchanting",
       "name": "Artifact Enchanter",
-      "extension": "enchanting-artifact-enchanter"
+      "extension": "enchanting-artifact-enchanter",
+      "allocation": {
+        "kind": "perkPointsBudget",
+        "totalLabel": "infinity"
+      }
     }
   ],
   "characterOptions": [
