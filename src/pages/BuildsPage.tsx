@@ -43,7 +43,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   getModpackVersionForBuildCard,
-  isModpackVersionMismatch,
+  getModpackVersionMismatchLevel,
 } from "@/lib/modpackVersion";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
@@ -505,7 +505,7 @@ function SavedBuildCard({
     savedModpackVersion: entry.modpackVersion,
     currentModpackVersion,
   });
-  const modpackMismatch = isModpackVersionMismatch({
+  const modpackMismatchLevel = getModpackVersionMismatchLevel({
     savedModpackVersion: entry.modpackVersion,
     currentModpackVersion,
   });
@@ -645,8 +645,14 @@ function SavedBuildCard({
         </div>
         <p className="mt-1 text-xs text-[var(--color-muted)]">
           {summary.raceLabel} · Level {summary.level} ·{" "}
-          <span className={cn(modpackMismatch && "text-[var(--color-accent)]")}>{modpackLabel}</span> ·{" "}
-          {formatUpdatedAt(entry.updatedAt)}
+          <span
+            className={cn(
+              modpackMismatchLevel === "warning" && "text-[var(--color-accent)]",
+              modpackMismatchLevel === "error" && "text-[var(--color-error)]",
+            )}
+          >
+            {modpackLabel}
+          </span> · {formatUpdatedAt(entry.updatedAt)}
         </p>
       </div>
 

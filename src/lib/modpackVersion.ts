@@ -11,6 +11,36 @@ export function normalizeModpackVersionForCompare(version: string): string {
   return trimmed.replace(/^[vV]/, "");
 }
 
+/** First dot-separated segment of a modpack version (e.g. `5` from `5.0.4.2`). */
+export function getModpackMajorVersion(version: string): string {
+  const normalized = normalizeModpackVersionForCompare(version);
+  if (!normalized) return "";
+  return normalized.split(".")[0] ?? "";
+}
+
+export type ModpackVersionMismatchLevel = "none" | "warning" | "error";
+
+export function getModpackVersionMismatchLevel({
+  savedModpackVersion,
+  currentModpackVersion,
+}: {
+  savedModpackVersion?: string | null;
+  currentModpackVersion: string;
+}): ModpackVersionMismatchLevel {
+  const saved = savedModpackVersion?.trim();
+  if (!saved) return "none";
+
+  const normalizedSaved = normalizeModpackVersionForCompare(saved);
+  const normalizedCurrent = normalizeModpackVersionForCompare(currentModpackVersion);
+  if (normalizedSaved === normalizedCurrent) return "none";
+
+  if (getModpackMajorVersion(saved) !== getModpackMajorVersion(currentModpackVersion)) {
+    return "error";
+  }
+
+  return "warning";
+}
+
 export function getModpackVersionForBuildCard({
   savedModpackVersion,
   currentModpackVersion,
@@ -30,12 +60,8 @@ export function isModpackVersionMismatch({
   savedModpackVersion?: string | null;
   currentModpackVersion: string;
 }): boolean {
-  const saved = savedModpackVersion?.trim();
-  if (!saved) return false;
-
   return (
-    normalizeModpackVersionForCompare(saved) !==
-    normalizeModpackVersionForCompare(currentModpackVersion)
+    getModpackVersionMismatchLevel({ savedModpackVersion, currentModpackVersion }) !== "none"
   );
 }
 
