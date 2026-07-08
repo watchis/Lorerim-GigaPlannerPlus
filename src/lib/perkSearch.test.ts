@@ -70,5 +70,16 @@ describe("perkSearch", () => {
     const keys = getPerkSearchPositionKeysForTree(firstTree, ["zzzz_non_matching_token"]);
     expect(keys.size).toBe(0);
   });
+
+  it("matches perks in the destiny tree", () => {
+    const game = getTestGameData();
+    const destinyTree = game.perkTrees.destiny;
+    expect(destinyTree).toBeDefined();
+
+    const keys = getPerkSearchPositionKeysForTree(destinyTree, ["focus"]);
+    const focusPerk = destinyTree.perks.find((perk) => perk.name === "Focus");
+    expect(focusPerk).toBeDefined();
+    expect(keys.has(getPerkPositionKey(focusPerk!.position))).toBe(true);
+  });
 });
 

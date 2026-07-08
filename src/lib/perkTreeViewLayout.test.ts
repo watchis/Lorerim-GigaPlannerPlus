@@ -242,8 +242,8 @@ describe("perkTreeViewLayout", () => {
 
       expect(glow.innerBlurPx).toBe(7);
       expect(glow.outerBlurPx).toBe(14);
-      expect(glow.filter).toContain("drop-shadow(0 0 7px rgba(255,255,255,1))");
-      expect(glow.filter).toContain("drop-shadow(0 0 14px rgba(255,255,255,0.72))");
+      expect(glow.boxShadow).toContain("0 0 7px rgba(255,255,255,1)");
+      expect(glow.boxShadow).toContain("0 0 14px rgba(255,255,255,0.72)");
     });
 
     it("scales blur radii proportionally with node diameter", () => {

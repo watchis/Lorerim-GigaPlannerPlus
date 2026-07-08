@@ -327,17 +327,17 @@ export function resolvePerkTooltipScale(
 export interface PerkSearchMatchGlow {
   innerBlurPx: number;
   outerBlurPx: number;
-  filter: string;
+  boxShadow: string;
 }
 
 export function resolvePerkSearchMatchGlow(nodeDiameterPx: number): PerkSearchMatchGlow {
   const scale = nodeDiameterPx / BASE_NODE_DIAMETER_PX;
   const innerBlurPx = Math.max(1, PERK_SEARCH_MATCH_GLOW_INNER_BLUR_PX * scale);
   const outerBlurPx = Math.max(innerBlurPx + 1, PERK_SEARCH_MATCH_GLOW_OUTER_BLUR_PX * scale);
-  const filter =
-    `drop-shadow(0 0 ${innerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_INNER_OPACITY})) ` +
-    `drop-shadow(0 0 ${outerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_OUTER_OPACITY}))`;
-  return { innerBlurPx, outerBlurPx, filter };
+  const boxShadow =
+    `0 0 ${innerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_INNER_OPACITY}), ` +
+    `0 0 ${outerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_OUTER_OPACITY})`;
+  return { innerBlurPx, outerBlurPx, boxShadow };
 }
 
 export function clampTreeViewTransform(

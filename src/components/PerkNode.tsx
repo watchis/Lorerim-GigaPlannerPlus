@@ -316,8 +316,16 @@ export function PerkNode({
     !isConflict &&
       isLocked &&
       !isSelected &&
+      !isSearchMatch &&
       "border-[var(--color-perk-locked)] bg-[var(--color-surface)]/80 text-[var(--color-muted)] opacity-55 group-hover:opacity-80",
-    isSearchMatch && "animate-pulse",
+    !isConflict &&
+      isLocked &&
+      !isSelected &&
+      isSearchMatch &&
+      "border-[var(--color-perk-locked)] bg-[var(--color-surface)] text-[var(--color-foreground)] opacity-90 group-hover:opacity-100",
+    isSearchMatch &&
+      (isSelected || isPartialRank) &&
+      "!text-[var(--color-foreground)] [text-shadow:0_0_3px_rgba(0,0,0,0.92),0_1px_1px_rgba(0,0,0,0.85)]",
   );
 
   const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements, {
@@ -427,18 +435,26 @@ export function PerkNode({
         onContextMenu={(event) => event.preventDefault()}
         className="group relative touch-manipulation border-0 bg-transparent p-0"
       >
-        <span
-          ref={circleRef}
-          data-perk-circle
-          className={circleClassName}
-          style={{
-            width: nodeDiameterPx,
-            height: nodeDiameterPx,
-            fontSize: labelFontPx,
-            ...(searchMatchGlow ? { filter: searchMatchGlow.filter } : {}),
-          }}
-        >
-          <span className="leading-none">{perkAbbreviation(perk.name)}</span>
+        <span className="relative inline-flex shrink-0">
+          {searchMatchGlow && (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full perk-search-match-glow"
+              style={{ boxShadow: searchMatchGlow.boxShadow }}
+            />
+          )}
+          <span
+            ref={circleRef}
+            data-perk-circle
+            className={circleClassName}
+            style={{
+              width: nodeDiameterPx,
+              height: nodeDiameterPx,
+              fontSize: labelFontPx,
+            }}
+          >
+            <span className="leading-none">{perkAbbreviation(perk.name)}</span>
+          </span>
         </span>
         {badgeCount > 0 ? (
           <div

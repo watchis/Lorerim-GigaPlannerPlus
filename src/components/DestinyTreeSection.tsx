@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { PerkTreeMiniView } from "@/components/PerkTreeMiniView";
 import { SkillIcon } from "@/components/SkillIcon";
 import { getBuildPlayerLevelWarnings } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
+import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
 import { useGoToSwipePane } from "@/layout/PlannerSwipePanels";
 import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 import { useBuildStore } from "@/store/buildStore";
@@ -17,6 +19,7 @@ export function DestinyTreeSection() {
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
   const openSkillTree = useUiStore((s) => s.openSkillTree);
+  const perkSearchQuery = useUiStore((s) => s.perkSearchQuery);
   const stackedLayout = usePlannerStackedLayout();
   const goToSwipePane = useGoToSwipePane();
 
@@ -38,6 +41,11 @@ export function DestinyTreeSection() {
   ];
   const hasPerkLevelConflict = conflictPerkIds.length > 0;
   const hasProblem = hasPerkLevelConflict;
+  const perkSearchTokens = useMemo(() => getPerkSearchTokens(perkSearchQuery), [perkSearchQuery]);
+  const perkSearchPositionKeys = useMemo(
+    () => getPerkSearchPositionKeysForTree(tree, perkSearchTokens),
+    [tree, perkSearchTokens],
+  );
 
   return (
     <div className="border-t border-[var(--color-border)]/70 pt-3">
@@ -79,6 +87,7 @@ export function DestinyTreeSection() {
             tree={tree}
             compact
             conflictPerkIds={conflictPerkIds}
+            searchPerkPositionKeys={perkSearchPositionKeys}
             className="h-full w-full"
           />
         </div>
