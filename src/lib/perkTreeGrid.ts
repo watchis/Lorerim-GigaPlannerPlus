@@ -284,6 +284,20 @@ export function canUpgradePerkStackRank(rank: PerkStackRank, canAllocateMore: bo
   return rank.total !== undefined && rank.current < rank.total;
 }
 
+/**
+ * Whether a selected perk should use partial (not fully selected) styling.
+ * Infinity allocations are always partial when any rank is taken — they never reach "full".
+ */
+export function isPerkPartiallyAllocated(
+  stackRank: PerkStackRank | null,
+  isSelected: boolean,
+  canAllocateMore: boolean,
+): boolean {
+  if (!isSelected || stackRank === null || stackRank.current <= 0) return false;
+  if (stackRank.unbounded === "infinity") return true;
+  return canUpgradePerkStackRank(stackRank, canAllocateMore);
+}
+
 /** Rank indicator for multi-level perks; returns null for single-rank nodes. */
 export function getPerkStackRank(perks: Perk[], selectedPerkIds: string[]): PerkStackRank | null {
   if (perks.length <= 1) return null;

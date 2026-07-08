@@ -7,7 +7,7 @@ import {
   getPerkAllocationRank,
   getPerkPositionKey,
   getPerkStackRank,
-  canUpgradePerkStackRank,
+  isPerkPartiallyAllocated,
   getPerkTreeCompactViewBox,
   getPerkTreeGridBounds,
   getVisiblePerksForTree,
@@ -191,7 +191,7 @@ export function PerkTreeMiniView({
         ? perkPointsRemaining > 0
         : stackRank.total !== undefined && stackRank.current < stackRank.total;
 
-      if (canUpgradePerkStackRank(stackRank, canAllocateMore)) {
+      if (isPerkPartiallyAllocated(stackRank, stackRank.current > 0, canAllocateMore)) {
         keys.add(positionKey);
       }
     }

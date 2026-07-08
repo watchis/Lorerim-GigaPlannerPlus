@@ -24,7 +24,11 @@ import {
   getPerkBadgeContainerStyle,
   type PerkBadgePlacement,
 } from "@/lib/perkBadgeLayout";
-import { canUpgradePerkStackRank, formatPerkStackRank, type PerkStackRank } from "@/lib/perkTreeGrid";
+import {
+  formatPerkStackRank,
+  isPerkPartiallyAllocated,
+  type PerkStackRank,
+} from "@/lib/perkTreeGrid";
 import { cn } from "@/lib/utils";
 import type { PerkBadgeVisibility } from "@/store/uiStore";
 
@@ -293,7 +297,7 @@ export function PerkNode({
     [],
   );
 
-  const isPartialRank = isSelected && stackRank !== null && canUpgradePerkStackRank(stackRank, canUpgradeRank);
+  const isPartialRank = isPerkPartiallyAllocated(stackRank, isSelected, canUpgradeRank);
 
   const labelFontPx = Math.max(8, Math.round(nodeDiameterPx * 0.30));
   const searchMatchGlow = isSearchMatch ? resolvePerkSearchMatchGlow(nodeDiameterPx) : null;

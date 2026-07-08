@@ -9,6 +9,7 @@ import {
   getPerkStackRank,
   formatPerkStackRank,
   canUpgradePerkStackRank,
+  isPerkPartiallyAllocated,
   getPerkTreeGridBounds,
   parseSvgViewBox,
   resolvePerkNodeDiameterPx,
@@ -84,6 +85,24 @@ describe("perkTreeGrid", () => {
     expect(canUpgradePerkStackRank({ current: 2, total: 2 }, true)).toBe(false);
     expect(canUpgradePerkStackRank({ current: 2, unbounded: "X" }, true)).toBe(true);
     expect(canUpgradePerkStackRank({ current: 2, unbounded: "X" }, false)).toBe(false);
+  });
+
+  it("treats infinity allocations as always partial when selected", () => {
+    const infinityRank = { current: 2, unbounded: "infinity" as const };
+
+    expect(isPerkPartiallyAllocated(infinityRank, true, true)).toBe(true);
+    expect(isPerkPartiallyAllocated(infinityRank, true, false)).toBe(true);
+    expect(isPerkPartiallyAllocated(infinityRank, false, true)).toBe(false);
+    expect(isPerkPartiallyAllocated({ current: 0, unbounded: "infinity" }, true, true)).toBe(
+      false,
+    );
+  });
+
+  it("uses upgrade availability for bounded and X unbounded partial styling", () => {
+    expect(isPerkPartiallyAllocated({ current: 1, total: 2 }, true, false)).toBe(true);
+    expect(isPerkPartiallyAllocated({ current: 2, total: 2 }, true, true)).toBe(false);
+    expect(isPerkPartiallyAllocated({ current: 2, unbounded: "X" }, true, true)).toBe(true);
+    expect(isPerkPartiallyAllocated({ current: 2, unbounded: "X" }, true, false)).toBe(false);
   });
 
   it("returns the next rank after the highest selected tier", () => {
