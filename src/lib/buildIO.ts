@@ -15,6 +15,7 @@ export const LIBRARY_BACKUP_FILENAME = `lorerim-builds${BUILD_BACKUP_EXTENSION}`
 export interface ExportedMilestone {
   name: string;
   build: BuildState;
+  notes?: string;
 }
 
 export interface ExportedBuild {
@@ -24,6 +25,7 @@ export interface ExportedBuild {
   modpackVersion: string;
   build: BuildState;
   defaultVariantName?: string;
+  defaultVariantNotes?: string;
   milestones?: ExportedMilestone[];
   exportedAt: string;
 }
@@ -32,6 +34,7 @@ export interface ExportedVariant {
   format: typeof VARIANT_EXPORT_FORMAT;
   version: typeof EXPORT_VERSION;
   name: string;
+  notes?: string;
   modpackVersion: string;
   build: BuildState;
   exportedAt: string;
@@ -45,6 +48,9 @@ export interface ExportedLibrary {
     name: string;
     build: BuildState;
     defaultVariantName?: string;
+    defaultVariantNotes?: string;
+    /** Per-build modpack version (newer format). */
+    modpackVersion?: string;
     milestones?: ExportedMilestone[];
     updatedAt: number;
   }>;
@@ -74,18 +80,24 @@ export function downloadBackupFile(filename: string, data: unknown): void {
 }
 
 function serializeMilestones(milestones: BuildMilestone[]): ExportedMilestone[] {
-  return milestones.map(({ name, build }) => ({ name, build }));
+  return milestones.map(({ name, build, notes }) => ({
+    name,
+    build,
+    ...(notes?.trim() ? { notes } : {}),
+  }));
 }
 
 export function createExportedVariant(
   name: string,
   build: BuildState,
   modpackVersion: string,
+  notes?: string,
 ): ExportedVariant {
   return {
     format: VARIANT_EXPORT_FORMAT,
     version: EXPORT_VERSION,
     name,
+    ...(notes?.trim() ? { notes } : {}),
     modpackVersion,
     build,
     exportedAt: new Date().toISOString(),
@@ -98,6 +110,7 @@ export function createExportedBuild(
   modpackVersion: string,
   milestones: BuildMilestone[] = [],
   defaultVariantName: string = DEFAULT_VARIANT_NAME,
+  defaultVariantNotes?: string,
 ): ExportedBuild {
   return {
     format: BUILD_EXPORT_FORMAT,
@@ -106,6 +119,7 @@ export function createExportedBuild(
     modpackVersion,
     build,
     ...(defaultVariantName !== DEFAULT_VARIANT_NAME ? { defaultVariantName } : {}),
+    ...(defaultVariantNotes?.trim() ? { defaultVariantNotes } : {}),
     ...(milestones.length > 0 ? { milestones: serializeMilestones(milestones) } : {}),
     exportedAt: new Date().toISOString(),
   };
@@ -125,8 +139,10 @@ export function createExportedLibrary(
       ...(getDefaultVariantName(entry) !== DEFAULT_VARIANT_NAME
         ? { defaultVariantName: getDefaultVariantName(entry) }
         : {}),
+      ...(entry.defaultVariantNotes?.trim() ? { defaultVariantNotes: entry.defaultVariantNotes } : {}),
       ...(entry.milestones.length > 0 ? { milestones: serializeMilestones(entry.milestones) } : {}),
       updatedAt: entry.updatedAt,
+      modpackVersion: entry.modpackVersion ?? modpackVersion,
     })),
     exportedAt: new Date().toISOString(),
   };

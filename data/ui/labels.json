@@ -7,7 +7,8 @@
   "nav": {
     "home": "Home",
     "planner": "Planner",
-    "builds": "My Builds"
+    "builds": "My Builds",
+    "reportBug": "Report a bug"
   },
   "landing": {
     "howItWorksTitle": "How it works",
@@ -234,6 +235,7 @@
       "trainingSkillLevel": "Level from training",
       "trainingGlobalRemaining": "Training remaining",
       "trainingMaxLevel": "Max trainable level: {max}",
+      "trainingAssignedIndicator": "{count} training assigned",
       "perksSelected": "perks selected",
       "destinyPoints": "Destiny points",
       "locked": "Locked",
@@ -257,7 +259,8 @@
       "destinyOverBudgetMultiple": "{count} selected destiny perks exceed your destiny point budget at level {playerLevel}. Raise your level or remove perks.",
       "buildProblemLegend": "Problem",
       "skillTreeWarning": "View skill tree warnings",
-      "showSkillRequirements": "Skill requirements"
+      "showSkillRequirements": "Skill requirements",
+      "showPerkName": "Perk name"
     },
     "derived-stats": {
       "title": "Character Bonuses",

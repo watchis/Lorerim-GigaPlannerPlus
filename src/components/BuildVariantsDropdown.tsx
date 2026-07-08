@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { StickyNote } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -6,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import {
   getDefaultVariantName,
   listBuildVariants,
@@ -13,13 +16,15 @@ import {
 } from "@/store/savedBuilds";
 import { useBuildStore } from "@/store/buildStore";
 import { useUiStore } from "@/store/uiStore";
+import { VariantOption, variantSelectItemClassName } from "@/components/VariantOption";
+import {
+  VariantSelectField,
+  variantSelectTriggerClassName,
+} from "@/components/VariantSelectField";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 
 const DEFAULT_VALUE = "default";
 const MANAGE_VALUE = "__manage__";
-
-const variantItemClassName =
-  "min-h-0 py-2 pl-8 pr-2 text-sm leading-snug focus:bg-[var(--color-surface)]";
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
@@ -28,32 +33,16 @@ function formatLabel(template: string, values: Record<string, string | number>):
   );
 }
 
-function VariantOption({
-  name,
-  level,
-  levelLabel,
-}: {
-  name: string;
-  level: number;
-  levelLabel: string;
-}) {
-  return (
-    <span className="flex w-full min-w-0 items-center justify-between gap-2">
-      <span className="min-w-0 truncate font-medium">{name}</span>
-      <span className="shrink-0 rounded-[var(--radius-sm)] bg-[var(--color-background)]/70 px-1.5 py-0.5 font-mono text-xs tabular-nums text-[var(--color-muted)]">
-        {formatLabel(levelLabel, { level })}
-      </span>
-    </span>
-  );
-}
-
 export function BuildVariantsDropdown() {
   const { labels } = useThemeConfig();
   const variantLabels = labels.milestones;
+  const notesLabel = labels.panels["variants-manager"]?.notes ?? "Notes";
   const savedBuilds = useBuildStore((s) => s.savedBuilds);
   const activeBuildId = useBuildStore((s) => s.activeBuildId);
   const selectMilestone = useBuildStore((s) => s.selectMilestone);
   const openVariantsManager = useUiStore((s) => s.openVariantsManager);
+  const openVariantNotes = useUiStore((s) => s.openVariantNotes);
+  const [open, setOpen] = useState(false);
 
   const entry = savedBuilds
     .map((build) => normalizeSavedBuild(build))
@@ -79,19 +68,19 @@ export function BuildVariantsDropdown() {
     selectMilestone(value === DEFAULT_VALUE ? null : value);
   };
 
-  return (
-    <div className="space-y-1.5">
-      <span className="text-xs font-medium tracking-wide text-[var(--color-muted)]">
-        {variantLabels.title}
-      </span>
+  const handleOpenNotes = (variantId: string | null) => {
+    setOpen(false);
+    openVariantNotes(variantId);
+  };
 
-      <Select value={selectValue} onValueChange={handleSelect}>
-        <SelectTrigger className="h-9 gap-2 px-3 text-sm">
-          <SelectValue className="min-w-0 flex-1">
+  return (
+    <VariantSelectField label={variantLabels.title}>
+      <Select open={open} onOpenChange={setOpen} value={selectValue} onValueChange={handleSelect}>
+        <SelectTrigger className={variantSelectTriggerClassName}>
+          <SelectValue className="min-w-0 flex-1 overflow-hidden">
             <VariantOption
               name={currentName}
-              level={currentLevel}
-              levelLabel={variantLabels.levelShort}
+              levelText={formatLabel(variantLabels.levelShort, { level: currentLevel })}
             />
           </SelectValue>
         </SelectTrigger>
@@ -101,26 +90,39 @@ export function BuildVariantsDropdown() {
           className="w-[var(--radix-select-trigger-width)] text-sm [&>div]:p-1"
         >
           {variants.map((variant) => (
-            <SelectItem
+            <div
               key={variant.id ?? DEFAULT_VALUE}
-              value={variant.id ?? DEFAULT_VALUE}
-              className={variantItemClassName}
+              className="flex w-full items-center gap-0.5 pr-1"
             >
-              <VariantOption
-                name={variant.name}
-                level={variant.level}
-                levelLabel={variantLabels.levelShort}
-              />
-            </SelectItem>
+              <SelectItem
+                value={variant.id ?? DEFAULT_VALUE}
+                className={`min-w-0 flex-1 ${variantSelectItemClassName}`}
+              >
+                <VariantOption
+                  name={variant.name}
+                  levelText={formatLabel(variantLabels.levelShort, { level: variant.level })}
+                />
+              </SelectItem>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+                onClick={() => handleOpenNotes(variant.id)}
+                aria-label={notesLabel}
+              >
+                <StickyNote className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           ))}
 
           <SelectSeparator className="my-1" />
 
-          <SelectItem value={MANAGE_VALUE} className={variantItemClassName}>
+          <SelectItem value={MANAGE_VALUE} className={variantSelectItemClassName}>
             {variantLabels.manageVariants}
           </SelectItem>
         </SelectContent>
       </Select>
-    </div>
+    </VariantSelectField>
   );
 }

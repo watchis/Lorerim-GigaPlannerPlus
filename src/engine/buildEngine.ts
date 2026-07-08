@@ -1271,7 +1271,14 @@ function ensureLowerStackTiersAllocated(
 function canForceSelectPerk(game: GameData, state: BuildState, perkId: string): boolean {
   const perk = getPerkById(game, perkId);
   if (!perk) return false;
-  if (state.selectedPerkIds.includes(perkId)) return true;
+  if (state.selectedPerkIds.includes(perkId)) {
+    // Stackable perks can be allocated multiple times, but must still be
+    // affordable under the current perk-point budget.
+    if (perk.allocation?.kind === "perkPointsBudget") {
+      return canSelectPerk(game, state, perkId);
+    }
+    return true;
+  }
   if (!arePrerequisitesMet(game, state, perk)) return false;
 
   const skillId = getPerkSkillId(game, perkId);
@@ -1343,7 +1350,8 @@ function allocatePerkAfterRequirements(
     next = allocated;
   }
 
-  if (next.selectedPerkIds.includes(perkId)) {
+  const isStackable = perk.allocation?.kind === "perkPointsBudget";
+  if (next.selectedPerkIds.includes(perkId) && !isStackable) {
     return next;
   }
 
@@ -1571,7 +1579,9 @@ export function allocatePerk(game: GameData, build: BuildState, perkId: string):
 export function tryTakePerk(game: GameData, build: BuildState, perkId: string): BuildState | null {
   const targetId = resolveTakeTargetId(game, build, perkId);
   if (!targetId) return null;
-  if (build.selectedPerkIds.includes(targetId)) return null;
+  const targetPerk = getPerkById(game, targetId);
+  const isStackable = targetPerk?.allocation?.kind === "perkPointsBudget";
+  if (build.selectedPerkIds.includes(targetId) && !isStackable) return null;
   if (!canSelectPerk(game, build, targetId)) return null;
 
   return reconcileBuild(game, {
@@ -1651,10 +1661,31 @@ function collectSelectedDependents(
   return dependents;
 }
 
+function countPerkAllocations(selectedPerkIds: string[], perkId: string): number {
+  return selectedPerkIds.filter((id) => id === perkId).length;
+}
+
+function removeOnePerkAllocation(selectedPerkIds: string[], perkId: string): string[] {
+  const index = selectedPerkIds.lastIndexOf(perkId);
+  if (index < 0) return selectedPerkIds;
+  return [...selectedPerkIds.slice(0, index), ...selectedPerkIds.slice(index + 1)];
+}
+
 /** Right-click removal: the clicked perk and selected perks further up its dependency chain. */
 export function removePerk(game: GameData, build: BuildState, perkId: string): BuildState {
   if (!build.selectedPerkIds.includes(perkId)) {
     return build;
+  }
+
+  const perk = getPerkById(game, perkId);
+  if (
+    perk?.allocation?.kind === "perkPointsBudget" &&
+    countPerkAllocations(build.selectedPerkIds, perkId) > 1
+  ) {
+    return {
+      ...build,
+      selectedPerkIds: removeOnePerkAllocation(build.selectedPerkIds, perkId),
+    };
   }
 
   const selected = new Set(build.selectedPerkIds);
@@ -1736,7 +1767,9 @@ export function getSkillLevelForPerk(game: GameData, state: BuildState, perk: Pe
 export function canSelectPerk(game: GameData, state: BuildState, perkId: string): boolean {
   const perk = getPerkById(game, perkId);
   if (!perk) return false;
-  if (state.selectedPerkIds.includes(perkId)) return true;
+  const alreadySelected = state.selectedPerkIds.includes(perkId);
+  const isStackable = perk.allocation?.kind === "perkPointsBudget";
+  if (alreadySelected && !isStackable) return true;
   if (!arePrerequisitesMet(game, state, perk)) return false;
   const playerLevelReq = meaningfulPlayerLevelReq(perk.playerLevelReq);
   if (playerLevelReq != null && state.playerLevel < playerLevelReq) return false;
@@ -1823,6 +1856,10 @@ export function migrateBuildState(
 }
 
 function stringArraysEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+function numberArraysEqual(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 

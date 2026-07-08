@@ -27,6 +27,7 @@ import {
   arePrerequisitesMet,
   getPerkById,
   removePerk,
+  tryTakePerk,
   areBuildStatesEqual,
 } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
@@ -529,6 +530,99 @@ describe("buildEngine perk selection", () => {
     const next = removePerk(game, build, "block-improved-blocking");
 
     expect(next.selectedPerkIds).toEqual([]);
+  });
+
+  it("allocates perkPointsBudget perks multiple times within the perk-point budget", () => {
+    const artifactId = "enchanting-artifact-enchanter";
+    const prerequisiteId = "enchanting-enchantment-mastery";
+
+    const perk = getPerkById(game, artifactId);
+    expect(perk?.allocation?.kind).toBe("perkPointsBudget");
+
+    // Pick the lowest player level that can actually support Enchanting skill 100.
+    let playerLevel = 1;
+    while (playerLevel <= game.mechanics.leveling.maxPlayerLevel) {
+      const candidate = createTestBuildState({
+        playerLevel,
+        selectedPerkIds: [prerequisiteId],
+        skillLevels: { enchanting: 100 },
+      });
+      const maxAllowed = getMaxAllowedSkillLevel(game, candidate);
+      if (maxAllowed >= 100) break;
+      playerLevel += 1;
+    }
+
+    const stateWithPrereq = createTestBuildState({
+      playerLevel,
+      selectedPerkIds: [prerequisiteId],
+      skillLevels: { enchanting: 100 },
+    });
+
+    const earned = getEarnedPerkPoints(game, stateWithPrereq);
+
+    // Force the remaining points to 2 so we can test the 0/1/2 boundaries.
+    const targetRemaining = 2;
+    const desiredSpent = earned - targetRemaining;
+    const prerequisiteCost = 1; // prerequisiteId defaults to costsPerkPoint: true
+    const fillerToSpend = Math.max(0, desiredSpent - prerequisiteCost);
+
+    const allCostingPerks = Object.values(game.perkTrees).flatMap((tree) =>
+      tree.perks.filter((p) => p.costsPerkPoint && ![artifactId, prerequisiteId].includes(p.id)).map((p) => p.id),
+    );
+
+    const fillerPerkIds =
+      fillerToSpend <= allCostingPerks.length
+        ? allCostingPerks.slice(0, fillerToSpend)
+        : [...allCostingPerks, ...Array.from({ length: fillerToSpend - allCostingPerks.length }, () => allCostingPerks[0])];
+
+    const initial = {
+      ...stateWithPrereq,
+      selectedPerkIds: [prerequisiteId, ...fillerPerkIds],
+    };
+
+    expect(getRemainingPerkPoints(game, initial)).toBe(targetRemaining);
+
+    expect(canSelectPerk(game, initial, artifactId)).toBe(true);
+
+    const afterFirst = tryTakePerk(game, initial, artifactId);
+    expect(afterFirst).not.toBeNull();
+    expect(afterFirst!.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(1);
+    expect(getRemainingPerkPoints(game, afterFirst!)).toBe(1);
+    expect(canSelectPerk(game, afterFirst!, artifactId)).toBe(true);
+
+    const afterSecond = tryTakePerk(game, afterFirst!, artifactId);
+    expect(afterSecond).not.toBeNull();
+    expect(afterSecond!.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(2);
+    expect(getRemainingPerkPoints(game, afterSecond!)).toBe(0);
+    expect(canSelectPerk(game, afterSecond!, artifactId)).toBe(false);
+
+    const afterThird = tryTakePerk(game, afterSecond!, artifactId);
+    expect(afterThird).toBeNull();
+  });
+
+  it("removes one stackable allocation per right-click", () => {
+    const artifactId = "enchanting-artifact-enchanter";
+    const build = createTestBuildState({
+      playerLevel: 50,
+      selectedPerkIds: [
+        "enchanting-enchantment-mastery",
+        artifactId,
+        artifactId,
+        artifactId,
+      ],
+      skillLevels: { enchanting: 100 },
+    });
+
+    const afterOne = removePerk(game, build, artifactId);
+    expect(afterOne.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(2);
+    expect(afterOne.selectedPerkIds).toContain("enchanting-enchantment-mastery");
+
+    const afterTwo = removePerk(game, afterOne, artifactId);
+    expect(afterTwo.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(1);
+
+    const afterThree = removePerk(game, afterTwo, artifactId);
+    expect(afterThree.selectedPerkIds.filter((id) => id === artifactId)).toHaveLength(0);
+    expect(afterThree.selectedPerkIds).toContain("enchanting-enchantment-mastery");
   });
 });
 

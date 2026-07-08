@@ -5,6 +5,7 @@ import {
   distributeTrainingCountAcrossTiers,
   formatTrainingTierRange,
   getTrainingTierDefinitions,
+  hasSkillTrainingAssigned,
   sumTrainingRanges,
   trimTrainingRangesToBudget,
 } from "@/lib/skillTraining";
@@ -41,6 +42,19 @@ describe("skillTraining", () => {
     expect(sumTrainingRanges([10, 5, 0, 0])).toBe(15);
     expect(tiers.length).toBe(4);
     expect(state.skillTrainingRanges.block).toEqual([10, 5]);
+  });
+
+  it("detects when training has been assigned to a skill", () => {
+    const state = createTestBuildState({
+      skillTrainingRanges: { block: [0, 1, 0, 0] },
+    });
+    const empty = createTestBuildState({
+      skillTrainingRanges: { block: [0, 0, 0, 0] },
+    });
+
+    expect(hasSkillTrainingAssigned(game, state, "block")).toBe(true);
+    expect(hasSkillTrainingAssigned(game, empty, "block")).toBe(false);
+    expect(hasSkillTrainingAssigned(game, empty, "alchemy")).toBe(false);
   });
 
   it("waives one tier cost per trained level", () => {

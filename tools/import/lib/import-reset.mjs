@@ -240,6 +240,7 @@ export function loadPerkGraphSnapshots(perksDir) {
           ...(perk.costsPerkPoint === true ? { costsPerkPoint: true } : {}),
           ...(perk.extension ? { extension: perk.extension } : {}),
           ...(perk.effects?.length ? { effects: [...perk.effects] } : {}),
+          ...(perk.allocation ? { allocation: { ...perk.allocation } } : {}),
         });
       }
       idToGraphKey.set(perk.id, key);
@@ -297,6 +298,9 @@ export function applyPerkGraphSnapshots(trees, snapshots) {
         perk.effects = saved.effects?.length ? saved.effects : [];
       } else if (saved.effects?.length) {
         perk.effects = saved.effects;
+      }
+      if (saved.allocation) {
+        perk.allocation = saved.allocation;
       }
     }
 

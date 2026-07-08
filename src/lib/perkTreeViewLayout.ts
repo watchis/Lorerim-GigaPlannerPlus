@@ -7,6 +7,11 @@ import {
 export const GRID_UNIT_PX = 26;
 export const BASE_NODE_DIAMETER_PX = 32;
 export const MIN_NODE_DIAMETER_PX = 14;
+/** Default inner/outer blur radii for perk search glow at {@link BASE_NODE_DIAMETER_PX}. */
+export const PERK_SEARCH_MATCH_GLOW_INNER_BLUR_PX = 7;
+export const PERK_SEARCH_MATCH_GLOW_OUTER_BLUR_PX = 14;
+export const PERK_SEARCH_MATCH_GLOW_INNER_OPACITY = 1;
+export const PERK_SEARCH_MATCH_GLOW_OUTER_OPACITY = 0.72;
 /** Extra padding between perk tree content and the viewport edge in full-tree view. */
 export const TREE_VIEW_EDGE_PADDING_PX = 6;
 export const MIN_TREE_ZOOM = 1;
@@ -61,21 +66,177 @@ export function estimatePerkBadgeStackHeight(badgeCount: number): number {
   );
 }
 
+export interface AxisRect {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+}
+
+export function domRectToAxisRect(rect: DOMRect): AxisRect {
+  return { top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom };
+}
+
+export function rectsOverlap(a: AxisRect, b: AxisRect, margin = 0): boolean {
+  return !(
+    a.right + margin <= b.left ||
+    a.left - margin >= b.right ||
+    a.bottom + margin <= b.top ||
+    a.top - margin >= b.bottom
+  );
+}
+
+export function overlapArea(a: AxisRect, b: AxisRect): number {
+  const left = Math.max(a.left, b.left);
+  const right = Math.min(a.right, b.right);
+  const top = Math.max(a.top, b.top);
+  const bottom = Math.min(a.bottom, b.bottom);
+  if (left >= right || top >= bottom) return 0;
+  return (right - left) * (bottom - top);
+}
+
+export function estimateBadgeStackRect(
+  circleRect: AxisRect,
+  stackHeight: number,
+  stackWidth: number,
+  above: boolean,
+): AxisRect {
+  const centerX = (circleRect.left + circleRect.right) / 2;
+  const halfWidth = stackWidth / 2;
+  const gap = PERK_BADGE_EDGE_MARGIN_PX;
+
+  if (above) {
+    return {
+      top: circleRect.top - stackHeight,
+      bottom: circleRect.top - gap,
+      left: centerX - halfWidth,
+      right: centerX + halfWidth,
+    };
+  }
+
+  return {
+    top: circleRect.bottom + gap,
+    bottom: circleRect.bottom + stackHeight,
+    left: centerX - halfWidth,
+    right: centerX + halfWidth,
+  };
+}
+
+export interface ResolvePerkBadgePlacementOptions {
+  circleLeft: number;
+  circleRight: number;
+  stackWidth: number;
+  obstacles?: AxisRect[];
+}
+
+function scoreBadgePlacement(
+  circleTop: number,
+  circleBottom: number,
+  circleLeft: number,
+  circleRight: number,
+  stackHeight: number,
+  stackWidth: number,
+  above: boolean,
+  bounds?: { top: number; bottom: number },
+  obstacles: AxisRect[] = [],
+): number {
+  const circleRect = { top: circleTop, bottom: circleBottom, left: circleLeft, right: circleRight };
+  const badgeRect = estimateBadgeStackRect(circleRect, stackHeight, stackWidth, above);
+
+  let score = 0;
+
+  if (bounds) {
+    const overflowTop = Math.max(0, bounds.top - badgeRect.top);
+    const overflowBottom = Math.max(0, badgeRect.bottom - bounds.bottom);
+    score += (overflowTop + overflowBottom) * 10_000;
+  }
+
+  for (const obstacle of obstacles) {
+    const area = overlapArea(badgeRect, obstacle);
+    if (area > 0) {
+      score += area + 100;
+    }
+  }
+
+  if (!above) {
+    score -= 0.1;
+  }
+
+  return score;
+}
+
+export function collectPerkBadgeObstacleRects(
+  viewport: HTMLElement,
+  excludeNode: HTMLElement,
+  includeBadges = false,
+): AxisRect[] {
+  const obstacles: AxisRect[] = [];
+
+  for (const node of viewport.querySelectorAll("[data-perk-node]")) {
+    if (!(node instanceof HTMLElement) || node === excludeNode) continue;
+
+    const circle = node.querySelector("[data-perk-circle]");
+    if (circle instanceof HTMLElement) {
+      obstacles.push(domRectToAxisRect(circle.getBoundingClientRect()));
+    }
+
+    if (includeBadges) {
+      const badges = node.querySelector("[data-perk-badges]");
+      if (badges instanceof HTMLElement) {
+        const rect = badges.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          obstacles.push(domRectToAxisRect(rect));
+        }
+      }
+    }
+  }
+
+  return obstacles;
+}
+
 export function resolvePerkBadgePlacement(
   circleTop: number,
   circleBottom: number,
   stackHeight: number,
   bounds?: { top: number; bottom: number },
+  options?: ResolvePerkBadgePlacementOptions,
 ): boolean {
-  const bottomLimit =
-    bounds?.bottom ?? (typeof window !== "undefined" ? window.innerHeight : 0);
-  const topLimit = bounds?.top ?? 0;
-  const spaceBelow = bottomLimit - circleBottom;
-  const spaceAbove = circleTop - topLimit;
-  const margin = PERK_BADGE_EDGE_MARGIN_PX;
+  if (!options) {
+    const bottomLimit =
+      bounds?.bottom ?? (typeof window !== "undefined" ? window.innerHeight : 0);
+    const topLimit = bounds?.top ?? 0;
+    const spaceBelow = bottomLimit - circleBottom;
+    const spaceAbove = circleTop - topLimit;
+    const margin = PERK_BADGE_EDGE_MARGIN_PX;
 
-  if (spaceBelow >= stackHeight + margin) return false;
-  return spaceAbove >= spaceBelow;
+    if (spaceBelow >= stackHeight + margin) return false;
+    return spaceAbove >= spaceBelow;
+  }
+
+  const belowScore = scoreBadgePlacement(
+    circleTop,
+    circleBottom,
+    options.circleLeft,
+    options.circleRight,
+    stackHeight,
+    options.stackWidth,
+    false,
+    bounds,
+    options.obstacles,
+  );
+  const aboveScore = scoreBadgePlacement(
+    circleTop,
+    circleBottom,
+    options.circleLeft,
+    options.circleRight,
+    stackHeight,
+    options.stackWidth,
+    true,
+    bounds,
+    options.obstacles,
+  );
+
+  return aboveScore < belowScore;
 }
 
 export function clampTreeZoom(zoom: number): number {
@@ -161,6 +322,22 @@ export function resolvePerkTooltipScale(
     ? Math.min(1, Math.max(0.85, viewportMinDim / 460))
     : 1;
   return Math.min(1, Math.max(0.8, nodeFactor * screenFactor));
+}
+
+export interface PerkSearchMatchGlow {
+  innerBlurPx: number;
+  outerBlurPx: number;
+  boxShadow: string;
+}
+
+export function resolvePerkSearchMatchGlow(nodeDiameterPx: number): PerkSearchMatchGlow {
+  const scale = nodeDiameterPx / BASE_NODE_DIAMETER_PX;
+  const innerBlurPx = Math.max(1, PERK_SEARCH_MATCH_GLOW_INNER_BLUR_PX * scale);
+  const outerBlurPx = Math.max(innerBlurPx + 1, PERK_SEARCH_MATCH_GLOW_OUTER_BLUR_PX * scale);
+  const boxShadow =
+    `0 0 ${innerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_INNER_OPACITY}), ` +
+    `0 0 ${outerBlurPx}px rgba(255,255,255,${PERK_SEARCH_MATCH_GLOW_OUTER_OPACITY})`;
+  return { innerBlurPx, outerBlurPx, boxShadow };
 }
 
 export function clampTreeViewTransform(

@@ -63,7 +63,9 @@ export const SelectItem = forwardRef<
         <Check className="h-4 w-4 text-[var(--color-accent)]" />
       </SelectPrimitive.ItemIndicator>
     </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <SelectPrimitive.ItemText className="min-w-0 flex-1 overflow-hidden">
+      {children}
+    </SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = "SelectItem";

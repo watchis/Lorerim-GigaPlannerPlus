@@ -28,41 +28,80 @@ export function isSkillTreeOpenInMiddlePane(state: {
 
 export type SkillWorkspaceMode = "perks" | "training";
 
+export type PerkBadgeVisibilityKey = "playerLevelReq" | "skillLevelReq" | "perkName";
+
+export interface PerkBadgeVisibility {
+  playerLevelReq: boolean;
+  skillLevelReq: boolean;
+  perkName: boolean;
+}
+
+export function hasAnyPerkBadgeVisibility(visibility: PerkBadgeVisibility): boolean {
+  return visibility.playerLevelReq || visibility.skillLevelReq || visibility.perkName;
+}
+
 interface UiStore {
   setupPicker: SetupPicker | null;
   characterOptionsOpen: boolean;
   variantsManagerOpen: boolean;
+  variantsManagerInitialPane: "manage" | "notes";
+  variantsManagerInitialVariantId: string | null;
+  variantNotesRequestId: number;
+  variantsManagerRequestId: number;
   middleView: MiddleWorkspaceView;
   activeSkillTreeId: string | null;
   skillWorkspaceMode: SkillWorkspaceMode;
-  showPerkSkillRequirements: boolean;
+  perkBadgeVisibility: PerkBadgeVisibility;
+  perkSearchQuery: string;
   setSetupPicker: (picker: SetupPicker | null) => void;
   toggleSetupPicker: (picker: SetupPicker) => void;
   openCharacterOptions: () => void;
   closeCharacterOptions: () => void;
   toggleCharacterOptions: () => void;
   openVariantsManager: () => void;
+  openVariantNotes: (variantId: string | null) => void;
   closeVariantsManager: () => void;
   setMiddleView: (view: MiddleWorkspaceView) => void;
   setActiveSkillTreeId: (skillId: string | null) => void;
   openSkillTree: (skillId: string) => void;
   setSkillWorkspaceMode: (mode: SkillWorkspaceMode) => void;
-  setShowPerkSkillRequirements: (show: boolean) => void;
+  setPerkBadgeVisibility: (visibility: PerkBadgeVisibility) => void;
+  togglePerkBadgeVisibility: (key: PerkBadgeVisibilityKey) => void;
+  setPerkSearchQuery: (query: string) => void;
 }
 
-function getDefaultShowPerkSkillRequirements(): boolean {
-  if (typeof window === "undefined") return true;
-  return window.innerWidth >= STACKED_LAYOUT_MAX_WIDTH;
+function getDefaultPerkBadgeVisibility(): PerkBadgeVisibility {
+  const showRequirements =
+    typeof window === "undefined" || window.innerWidth >= STACKED_LAYOUT_MAX_WIDTH;
+  return {
+    playerLevelReq: showRequirements,
+    skillLevelReq: showRequirements,
+    perkName: false,
+  };
+}
+
+function scrollMiddleWorkspaceIntoView(): void {
+  requestAnimationFrame(() => {
+    document.getElementById("middle-workspace")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  });
 }
 
 export const useUiStore = create<UiStore>((set, get) => ({
   setupPicker: null,
   characterOptionsOpen: false,
   variantsManagerOpen: false,
+  variantsManagerInitialPane: "manage",
+  variantsManagerInitialVariantId: null,
+  variantNotesRequestId: 0,
+  variantsManagerRequestId: 0,
   middleView: "character-info",
   activeSkillTreeId: null,
   skillWorkspaceMode: "perks",
-  showPerkSkillRequirements: getDefaultShowPerkSkillRequirements(),
+  perkBadgeVisibility: getDefaultPerkBadgeVisibility(),
+  perkSearchQuery: "",
   setSetupPicker: (picker) =>
     set({ setupPicker: picker, characterOptionsOpen: false, variantsManagerOpen: false }),
   toggleSetupPicker: (picker) => {
@@ -96,19 +135,35 @@ export const useUiStore = create<UiStore>((set, get) => ({
     });
   },
   openVariantsManager: () => {
-    set({
+    set((state) => ({
       variantsManagerOpen: true,
       setupPicker: null,
       characterOptionsOpen: false,
-    });
-    requestAnimationFrame(() => {
-      document.getElementById("middle-workspace")?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    });
+      variantsManagerInitialPane: "manage",
+      variantsManagerInitialVariantId: null,
+      variantsManagerRequestId: state.variantsManagerRequestId + 1,
+    }));
+    scrollMiddleWorkspaceIntoView();
   },
-  closeVariantsManager: () => set({ variantsManagerOpen: false }),
+  openVariantNotes: (variantId) => {
+    set((state) => ({
+      variantsManagerOpen: true,
+      setupPicker: null,
+      characterOptionsOpen: false,
+      variantsManagerInitialPane: "notes",
+      variantsManagerInitialVariantId: variantId,
+      variantNotesRequestId: state.variantNotesRequestId + 1,
+    }));
+    scrollMiddleWorkspaceIntoView();
+  },
+  closeVariantsManager: () =>
+    set({
+      variantsManagerOpen: false,
+      variantsManagerInitialPane: "manage",
+      variantsManagerInitialVariantId: null,
+      variantNotesRequestId: 0,
+      variantsManagerRequestId: 0,
+    }),
   setMiddleView: (view) =>
     set({
       middleView: view,
@@ -136,5 +191,13 @@ export const useUiStore = create<UiStore>((set, get) => ({
     });
   },
   setSkillWorkspaceMode: (mode) => set({ skillWorkspaceMode: mode }),
-  setShowPerkSkillRequirements: (show) => set({ showPerkSkillRequirements: show }),
+  setPerkBadgeVisibility: (visibility) => set({ perkBadgeVisibility: visibility }),
+  togglePerkBadgeVisibility: (key) =>
+    set((state) => ({
+      perkBadgeVisibility: {
+        ...state.perkBadgeVisibility,
+        [key]: !state.perkBadgeVisibility[key],
+      },
+    })),
+  setPerkSearchQuery: (query) => set({ perkSearchQuery: query }),
 }));

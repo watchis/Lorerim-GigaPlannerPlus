@@ -2,7 +2,7 @@
   "skillId": "two-handed",
   "skillName": "Two-Handed",
   "grid": {
-    "width": 19,
+    "width": 27,
     "height": 34
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Great Weapon Mastery",
       "skillReq": 0,
       "position": {
-        "x": 9,
+        "x": 13,
         "y": 33
       },
       "prerequisites": [],
@@ -31,7 +31,7 @@
       "name": "Great Weapon Mastery",
       "skillReq": 20,
       "position": {
-        "x": 9,
+        "x": 13,
         "y": 33
       },
       "prerequisites": [],
@@ -51,7 +51,7 @@
       "name": "Barbaric Might",
       "skillReq": 20,
       "position": {
-        "x": 9,
+        "x": 13,
         "y": 26
       },
       "prerequisites": [
@@ -85,7 +85,7 @@
       "name": "Devastating Strike",
       "skillReq": 50,
       "position": {
-        "x": 12,
+        "x": 16,
         "y": 17
       },
       "prerequisites": [
@@ -113,7 +113,7 @@
       "name": "Hyper Armor",
       "skillReq": 75,
       "position": {
-        "x": 9,
+        "x": 13,
         "y": 8
       },
       "prerequisites": [
@@ -129,7 +129,7 @@
       "name": "Mighty Strike",
       "skillReq": 100,
       "position": {
-        "x": 9,
+        "x": 13,
         "y": 4
       },
       "prerequisites": [
@@ -144,7 +144,7 @@
       "name": "Warbringer",
       "skillReq": 100,
       "position": {
-        "x": 9,
+        "x": 13,
         "y": 0
       },
       "prerequisites": [
@@ -159,7 +159,7 @@
       "name": "Devastating Charge",
       "skillReq": 25,
       "position": {
-        "x": 6,
+        "x": 10,
         "y": 17
       },
       "prerequisites": [
@@ -181,8 +181,8 @@
       "name": "Hafted Blade Focus",
       "skillReq": 25,
       "position": {
-        "x": 3,
-        "y": 20
+        "x": 5,
+        "y": 19
       },
       "prerequisites": [
         "two-handed-barbaric-might"
@@ -209,8 +209,8 @@
       "name": "Hafted Blade Focus",
       "skillReq": 50,
       "position": {
-        "x": 3,
-        "y": 20
+        "x": 5,
+        "y": 19
       },
       "prerequisites": [
         "two-handed-barbaric-might"
@@ -237,8 +237,8 @@
       "name": "Hafted Blade Focus",
       "skillReq": 75,
       "position": {
-        "x": 3,
-        "y": 20
+        "x": 5,
+        "y": 19
       },
       "prerequisites": [
         "two-handed-barbaric-might"
@@ -265,8 +265,8 @@
       "name": "Longweapon Focus",
       "skillReq": 25,
       "position": {
-        "x": 15,
-        "y": 20
+        "x": 21,
+        "y": 19
       },
       "prerequisites": [
         "two-handed-barbaric-might"
@@ -287,8 +287,8 @@
       "name": "Longweapon Focus",
       "skillReq": 50,
       "position": {
-        "x": 15,
-        "y": 20
+        "x": 21,
+        "y": 19
       },
       "prerequisites": [
         "two-handed-barbaric-might"
@@ -309,8 +309,8 @@
       "name": "Longweapon Focus",
       "skillReq": 75,
       "position": {
-        "x": 15,
-        "y": 20
+        "x": 21,
+        "y": 19
       },
       "prerequisites": [
         "two-handed-barbaric-might"
@@ -331,7 +331,7 @@
       "name": "Warhammer Focus",
       "skillReq": 25,
       "position": {
-        "x": 18,
+        "x": 26,
         "y": 21
       },
       "prerequisites": [
@@ -359,7 +359,7 @@
       "name": "Warhammer Focus",
       "skillReq": 50,
       "position": {
-        "x": 18,
+        "x": 26,
         "y": 21
       },
       "prerequisites": [
@@ -387,7 +387,7 @@
       "name": "Warhammer Focus",
       "skillReq": 75,
       "position": {
-        "x": 18,
+        "x": 26,
         "y": 21
       },
       "prerequisites": [
@@ -460,8 +460,8 @@
       "name": "Reversal",
       "skillReq": 50,
       "position": {
-        "x": 15,
-        "y": 16
+        "x": 21,
+        "y": 15
       },
       "prerequisites": [
         "two-handed-longweapon-focus"
@@ -475,7 +475,7 @@
       "name": "Onslaught",
       "skillReq": 50,
       "position": {
-        "x": 18,
+        "x": 26,
         "y": 17
       },
       "prerequisites": [
@@ -503,8 +503,8 @@
       "name": "Shield Breaker",
       "skillReq": 50,
       "position": {
-        "x": 3,
-        "y": 16
+        "x": 5,
+        "y": 15
       },
       "prerequisites": [
         "two-handed-hafted-blade-focus"
@@ -533,8 +533,8 @@
       "name": "Execute",
       "skillReq": 80,
       "position": {
-        "x": 3,
-        "y": 12
+        "x": 5,
+        "y": 11
       },
       "prerequisites": [
         "two-handed-shield-breaker"
@@ -563,7 +563,7 @@
       "name": "Critical Slam",
       "skillReq": 80,
       "position": {
-        "x": 18,
+        "x": 26,
         "y": 13
       },
       "prerequisites": [
@@ -578,8 +578,8 @@
       "name": "Death or Glory",
       "skillReq": 80,
       "position": {
-        "x": 15,
-        "y": 12
+        "x": 21,
+        "y": 11
       },
       "prerequisites": [
         "two-handed-reversal"

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { PerkTreeMiniView } from "@/components/PerkTreeMiniView";
 import { BuildVariantsDropdown } from "@/components/BuildVariantsDropdown";
 import { SkillIcon } from "@/components/SkillIcon";
@@ -5,11 +6,13 @@ import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getSkillGridColumnCount, useContainerSize } from "@/lib/useContainerSize";
+import { PickerSearchInput } from "@/components/PickerSearchInput";
 import {
   getBuildPlayerLevelWarnings,
   getOrderedPerkTrees,
   getSelectedPerksBelowSkillRequirement,
   getStoredSkillLevel,
+  getStoredSkillTraining,
   isAllocatableSkill,
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
@@ -17,6 +20,7 @@ import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useGoToSwipePane } from "@/layout/PlannerSwipePanels";
+import { getPerkSearchPositionKeysForTrees, getPerkSearchTokens } from "@/lib/perkSearch";
 import {
   usePlannerLayoutScale,
   usePlannerSideWidths,
@@ -40,15 +44,19 @@ export function SkillTreesSidebarPanel() {
     (sideWidths?.right ?? Number.POSITIVE_INFINITY) < RESET_ICON_ONLY_MAX_WIDTH;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
   const resetAllPerks = useBuildStore((s) => s.resetAllPerks);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
   const openSkillTree = useUiStore((s) => s.openSkillTree);
   const goToSwipePane = useGoToSwipePane();
+  const perkSearchQuery = useUiStore((s) => s.perkSearchQuery);
+  const setPerkSearchQuery = useUiStore((s) => s.setPerkSearchQuery);
 
   if (!gameData) return null;
 
-  const trees = getOrderedPerkTrees(gameData.game).filter((tree) =>
+  const allTrees = useMemo(() => getOrderedPerkTrees(gameData.game), [gameData.game]);
+  const trees = allTrees.filter((tree) =>
     isAllocatableSkill(gameData.game, tree.skillId),
   );
   const { perks: overLevelPerks, skillIncreases } = getBuildPlayerLevelWarnings(
@@ -63,13 +71,23 @@ export function SkillTreesSidebarPanel() {
     minCellWidth: stackedLayout ? 120 : 100,
     maxColumns: stackedLayout ? 3 : 4,
   });
-  const gridColumns = useThreeColumnLayout ? 3 : responsiveColumns;
+  const gridColumns =
+    gridWidth > 0 && gridWidth <= 300
+      ? 2
+      : useThreeColumnLayout
+        ? 3
+        : responsiveColumns;
+  const trainingOverBudget = (computed?.trainingLevelsRemaining ?? 0) < 0;
+  const perkSearchTokens = useMemo(() => getPerkSearchTokens(perkSearchQuery), [perkSearchQuery]);
+  const perkSearchPositionKeysBySkillId = useMemo(
+    () => getPerkSearchPositionKeysForTrees(allTrees, perkSearchTokens),
+    [allTrees, perkSearchTokens],
+  );
 
   return (
     <Card
       className={cn(
-        "flex flex-col overflow-hidden",
-        stackedLayout ? "min-h-0 flex-1" : "h-fit max-h-full",
+        "flex min-h-0 flex-col overflow-hidden max-h-full",
       )}
     >
       <CardHeader
@@ -100,102 +118,139 @@ export function SkillTreesSidebarPanel() {
       </CardHeader>
       <CardContent
         className={cn(
-          stackedLayout && "min-h-0 flex-1 overflow-y-auto overscroll-y-contain",
+          "flex min-h-0 flex-1 flex-col overflow-hidden",
           compact ? "p-1" : "p-2",
         )}
       >
         <div
           ref={gridContainerRef}
-          className={cn("grid gap-1.5", compact && "gap-1")}
+          className={cn(
+            "grid gap-1.5",
+            compact && "gap-1",
+            "min-h-0 flex-1 overflow-y-auto overscroll-y-contain",
+          )}
           style={{
             gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
-            gridAutoRows: "minmax(6.5rem, auto)",
+            // Prevent the mini perk tree preview from collapsing when the viewport is short.
+            gridAutoRows: "minmax(145px, auto)",
           }}
         >
-            {trees.map((tree) => {
-              const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
-              const skillLevel = getStoredSkillLevel(gameData.game, build, tree.skillId);
-              const isOverCap = isSkillOverPlayerLevelCap(gameData.game, build, tree.skillId);
-              const conflictPerkIds = [
-                ...overLevelPerks
-                  .filter((perk) => perk.skillId === tree.skillId)
-                  .map((perk) => perk.id),
-                ...skillReqConflicts
-                  .filter((perk) => perk.skillId === tree.skillId)
-                  .map((perk) => perk.id),
-              ];
-              const hasPerkLevelConflict = conflictPerkIds.length > 0;
-              const hasSkillIncreaseConflict = skillIncreaseConflictIds.has(tree.skillId);
-              const hasProblem = isOverCap || hasPerkLevelConflict || hasSkillIncreaseConflict;
+          {trees.map((tree) => {
+            const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
+            const skillLevel = getStoredSkillLevel(gameData.game, build, tree.skillId);
+            const isDestinyTree = tree.skillId === "destiny";
+            const trainingAssignedCount = !isDestinyTree
+              ? getStoredSkillTraining(gameData.game, build, tree.skillId)
+              : 0;
+            const hasTraining = trainingAssignedCount > 0;
+            const isOverCap = isSkillOverPlayerLevelCap(gameData.game, build, tree.skillId);
+            const conflictPerkIds = [
+              ...overLevelPerks
+                .filter((perk) => perk.skillId === tree.skillId)
+                .map((perk) => perk.id),
+              ...skillReqConflicts
+                .filter((perk) => perk.skillId === tree.skillId)
+                .map((perk) => perk.id),
+            ];
+            const hasPerkLevelConflict = conflictPerkIds.length > 0;
+            const hasSkillIncreaseConflict = skillIncreaseConflictIds.has(tree.skillId);
+            const hasProblem = isOverCap || hasPerkLevelConflict || hasSkillIncreaseConflict;
 
-              return (
-                <button
-                  key={tree.skillId}
-                  type="button"
-                  onClick={() => {
-                    openSkillTree(tree.skillId);
-                    if (stackedLayout) {
-                      goToSwipePane(CENTER_SWIPE_PANE_INDEX);
-                    }
-                  }}
-                  className={cn(
-                    "grid grid-rows-[auto_minmax(0,1fr)] gap-1 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
-                    "min-h-[6.5rem]",
-                    compact ? "p-1" : "p-1.5",
-                    hasProblem &&
-                      "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
-                    !hasProblem &&
-                      isActive &&
-                      "border-[var(--color-accent)] bg-[var(--color-accent)]/[0.03]",
-                    !hasProblem &&
-                      !isActive &&
-                      "border-[var(--color-border)]/50 bg-transparent hover:border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)]/15",
-                    hasProblem &&
-                      isActive &&
-                      "border-[var(--color-error)]/50 bg-[var(--color-error)]/[0.06]",
-                  )}
-                >
-                  <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-1 gap-y-0.5 leading-tight">
-                    <SkillIcon
-                      skillId={tree.skillId}
-                      className={cn(
-                        "row-start-1 mt-px h-3 w-3 shrink-0 self-start",
-                        hasProblem
-                          ? "text-[var(--color-error)]/65"
-                          : "text-[var(--color-accent-muted)]",
-                      )}
-                    />
+            return (
+              <button
+                key={tree.skillId}
+                type="button"
+                onClick={() => {
+                  openSkillTree(tree.skillId);
+                  if (stackedLayout) {
+                    goToSwipePane(CENTER_SWIPE_PANE_INDEX);
+                  }
+                }}
+                className={cn(
+                  "grid grid-rows-[auto_minmax(0,1fr)] gap-1 overflow-hidden rounded-[var(--radius-sm)] border text-left transition-colors",
+                  "min-h-[145px]",
+                  compact ? "p-1" : "p-1.5",
+                  hasProblem &&
+                    "border-[var(--color-error)]/35 bg-[var(--color-error)]/[0.04]",
+                  !hasProblem &&
+                    isActive &&
+                    "border-[var(--color-accent)] bg-[var(--color-accent)]/[0.03]",
+                  !hasProblem &&
+                    !isActive &&
+                    "border-[var(--color-border)]/50 bg-transparent hover:border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)]/15",
+                  hasProblem &&
+                    isActive &&
+                    "border-[var(--color-error)]/50 bg-[var(--color-error)]/[0.06]",
+                )}
+              >
+                <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-1 gap-y-0.5 leading-tight">
+                  <SkillIcon
+                    skillId={tree.skillId}
+                    className={cn(
+                      "row-start-1 mt-px h-3 w-3 shrink-0 self-start",
+                      hasProblem ? "text-[var(--color-error)]/65" : "text-[var(--color-accent-muted)]",
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "row-start-1 col-start-2 flex min-w-0 items-center gap-1.5",
+                      "min-w-0",
+                      gridColumns <= 2 ? "text-xs" : compact ? "text-[10px]" : "text-[11px]",
+                    )}
+                  >
                     <span
-                      className={cn(
-                        "min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]",
-                        gridColumns <= 2 ? "text-xs" : compact ? "text-[10px]" : "text-[11px]",
-                      )}
+                      className="min-w-0 truncate font-semibold leading-snug tracking-tight text-[var(--color-foreground)]"
                       title={tree.skillName}
                     >
                       {tree.skillName}
                     </span>
-                    <span
-                      className={cn(
-                        "col-start-2 justify-self-start tabular-nums text-[10px] font-medium leading-none",
-                        hasProblem
-                          ? "text-[var(--color-error)]/80"
-                          : "text-[var(--color-foreground)]/55",
-                      )}
-                    >
-                      {skillLevel}
-                    </span>
+                    {hasTraining && (
+                      <span
+                        className={cn(
+                          "mt-px h-1.5 w-1.5 shrink-0 rounded-full",
+                          trainingOverBudget ? "bg-[var(--color-error)]" : "bg-[var(--color-accent)]",
+                          trainingOverBudget ? "animate-pulse" : undefined,
+                        )}
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
-                  <div className="flex min-h-0 items-center justify-center overflow-hidden p-px">
-                    <PerkTreeMiniView
-                      tree={tree}
-                      compact
-                      conflictPerkIds={conflictPerkIds}
-                      className="h-full w-full"
-                    />
-                  </div>
-                </button>
-              );
-            })}
+                  <span
+                    className={cn(
+                      "col-start-2 justify-self-start tabular-nums text-[10px] font-medium leading-none",
+                      hasProblem ? "text-[var(--color-error)]/80" : "text-[var(--color-foreground)]/55",
+                    )}
+                  >
+                    {skillLevel}
+                  </span>
+                </div>
+                <div className="flex min-h-0 items-center justify-center overflow-hidden p-px">
+                  <PerkTreeMiniView
+                    tree={tree}
+                    compact
+                    conflictPerkIds={conflictPerkIds}
+                    searchPerkPositionKeys={perkSearchPositionKeysBySkillId.get(tree.skillId)}
+                    className="h-full w-full"
+                  />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          className={cn(
+            "mt-2 flex shrink-0 flex-col gap-2 border-t border-[var(--color-border)]/50 pt-2",
+            // Keeps the search input visible when the sidebar is scrolled.
+            "sticky bottom-0 z-20 bg-[var(--color-surface)]/85 backdrop-blur-sm",
+          )}
+        >
+          <PickerSearchInput
+            value={perkSearchQuery}
+            onChange={(next) => setPerkSearchQuery(next)}
+            placeholder="Search perks..."
+            className={cn(compact && "max-w-none")}
+          />
         </div>
       </CardContent>
     </Card>

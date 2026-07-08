@@ -95,25 +95,29 @@ Opens `http://localhost:5174/`. Browse `data/game/` and `data/ui/`, edit in a tr
 
 ### 3. Import from a LoreRim install
 
-Refreshes **names and descriptions** from Skyrim plugin records; preserves hand-tuned structure:
+Rebuilds perk trees, traits, races, birthsigns, and deities from Skyrim plugin records in your LoreRim MO2 install. Hand-tuned planner fields are merged back in after the rebuild (see table). Full pipeline details: **[tools/import/README.md](../tools/import/README.md)**.
 
 ```bash
 npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim"
 npm run import:lorerim -- --install "<path>" --dry-run   # preview only
 ```
 
-Full details: **[tools/import/README.md](../tools/import/README.md)**.
+| Updated from plugins | Preserved from existing JSON |
+|----------------------|------------------------------|
+| Perk tree membership, names, descriptions, `skillReq`, prerequisites (from `AVIF` / `PERK` metadata) | Perk `position` and `grid` (matched by skill + name; multi-rank stacks share one cell) |
+| Default layout for **new** perks (curated coords or prerequisite graph) | `costsPerkPoint: false` per perk name; Smithing book-unlock perks auto-set free |
+| Traits from `Traits_AbilityList` (traits without a plugin record are dropped) | — |
+| Race names, descriptions, ability bonuses, starting skills/attributes from `RACE` `DATA` | `speedBonus` / `attributeBonus` when not in `DATA` |
+| `race-effects.json` (parsed from race ability bonus text) | — |
+| Birthsign names, bonuses, groups; `effects` re-parsed from bonus text | — |
+| Deity names, shrine/follower/devotee/tenets text, racial starting deities, shrine locations | — (deity `effects` re-parsed from shrine text each import) |
+| `perk-player-level-reqs.json` from `PERK` `GetLevel` conditions | Player level reqs for perks whose graph key still exists after rebuild |
+| `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
+| Destiny tree from `DAR_Perk*` + Subclasses config (layout from config) | Destiny perk `id`, `effects`, and `costsPerkPoint: false` when present in previous `destiny.json` |
 
-| Updated from plugins | Never overwritten by import |
-|----------------------|----------------------------|
-| Perk names/descriptions (matched by name) | Tree layout, prerequisites, `skillReq`, `effects`, `costsPerkPoint` |
-| Trait names/descriptions (matched by id or name) | Trait `effects`; traits without a matching plugin record are dropped |
-| Race names/descriptions | Starting skills, attributes, `race-effects.json` |
-| Birthsign names, bonuses, groups | Birthsign `effects` |
-| Deity names, shrine/follower/devotee/tenets text | Deity `effects`, `starting` |
-| `destiny.json` (only when empty) | Everything listed in the right column |
+After metadata enrichment, **stable perk `id`, prerequisite wiring, explicit `costsPerkPoint: true`, and hand-tuned `effects`** are restored from the previous perk JSON via graph snapshots (matched by skill + name + `skillReq`).
 
-Files import **does not** touch: `mechanics.json`, `stats.json`, `skills.json`, `character-options.json`, `perk-player-level-reqs.json`, `race-effects.json`, or anything under `ui/`.
+Files import **does not** touch: `mechanics.json`, `stats.json`, `skills.json`, `character-options.json`, or anything under `ui/`.
 
 ---
 
@@ -178,7 +182,7 @@ Array of races under `races`. Each race includes:
 - `attributeBonus` — per-level attribute growth from race
 - `effects` — inline structured effects (usually empty; see `race-effects.json`)
 
-Include a `none` entry for “no race selected”. Importer updates names/descriptions only; hand-tune numbers here.
+Include a `none` entry for “no race selected”. Import updates names, descriptions, bonuses, and starting values from plugins; hand-tune `speedBonus`, `attributeBonus`, and other fields not present in `RACE` `DATA`.
 
 ### `race-effects.json`
 
@@ -190,7 +194,7 @@ Map of `raceId → Effect[]`. Merged into the race at load time (appended to `ra
 
 ### `birthsigns.json` / `deities.json`
 
-Picker content under `birthsigns` / `deities`. Each entry has display fields plus `effects` for computed stats. Include a `none` entry. Text fields are imported from Big Tweaks birthsign records / Wintersun plugins; `effects` and deity `starting` are preserved from existing JSON when ids match.
+Picker content under `birthsigns` / `deities`. Each entry has display fields plus `effects` for computed stats. Include a `none` entry. Text fields are imported from Big Tweaks birthsign records / Wintersun plugins. `effects` are re-parsed from imported bonus/shrine text each run (rule-based patterns in the import tool).
 
 ### `character-options.json`
 
@@ -263,7 +267,7 @@ Each perk node:
 2. Create `perks/<skill-id>.json` with `skillId` matching the id.
 3. Run `npm run build` and verify in the data editor or planner UI.
 
-**Destiny tree** — `destiny.json` uses the same schema. Prerequisite links from the Subclasses config are OR (`prerequisitesAny`). Destiny perks cost destiny points unless marked `costsPerkPoint: false`. If the file has no perks, `import:lorerim` can bootstrap layout from Subclasses of Skyrim config; otherwise layout is hand-maintained.
+**Destiny tree** — `destiny.json` uses the same schema. Rebuilt each import from `DAR_Perk*` records and the Subclasses of Skyrim config (`CustomSkill.destiny.config.txt`) for positions and prerequisite links (OR via `prerequisitesAny`). Destiny perks cost destiny points unless marked `costsPerkPoint: false`. Stable perk `id` and hand-tuned `effects` are preserved from the previous file when graph keys match.
 
 ---
 
@@ -326,7 +330,7 @@ Column-based planner layout:
 }
 ```
 
-Valid panel ids are registered in `src/layout/LayoutRenderer.tsx` → `panelRegistry`:
+Valid panel ids are registered in `src/layout/panelRegistry.ts` (re-exported from `LayoutRenderer.tsx`):
 
 | Panel id | Component |
 |----------|-----------|
@@ -386,7 +390,7 @@ TypeScript types (`Perk`, `Race`, `Effect`, etc.) are inferred from those schema
 | Putting player level reqs in perk descriptions only | Add to `perk-player-level-reqs.json` |
 | Setting `skillReq` thinking it spends perk points | Skill level is separate; perk points are spent per node |
 | Hardcoding `20`, `50`, `100` caps in JSON or TS | Use `mechanics.json` fields |
-| Editing perk layout via import | Import updates text only; edit tree JSON or use the data editor |
+| Expecting import to leave prerequisites/`skillReq` untouched | Import rebuilds from plugins, then restores saved prerequisite wiring and effects via graph snapshots; edit tree JSON or use the data editor for layout |
 | Forgetting `perks/index.json` after adding a tree file | Loader throws “Missing perk tree file” |
 | Duplicate perk ids across trees | Prerequisites and build codec assume global uniqueness |
 | Literal text in `character-options.json` | Use label keys into `labels.json` |

@@ -4,8 +4,11 @@ import {
   computePerkTreeEdges,
   getFrontPerkIdAtPosition,
   getMinDistinctPerkCenterDistanceGrid,
+  getPerkAllocationRank,
   getNextRankInStack,
   getPerkStackRank,
+  formatPerkStackRank,
+  canUpgradePerkStackRank,
   getPerkTreeGridBounds,
   parseSvgViewBox,
   resolvePerkNodeDiameterPx,
@@ -54,6 +57,33 @@ describe("perkTreeGrid", () => {
     expect(getPerkStackRank(stack, [])).toEqual({ current: 0, total: 2 });
     expect(getPerkStackRank(stack, ["rank-25"])).toEqual({ current: 1, total: 2 });
     expect(getPerkStackRank(stack, ["rank-25", "rank-50"])).toEqual({ current: 2, total: 2 });
+  });
+
+  it("reports allocation rank for stackable perk points budgets", () => {
+    const perk: Perk = {
+      ...makePerk("stackable", 0),
+      allocation: { kind: "perkPointsBudget" },
+    };
+
+    expect(getPerkAllocationRank(perk, [])).toEqual({ current: 0, unbounded: "X" });
+    expect(getPerkAllocationRank(perk, ["stackable"])).toEqual({ current: 1, unbounded: "X" });
+    expect(getPerkAllocationRank(perk, ["stackable", "stackable"])).toEqual({
+      current: 2,
+      unbounded: "X",
+    });
+  });
+
+  it("formats stackable rank with X or infinity denominators", () => {
+    expect(formatPerkStackRank({ current: 0, unbounded: "X" })).toBe("0/X");
+    expect(formatPerkStackRank({ current: 3, unbounded: "infinity" })).toBe("3/∞");
+    expect(formatPerkStackRank({ current: 1, total: 2 })).toBe("1/2");
+  });
+
+  it("detects upgrade availability for bounded and unbounded ranks", () => {
+    expect(canUpgradePerkStackRank({ current: 1, total: 2 }, false)).toBe(true);
+    expect(canUpgradePerkStackRank({ current: 2, total: 2 }, true)).toBe(false);
+    expect(canUpgradePerkStackRank({ current: 2, unbounded: "X" }, true)).toBe(true);
+    expect(canUpgradePerkStackRank({ current: 2, unbounded: "X" }, false)).toBe(false);
   });
 
   it("returns the next rank after the highest selected tier", () => {

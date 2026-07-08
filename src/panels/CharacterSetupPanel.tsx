@@ -249,7 +249,7 @@ export function CharacterSetupPanel() {
       className={cn(
         stackedLayout
           ? "flex min-h-0 flex-1 flex-col overflow-hidden border-0 bg-transparent shadow-none"
-          : "flex-shrink-0",
+          : "flex min-h-0 flex-col overflow-hidden max-h-full",
       )}
     >
       <CardHeader
@@ -281,9 +281,9 @@ export function CharacterSetupPanel() {
       </CardHeader>
       <CardContent
         className={cn(
-          "space-y-3",
+          "min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-y-contain",
           compact && "space-y-2 text-[13px]",
-          stackedLayout && "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-3 pb-2 pt-2",
+          stackedLayout && "space-y-4 px-3 pb-2 pt-2",
         )}
       >
         <div className="space-y-1.5">

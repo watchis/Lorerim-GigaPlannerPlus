@@ -8,12 +8,16 @@ import {
   computeFitContainSize,
   DEFAULT_TREE_VIEW_TRANSFORM,
   estimatePerkBadgeStackHeight,
+  estimateBadgeStackRect,
   getFitLayoutTuning,
   getTouchDistance,
   getViewportPointFromCenter,
   isPerkTreeInteractiveTarget,
+  overlapArea,
   perkAbbreviation,
+  rectsOverlap,
   resolvePerkBadgePlacement,
+  resolvePerkSearchMatchGlow,
   resolvePerkTooltipScale,
   resolveTreeEdgePaddingPx,
   zoomTreeViewAtPoint,
@@ -158,6 +162,28 @@ describe("perkTreeViewLayout", () => {
     it("flips above when below is cramped and above has more room", () => {
       expect(resolvePerkBadgePlacement(280, 312, 20, { top: 0, bottom: 320 })).toBe(true);
     });
+
+    it("avoids overlapping nearby perk circles when placing badges", () => {
+      const belowObstacle = estimateBadgeStackRect(
+        { top: 100, bottom: 132, left: 90, right: 122 },
+        20,
+        80,
+        false,
+      );
+      const obstacle = { top: 136, bottom: 168, left: 90, right: 122 };
+
+      expect(overlapArea(belowObstacle, obstacle)).toBeGreaterThan(0);
+      expect(rectsOverlap(belowObstacle, obstacle)).toBe(true);
+
+      const preferAbove = resolvePerkBadgePlacement(100, 132, 20, { top: 0, bottom: 300 }, {
+        circleLeft: 90,
+        circleRight: 122,
+        stackWidth: 80,
+        obstacles: [obstacle],
+      });
+
+      expect(preferAbove).toBe(true);
+    });
   });
 
   describe("getTouchDistance", () => {
@@ -207,6 +233,31 @@ describe("perkTreeViewLayout", () => {
 
       expect(getViewportPointFromCenter(viewport, 200, 100)).toEqual({ x: 0, y: 0 });
       expect(getViewportPointFromCenter(viewport, 300, 150)).toEqual({ x: 100, y: 50 });
+    });
+  });
+
+  describe("resolvePerkSearchMatchGlow", () => {
+    it("uses default blur radii at the base node diameter", () => {
+      const glow = resolvePerkSearchMatchGlow(32);
+
+      expect(glow.innerBlurPx).toBe(7);
+      expect(glow.outerBlurPx).toBe(14);
+      expect(glow.boxShadow).toContain("0 0 7px rgba(255,255,255,1)");
+      expect(glow.boxShadow).toContain("0 0 14px rgba(255,255,255,0.72)");
+    });
+
+    it("scales blur radii proportionally with node diameter", () => {
+      const glow = resolvePerkSearchMatchGlow(16);
+
+      expect(glow.innerBlurPx).toBe(3.5);
+      expect(glow.outerBlurPx).toBe(7);
+    });
+
+    it("keeps a minimum inner blur for very small nodes", () => {
+      const glow = resolvePerkSearchMatchGlow(14);
+
+      expect(glow.innerBlurPx).toBeGreaterThanOrEqual(1);
+      expect(glow.outerBlurPx).toBeGreaterThan(glow.innerBlurPx);
     });
   });
 

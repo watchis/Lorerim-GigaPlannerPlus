@@ -304,6 +304,19 @@ export const perkSchema = z.object({
   skillReq: z.number(),
   playerLevelReq: z.number().int().positive().optional(),
   costsPerkPoint: z.boolean().default(true),
+  /**
+   * Optional allocation model for perks that can be selected multiple times.
+   *
+   * The planner stores multiple allocations by repeating the perk id in
+   * `BuildState.selectedPerkIds`.
+   */
+  allocation: z
+    .object({
+      kind: z.literal("perkPointsBudget"),
+      /** Denominator shown in rank badges: literal `X` or infinity (`∞`). */
+      totalLabel: z.enum(["X", "infinity"]).optional(),
+    })
+    .optional(),
   position: z.object({ x: z.number().int(), y: z.number().int() }),
   prerequisites: z.array(z.string()),
   prerequisitesAny: z.array(z.string()).optional(),
@@ -373,6 +386,7 @@ export const labelsSchema = z.object({
     home: z.string(),
     planner: z.string(),
     builds: z.string(),
+    reportBug: z.string(),
   }),
   landing: z.object({
     howItWorksTitle: z.string(),

@@ -2,7 +2,7 @@
   "skillId": "one-handed",
   "skillName": "One-Handed",
   "grid": {
-    "width": 23,
+    "width": 27,
     "height": 30
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Weapon Mastery",
       "skillReq": 0,
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 29
       },
       "prerequisites": [],
@@ -31,7 +31,7 @@
       "name": "Weapon Mastery",
       "skillReq": 20,
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 29
       },
       "prerequisites": [],
@@ -51,7 +51,7 @@
       "name": "Penetrating Strikes",
       "skillReq": 20,
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 22
       },
       "prerequisites": [
@@ -86,7 +86,7 @@
       "name": "Powerful Strike",
       "skillReq": 50,
       "position": {
-        "x": 9,
+        "x": 11,
         "y": 13
       },
       "prerequisites": [
@@ -114,7 +114,7 @@
       "name": "Relentless Onslaught",
       "skillReq": 100,
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 4
       },
       "prerequisites": [
@@ -130,7 +130,7 @@
       "name": "Powerful Charge",
       "skillReq": 25,
       "position": {
-        "x": 13,
+        "x": 15,
         "y": 13
       },
       "prerequisites": [
@@ -152,7 +152,7 @@
       "name": "War Axe Focus",
       "skillReq": 25,
       "position": {
-        "x": 7,
+        "x": 8,
         "y": 19
       },
       "prerequisites": [
@@ -180,7 +180,7 @@
       "name": "War Axe Focus",
       "skillReq": 50,
       "position": {
-        "x": 7,
+        "x": 8,
         "y": 19
       },
       "prerequisites": [
@@ -208,7 +208,7 @@
       "name": "War Axe Focus",
       "skillReq": 75,
       "position": {
-        "x": 7,
+        "x": 8,
         "y": 19
       },
       "prerequisites": [
@@ -236,7 +236,7 @@
       "name": "Mace Focus",
       "skillReq": 25,
       "position": {
-        "x": 15,
+        "x": 18,
         "y": 19
       },
       "prerequisites": [
@@ -270,7 +270,7 @@
       "name": "Mace Focus",
       "skillReq": 50,
       "position": {
-        "x": 15,
+        "x": 18,
         "y": 19
       },
       "prerequisites": [
@@ -304,7 +304,7 @@
       "name": "Mace Focus",
       "skillReq": 75,
       "position": {
-        "x": 15,
+        "x": 18,
         "y": 19
       },
       "prerequisites": [
@@ -338,7 +338,7 @@
       "name": "Sword & Spear Focus",
       "skillReq": 25,
       "position": {
-        "x": 18,
+        "x": 22,
         "y": 20
       },
       "prerequisites": [
@@ -360,7 +360,7 @@
       "name": "Sword & Spear Focus",
       "skillReq": 50,
       "position": {
-        "x": 18,
+        "x": 22,
         "y": 20
       },
       "prerequisites": [
@@ -382,7 +382,7 @@
       "name": "Sword & Spear Focus",
       "skillReq": 75,
       "position": {
-        "x": 18,
+        "x": 22,
         "y": 20
       },
       "prerequisites": [
@@ -404,7 +404,7 @@
       "name": "Flurry",
       "skillReq": 25,
       "position": {
-        "x": 22,
+        "x": 26,
         "y": 24
       },
       "prerequisites": [
@@ -426,7 +426,7 @@
       "name": "Flurry",
       "skillReq": 50,
       "position": {
-        "x": 22,
+        "x": 26,
         "y": 24
       },
       "prerequisites": [
@@ -448,7 +448,7 @@
       "name": "Storm of Steel",
       "skillReq": 50,
       "position": {
-        "x": 22,
+        "x": 26,
         "y": 4
       },
       "prerequisites": [
@@ -470,7 +470,7 @@
       "name": "Hand to Hand",
       "skillReq": 0,
       "position": {
-        "x": 6,
+        "x": 7,
         "y": 28
       },
       "prerequisites": [],
@@ -549,7 +549,7 @@
       "name": "Piercing Strike",
       "skillReq": 50,
       "position": {
-        "x": 19,
+        "x": 23,
         "y": 15
       },
       "prerequisites": [
@@ -564,7 +564,7 @@
       "name": "Stunning Blow",
       "skillReq": 50,
       "position": {
-        "x": 16,
+        "x": 19,
         "y": 14
       },
       "prerequisites": [
@@ -592,7 +592,7 @@
       "name": "Armsbreaker",
       "skillReq": 50,
       "position": {
-        "x": 6,
+        "x": 7,
         "y": 14
       },
       "prerequisites": [
@@ -644,7 +644,7 @@
       "name": "Takedown",
       "skillReq": 50,
       "position": {
-        "x": 5,
+        "x": 6,
         "y": 25
       },
       "prerequisites": [
@@ -689,7 +689,7 @@
       "name": "Balanced Wielding",
       "skillReq": 50,
       "position": {
-        "x": 14,
+        "x": 17,
         "y": 25
       },
       "prerequisites": [
@@ -704,7 +704,7 @@
       "name": "Armed Spellcasting",
       "skillReq": 50,
       "position": {
-        "x": 17,
+        "x": 20,
         "y": 29
       },
       "prerequisites": [
@@ -719,7 +719,7 @@
       "name": "Final Stand",
       "skillReq": 80,
       "position": {
-        "x": 19,
+        "x": 23,
         "y": 10
       },
       "prerequisites": [
@@ -734,7 +734,7 @@
       "name": "Heavy Slam",
       "skillReq": 80,
       "position": {
-        "x": 16,
+        "x": 19,
         "y": 9
       },
       "prerequisites": [
@@ -749,7 +749,7 @@
       "name": "Guillotine",
       "skillReq": 80,
       "position": {
-        "x": 6,
+        "x": 7,
         "y": 9
       },
       "prerequisites": [
@@ -779,7 +779,7 @@
       "name": "Deathbringer",
       "skillReq": 100,
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 0
       },
       "prerequisites": [

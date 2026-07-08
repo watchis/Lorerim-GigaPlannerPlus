@@ -4,8 +4,10 @@ import { cn } from "@/lib/utils";
 import {
   computePerkTreeEdges,
   getPerkGridCenter,
+  getPerkAllocationRank,
   getPerkPositionKey,
   getPerkStackRank,
+  canUpgradePerkStackRank,
   getPerkTreeCompactViewBox,
   getPerkTreeGridBounds,
   getVisiblePerksForTree,
@@ -18,6 +20,7 @@ interface PerkTreeMiniViewProps {
   className?: string;
   compact?: boolean;
   conflictPerkIds?: string[];
+  searchPerkPositionKeys?: ReadonlySet<string>;
 }
 
 const COMPACT_NODE_RADIUS = 0.5;
@@ -104,14 +107,42 @@ function CompactConflictNode({
   );
 }
 
+function CompactSearchMatchNode({
+  cx,
+  cy,
+  radius,
+  glowFilterId,
+}: {
+  cx: number;
+  cy: number;
+  radius: number;
+  glowFilterId: string;
+}) {
+  return (
+    <g className="animate-pulse" filter={`url(#${glowFilterId})`}>
+      <circle cx={cx} cy={cy} r={radius + COMPACT_NODE_HALO_PAD} fill="white" fillOpacity={0.18} />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={radius}
+        fill="transparent"
+        stroke="rgba(255,255,255,0.95)"
+        strokeWidth={COMPACT_NODE_STROKE_HIGHLIGHT}
+      />
+    </g>
+  );
+}
+
 export function PerkTreeMiniView({
   tree,
   className,
   compact = false,
   conflictPerkIds = [],
+  searchPerkPositionKeys,
 }: PerkTreeMiniViewProps) {
   const glowFilterId = useId().replace(/:/g, "");
   const selectedPerkIds = useBuildStore((s) => s.build.selectedPerkIds);
+  const perkPointsRemaining = useBuildStore((s) => s.computed?.perkPointsRemaining ?? 0);
   const gridBounds = useMemo(() => getPerkTreeGridBounds(tree), [tree]);
   const { width, height, origin } = gridBounds;
 
@@ -150,13 +181,22 @@ export function PerkTreeMiniView({
   const partialRankPositionKeys = useMemo(() => {
     const keys = new Set<string>();
     for (const [positionKey, stack] of stacksByPosition) {
-      const stackRank = getPerkStackRank(stack, selectedPerkIds);
-      if (stackRank && stackRank.current > 0 && stackRank.current < stackRank.total) {
+      const stackRank =
+        stack.length > 1
+          ? getPerkStackRank(stack, selectedPerkIds)
+          : getPerkAllocationRank(stack[0], selectedPerkIds);
+      if (!stackRank || stackRank.current <= 0) continue;
+
+      const canAllocateMore = stackRank.unbounded
+        ? perkPointsRemaining > 0
+        : stackRank.total !== undefined && stackRank.current < stackRank.total;
+
+      if (canUpgradePerkStackRank(stackRank, canAllocateMore)) {
         keys.add(positionKey);
       }
     }
     return keys;
-  }, [stacksByPosition, selectedPerkIds]);
+  }, [stacksByPosition, selectedPerkIds, perkPointsRemaining]);
 
   const viewBox = useMemo(() => {
     if (!compact) {
@@ -238,33 +278,55 @@ export function PerkTreeMiniView({
             {visiblePerks
               .filter((perk) => !selectedPerkIds.includes(perk.id))
               .map((perk) => {
+                const positionKey = getPerkPositionKey(perk.position);
+                const isSearchMatch = searchPerkPositionKeys?.has(positionKey) ?? false;
                 const center = getPerkGridCenter(perk.position);
                 return (
-                  <circle
-                    key={perk.id}
-                    cx={center.x}
-                    cy={center.y}
-                    r={nodeRadiusUnselected}
-                    fill={COMPACT_UNSELECTED_FILL}
-                  />
+                  <g key={perk.id}>
+                    <circle
+                      cx={center.x}
+                      cy={center.y}
+                      r={nodeRadiusUnselected}
+                      fill={COMPACT_UNSELECTED_FILL}
+                    />
+                    {isSearchMatch && (
+                      <CompactSearchMatchNode
+                        cx={center.x}
+                        cy={center.y}
+                        radius={nodeRadiusUnselected}
+                        glowFilterId={glowFilterId}
+                      />
+                    )}
+                  </g>
                 );
               })}
             {visiblePerks
               .filter((perk) => selectedPerkIds.includes(perk.id))
               .map((perk) => {
+                const positionKey = getPerkPositionKey(perk.position);
+                const isSearchMatch = searchPerkPositionKeys?.has(positionKey) ?? false;
                 const center = getPerkGridCenter(perk.position);
                 const isConflict = conflictPositionKeys.has(getPerkPositionKey(perk.position));
                 const isPartialRank = partialRankPositionKeys.has(getPerkPositionKey(perk.position));
 
                 if (isConflict) {
                   return (
-                    <CompactConflictNode
-                      key={perk.id}
-                      cx={center.x}
-                      cy={center.y}
-                      radius={nodeRadius}
-                      glowFilterId={glowFilterId}
-                    />
+                    <g key={perk.id}>
+                      <CompactConflictNode
+                        cx={center.x}
+                        cy={center.y}
+                        radius={nodeRadius}
+                        glowFilterId={glowFilterId}
+                      />
+                      {isSearchMatch && (
+                        <CompactSearchMatchNode
+                          cx={center.x}
+                          cy={center.y}
+                          radius={nodeRadius}
+                          glowFilterId={glowFilterId}
+                        />
+                      )}
+                    </g>
                   );
                 }
 
@@ -290,6 +352,14 @@ export function PerkTreeMiniView({
                       strokeWidth={COMPACT_NODE_STROKE_HIGHLIGHT}
                       strokeOpacity={1}
                     />
+                    {isSearchMatch && (
+                      <CompactSearchMatchNode
+                        cx={center.x}
+                        cy={center.y}
+                        radius={nodeRadius}
+                        glowFilterId={glowFilterId}
+                      />
+                    )}
                   </g>
                 );
               })}
@@ -315,6 +385,9 @@ export function PerkTreeMiniView({
               const isPartialRank =
                 isSelected && partialRankPositionKeys.has(getPerkPositionKey(perk.position));
               const center = getPerkGridCenter(perk.position);
+              const positionKey = getPerkPositionKey(perk.position);
+              const isSearchMatch = searchPerkPositionKeys?.has(positionKey) ?? false;
+              const baseRadius = isSelected ? nodeRadius : nodeRadiusUnselected;
 
               return (
                 <g key={perk.id} className={isConflict ? "animate-pulse" : undefined}>
@@ -339,7 +412,7 @@ export function PerkTreeMiniView({
                   <circle
                     cx={center.x}
                     cy={center.y}
-                    r={isSelected ? nodeRadius : nodeRadiusUnselected}
+                    r={baseRadius}
                     fill={
                       isConflict
                         ? "var(--color-error)"
@@ -361,6 +434,28 @@ export function PerkTreeMiniView({
                     strokeWidth={isConflict ? 0.14 : 0.1}
                     strokeOpacity={1}
                   />
+                  {isSearchMatch && (
+                    <>
+                      <circle
+                        cx={center.x}
+                        cy={center.y}
+                        r={baseRadius + COMPACT_NODE_HALO_PAD}
+                        fill="white"
+                        fillOpacity={0.16}
+                        filter={`url(#${glowFilterId})`}
+                      />
+                      <circle
+                        cx={center.x}
+                        cy={center.y}
+                        r={baseRadius}
+                        fill="transparent"
+                        stroke="rgba(255,255,255,0.95)"
+                        strokeWidth={0.12}
+                        filter={`url(#${glowFilterId})`}
+                        className="animate-pulse"
+                      />
+                    </>
+                  )}
                 </g>
               );
             })}

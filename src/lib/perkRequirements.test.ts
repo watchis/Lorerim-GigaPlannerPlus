@@ -37,6 +37,42 @@ describe("perkRequirements", () => {
     expect(formatPerkNodeRequirementLabel(requirements)).toBe("Lv 10 · 50");
   });
 
+  it("formats requirement parts based on visibility toggles", () => {
+    const requirements = getPerkNodeRequirements(
+      makePerk({ skillReq: 50, playerLevelReq: 10 }),
+    );
+
+    expect(
+      formatPerkNodeRequirementLabel(requirements, {
+        visibility: {
+          playerLevelReq: true,
+          skillLevelReq: false,
+          perkName: false,
+        },
+      }),
+    ).toBe("Lv 10");
+    expect(
+      formatPerkNodeRequirementLabel(requirements, {
+        visibility: {
+          playerLevelReq: false,
+          skillLevelReq: true,
+          perkName: true,
+        },
+        perkName: "Stealth Archer",
+      }),
+    ).toBe("Stealth Archer · 50");
+    expect(
+      formatPerkNodeRequirementLabel(requirements, {
+        visibility: {
+          playerLevelReq: false,
+          skillLevelReq: false,
+          perkName: true,
+        },
+        perkName: "Stealth Archer",
+      }),
+    ).toBe("Stealth Archer");
+  });
+
   it("treats level 1 player requirements as ungated", () => {
     const requirements = getPerkNodeRequirements(makePerk({ playerLevelReq: 1 }));
     expect(requirements).toEqual({ skillReq: null, playerLevelReq: null });

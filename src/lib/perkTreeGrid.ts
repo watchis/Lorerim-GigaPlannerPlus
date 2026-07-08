@@ -266,7 +266,22 @@ export function getVisiblePerksForTree(tree: PerkTree, selectedPerkIds: string[]
 
 export interface PerkStackRank {
   current: number;
-  total: number;
+  /** Fixed maximum for multi-rank perk stacks. */
+  total?: number;
+  /** Unbounded denominator for repeatable allocations (`X` or `∞`). */
+  unbounded?: "X" | "infinity";
+}
+
+export function formatPerkStackRank(rank: PerkStackRank): string {
+  const denominator =
+    rank.unbounded === "infinity" ? "∞" : rank.unbounded === "X" ? "X" : String(rank.total ?? 0);
+  return `${rank.current}/${denominator}`;
+}
+
+/** Whether another rank or allocation can still be added. */
+export function canUpgradePerkStackRank(rank: PerkStackRank, canAllocateMore: boolean): boolean {
+  if (rank.unbounded) return canAllocateMore;
+  return rank.total !== undefined && rank.current < rank.total;
 }
 
 /** Rank indicator for multi-level perks; returns null for single-rank nodes. */
@@ -283,6 +298,22 @@ export function getPerkStackRank(perks: Perk[], selectedPerkIds: string[]): Perk
     current: highestSelectedIndex >= 0 ? highestSelectedIndex + 1 : 0,
     total: sorted.length,
   };
+}
+
+/**
+ * Rank indicator for perks that can be allocated multiple times.
+ *
+ * The planner stores multiple allocations by repeating the perk id in
+ * `BuildState.selectedPerkIds`. The denominator is a symbolic unbounded label
+ * (`X` or `∞`), not a computed perk-point cap.
+ */
+export function getPerkAllocationRank(perk: Perk, selectedPerkIds: string[]): PerkStackRank | null {
+  if (perk.allocation?.kind !== "perkPointsBudget") return null;
+
+  const current = selectedPerkIds.filter((id) => id === perk.id).length;
+  const unbounded = perk.allocation.totalLabel ?? "X";
+
+  return { current, unbounded };
 }
 
 /** Next tier after the highest selected rank at this stack position. */

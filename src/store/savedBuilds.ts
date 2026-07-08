@@ -5,6 +5,7 @@ export interface BuildMilestone {
   id: string;
   name: string;
   build: BuildState;
+  notes?: string;
 }
 
 export const DEFAULT_VARIANT_NAME = "Default";
@@ -14,9 +15,15 @@ export interface SavedBuild {
   name: string;
   build: BuildState;
   defaultVariantName: string;
+  defaultVariantNotes?: string;
   milestones: BuildMilestone[];
   activeMilestoneId: string | null;
   updatedAt: number;
+  /**
+   * Modpack version that the build was last edited on.
+   * Stored for display on the build cards; older libraries may not have it.
+   */
+  modpackVersion?: string;
   importedAt: number | null;
 }
 
@@ -38,11 +45,12 @@ export function defaultBuildName(index: number): string {
   return `Build ${index}`;
 }
 
-export function createMilestone(name: string, build: BuildState): BuildMilestone {
+export function createMilestone(name: string, build: BuildState, notes: string = ""): BuildMilestone {
   return {
     id: createBuildId(),
     name,
     build,
+    notes,
   };
 }
 
@@ -110,6 +118,7 @@ export function createSavedBuild(
     name,
     build,
     defaultVariantName: defaultVariantName.trim() || DEFAULT_VARIANT_NAME,
+    defaultVariantNotes: "",
     milestones,
     activeMilestoneId: null,
     updatedAt: Date.now(),
@@ -134,10 +143,97 @@ export function normalizeSavedBuild(entry: SavedBuild): SavedBuild {
   return {
     ...entry,
     defaultVariantName: entry.defaultVariantName?.trim() || DEFAULT_VARIANT_NAME,
+    defaultVariantNotes: entry.defaultVariantNotes ?? "",
     milestones: entry.milestones ?? [],
     activeMilestoneId: entry.activeMilestoneId ?? null,
     importedAt: entry.importedAt ?? null,
+    modpackVersion: entry.modpackVersion?.trim() || entry.modpackVersion,
   };
+}
+
+/**
+ * Migration helper for older saved build libraries that predate `modpackVersion`.
+ * We stamp any missing/blank per-build version using the provided manifest version.
+ */
+export function migrateSavedBuildsModpackVersion(
+  savedBuilds: SavedBuild[],
+  modpackVersion: string,
+): SavedBuild[] {
+  const trimmed = modpackVersion.trim();
+  return savedBuilds.map((entry) => {
+    const raw = entry.modpackVersion?.trim();
+    if (raw) return entry;
+    return { ...entry, modpackVersion: trimmed };
+  });
+}
+
+export function getVariantNotes(entry: SavedBuild, variantId: string | null): string {
+  const normalized = normalizeSavedBuild(entry);
+  if (variantId === null) return normalized.defaultVariantNotes ?? "";
+  return normalized.milestones.find((item) => item.id === variantId)?.notes ?? "";
+}
+
+export function getVariantIndex(entry: SavedBuild, variantId: string | null): number {
+  const variants = listBuildVariants(entry);
+  const index = variants.findIndex((variant) => variant.id === variantId);
+  return index === -1 ? 0 : index;
+}
+
+export function getVariantIdAtIndex(entry: SavedBuild, index: number): string | null {
+  return listBuildVariants(entry)[index]?.id ?? null;
+}
+
+export function setVariantNotesOnEntry(
+  entry: SavedBuild,
+  variantId: string | null,
+  notes: string,
+  modpackVersion: string,
+): SavedBuild {
+  const normalized = normalizeSavedBuild(entry);
+  if (variantId === null) {
+    return {
+      ...normalized,
+      defaultVariantNotes: notes,
+      updatedAt: Date.now(),
+      modpackVersion,
+    };
+  }
+
+  const milestoneExists = normalized.milestones.some((milestone) => milestone.id === variantId);
+  if (!milestoneExists) {
+    return normalized;
+  }
+
+  return {
+    ...normalized,
+    milestones: normalized.milestones.map((milestone) =>
+      milestone.id === variantId ? { ...milestone, notes } : milestone,
+    ),
+    updatedAt: Date.now(),
+    modpackVersion,
+  };
+}
+
+export function mergeVariantNotesFromEntry(
+  existing: SavedBuild,
+  incoming: SavedBuild,
+): Pick<SavedBuild, "defaultVariantNotes" | "milestones"> {
+  const normalizedExisting = normalizeSavedBuild(existing);
+  const normalizedIncoming = normalizeSavedBuild(incoming);
+
+  const defaultVariantNotes = normalizedIncoming.defaultVariantNotes?.trim()
+    ? normalizedIncoming.defaultVariantNotes
+    : (normalizedExisting.defaultVariantNotes ?? "");
+
+  const milestones = normalizedIncoming.milestones.map((milestone, index) => {
+    const localMatch =
+      normalizedExisting.milestones.find((item) => item.name === milestone.name) ??
+      normalizedExisting.milestones[index];
+    const notes = milestone.notes?.trim() ? milestone.notes : (localMatch?.notes ?? "");
+    return { ...milestone, notes };
+  });
+
+  return { defaultVariantNotes, milestones };
 }
 
 export function getDefaultVariantName(entry: SavedBuild): string {
@@ -163,6 +259,7 @@ export function promoteMilestoneToDefault(entry: SavedBuild, milestoneId: string
     ...entry,
     build: milestone.build,
     defaultVariantName: milestone.name,
+    defaultVariantNotes: milestone.notes ?? "",
     milestones: entry.milestones.filter((m) => m.id !== milestoneId),
     activeMilestoneId: wasActive ? null : entry.activeMilestoneId,
   };
@@ -174,11 +271,20 @@ export function getActiveSavedBuildBuild(entry: SavedBuild): BuildState {
   return milestone?.build ?? entry.build;
 }
 
+export function getActiveSavedBuild(
+  savedBuilds: SavedBuild[],
+  activeBuildId: string,
+): SavedBuild | undefined {
+  const entry = savedBuilds.find((build) => build.id === activeBuildId);
+  return entry ? normalizeSavedBuild(entry) : undefined;
+}
+
 export function listBuildVariants(entry: SavedBuild): Array<{
   id: string | null;
   name: string;
   level: number;
   perkCount: number;
+  notes: string;
 }> {
   const normalized = normalizeSavedBuild(entry);
 
@@ -188,12 +294,14 @@ export function listBuildVariants(entry: SavedBuild): Array<{
       name: getDefaultVariantName(normalized),
       level: normalized.build.playerLevel,
       perkCount: normalized.build.selectedPerkIds.length,
+      notes: normalized.defaultVariantNotes ?? "",
     },
     ...normalized.milestones.map((milestone) => ({
       id: milestone.id,
       name: milestone.name,
       level: milestone.build.playerLevel,
       perkCount: milestone.build.selectedPerkIds.length,
+      notes: milestone.notes ?? "",
     })),
   ];
 }
@@ -230,11 +338,13 @@ export function reorderVariantsInEntry(
       id: null as string | null,
       name: getDefaultVariantName(normalized),
       build: normalized.build,
+      notes: normalized.defaultVariantNotes ?? "",
     },
     ...normalized.milestones.map((milestone) => ({
       id: milestone.id,
       name: milestone.name,
       build: milestone.build,
+      notes: milestone.notes ?? "",
     })),
   ];
 
@@ -258,12 +368,14 @@ export function reorderVariantsInEntry(
     id: slot.id ?? createBuildId(),
     name: slot.name,
     build: slot.build,
+    notes: slot.notes ?? "",
   }));
 
   return {
     ...normalized,
     build: defaultSlot.build,
     defaultVariantName: defaultSlot.name,
+    defaultVariantNotes: defaultSlot.notes ?? "",
     milestones,
     activeMilestoneId: nextActiveIndex === 0 ? null : milestones[nextActiveIndex - 1]?.id ?? null,
   };
@@ -295,18 +407,19 @@ export function uniqueBuildName(desiredName: string, builds: SavedBuild[]): stri
   return `${base} ${index}`;
 }
 
-export function touchSavedBuild(saved: SavedBuild, build: BuildState): SavedBuild {
+export function touchSavedBuild(saved: SavedBuild, build: BuildState, modpackVersion: string): SavedBuild {
   if (areBuildStatesEqual(saved.build, build)) {
     return saved;
   }
 
-  return acknowledgeSavedBuildEdits({ ...saved, build, updatedAt: Date.now() });
+  return acknowledgeSavedBuildEdits({ ...saved, build, updatedAt: Date.now(), modpackVersion });
 }
 
 export function updateSavedBuildInList(
   builds: SavedBuild[],
   activeBuildId: string,
   build: BuildState,
+  modpackVersion: string,
 ): SavedBuild[] {
   return builds.map((entry) => {
     if (entry.id !== activeBuildId) return entry;
@@ -328,10 +441,11 @@ export function updateSavedBuildInList(
             : milestone,
         ),
         updatedAt: Date.now(),
+        modpackVersion,
       });
     }
 
-    return touchSavedBuild(normalized, build);
+    return touchSavedBuild(normalized, build, modpackVersion);
   });
 }
 

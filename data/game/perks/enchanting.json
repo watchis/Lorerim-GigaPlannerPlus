@@ -2,7 +2,7 @@
   "skillId": "enchanting",
   "skillName": "Enchanting",
   "grid": {
-    "width": 18,
+    "width": 22,
     "height": 34
   },
   "perks": [
@@ -11,7 +11,7 @@
       "name": "Enchanter's Insight",
       "skillReq": 0,
       "position": {
-        "x": 4,
+        "x": 5,
         "y": 33
       },
       "prerequisites": [],
@@ -31,7 +31,7 @@
       "name": "Enchanter's Insight",
       "skillReq": 20,
       "position": {
-        "x": 4,
+        "x": 5,
         "y": 33
       },
       "prerequisites": [],
@@ -81,7 +81,7 @@
       "name": "Skill Lore",
       "skillReq": 75,
       "position": {
-        "x": 4,
+        "x": 5,
         "y": 7
       },
       "prerequisites": [
@@ -96,7 +96,7 @@
       "name": "Enchantment Mastery",
       "skillReq": 100,
       "position": {
-        "x": 9,
+        "x": 11,
         "y": 4
       },
       "prerequisites": [
@@ -119,7 +119,7 @@
       "name": "Soul Gem Mastery",
       "skillReq": 25,
       "position": {
-        "x": 9,
+        "x": 11,
         "y": 23
       },
       "prerequisites": [
@@ -134,7 +134,7 @@
       "name": "Arcane Experimentation",
       "skillReq": 50,
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 18
       },
       "prerequisites": [
@@ -156,7 +156,7 @@
       "name": "Artificer's Insight",
       "skillReq": 75,
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 9
       },
       "prerequisites": [
@@ -178,8 +178,11 @@
       "name": "Artifact Enchanter",
       "extension": "enchanting-artifact-enchanter",
       "skillReq": 100,
+      "allocation": {
+        "kind": "perkPointsBudget"
+      },
       "position": {
-        "x": 7,
+        "x": 9,
         "y": 0
       },
       "prerequisites": [
@@ -194,7 +197,7 @@
       "name": "Arcane Artificery",
       "skillReq": 20,
       "position": {
-        "x": 10,
+        "x": 12,
         "y": 28
       },
       "prerequisites": [
@@ -222,7 +225,7 @@
       "name": "Arcane Artificery",
       "skillReq": 45,
       "position": {
-        "x": 10,
+        "x": 12,
         "y": 28
       },
       "prerequisites": [
@@ -250,7 +253,7 @@
       "name": "Arcane Artificery",
       "skillReq": 70,
       "position": {
-        "x": 10,
+        "x": 12,
         "y": 28
       },
       "prerequisites": [
@@ -278,7 +281,7 @@
       "name": "Staff Channeling",
       "skillReq": 30,
       "position": {
-        "x": 13,
+        "x": 16,
         "y": 23
       },
       "prerequisites": [
@@ -293,7 +296,7 @@
       "name": "Staff Channeling",
       "skillReq": 60,
       "position": {
-        "x": 13,
+        "x": 16,
         "y": 23
       },
       "prerequisites": [
@@ -308,7 +311,7 @@
       "name": "Wand Mastery",
       "skillReq": 50,
       "position": {
-        "x": 14,
+        "x": 17,
         "y": 15
       },
       "prerequisites": [
@@ -323,7 +326,7 @@
       "name": "Charge Tap",
       "skillReq": 60,
       "position": {
-        "x": 17,
+        "x": 21,
         "y": 16
       },
       "prerequisites": [
@@ -338,7 +341,7 @@
       "name": "You Shall Not Pass",
       "skillReq": 80,
       "position": {
-        "x": 16,
+        "x": 20,
         "y": 10
       },
       "prerequisites": [
