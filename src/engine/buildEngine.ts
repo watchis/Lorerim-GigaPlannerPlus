@@ -1877,10 +1877,6 @@ function numberRecordEqual(a: Record<string, number>, b: Record<string, number>)
   return aKeys.every((key) => a[key] === b[key]);
 }
 
-function numberArraysEqual(a: number[], b: number[]): boolean {
-  return a.length === b.length && a.every((value, index) => value === b[index]);
-}
-
 function trainingRangesEqual(
   a: Record<string, number[]>,
   b: Record<string, number[]>,
