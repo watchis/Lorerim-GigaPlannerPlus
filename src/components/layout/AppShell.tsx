@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Bug, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,8 @@ export function AppShell() {
   const { labels } = useThemeConfig();
   const version = useBuildStore((s) => s.gameData?.game.manifest.version);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!mobileNavOpen) return;
@@ -30,10 +32,20 @@ export function AppShell() {
       if (event.key === "Escape") setMobileNavOpen(false);
     };
 
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (mobileNavRef.current?.contains(target)) return;
+      if (menuButtonRef.current?.contains(target)) return;
+      setMobileNavOpen(false);
+    };
+
     window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [mobileNavOpen]);
 
@@ -88,6 +100,7 @@ export function AppShell() {
           </nav>
 
           <Button
+            ref={menuButtonRef}
             type="button"
             variant="ghost"
             size="icon"
@@ -103,6 +116,7 @@ export function AppShell() {
 
         {mobileNavOpen && (
           <nav
+            ref={mobileNavRef}
             id="mobile-nav"
             className="border-t border-[var(--color-border)]/70 bg-[var(--color-surface)]/95 px-4 py-3 md:hidden"
           >

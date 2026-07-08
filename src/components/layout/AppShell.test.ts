@@ -58,4 +58,43 @@ describe("AppShell mobile navigation", () => {
     expect(reportLink?.getAttribute("target")).toBe("_blank");
     expect(reportLink?.getAttribute("rel")).toBe("noopener noreferrer");
   });
+
+  it("closes the mobile menu when clicking outside of it", () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(
+        createElement(
+          ThemeProvider,
+          { theme: appData.ui.theme, labels: appData.ui.labels },
+          createElement(
+            MemoryRouter,
+            { initialEntries: ["/"] },
+            createElement(AppShell),
+          ),
+        ),
+      );
+    });
+
+    const menuButton = document.querySelector('button[aria-label="Open menu"]');
+    expect(menuButton).toBeTruthy();
+
+    act(() => {
+      menuButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(document.getElementById("mobile-nav")).toBeTruthy();
+
+    const main = document.querySelector("main");
+    expect(main).toBeTruthy();
+
+    act(() => {
+      main?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    });
+
+    expect(document.getElementById("mobile-nav")).toBeNull();
+    expect(document.querySelector('button[aria-label="Open menu"]')).toBeTruthy();
+  });
 });
