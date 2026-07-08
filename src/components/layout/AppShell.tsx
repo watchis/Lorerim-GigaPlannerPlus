@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Bug, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BUG_REPORT_URL } from "@/lib/bugReport";
 import { Button } from "@/components/ui/button";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
@@ -122,6 +123,24 @@ export function AppShell() {
                   {label}
                 </NavLink>
               ))}
+              <div
+                className="my-2 border-t border-[var(--color-border)]/70"
+                role="separator"
+                aria-hidden
+              />
+              <a
+                href={BUG_REPORT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "flex items-center gap-2 rounded-[var(--radius-md)] px-3 py-2.5 text-sm transition-colors",
+                  "text-[var(--color-muted)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-foreground)]",
+                )}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                <Bug className="h-4 w-4 shrink-0" aria-hidden />
+                {labels.nav.reportBug}
+              </a>
             </div>
           </nav>
         )}

@@ -1,9 +1,8 @@
 import { Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { BUG_REPORT_URL } from "@/lib/bugReport";
 import { cn } from "@/lib/utils";
-
-const BUG_REPORT_URL = "https://github.com/watchis/Lorerim-GigaPlannerPlus/issues/new/choose";
 
 export function BugReportButton() {
   return (
