@@ -66,6 +66,7 @@ export interface PerkNodeProps {
   isAvailable: boolean;
   isLocked: boolean;
   isConflict: boolean;
+  isSearchMatch?: boolean;
   isInteractive: boolean;
   paintOrder: number;
   nodeDiameterPx: number;
@@ -97,6 +98,7 @@ export function PerkNode({
   isAvailable,
   isLocked,
   isConflict,
+  isSearchMatch = false,
   isInteractive,
   paintOrder,
   nodeDiameterPx,
@@ -313,6 +315,8 @@ export function PerkNode({
       isLocked &&
       !isSelected &&
       "border-[var(--color-perk-locked)] bg-[var(--color-surface)]/80 text-[var(--color-muted)] opacity-55 group-hover:opacity-80",
+    isSearchMatch &&
+      "drop-shadow-[0_0_10px_rgba(255,255,255,0.9)] drop-shadow-[0_0_22px_rgba(255,255,255,0.55)] animate-pulse",
   );
 
   const requirementLabel = formatPerkNodeRequirementLabel(badgeRequirements, {

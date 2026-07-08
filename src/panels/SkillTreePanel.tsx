@@ -1,4 +1,5 @@
 import { AlertCircle, Minus, Plus, RotateCcw } from "lucide-react";
+import { useMemo } from "react";
 import { PerkBadgeVisibilityDropdown } from "@/components/PerkBadgeVisibilityDropdown";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
@@ -32,6 +33,7 @@ import { useUiStore } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 import { usePlannerStackedLayout } from "@/layout/plannerLayout";
+import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
@@ -156,6 +158,7 @@ export function SkillTreePanel() {
   const setupLabels = usePanelLabels("character-setup");
   const setMiddleView = useUiStore((s) => s.setMiddleView);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
+  const perkSearchQuery = useUiStore((s) => s.perkSearchQuery);
   const skillWorkspaceMode = useUiStore((s) => s.skillWorkspaceMode);
   const setSkillWorkspaceMode = useUiStore((s) => s.setSkillWorkspaceMode);
   const stackedLayout = usePlannerStackedLayout();
@@ -173,6 +176,15 @@ export function SkillTreePanel() {
     trees.find((tree) => tree.skillId === activeSkillTreeId) ?? trees[0];
 
   if (!activeTree) return null;
+
+  const perkSearchTokens = useMemo(
+    () => getPerkSearchTokens(perkSearchQuery),
+    [perkSearchQuery],
+  );
+  const perkSearchPositionKeys = useMemo(
+    () => getPerkSearchPositionKeysForTree(activeTree, perkSearchTokens),
+    [activeTree, perkSearchTokens],
+  );
   const isDestinyTree = activeTree.skillId === "destiny";
 
   const skillReqConflictsOnTree = getSelectedPerksBelowSkillRequirement(
@@ -288,6 +300,7 @@ export function SkillTreePanel() {
       labels={labels}
       conflictPerkIds={skillReqConflictsOnTree.map((perk) => perk.id)}
       playerLevelConflictPerkIds={invalidPerkIdsOnTree}
+      searchPerkPositionKeys={perkSearchPositionKeys}
     />
   );
 

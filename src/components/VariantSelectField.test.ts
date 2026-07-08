@@ -25,8 +25,10 @@ describe("VariantSelectField", () => {
       root!.render(
         createElement(
           VariantSelectField,
-          { label: "Variants" },
-          createElement("button", { type: "button" }, "Select variant"),
+          {
+            label: "Variants",
+            children: createElement("button", { type: "button" }, "Select variant"),
+          },
         ),
       );
     });
