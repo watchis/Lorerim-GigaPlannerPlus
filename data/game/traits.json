@@ -82,6 +82,18 @@
       ]
     },
     {
+      "id": "autodidact",
+      "name": "Autodidact",
+      "description": "",
+      "bonus": "When you reach levels 25, 50, 75, or 100 in any magic school, you automatically learn every spell of that school up to your current mastery level. However, because you're self-taught, your technique is unrefined. All spells cost 30% more to cast, and professional mages look down on your unconventional training, increasing prices at all magic vendors by 35%.",
+      "effects": [],
+      "bonusDetails": [
+        "When you reach levels 25, 50, 75, or 100 in any magic school, you automatically learn every spell of that school up to your current mastery level.",
+        "All spells cost 30% more to cast.",
+        "Increasing prices at all magic vendors by 35%."
+      ]
+    },
+    {
       "id": "bad-natured",
       "name": "Bad Natured",
       "description": "You were born into wickedness.",
@@ -639,6 +651,14 @@
         "Your birthsigns bonuses are removed.",
         "You begin the game with 5 additional perk points and a permanent +5 boost to all skills."
       ]
+    },
+    {
+      "id": "master-of-one",
+      "name": "Master of One",
+      "description": "You can pick one skill, it's raised to 100 and you receive all the perks in that skill. However you will not receive any more perk points upon leveling up.",
+      "bonus": "",
+      "effects": [],
+      "bonusDetails": []
     },
     {
       "id": "monk",

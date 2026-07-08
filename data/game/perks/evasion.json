@@ -136,7 +136,7 @@
       "prerequisites": [
         "evasion-agility"
       ],
-      "description": "Your trained reflexes allow you to dodge incoming blows. [Unlocks ability to dodge. Left alt by default.]",
+      "description": "Your trained reflexes allow you to dodge incoming blows. [Unlocks ability to dodge. Left alt by default. Requires Agility Evasion perk or Conditioning Heavy Armor perk]",
       "effects": [],
       "prerequisitesAny": []
     },
