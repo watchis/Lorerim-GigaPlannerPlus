@@ -5,7 +5,7 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useContainerSize } from "@/lib/useContainerSize";
+import { getSkillGridColumnCount, useContainerSize } from "@/lib/useContainerSize";
 import { PickerSearchInput } from "@/components/PickerSearchInput";
 import {
   getBuildPlayerLevelWarnings,
@@ -66,9 +66,12 @@ export function SkillTreesSidebarPanel() {
   const skillReqConflicts = getSelectedPerksBelowSkillRequirement(gameData.game, build);
   const skillIncreaseConflictIds = new Set(skillIncreases.map((skill) => skill.skillId));
 
-  const { ref: gridContainerRef } = useContainerSize<HTMLDivElement>();
-  // Always render 3 skill trees per row; mini cards control their own aspect ratio.
-  const gridColumns = 3;
+  const { ref: gridContainerRef, width: gridWidth } = useContainerSize<HTMLDivElement>();
+  const responsiveColumns = getSkillGridColumnCount(gridWidth, {
+    minCellWidth: stackedLayout ? 120 : 100,
+    maxColumns: stackedLayout ? 3 : 4,
+  });
+  const gridColumns = useThreeColumnLayout ? 3 : responsiveColumns;
   const trainingOverBudget = (computed?.trainingLevelsRemaining ?? 0) < 0;
   const perkSearchTokens = useMemo(() => getPerkSearchTokens(perkSearchQuery), [perkSearchQuery]);
   const perkSearchPositionKeysBySkillId = useMemo(
