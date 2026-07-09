@@ -6,6 +6,7 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { DeityDetailContent } from "@/components/option-details/DeityDetailContent";
 import { RaceDetailContent } from "@/components/option-details/RaceDetailContent";
 import { BirthsignDetailContent } from "@/components/option-details/BirthsignDetailContent";
+import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { TraitDetailContent } from "@/components/option-details/TraitDetailContent";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,6 +31,10 @@ function pickerTitle(picker: SetupPicker, labels: Record<string, string>): strin
       return labels.birthsign;
     case "deity":
       return labels.deity;
+    case "vampirism":
+      return labels.vampirism;
+    case "lycanthropy":
+      return labels.lycanthropy;
     case "traits":
       return labels.traits;
     case "major-skills":
@@ -44,6 +49,8 @@ function isDetailPicker(picker: SetupPicker): boolean {
     picker === "race" ||
     picker === "birthsign" ||
     picker === "deity" ||
+    picker === "vampirism" ||
+    picker === "lycanthropy" ||
     picker === "traits"
   );
 }
@@ -58,6 +65,9 @@ function pickerGuideUrl(picker: SetupPicker): string | undefined {
       return "https://www.lorerim.com/guides/character/divine";
     case "traits":
       return "https://www.lorerim.com/guides/character/traits";
+    case "vampirism":
+    case "lycanthropy":
+      return "https://www.lorerim.com/guides/character/supernatural";
     default:
       return undefined;
   }
@@ -104,6 +114,8 @@ export function SetupPickerPanel() {
   const setRace = useBuildStore((s) => s.setRace);
   const setBirthsign = useBuildStore((s) => s.setBirthsign);
   const setDeity = useBuildStore((s) => s.setDeity);
+  const setVampirism = useBuildStore((s) => s.setVampirism);
+  const setLycanthropy = useBuildStore((s) => s.setLycanthropy);
   const toggleTrait = useBuildStore((s) => s.toggleTrait);
   const toggleMajorSkill = useBuildStore((s) => s.toggleMajorSkill);
   const toggleMinorSkill = useBuildStore((s) => s.toggleMinorSkill);
@@ -210,6 +222,58 @@ export function SetupPickerPanel() {
               startingRaces: labels.startingRaces,
               shrineLocations: labels.shrineLocations,
               tenets: labels.tenets,
+            }}
+            hideHeader
+          />
+        ),
+    }));
+  } else if (setupPicker === "vampirism") {
+    focusId = build.vampirismId ?? "none";
+    const raceId = build.raceId && build.raceId !== "none" ? build.raceId : null;
+    detailOptions = game.supernatural.vampirism.stages.map((stage) => ({
+      id: stage.id,
+      name: stage.name,
+      isSelected: (build.vampirismId ?? "none") === stage.id,
+      onSelect: () => setVampirism(stage.id),
+      detail:
+        stage.id === "none" ? (
+          <p className="text-sm text-[var(--color-muted)]">
+            {labels.vampirismNoneHint ?? "No vampirism bonuses will be applied to this build."}
+          </p>
+        ) : (
+          <SupernaturalDetailContent
+            form={stage}
+            racialBonus={raceId ? game.supernatural.vampirism.racialBonuses[raceId] : undefined}
+            labels={{
+              bonuses: labels.bonuses,
+              racialBonus: labels.racialBonus,
+              detriments: labels.detriments,
+            }}
+            hideHeader
+          />
+        ),
+    }));
+  } else if (setupPicker === "lycanthropy") {
+    focusId = build.lycanthropyId ?? "none";
+    const raceId = build.raceId && build.raceId !== "none" ? build.raceId : null;
+    detailOptions = game.supernatural.lycanthropy.forms.map((form) => ({
+      id: form.id,
+      name: form.name,
+      isSelected: (build.lycanthropyId ?? "none") === form.id,
+      onSelect: () => setLycanthropy(form.id),
+      detail:
+        form.id === "none" ? (
+          <p className="text-sm text-[var(--color-muted)]">
+            {labels.lycanthropyNoneHint ?? "No lycanthropy bonuses will be applied to this build."}
+          </p>
+        ) : (
+          <SupernaturalDetailContent
+            form={form}
+            racialBonus={raceId ? game.supernatural.lycanthropy.racialBonuses[raceId] : undefined}
+            labels={{
+              bonuses: labels.bonuses,
+              racialBonus: labels.racialBonus,
+              detriments: labels.detriments,
             }}
             hideHeader
           />

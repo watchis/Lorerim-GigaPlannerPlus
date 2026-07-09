@@ -190,6 +190,8 @@ export function CharacterSetupPanel() {
   const setRace = useBuildStore((s) => s.setRace);
   const setBirthsign = useBuildStore((s) => s.setBirthsign);
   const setDeity = useBuildStore((s) => s.setDeity);
+  const setVampirism = useBuildStore((s) => s.setVampirism);
+  const setLycanthropy = useBuildStore((s) => s.setLycanthropy);
   const toggleTrait = useBuildStore((s) => s.toggleTrait);
   const toggleMajorSkill = useBuildStore((s) => s.toggleMajorSkill);
   const toggleMinorSkill = useBuildStore((s) => s.toggleMinorSkill);
@@ -227,6 +229,16 @@ export function CharacterSetupPanel() {
   const selectedDeityName =
     build.deityId && build.deityId !== "none"
       ? (game.deities.find((b) => b.id === build.deityId)?.name ?? build.deityId)
+      : null;
+  const selectedVampirismName =
+    build.vampirismId && build.vampirismId !== "none"
+      ? (game.supernatural.vampirism.stages.find((stage) => stage.id === build.vampirismId)?.name ??
+        build.vampirismId)
+      : null;
+  const selectedLycanthropyName =
+    build.lycanthropyId && build.lycanthropyId !== "none"
+      ? (game.supernatural.lycanthropy.forms.find((form) => form.id === build.lycanthropyId)?.name ??
+        build.lycanthropyId)
       : null;
 
   const selectedTraitItems = build.traitIds.map((id) => ({
@@ -324,6 +336,32 @@ export function CharacterSetupPanel() {
                 : []
             }
             onRemove={() => setDeity("none")}
+            noneLabel={noneLabel}
+          />
+          <SetupPickerRow
+            label={labels.vampirism}
+            picker="vampirism"
+            isActive={setupPicker === "vampirism"}
+            onOpen={() => toggleSetupPicker("vampirism")}
+            selectedItems={
+              selectedVampirismName
+                ? [{ id: build.vampirismId, label: selectedVampirismName }]
+                : []
+            }
+            onRemove={() => setVampirism("none")}
+            noneLabel={noneLabel}
+          />
+          <SetupPickerRow
+            label={labels.lycanthropy}
+            picker="lycanthropy"
+            isActive={setupPicker === "lycanthropy"}
+            onOpen={() => toggleSetupPicker("lycanthropy")}
+            selectedItems={
+              selectedLycanthropyName
+                ? [{ id: build.lycanthropyId, label: selectedLycanthropyName }]
+                : []
+            }
+            onRemove={() => setLycanthropy("none")}
             noneLabel={noneLabel}
           />
         </div>

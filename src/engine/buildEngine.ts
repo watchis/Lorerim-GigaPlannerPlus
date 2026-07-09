@@ -41,6 +41,10 @@ import {
   getOghmaFloorBonus,
   migrateOghmaInfiniumBuild,
 } from "@/lib/oghmaInfinium";
+import {
+  isTraitBlockedBySupernatural,
+  normalizeSupernaturalState,
+} from "@/lib/supernatural";
 export {
   formatTrainingTierRange,
   getMaxTrainingSkillLevel,
@@ -58,6 +62,8 @@ export interface BuildState {
   raceId: string | null;
   birthsignId: string | null;
   deityId: string | null;
+  vampirismId: string;
+  lycanthropyId: string;
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
@@ -862,7 +868,11 @@ export function reconcileBuild(
       ? leveledBuild.traitIds.slice(0, traitLimit)
       : leveledBuild.traitIds;
 
-  const normalized = normalizeBuildSkillLevels(game, { ...leveledBuild, traitIds }, options);
+  const normalized = normalizeBuildSkillLevels(
+    game,
+    normalizeSupernaturalState(game, { ...leveledBuild, traitIds }),
+    options,
+  );
   return normalized;
 }
 
@@ -1894,6 +1904,7 @@ export function getTraitLimit(game: GameData, state: BuildState): number {
 
 export function canSelectTrait(game: GameData, state: BuildState, traitId: string): boolean {
   if (state.traitIds.includes(traitId)) return true;
+  if (isTraitBlockedBySupernatural(game, state, traitId)) return false;
   return state.traitIds.length < getTraitLimit(game, state);
 }
 
@@ -1907,6 +1918,8 @@ export function migrateBuildState(
   const withOghma: BuildState = {
     ...build,
     oghmaSkillIds: build.oghmaSkillIds ?? [],
+    vampirismId: build.vampirismId ?? "none",
+    lycanthropyId: build.lycanthropyId ?? "none",
   };
 
   if ("blessingId" in build && build.blessingId !== undefined) {
@@ -1914,6 +1927,8 @@ export function migrateBuildState(
     return {
       ...rest,
       oghmaSkillIds: build.oghmaSkillIds ?? [],
+      vampirismId: build.vampirismId ?? "none",
+      lycanthropyId: build.lycanthropyId ?? "none",
       deityId: blessingId ?? "none",
     };
   }
@@ -1972,6 +1987,8 @@ export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
     a.raceId === b.raceId &&
     a.birthsignId === b.birthsignId &&
     a.deityId === b.deityId &&
+    a.vampirismId === b.vampirismId &&
+    a.lycanthropyId === b.lycanthropyId &&
     stringArraysEqual(a.traitIds, b.traitIds) &&
     stringArraysEqual(a.majorSkillIds, b.majorSkillIds) &&
     stringArraysEqual(a.minorSkillIds, b.minorSkillIds) &&
@@ -1993,6 +2010,8 @@ export function createInitialBuildState(): BuildState {
     raceId: "none",
     birthsignId: "none",
     deityId: "none",
+    vampirismId: "none",
+    lycanthropyId: "none",
     traitIds: [],
     majorSkillIds: [],
     minorSkillIds: [],

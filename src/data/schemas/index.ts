@@ -255,6 +255,34 @@ export const birthsignsSchema = z.object({
   birthsigns: z.array(birthsignSchema),
 });
 
+const supernaturalRacialBonusSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  effects: z.array(effectSchema).optional(),
+  bonusDetails: z.array(z.string()).optional(),
+});
+
+export const supernaturalFormSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  bonus: z.string(),
+  bonusDetails: z.array(z.string()).optional(),
+  effects: z.array(effectSchema),
+});
+
+export const supernaturalSchema = z.object({
+  incompatibleTraitIds: z.array(z.string()),
+  vampirism: z.object({
+    stages: z.array(supernaturalFormSchema).min(1),
+    racialBonuses: z.record(z.string(), supernaturalRacialBonusSchema),
+  }),
+  lycanthropy: z.object({
+    forms: z.array(supernaturalFormSchema).min(1),
+    racialBonuses: z.record(z.string(), supernaturalRacialBonusSchema),
+  }),
+});
+
 export const deitySchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -478,6 +506,9 @@ export type CharacterOption = z.infer<typeof characterOptionSchema>;
 export type CharacterOptionChoice = z.infer<typeof characterOptionChoiceSchema>;
 export type Race = z.infer<typeof raceSchema>;
 export type Birthsign = z.infer<typeof birthsignSchema>;
+export type SupernaturalForm = z.infer<typeof supernaturalFormSchema>;
+export type SupernaturalRacialBonus = z.infer<typeof supernaturalRacialBonusSchema>;
+export type SupernaturalData = z.infer<typeof supernaturalSchema>;
 export type Deity = z.infer<typeof deitySchema>;
 export type Trait = z.infer<typeof traitSchema>;
 export type Skill = z.infer<typeof skillSchema>;
@@ -495,6 +526,7 @@ export interface GameData {
   characterOptions: CharacterOption[];
   races: Race[];
   birthsigns: Birthsign[];
+  supernatural: SupernaturalData;
   deities: Deity[];
   traits: Trait[];
   skills: Skill[];

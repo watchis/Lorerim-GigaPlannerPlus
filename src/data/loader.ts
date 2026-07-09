@@ -4,6 +4,7 @@ import statsJson from "../../data/game/stats.json";
 import racesJson from "../../data/game/races.json";
 import raceEffectsJson from "../../data/game/race-effects.json";
 import birthsignsJson from "../../data/game/birthsigns.json";
+import supernaturalJson from "../../data/game/supernatural.json";
 import deitiesJson from "../../data/game/deities.json";
 import characterOptionsJson from "../../data/game/character-options.json";
 import traitsJson from "../../data/game/traits.json";
@@ -21,6 +22,7 @@ import {
   racesSchema,
   raceEffectsSchema,
   birthsignsSchema,
+  supernaturalSchema,
   deitiesSchema,
   characterOptionsSchema,
   traitsSchema,
@@ -76,6 +78,7 @@ export function loadAppData(): AppData {
   }));
   const { birthsigns: rawBirthsigns } = parse(birthsignsSchema, birthsignsJson, "birthsigns.json");
   const birthsigns = rawBirthsigns.map(enrichBirthsign);
+  const supernatural = parse(supernaturalSchema, supernaturalJson, "supernatural.json");
   const { deities: rawDeities } = parse(deitiesSchema, deitiesJson, "deities.json");
   const deities = rawDeities.map(enrichDeity);
   const { options: characterOptions } = parse(
@@ -123,6 +126,7 @@ export function loadAppData(): AppData {
       characterOptions,
       races,
       birthsigns,
+      supernatural,
       deities,
       traits,
       skills,

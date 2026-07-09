@@ -11,6 +11,12 @@ import {
 } from "@/extensions/loadExtensions";
 import type { BuildState } from "@/engine/buildEngine";
 import type { SourcedEffect } from "@/lib/trackedStats";
+import {
+  getLycanthropyForm,
+  getVampirismStage,
+  isLycanthropyActive,
+  isVampirismActive,
+} from "@/lib/supernatural";
 
 function getPerkById(game: GameData, perkId: string) {
   for (const tree of Object.values(game.perkTrees)) {
@@ -174,6 +180,44 @@ export function collectBuildChanges(game: GameData, state: BuildState): Collecte
       source: { name: trait.name },
       effects: trait.effects,
     });
+  }
+
+  if (isVampirismActive(state)) {
+    const stage = getVampirismStage(game, state.vampirismId);
+    if (stage && stage.effects.length > 0) {
+      pushModification(collected, {
+        source: { name: stage.name },
+        effects: stage.effects,
+      });
+    }
+
+    const raceId = state.raceId && state.raceId !== "none" ? state.raceId : null;
+    const racialBonus = raceId ? game.supernatural.vampirism.racialBonuses[raceId] : undefined;
+    if (racialBonus?.effects?.length) {
+      pushModification(collected, {
+        source: { name: racialBonus.name },
+        effects: racialBonus.effects,
+      });
+    }
+  }
+
+  if (isLycanthropyActive(state)) {
+    const form = getLycanthropyForm(game, state.lycanthropyId);
+    if (form && form.effects.length > 0) {
+      pushModification(collected, {
+        source: { name: form.name },
+        effects: form.effects,
+      });
+    }
+
+    const raceId = state.raceId && state.raceId !== "none" ? state.raceId : null;
+    const racialBonus = raceId ? game.supernatural.lycanthropy.racialBonuses[raceId] : undefined;
+    if (racialBonus?.effects?.length) {
+      pushModification(collected, {
+        source: { name: racialBonus.name },
+        effects: racialBonus.effects,
+      });
+    }
   }
 
   for (const mod of collectCharacterOptionModifications(game, state)) {

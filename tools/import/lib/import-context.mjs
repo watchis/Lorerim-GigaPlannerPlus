@@ -47,6 +47,7 @@ export async function buildImportContext({ install, plugins, progress = null }) 
       racesPath: join(paths.dataDir, "races.json"),
       birthsignsPath: join(paths.dataDir, "birthsigns.json"),
       deitiesPath: join(paths.dataDir, "deities.json"),
+      supernaturalPath: join(paths.dataDir, "supernatural.json"),
       manifestPath: join(paths.dataDir, "manifest.json"),
     },
   };
