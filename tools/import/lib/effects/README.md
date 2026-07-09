@@ -1,8 +1,8 @@
-# Plugin effect extraction (planned — phase 2)
+# Plugin effect extraction
 
-This folder will hold shared logic for reading structured effects from Skyrim plugin records instead of parsing description text.
+Shared logic for reading structured effects from Skyrim plugin records instead of parsing description text.
 
-## Planned modules
+## Modules
 
 | Module | Purpose |
 |--------|---------|
@@ -19,6 +19,10 @@ This folder will hold shared logic for reading structured effects from Skyrim pl
 
 ## Existing building blocks
 
-- [`spell-magnitude.mjs`](../spell-magnitude.mjs) — EFID/EFIT reading (Wintersun today)
-- [`deity-faith-from-plugins.mjs`](../deity-faith-from-plugins.mjs) — MGEF template + magnitude substitution
+- [`spell-magnitude.mjs`](../spell-magnitude.mjs) — EFID/EFIT reading
+- [`deity-faith-from-plugins.mjs`](../deity-faith-from-plugins.mjs) — MGEF template + magnitude substitution (Wintersun)
 - [`parse-bonus-effects.mjs`](../parse-bonus-effects.mjs) — text fallback
+
+## Hybrid behavior
+
+`resolveEffects()` maps plugin `SPEL` → `MGEF` → `Effect[]` when the spell has mappable value-modifier effects. Otherwise it falls back to `parseBonusEffects(bonusText)`. Script-based MGEF archetypes are skipped (text fallback handles those).

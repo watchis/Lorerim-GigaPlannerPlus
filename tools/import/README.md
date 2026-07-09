@@ -192,7 +192,7 @@ tools/import/
     import-io.mjs          # merge domain outputs, write JSON, dry-run diff
     import-orchestrator.mjs # runDomainImports
     run-import.mjs         # prepareImportContext, executeDomainImports
-    effects/README.md      # planned SPEL→MGEF effect extraction (phase 2)
+    effects/               # SPEL→MGEF effect extraction (traits, races, birthsigns)
     gear/README.md         # planned gear/enchantment import (phase 3)
     append-missing-perks.mjs # supplemental perk nodes + metadata application
     avif-perk-tree.mjs     # AVIF perk tree parser (player-visible layout)

@@ -15,6 +15,7 @@ import {
 import {
   meaningfulSpellMagnitudes,
   readSpellEfitMagnitudes,
+  readSpellEffectEntries,
   readSpellFaithEffectEntries,
   readSpellMagnitudesForFormIds,
 } from "./spell-magnitude.mjs";
@@ -49,6 +50,8 @@ function readDnam(record) {
   return "";
 }
 
+import { readMgefEffectDataFromRecord } from "./effects/mgef-data.mjs";
+
 function buildPerkMeta(buffer, edid, ownerPluginLower, masters) {
   const meta = parsePerkRecordMetadata(buffer, edid);
   return {
@@ -73,6 +76,7 @@ function parseRecord(buffer, ownerPluginLower, masters) {
   if (!edid) return null;
 
   const effectDescription = record.recordType === "MGEF" ? readDnam(record) : "";
+  const formId = record.formId ?? readRecordFormId(buffer);
 
   return {
     type: record.recordType,
@@ -80,7 +84,11 @@ function parseRecord(buffer, ownerPluginLower, masters) {
     name: getSubrecord(record, "FULL") ?? "",
     description: getSubrecord(record, "DESC") ?? "",
     effectDescription,
-    formId: record.formId ?? readRecordFormId(buffer),
+    formId,
+    formIdentity:
+      formId != null ? resolveFormIdentity(ownerPluginLower, masters, formId) : undefined,
+    mgefArchetype: record.recordType === "MGEF" ? readMgefEffectDataFromRecord(record) : undefined,
+    effectEntries: record.recordType === "SPEL" ? readSpellEffectEntries(buffer) : undefined,
     perkMeta:
       record.recordType === "PERK"
         ? buildPerkMeta(buffer, edid, ownerPluginLower, masters)
@@ -341,9 +349,7 @@ export function collectBoonFromSpellBuffer(buffer, edid, pluginName, lookupArg =
 }
 
 function wantedTypesForPlugin(pluginName) {
-  const wanted = new Set([...IMPORT_RECORD_TYPES, "AVIF", "FLST"]);
-  if (WINTERSUN_FAITH_PLUGIN_PATTERN.test(pluginName)) wanted.add("MGEF");
-  return wanted;
+  return new Set([...IMPORT_RECORD_TYPES, "AVIF", "FLST", "MGEF"]);
 }
 
 async function readPluginImportPayload({ pluginName, path }) {
@@ -636,7 +642,10 @@ export async function collectImportPluginData(plugins, progress = null, options 
     raceRecords: [...mergedByType.RACE.values()],
     mesgRecords: [...mergedByType.MESG.values()],
     questRecords: [...mergedByType.QUST.values()],
-    wintersunMgefRecords: [...mergedByType.MGEF.values()],
+    mgefRecords: [...mergedByType.MGEF.values()],
+    wintersunMgefRecords: [...mergedByType.MGEF.values()].filter((record) =>
+      WINTERSUN_FAITH_PLUGIN_PATTERN.test(record.plugin ?? ""),
+    ),
     wintersunMesgRecords: [...mergedByType.MESG.values()].filter((record) =>
       wintersunPluginNames.has(record.plugin),
     ),

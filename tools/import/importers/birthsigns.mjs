@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { cleanDescription, slugify } from "../lib/transform-utils.mjs";
-import { parseBonusEffects, extractConditionalBonusDetails } from "../lib/parse-bonus-effects.mjs";
+import { extractConditionalBonusDetails } from "../lib/parse-bonus-effects.mjs";
+import { resolveEffects } from "../lib/effects/resolve-effects.mjs";
 
 const BIRTHSIGN_NAMES = [
   "Apprentice",
@@ -73,7 +74,14 @@ function buildBirthsignMesgLookup(mesgRecords) {
   return byStone;
 }
 
-export function transformStandingStoneRecords(spellRecords, mesgRecords, birthsignsPath) {
+export function transformStandingStoneRecords(
+  spellRecords,
+  mesgRecords,
+  birthsignsPath,
+  derived = {},
+  scanContext = {},
+  plugins = [],
+) {
   const existing = JSON.parse(readFileSync(birthsignsPath, "utf8"));
   const existingEntries = existing.birthsigns ?? existing.standingStones ?? [];
   const existingById = new Map(existingEntries.map((birthsign) => [birthsign.id, birthsign]));
@@ -92,7 +100,13 @@ export function transformStandingStoneRecords(spellRecords, mesgRecords, birthsi
     const fromSpell = spell?.description ? parseBirthsignBody(spell.description) : null;
 
     const bonus = fromMesg?.bonus || fromSpell?.bonus || prior?.bonus || "";
-    const effects = parseBonusEffects(bonus);
+    const effects = resolveEffects({
+      bonusText: bonus,
+      spellRecords: spell,
+      mgefIndex: derived.mgefIndex ?? { byIdentity: new Map(), byEdid: new Map() },
+      mastersByPath: scanContext.mastersByPath ?? new Map(),
+      plugins,
+    });
 
     birthsigns.push({
       ...(prior ?? {
@@ -122,6 +136,9 @@ export async function importBirthsigns(context) {
     context.scan.spellRecords,
     context.scan.mesgRecords,
     context.paths.birthsignsPath,
+    context.derived,
+    { mastersByPath: context.scan.mastersByPath },
+    context.plugins,
   );
 
   return {
