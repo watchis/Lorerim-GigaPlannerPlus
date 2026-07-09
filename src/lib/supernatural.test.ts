@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { collectBuildChanges } from "@/lib/buildModifications";
+import { getCharacterOptionSummaryLines } from "@/lib/characterOptions";
 import {
   applySupernaturalOptionChange,
+  getVampireRacialBonus,
   hasSupernaturalCurse,
   isSupernaturalOptionBlocked,
   isTraitBlockedBySupernatural,
@@ -34,7 +36,37 @@ describe("supernatural", () => {
     expect(isWerewolfActive(state)).toBe(false);
 
     const collected = collectBuildChanges(game, state);
-    expect(collected.sourcedEffects.some((entry) => entry.source === "Vampire")).toBe(true);
+    const healthEffects = collected.sourcedEffects.filter(
+      (entry) => entry.effect.type === "attribute" && entry.effect.stat === "health",
+    );
+    expect(healthEffects).toHaveLength(1);
+    expect(healthEffects[0]?.effect.value).toBe(100);
+    expect(collected.sourcedEffects.some((entry) => entry.labelKey === "vampireOption")).toBe(true);
+  });
+
+  it("includes the racial vampire ability for the selected race", () => {
+    const state = applySupernaturalOptionChange(
+      game,
+      createTestBuildState({ raceId: "nord" }),
+      VAMPIRE_OPTION_ID,
+      SUPERNATURAL_CLAIMED_CHOICE,
+    );
+
+    const racialBonus = getVampireRacialBonus(game, state);
+    expect(racialBonus?.name).toBe("Preserved Blood");
+
+    const vampireOption = game.characterOptions.find((entry) => entry.id === VAMPIRE_OPTION_ID)!;
+    const choice = vampireOption.choices.find((entry) => entry.id === SUPERNATURAL_CLAIMED_CHOICE)!;
+    const summaryLines = getCharacterOptionSummaryLines(
+      game,
+      vampireOption,
+      choice,
+      {},
+      {},
+      state,
+    );
+
+    expect(summaryLines).toEqual([{ key: "vampire-racial", text: "Preserved Blood" }]);
   });
 
   it("selecting werewolf clears vampire perks and blocks the vampire option", () => {

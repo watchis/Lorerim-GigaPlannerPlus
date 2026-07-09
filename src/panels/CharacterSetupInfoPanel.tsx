@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { DeityDetailContent } from "@/components/option-details/DeityDetailContent";
 import { RaceDetailContent } from "@/components/option-details/RaceDetailContent";
 import { BirthsignDetailContent } from "@/components/option-details/BirthsignDetailContent";
+import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { TraitDetailContent } from "@/components/option-details/TraitDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
@@ -13,6 +14,14 @@ import {
   getRemainingAttributePoints,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
+import {
+  getVampireForm,
+  getVampireRacialBonus,
+  getWerewolfForm,
+  getWerewolfRacialBonus,
+  isVampireActive,
+  isWerewolfActive,
+} from "@/lib/supernatural";
 import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 import { DerivedStatsPanel } from "@/panels/DerivedStatsPanel";
 import { useUiStore } from "@/store/uiStore";
@@ -92,6 +101,8 @@ export function CharacterSetupInfoPanel() {
     staminaRegen: labels.staminaRegen,
     carryWeight: labels.carryWeight,
     unarmedDamage: labels.unarmedDamage,
+    racialBonus: labels.racialBonus ?? "Racial ability",
+    detriments: labels.detriments ?? "Detriments",
   };
 
   const selectedRace =
@@ -109,6 +120,12 @@ export function CharacterSetupInfoPanel() {
   const selectedTraits = build.traitIds
     .map((id) => game.traits.find((trait) => trait.id === id))
     .filter((trait): trait is NonNullable<typeof trait> => trait !== undefined);
+  const vampireActive = isVampireActive(build);
+  const werewolfActive = isWerewolfActive(build);
+  const vampireForm = vampireActive ? getVampireForm(game) : undefined;
+  const werewolfForm = werewolfActive ? getWerewolfForm(game) : undefined;
+  const vampireRacialBonus = vampireActive ? getVampireRacialBonus(game, build) : undefined;
+  const werewolfRacialBonus = werewolfActive ? getWerewolfRacialBonus(game, build) : undefined;
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -184,6 +201,26 @@ export function CharacterSetupInfoPanel() {
                 <EmptySelection message={noneLabel} />
               )}
             </InfoSection>
+
+            {vampireActive && vampireForm && (
+              <InfoSection title={labels.vampireTree ?? "Vampire"}>
+                <SupernaturalDetailContent
+                  form={vampireForm}
+                  racialBonus={vampireRacialBonus}
+                  labels={detailLabels}
+                />
+              </InfoSection>
+            )}
+
+            {werewolfActive && werewolfForm && (
+              <InfoSection title={labels.werewolfTree ?? "Werewolf"}>
+                <SupernaturalDetailContent
+                  form={werewolfForm}
+                  racialBonus={werewolfRacialBonus}
+                  labels={detailLabels}
+                />
+              </InfoSection>
+            )}
 
             <InfoSection title={labels.attributes}>
               <div className="space-y-2">

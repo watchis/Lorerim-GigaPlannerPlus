@@ -1,9 +1,15 @@
 import { X } from "lucide-react";
 import type { CharacterOptionControlProps } from "@/extension-api";
+import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { cn } from "@/lib/utils";
 import {
+  getVampireForm,
+  getVampireRacialBonus,
+  getWerewolfForm,
+  getWerewolfRacialBonus,
   isSupernaturalOptionBlocked,
   SUPERNATURAL_CLAIMED_CHOICE,
+  VAMPIRE_OPTION_ID,
 } from "@/lib/supernatural";
 import { useBuildStore } from "@/store/buildStore";
 
@@ -30,6 +36,19 @@ export function SupernaturalOptionControl({
   const blocked = isSupernaturalOptionBlocked(gameData.game, build, optionId);
   const description = option.descriptionLabel ? labels[option.descriptionLabel] : undefined;
   const blockedHint = labels.supernaturalBlockedHint;
+  const form =
+    optionId === VAMPIRE_OPTION_ID
+      ? getVampireForm(gameData.game)
+      : getWerewolfForm(gameData.game);
+  const racialBonus =
+    optionId === VAMPIRE_OPTION_ID
+      ? getVampireRacialBonus(gameData.game, build)
+      : getWerewolfRacialBonus(gameData.game, build);
+  const detailLabels = {
+    bonuses: labels.bonuses ?? "Bonuses",
+    racialBonus: labels.racialBonus ?? "Racial ability",
+    detriments: labels.detriments ?? "Detriments",
+  };
 
   return (
     <section
@@ -92,6 +111,17 @@ export function SupernaturalOptionControl({
               "Inactive")}
         </span>
       </label>
+
+      {checked && form && (
+        <div className="mt-3 border-t border-[var(--color-border)]/50 pt-3">
+          <SupernaturalDetailContent
+            form={form}
+            racialBonus={racialBonus}
+            labels={detailLabels}
+            hideHeader
+          />
+        </div>
+      )}
     </section>
   );
 }

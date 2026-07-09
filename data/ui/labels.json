@@ -125,6 +125,8 @@
       "deity": "Deity",
       "vampireTree": "Vampire",
       "werewolfTree": "Werewolf",
+      "racialBonus": "Racial ability",
+      "detriments": "Detriments",
       "attributes": "Attributes",
       "traits": "Traits",
       "majorSkills": "Major Skills",
@@ -195,7 +197,10 @@
       "supernaturalNone": "Not cursed",
       "supernaturalVampire": "Vampire",
       "supernaturalWerewolf": "Werewolf",
-      "supernaturalBlockedHint": "Disabled while the other supernatural curse is active."
+      "supernaturalBlockedHint": "Disabled while the other supernatural curse is active.",
+      "bonuses": "Bonuses",
+      "racialBonus": "Racial ability",
+      "detriments": "Detriments"
     },
     "attributes": {
       "title": "Attributes",

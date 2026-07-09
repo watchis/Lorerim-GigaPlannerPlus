@@ -1,4 +1,4 @@
-import type { GameData } from "@/data/schemas";
+import type { GameData, SupernaturalForm, SupernaturalRacialBonus } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
 import { getSelectedCharacterOptionChoice } from "@/lib/characterOptions";
 
@@ -31,6 +31,36 @@ export function getActiveSupernaturalSkillId(state: BuildState): string | null {
   if (isVampireActive(state)) return VAMPIRE_SKILL_ID;
   if (isWerewolfActive(state)) return WEREWOLF_SKILL_ID;
   return null;
+}
+
+function resolveRaceId(state: BuildState): string | null {
+  return state.raceId && state.raceId !== "none" ? state.raceId : null;
+}
+
+export function getVampireForm(game: GameData): SupernaturalForm | undefined {
+  return game.supernatural.vampirism.forms.find((entry) => entry.id === "vampire");
+}
+
+export function getWerewolfForm(game: GameData): SupernaturalForm | undefined {
+  return game.supernatural.lycanthropy.forms.find((entry) => entry.id === "werewolf");
+}
+
+export function getVampireRacialBonus(
+  game: GameData,
+  state: BuildState,
+): SupernaturalRacialBonus | undefined {
+  const raceId = resolveRaceId(state);
+  if (!raceId || !isVampireActive(state)) return undefined;
+  return game.supernatural.vampirism.racialBonuses[raceId];
+}
+
+export function getWerewolfRacialBonus(
+  game: GameData,
+  state: BuildState,
+): SupernaturalRacialBonus | undefined {
+  const raceId = resolveRaceId(state);
+  if (!raceId || !isWerewolfActive(state)) return undefined;
+  return game.supernatural.lycanthropy.racialBonuses[raceId];
 }
 
 export function getOtherSupernaturalOptionId(optionId: string): string | null {
