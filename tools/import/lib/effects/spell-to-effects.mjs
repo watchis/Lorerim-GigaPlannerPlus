@@ -157,12 +157,7 @@ export function mgefRecordToEffect(mgefRecord, magnitude) {
  */
 export function mgefRecordToEffects(mgefRecord, magnitude) {
   if (magnitude == null) return [];
-
-  const fromEdid = mgefEdidToEffects(mgefRecord.edid, magnitude);
-  if (fromEdid.length > 0) return fromEdid;
-
-  const single = mgefRecordToEffect(mgefRecord, magnitude);
-  return single ? [single] : [];
+  return mgefEdidToEffects(mgefRecord.edid, magnitude);
 }
 
 /**
