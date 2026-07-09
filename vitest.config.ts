@@ -9,7 +9,11 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts", "extensions/**/*.test.ts"],
+    include: [
+      "src/**/*.test.ts",
+      "extensions/**/*.test.ts",
+      "tools/data-editor/src/**/*.test.ts",
+    ],
     globals: false,
   },
 });
