@@ -5,8 +5,6 @@ export interface BuildCodecRegistry {
   modpackVersion: string;
   races: readonly string[];
   birthsigns: readonly string[];
-  vampirismStages: readonly string[];
-  lycanthropyForms: readonly string[];
   deities: readonly string[];
   traits: readonly string[];
   skills: readonly string[];
@@ -15,8 +13,6 @@ export interface BuildCodecRegistry {
   characterOptionChoices: readonly (readonly string[])[];
   raceIndex: ReadonlyMap<string, number>;
   birthsignIndex: ReadonlyMap<string, number>;
-  vampirismIndex: ReadonlyMap<string, number>;
-  lycanthropyIndex: ReadonlyMap<string, number>;
   deityIndex: ReadonlyMap<string, number>;
   traitIndex: ReadonlyMap<string, number>;
   skillIndex: ReadonlyMap<string, number>;
@@ -43,8 +39,6 @@ function collectPerkIds(game: GameData): string[] {
 export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
   const races = game.races.map((race) => race.id);
   const birthsigns = game.birthsigns.map((birthsign) => birthsign.id);
-  const vampirismStages = game.supernatural.vampirism.stages.map((stage) => stage.id);
-  const lycanthropyForms = game.supernatural.lycanthropy.forms.map((form) => form.id);
   const deities = game.deities.map((deity) => deity.id);
   const traits = game.traits.map((trait) => trait.id);
   const skills = game.skills.map((skill) => skill.id);
@@ -59,8 +53,6 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
     modpackVersion: game.manifest.version,
     races,
     birthsigns,
-    vampirismStages,
-    lycanthropyForms,
     deities,
     traits,
     skills,
@@ -69,8 +61,6 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
     characterOptionChoices,
     raceIndex: indexById(races),
     birthsignIndex: indexById(birthsigns),
-    vampirismIndex: indexById(vampirismStages),
-    lycanthropyIndex: indexById(lycanthropyForms),
     deityIndex: indexById(deities),
     traitIndex: indexById(traits),
     skillIndex: indexById(skills),

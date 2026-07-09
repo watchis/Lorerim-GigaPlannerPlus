@@ -60,8 +60,8 @@ import {
 import type { DecodedBuildPackage } from "@/engine/buildCodec";
 import { isOghmaInfiniumActive } from "@/lib/oghmaInfinium";
 import {
-  applyLycanthropySelection,
-  applyVampirismSelection,
+  applySupernaturalOptionChange,
+  isSupernaturalOptionId,
 } from "@/lib/supernatural";
 
 function recompute(data: AppData, build: BuildState): ComputedBuild {
@@ -120,8 +120,6 @@ interface BuildStore {
   setRace: (raceId: string) => void;
   setBirthsign: (birthsignId: string) => void;
   setDeity: (deityId: string) => void;
-  setVampirism: (vampirismId: string) => void;
-  setLycanthropy: (lycanthropyId: string) => void;
   setCharacterOptionChoice: (optionId: string, choiceId: string) => void;
   toggleTrait: (traitId: string) => void;
   toggleMajorSkill: (skillId: string) => void;
@@ -320,20 +318,6 @@ export const useBuildStore = create<BuildStore>()(
           commitBuild(set, get, { ...build, deityId });
         },
 
-        setVampirism: (vampirismId) => {
-          const { gameData, build } = get();
-          if (!gameData) return;
-          const next = applyVampirismSelection(gameData.game, build, vampirismId);
-          commitBuild(set, get, reconcileBuild(gameData.game, next));
-        },
-
-        setLycanthropy: (lycanthropyId) => {
-          const { gameData, build } = get();
-          if (!gameData) return;
-          const next = applyLycanthropySelection(gameData.game, build, lycanthropyId);
-          commitBuild(set, get, reconcileBuild(gameData.game, next));
-        },
-
         setCharacterOptionChoice: (optionId, choiceId) => {
           const { gameData, build } = get();
           if (!gameData) return;
@@ -341,14 +325,18 @@ export const useBuildStore = create<BuildStore>()(
           const option = gameData.game.characterOptions.find((entry) => entry.id === optionId);
           if (!option || !option.choices.some((choice) => choice.id === choiceId)) return;
 
-          const characterOptionChoices = {
-            ...build.characterOptionChoices,
-            [optionId]: choiceId,
-          };
-
           const previous = reconcileBuild(gameData.game, build);
-          const candidate = { ...previous, characterOptionChoices };
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
+          const withSupernatural = isSupernaturalOptionId(optionId)
+            ? applySupernaturalOptionChange(gameData.game, previous, optionId, choiceId)
+            : {
+                ...previous,
+                characterOptionChoices: {
+                  ...previous.characterOptionChoices,
+                  [optionId]: choiceId,
+                },
+              };
+
+          const preserved = preserveSkillPointAllocations(gameData.game, previous, withSupernatural);
           const reconciled = reconcileBuild(gameData.game, preserved);
           const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
             ensureMinimumPlayerLevel: true,

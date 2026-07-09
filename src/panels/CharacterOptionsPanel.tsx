@@ -12,9 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OghmaInfiniumControl } from "@/components/character-options/OghmaInfiniumControl";
+import { SupernaturalOptionControl } from "@/components/character-options/SupernaturalOptionControl";
 import { OghmaSkillsPickerPanel } from "@/components/character-options/OghmaSkillsPickerPanel";
 import type { CharacterOption } from "@/data/schemas";
 import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
+import { VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
 import {
   getCharacterOptionSummaryLines,
   getSelectedCharacterOptionChoice,
@@ -318,6 +320,32 @@ export function CharacterOptionsPanel() {
               const extension = option.extension
                 ? getCharacterOptionExtension(option.extension)
                 : undefined;
+              if (option.id === VAMPIRE_OPTION_ID) {
+                return (
+                  <SupernaturalOptionControl
+                    key={option.id}
+                    optionId={VAMPIRE_OPTION_ID}
+                    option={option}
+                    selectedChoiceId={selectedChoiceId}
+                    labels={labels}
+                    onSelect={onSelect}
+                  />
+                );
+              }
+
+              if (option.id === WEREWOLF_OPTION_ID) {
+                return (
+                  <SupernaturalOptionControl
+                    key={option.id}
+                    optionId={WEREWOLF_OPTION_ID}
+                    option={option}
+                    selectedChoiceId={selectedChoiceId}
+                    labels={labels}
+                    onSelect={onSelect}
+                  />
+                );
+              }
+
               const Control =
                 option.extension === "oghma-infinium"
                   ? OghmaInfiniumControl

@@ -13,6 +13,8 @@ import {
   HelpCircle,
   Layers,
   MessagesSquare,
+  Moon,
+  Dog,
   Shield,
   Sparkles,
   Star,
@@ -68,6 +70,8 @@ const SKILL_ICONS: Record<string, LucideIcon> = {
   alteration: Layers,
   enchanting: Gem,
   destiny: Star,
+  vampire: Moon,
+  werewolf: Dog,
   traits: Tags,
 };
 

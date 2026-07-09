@@ -1,7 +1,7 @@
 {
   "incompatibleTraitIds": ["silent-dovah"],
   "vampirism": {
-    "stages": [
+    "forms": [
       {
         "id": "none",
         "name": "None",
@@ -11,88 +11,17 @@
         "bonusDetails": []
       },
       {
-        "id": "stage-1",
-        "name": "Stage 1",
-        "description": "Early vampirism — modest attribute bonuses with growing weaknesses to fire and sunlight.",
-        "bonus": "Health, magicka, and stamina increase by 50. Frost resistance +25%. Sneak +15%. Melee damage +5%. Fire resistance -75%.",
-        "effects": [
-          { "type": "attribute", "stat": "health", "value": 50 },
-          { "type": "attribute", "stat": "magicka", "value": 50 },
-          { "type": "attribute", "stat": "stamina", "value": 50 },
-          { "type": "derivedStat", "stat": "frostResist", "value": 25, "isPercent": true },
-          { "type": "derivedStat", "stat": "detectDifficulty", "value": 15, "isPercent": true },
-          { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
-          { "type": "derivedStat", "stat": "fireResist", "value": -75, "isPercent": true }
-        ],
-        "bonusDetails": [
-          "Take 2× damage from silver and holy weapons.",
-          "Deity shrine and follower effects reduced by 75%.",
-          "Normal healing spells and potions do not affect vampires.",
-          "Cannot take the Silent Dovah trait."
-        ]
-      },
-      {
-        "id": "stage-2",
-        "name": "Stage 2",
-        "description": "Hungry vampire — stronger bonuses and waterbreathing, with harsher fire weakness.",
-        "bonus": "Health, magicka, and stamina increase by 75. Waterbreathing. Frost resistance +40%. Sneak +20%. Melee damage +10%. Fire resistance -85%.",
-        "effects": [
-          { "type": "attribute", "stat": "health", "value": 75 },
-          { "type": "attribute", "stat": "magicka", "value": 75 },
-          { "type": "attribute", "stat": "stamina", "value": 75 },
-          { "type": "flag", "stat": "waterbreathing" },
-          { "type": "derivedStat", "stat": "frostResist", "value": 40, "isPercent": true },
-          { "type": "derivedStat", "stat": "detectDifficulty", "value": 20, "isPercent": true },
-          { "type": "derivedStat", "stat": "meleeDamage", "value": 10, "isPercent": true },
-          { "type": "derivedStat", "stat": "fireResist", "value": -85, "isPercent": true }
-        ],
-        "bonusDetails": [
-          "Take 2× damage from silver and holy weapons.",
-          "Deity shrine and follower effects reduced by 65%.",
-          "Normal healing spells and potions do not affect vampires.",
-          "Cannot take the Silent Dovah trait."
-        ]
-      },
-      {
-        "id": "stage-3",
-        "name": "Stage 3",
-        "description": "Starving vampire — powerful resistances and combat bonuses with severe fire vulnerability.",
-        "bonus": "Health, magicka, and stamina increase by 100. Poison and disease resistance +100%. Frost resistance +60%. Sneak +25%. Melee damage +15%. Fire resistance -100%.",
+        "id": "vampire",
+        "name": "Vampire",
+        "description": "Curse of vampirism — enhanced attributes and resistances with fire and holy vulnerabilities.",
+        "bonus": "Health +100. Stamina +100. Disease and poison resistance +100%. Movement speed +10%. Waterbreathing. Frost resistance +50%. Sneak +30%. Melee damage +20%. Fire resistance -150%.",
         "effects": [
           { "type": "attribute", "stat": "health", "value": 100 },
-          { "type": "attribute", "stat": "magicka", "value": 100 },
-          { "type": "attribute", "stat": "stamina", "value": 100 },
-          { "type": "flag", "stat": "waterbreathing" },
-          { "type": "derivedStat", "stat": "poisonResist", "value": 100, "isPercent": true },
-          { "type": "derivedStat", "stat": "diseaseResist", "value": 1000, "isPercent": true },
-          { "type": "derivedStat", "stat": "frostResist", "value": 60, "isPercent": true },
-          { "type": "derivedStat", "stat": "detectDifficulty", "value": 25, "isPercent": true },
-          { "type": "derivedStat", "stat": "meleeDamage", "value": 15, "isPercent": true },
-          { "type": "derivedStat", "stat": "fireResist", "value": -100, "isPercent": true }
-        ],
-        "bonusDetails": [
-          "Take 2× damage from silver and holy weapons.",
-          "Deity shrine and follower effects reduced by 55%.",
-          "Normal healing spells and potions do not affect vampires.",
-          "Aedric Presence debuff when inside temples.",
-          "Cannot take the Silent Dovah trait."
-        ]
-      },
-      {
-        "id": "stage-4",
-        "name": "Stage 4",
-        "description": "Fully realized vampire — peak power with devastating fire weakness.",
-        "bonus": "Health and stamina +100, magicka +125. Movement speed +10%. Armor rating +100. Unarmed damage +30. Frost resistance +50%. Sneak +30%. Melee damage +20%. Fire resistance -150%.",
-        "effects": [
-          { "type": "attribute", "stat": "health", "value": 100 },
-          { "type": "attribute", "stat": "magicka", "value": 125 },
           { "type": "attribute", "stat": "stamina", "value": 100 },
           { "type": "flag", "stat": "waterbreathing" },
           { "type": "derivedStat", "stat": "poisonResist", "value": 100, "isPercent": true },
           { "type": "derivedStat", "stat": "diseaseResist", "value": 1000, "isPercent": true },
           { "type": "derivedStat", "stat": "moveSpeed", "value": 10, "isPercent": true },
-          { "type": "derivedStat", "stat": "armorRating", "value": 100 },
-          { "type": "derivedStat", "stat": "unarmedDamage", "value": 30 },
           { "type": "derivedStat", "stat": "frostResist", "value": 50, "isPercent": true },
           { "type": "derivedStat", "stat": "detectDifficulty", "value": 30, "isPercent": true },
           { "type": "derivedStat", "stat": "meleeDamage", "value": 20, "isPercent": true },
@@ -100,7 +29,7 @@
         ],
         "bonusDetails": [
           "Take 2× damage from silver and holy weapons.",
-          "Deity shrine and follower effects reduced by 45%.",
+          "Deity shrine and follower effects are reduced.",
           "Normal healing spells and potions do not affect vampires.",
           "Aedric Presence debuff when inside temples.",
           "Cannot take the Silent Dovah trait."

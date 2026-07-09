@@ -1,0 +1,84 @@
+{
+  "skillId": "vampire",
+  "skillName": "Vampire",
+  "grid": {
+    "width": 20,
+    "height": 8
+  },
+  "perks": [
+    {
+      "id": "vampire-stage-1",
+      "name": "Stage 1",
+      "skillReq": 0,
+      "position": { "x": 4, "y": 4 },
+      "prerequisites": [],
+      "prerequisitesAny": [],
+      "description": "Early vampirism — modest attribute bonuses with growing weaknesses to fire.",
+      "effects": [
+        { "type": "attribute", "stat": "health", "value": 50 },
+        { "type": "attribute", "stat": "magicka", "value": 50 },
+        { "type": "attribute", "stat": "stamina", "value": 50 },
+        { "type": "derivedStat", "stat": "frostResist", "value": 25, "isPercent": true },
+        { "type": "derivedStat", "stat": "detectDifficulty", "value": 15, "isPercent": true },
+        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
+        { "type": "derivedStat", "stat": "fireResist", "value": -75, "isPercent": true }
+      ]
+    },
+    {
+      "id": "vampire-stage-2",
+      "name": "Stage 2",
+      "skillReq": 0,
+      "position": { "x": 8, "y": 4 },
+      "prerequisites": ["vampire-stage-1"],
+      "prerequisitesAny": [],
+      "description": "Hungry vampire — stronger bonuses and waterbreathing, with harsher fire weakness.",
+      "effects": [
+        { "type": "attribute", "stat": "health", "value": 25 },
+        { "type": "attribute", "stat": "magicka", "value": 25 },
+        { "type": "attribute", "stat": "stamina", "value": 25 },
+        { "type": "flag", "stat": "waterbreathing" },
+        { "type": "derivedStat", "stat": "frostResist", "value": 15, "isPercent": true },
+        { "type": "derivedStat", "stat": "detectDifficulty", "value": 5, "isPercent": true },
+        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
+        { "type": "derivedStat", "stat": "fireResist", "value": -10, "isPercent": true }
+      ]
+    },
+    {
+      "id": "vampire-stage-3",
+      "name": "Stage 3",
+      "skillReq": 0,
+      "position": { "x": 12, "y": 4 },
+      "prerequisites": ["vampire-stage-2"],
+      "prerequisitesAny": [],
+      "description": "Starving vampire — powerful resistances and combat bonuses with severe fire vulnerability.",
+      "effects": [
+        { "type": "attribute", "stat": "health", "value": 25 },
+        { "type": "attribute", "stat": "magicka", "value": 25 },
+        { "type": "attribute", "stat": "stamina", "value": 25 },
+        { "type": "derivedStat", "stat": "poisonResist", "value": 100, "isPercent": true },
+        { "type": "derivedStat", "stat": "frostResist", "value": 20, "isPercent": true },
+        { "type": "derivedStat", "stat": "detectDifficulty", "value": 5, "isPercent": true },
+        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
+        { "type": "derivedStat", "stat": "fireResist", "value": -15, "isPercent": true }
+      ]
+    },
+    {
+      "id": "vampire-stage-4",
+      "name": "Stage 4",
+      "skillReq": 0,
+      "position": { "x": 16, "y": 4 },
+      "prerequisites": ["vampire-stage-3"],
+      "prerequisitesAny": [],
+      "description": "Fully realized vampire — peak power with devastating fire weakness.",
+      "effects": [
+        { "type": "attribute", "stat": "magicka", "value": 25 },
+        { "type": "derivedStat", "stat": "moveSpeed", "value": 10, "isPercent": true },
+        { "type": "derivedStat", "stat": "armorRating", "value": 100 },
+        { "type": "derivedStat", "stat": "unarmedDamage", "value": 30 },
+        { "type": "derivedStat", "stat": "detectDifficulty", "value": 5, "isPercent": true },
+        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
+        { "type": "derivedStat", "stat": "fireResist", "value": -50, "isPercent": true }
+      ]
+    }
+  ]
+}

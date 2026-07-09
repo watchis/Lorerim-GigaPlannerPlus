@@ -42,8 +42,6 @@ type CompactBuildPayload = {
   r?: number;
   s?: number;
   b?: number;
-  vp?: number;
-  lw?: number;
   t?: number[];
   M?: number[];
   m?: number[];
@@ -129,16 +127,6 @@ function compactPayloadFromBuild(
   const deityIndex = lookupIndex(registry.deityIndex, state.deityId, "deity");
   if (deityIndex !== undefined) {
     payload.b = deityIndex;
-  }
-
-  const vampirismIndex = lookupIndex(registry.vampirismIndex, state.vampirismId, "vampirism stage");
-  if (vampirismIndex !== undefined && state.vampirismId !== "none") {
-    payload.vp = vampirismIndex;
-  }
-
-  const lycanthropyIndex = lookupIndex(registry.lycanthropyIndex, state.lycanthropyId, "lycanthropy form");
-  if (lycanthropyIndex !== undefined && state.lycanthropyId !== "none") {
-    payload.lw = lycanthropyIndex;
   }
 
   if (state.traitIds.length > 0) {
@@ -280,8 +268,6 @@ function buildStateFromCompactPayload(
     raceId: lookupId(registry.races, payload.r, "race") ?? "none",
     birthsignId: lookupId(registry.birthsigns, payload.s, "birthsign"),
     deityId: lookupId(registry.deities, payload.b, "deity"),
-    vampirismId: lookupId(registry.vampirismStages, payload.vp, "vampirism stage") ?? "none",
-    lycanthropyId: lookupId(registry.lycanthropyForms, payload.lw, "lycanthropy form") ?? "none",
     traitIds: (payload.t ?? []).map((index) => lookupId(registry.traits, index, "trait")!),
     majorSkillIds: (payload.M ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
     minorSkillIds: (payload.m ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
@@ -435,8 +421,6 @@ function payloadToBuildState(partial: {
   raceId: string;
   birthsignId: string | null;
   deityId: string | null;
-  vampirismId?: string;
-  lycanthropyId?: string;
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
@@ -453,8 +437,6 @@ function payloadToBuildState(partial: {
     raceId: partial.raceId,
     birthsignId: partial.birthsignId,
     deityId: partial.deityId,
-    vampirismId: partial.vampirismId ?? "none",
-    lycanthropyId: partial.lycanthropyId ?? "none",
     traitIds: partial.traitIds,
     majorSkillIds: partial.majorSkillIds,
     minorSkillIds: partial.minorSkillIds,

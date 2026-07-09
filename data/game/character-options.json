@@ -29,6 +29,30 @@
           "effects": [{ "type": "traitSlot", "value": 1 }]
         }
       ]
+    },
+    {
+      "id": "vampire",
+      "titleLabel": "vampireOption",
+      "descriptionLabel": "vampireOptionDescription",
+      "defaultChoice": "none",
+      "extension": "supernatural-vampire",
+      "controlType": "toggle",
+      "choices": [
+        { "id": "none", "label": "supernaturalNone" },
+        { "id": "claimed", "label": "supernaturalVampire" }
+      ]
+    },
+    {
+      "id": "werewolf",
+      "titleLabel": "werewolfOption",
+      "descriptionLabel": "werewolfOptionDescription",
+      "defaultChoice": "none",
+      "extension": "supernatural-werewolf",
+      "controlType": "toggle",
+      "choices": [
+        { "id": "none", "label": "supernaturalNone" },
+        { "id": "claimed", "label": "supernaturalWerewolf" }
+      ]
     }
   ]
 }

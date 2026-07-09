@@ -43,6 +43,7 @@ import {
 } from "@/lib/oghmaInfinium";
 import {
   isTraitBlockedBySupernatural,
+  migrateLegacySupernaturalBuild,
   normalizeSupernaturalState,
 } from "@/lib/supernatural";
 export {
@@ -62,8 +63,6 @@ export interface BuildState {
   raceId: string | null;
   birthsignId: string | null;
   deityId: string | null;
-  vampirismId: string;
-  lycanthropyId: string;
   traitIds: string[];
   majorSkillIds: string[];
   minorSkillIds: string[];
@@ -1918,22 +1917,19 @@ export function migrateBuildState(
   const withOghma: BuildState = {
     ...build,
     oghmaSkillIds: build.oghmaSkillIds ?? [],
-    vampirismId: build.vampirismId ?? "none",
-    lycanthropyId: build.lycanthropyId ?? "none",
   };
+  const withSupernatural = migrateLegacySupernaturalBuild(withOghma);
 
-  if ("blessingId" in build && build.blessingId !== undefined) {
-    const { blessingId, ...rest } = build;
+  if ("blessingId" in withSupernatural && withSupernatural.blessingId !== undefined) {
+    const { blessingId, ...rest } = withSupernatural as BuildState & { blessingId?: string | null };
     return {
       ...rest,
       oghmaSkillIds: build.oghmaSkillIds ?? [],
-      vampirismId: build.vampirismId ?? "none",
-      lycanthropyId: build.lycanthropyId ?? "none",
       deityId: blessingId ?? "none",
     };
   }
 
-  return withOghma;
+  return withSupernatural;
 }
 
 function stringArraysEqual(a: string[] | undefined, b: string[] | undefined): boolean {
@@ -1987,8 +1983,6 @@ export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
     a.raceId === b.raceId &&
     a.birthsignId === b.birthsignId &&
     a.deityId === b.deityId &&
-    a.vampirismId === b.vampirismId &&
-    a.lycanthropyId === b.lycanthropyId &&
     stringArraysEqual(a.traitIds, b.traitIds) &&
     stringArraysEqual(a.majorSkillIds, b.majorSkillIds) &&
     stringArraysEqual(a.minorSkillIds, b.minorSkillIds) &&
@@ -2010,8 +2004,6 @@ export function createInitialBuildState(): BuildState {
     raceId: "none",
     birthsignId: "none",
     deityId: "none",
-    vampirismId: "none",
-    lycanthropyId: "none",
     traitIds: [],
     majorSkillIds: [],
     minorSkillIds: [],

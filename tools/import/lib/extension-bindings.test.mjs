@@ -161,6 +161,14 @@ writeFileSync(
   "export default {};\n",
 );
 writeFileSync(join(root, "extensions", "character-options", "oghma-infinium.ts"), "export default {};\n");
+writeFileSync(
+  join(root, "extensions", "character-options", "supernatural-vampire.ts"),
+  "export default {};\n",
+);
+writeFileSync(
+  join(root, "extensions", "character-options", "supernatural-werewolf.ts"),
+  "export default {};\n",
+);
 
 const warnings = validateExtensionBindings({
   bindings,

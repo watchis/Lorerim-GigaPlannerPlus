@@ -1,102 +1,179 @@
-import type { GameData, SupernaturalForm } from "@/data/schemas";
+import type { GameData } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
+import { getSelectedCharacterOptionChoice } from "@/lib/characterOptions";
 
-export const VAMPIRISM_NONE_ID = "none";
-export const LYCANTHROPY_NONE_ID = "none";
+export const VAMPIRE_OPTION_ID = "vampire";
+export const WEREWOLF_OPTION_ID = "werewolf";
+export const SUPERNATURAL_CLAIMED_CHOICE = "claimed";
 
-export function isVampirismActive(state: BuildState): boolean {
-  return (state.vampirismId ?? VAMPIRISM_NONE_ID) !== VAMPIRISM_NONE_ID;
+export const VAMPIRE_SKILL_ID = "vampire";
+export const WEREWOLF_SKILL_ID = "werewolf";
+
+export const SUPERNATURAL_OPTION_IDS = [VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID] as const;
+
+export function isSupernaturalOptionId(optionId: string): boolean {
+  return SUPERNATURAL_OPTION_IDS.includes(optionId as (typeof SUPERNATURAL_OPTION_IDS)[number]);
 }
 
-export function isLycanthropyActive(state: BuildState): boolean {
-  return (state.lycanthropyId ?? LYCANTHROPY_NONE_ID) !== LYCANTHROPY_NONE_ID;
+export function isVampireActive(state: BuildState): boolean {
+  return state.characterOptionChoices[VAMPIRE_OPTION_ID] === SUPERNATURAL_CLAIMED_CHOICE;
+}
+
+export function isWerewolfActive(state: BuildState): boolean {
+  return state.characterOptionChoices[WEREWOLF_OPTION_ID] === SUPERNATURAL_CLAIMED_CHOICE;
 }
 
 export function hasSupernaturalCurse(state: BuildState): boolean {
-  return isVampirismActive(state) || isLycanthropyActive(state);
+  return isVampireActive(state) || isWerewolfActive(state);
 }
 
-export function getVampirismStage(
+export function getActiveSupernaturalSkillId(state: BuildState): string | null {
+  if (isVampireActive(state)) return VAMPIRE_SKILL_ID;
+  if (isWerewolfActive(state)) return WEREWOLF_SKILL_ID;
+  return null;
+}
+
+export function getOtherSupernaturalOptionId(optionId: string): string | null {
+  if (optionId === VAMPIRE_OPTION_ID) return WEREWOLF_OPTION_ID;
+  if (optionId === WEREWOLF_OPTION_ID) return VAMPIRE_OPTION_ID;
+  return null;
+}
+
+export function isSupernaturalOptionBlocked(
   game: GameData,
-  vampirismId: string | undefined,
-): SupernaturalForm | undefined {
-  const id = vampirismId ?? VAMPIRISM_NONE_ID;
-  return game.supernatural.vampirism.stages.find((stage) => stage.id === id);
+  state: BuildState,
+  optionId: string,
+): boolean {
+  const otherOptionId = getOtherSupernaturalOptionId(optionId);
+  if (!otherOptionId) return false;
+
+  const otherOption = game.characterOptions.find((entry) => entry.id === otherOptionId);
+  if (!otherOption) return false;
+
+  const otherChoice = getSelectedCharacterOptionChoice(otherOption, state.characterOptionChoices);
+  return otherChoice.id !== otherOption.defaultChoice;
 }
 
-export function getLycanthropyForm(
+export function isTraitBlockedBySupernatural(
   game: GameData,
-  lycanthropyId: string | undefined,
-): SupernaturalForm | undefined {
-  const id = lycanthropyId ?? LYCANTHROPY_NONE_ID;
-  return game.supernatural.lycanthropy.forms.find((form) => form.id === id);
-}
-
-export function isTraitBlockedBySupernatural(game: GameData, state: BuildState, traitId: string): boolean {
+  state: BuildState,
+  traitId: string,
+): boolean {
   if (!hasSupernaturalCurse(state)) return false;
   return game.supernatural.incompatibleTraitIds.includes(traitId);
 }
 
+export function stripPerksForSkillTree(
+  game: GameData,
+  build: BuildState,
+  skillId: string,
+): BuildState {
+  const tree = game.perkTrees[skillId];
+  if (!tree) return build;
+
+  const perkIds = new Set(tree.perks.map((perk) => perk.id));
+  return {
+    ...build,
+    selectedPerkIds: build.selectedPerkIds.filter((perkId) => !perkIds.has(perkId)),
+  };
+}
+
 export function normalizeSupernaturalState(game: GameData, build: BuildState): BuildState {
-  const vampirismStages = game.supernatural.vampirism.stages;
-  const lycanthropyForms = game.supernatural.lycanthropy.forms;
+  let next = { ...build };
+  const vampireActive = isVampireActive(next);
+  const werewolfActive = isWerewolfActive(next);
 
-  let vampirismId = build.vampirismId ?? VAMPIRISM_NONE_ID;
-  let lycanthropyId = build.lycanthropyId ?? LYCANTHROPY_NONE_ID;
-
-  if (!vampirismStages.some((stage) => stage.id === vampirismId)) {
-    vampirismId = VAMPIRISM_NONE_ID;
-  }
-  if (!lycanthropyForms.some((form) => form.id === lycanthropyId)) {
-    lycanthropyId = LYCANTHROPY_NONE_ID;
-  }
-
-  if (isVampirismActive({ ...build, vampirismId }) && isLycanthropyActive({ ...build, lycanthropyId })) {
-    lycanthropyId = LYCANTHROPY_NONE_ID;
+  if (vampireActive && werewolfActive) {
+    next = {
+      ...next,
+      characterOptionChoices: {
+        ...next.characterOptionChoices,
+        [WEREWOLF_OPTION_ID]: "none",
+      },
+    };
+    next = stripPerksForSkillTree(game, next, WEREWOLF_SKILL_ID);
   }
 
-  const traitIds = build.traitIds.filter(
-    (traitId) => !isTraitBlockedBySupernatural(game, { ...build, vampirismId, lycanthropyId }, traitId),
+  const traitIds = next.traitIds.filter(
+    (traitId) => !isTraitBlockedBySupernatural(game, next, traitId),
   );
 
   return {
-    ...build,
-    vampirismId,
-    lycanthropyId,
+    ...next,
     traitIds,
   };
 }
 
-export function applyVampirismSelection(
+export function applySupernaturalOptionChange(
   game: GameData,
   build: BuildState,
-  vampirismId: string,
+  optionId: string,
+  choiceId: string,
 ): BuildState {
-  const normalizedId = game.supernatural.vampirism.stages.some((stage) => stage.id === vampirismId)
-    ? vampirismId
-    : VAMPIRISM_NONE_ID;
+  if (!isSupernaturalOptionId(optionId)) {
+    return build;
+  }
 
-  return normalizeSupernaturalState(game, {
+  const option = game.characterOptions.find((entry) => entry.id === optionId);
+  if (!option) return build;
+
+  const claimed = choiceId !== option.defaultChoice;
+  const otherOptionId = getOtherSupernaturalOptionId(optionId);
+
+  let next: BuildState = {
     ...build,
-    vampirismId: normalizedId,
-    lycanthropyId:
-      normalizedId !== VAMPIRISM_NONE_ID ? LYCANTHROPY_NONE_ID : build.lycanthropyId ?? LYCANTHROPY_NONE_ID,
-  });
+    characterOptionChoices: {
+      ...build.characterOptionChoices,
+      [optionId]: choiceId,
+    },
+  };
+
+  if (!claimed) {
+    const skillId = optionId === VAMPIRE_OPTION_ID ? VAMPIRE_SKILL_ID : WEREWOLF_SKILL_ID;
+    next = stripPerksForSkillTree(game, next, skillId);
+  }
+
+  if (claimed && otherOptionId) {
+    next = {
+      ...next,
+      characterOptionChoices: {
+        ...next.characterOptionChoices,
+        [otherOptionId]: "none",
+      },
+    };
+    const otherSkillId =
+      otherOptionId === VAMPIRE_OPTION_ID ? VAMPIRE_SKILL_ID : WEREWOLF_SKILL_ID;
+    next = stripPerksForSkillTree(game, next, otherSkillId);
+  }
+
+  return normalizeSupernaturalState(game, next);
 }
 
-export function applyLycanthropySelection(
-  game: GameData,
-  build: BuildState,
-  lycanthropyId: string,
-): BuildState {
-  const normalizedId = game.supernatural.lycanthropy.forms.some((form) => form.id === lycanthropyId)
-    ? lycanthropyId
-    : LYCANTHROPY_NONE_ID;
+export function migrateLegacySupernaturalBuild(build: BuildState): BuildState {
+  const legacy = build as BuildState & {
+    vampirismId?: string;
+    lycanthropyId?: string;
+  };
 
-  return normalizeSupernaturalState(game, {
-    ...build,
-    lycanthropyId: normalizedId,
-    vampirismId:
-      normalizedId !== LYCANTHROPY_NONE_ID ? VAMPIRISM_NONE_ID : build.vampirismId ?? VAMPIRISM_NONE_ID,
-  });
+  if (!legacy.vampirismId && !legacy.lycanthropyId) {
+    return build;
+  }
+
+  const characterOptionChoices = { ...build.characterOptionChoices };
+
+  if (legacy.vampirismId && legacy.vampirismId !== "none") {
+    characterOptionChoices[VAMPIRE_OPTION_ID] = SUPERNATURAL_CLAIMED_CHOICE;
+  }
+  if (legacy.lycanthropyId && legacy.lycanthropyId !== "none") {
+    characterOptionChoices[WEREWOLF_OPTION_ID] = SUPERNATURAL_CLAIMED_CHOICE;
+  }
+
+  const { vampirismId, lycanthropyId, ...rest } = legacy;
+  void vampirismId;
+  void lycanthropyId;
+
+  return {
+    ...rest,
+    characterOptionChoices,
+  };
 }

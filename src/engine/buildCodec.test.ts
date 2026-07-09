@@ -47,6 +47,8 @@ describe("buildCodec", () => {
     expect(decoded.characterOptionChoices).toEqual({
       "oghma-infinium": "claimed",
       "alduin-bonus-trait": "claimed",
+      vampire: "none",
+      werewolf: "none",
     });
     expect(decoded.oghmaSkillIds).toEqual([
       "one-handed",

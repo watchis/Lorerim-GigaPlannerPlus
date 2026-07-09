@@ -19,6 +19,14 @@
     {
       "optionId": "oghma-infinium",
       "extension": "oghma-infinium"
+    },
+    {
+      "optionId": "vampire",
+      "extension": "supernatural-vampire"
+    },
+    {
+      "optionId": "werewolf",
+      "extension": "supernatural-werewolf"
     }
   ]
 }

@@ -98,7 +98,7 @@ export function reportDomainSummaries(domainResults, progress) {
         break;
       case "supernatural":
         progress.step(
-          `Supernatural — ${result.summary.vampirismStages} vampirism stages, ` +
+          `Supernatural — ${result.summary.vampirismForms} vampirism forms, ` +
             `${result.summary.lycanthropyForms} lycanthropy forms`,
         );
         break;

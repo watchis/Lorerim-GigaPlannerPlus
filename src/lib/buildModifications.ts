@@ -12,10 +12,8 @@ import {
 import type { BuildState } from "@/engine/buildEngine";
 import type { SourcedEffect } from "@/lib/trackedStats";
 import {
-  getLycanthropyForm,
-  getVampirismStage,
-  isLycanthropyActive,
-  isVampirismActive,
+  isVampireActive,
+  isWerewolfActive,
 } from "@/lib/supernatural";
 
 function getPerkById(game: GameData, perkId: string) {
@@ -182,12 +180,12 @@ export function collectBuildChanges(game: GameData, state: BuildState): Collecte
     });
   }
 
-  if (isVampirismActive(state)) {
-    const stage = getVampirismStage(game, state.vampirismId);
-    if (stage && stage.effects.length > 0) {
+  if (isVampireActive(state)) {
+    const form = game.supernatural.vampirism.forms.find((entry) => entry.id === "vampire");
+    if (form && form.effects.length > 0) {
       pushModification(collected, {
-        source: { name: stage.name },
-        effects: stage.effects,
+        source: { name: form.name },
+        effects: form.effects,
       });
     }
 
@@ -201,8 +199,8 @@ export function collectBuildChanges(game: GameData, state: BuildState): Collecte
     }
   }
 
-  if (isLycanthropyActive(state)) {
-    const form = getLycanthropyForm(game, state.lycanthropyId);
+  if (isWerewolfActive(state)) {
+    const form = game.supernatural.lycanthropy.forms.find((entry) => entry.id === "werewolf");
     if (form && form.effects.length > 0) {
       pushModification(collected, {
         source: { name: form.name },

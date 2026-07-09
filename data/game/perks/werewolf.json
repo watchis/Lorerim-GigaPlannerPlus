@@ -1,0 +1,48 @@
+{
+  "skillId": "werewolf",
+  "skillName": "Werewolf",
+  "grid": {
+    "width": 14,
+    "height": 8
+  },
+  "perks": [
+    {
+      "id": "werewolf-lycanthropic-speed",
+      "name": "Lycanthropic Speed",
+      "skillReq": 0,
+      "position": { "x": 4, "y": 4 },
+      "prerequisites": [],
+      "prerequisitesAny": [],
+      "description": "Movement speed is increased by 10% both in and out of beast form.",
+      "effects": [
+        { "type": "derivedStat", "stat": "moveSpeed", "value": 10, "isPercent": true }
+      ]
+    },
+    {
+      "id": "werewolf-lycanthropic-regen-1",
+      "name": "Lycanthropic Regen",
+      "skillReq": 0,
+      "position": { "x": 8, "y": 4 },
+      "prerequisites": [],
+      "prerequisitesAny": [],
+      "description": "Regenerate 1 health and 0.5% of your stamina per second, both in and out of beast form.",
+      "effects": [
+        { "type": "derivedStat", "stat": "healthRegenRate", "value": 1 },
+        { "type": "derivedStat", "stat": "staminaRegen", "value": 0.5, "isPercent": true }
+      ]
+    },
+    {
+      "id": "werewolf-lycanthropic-regen-2",
+      "name": "Lycanthropic Regen",
+      "skillReq": 0,
+      "position": { "x": 8, "y": 4 },
+      "prerequisites": ["werewolf-lycanthropic-regen-1"],
+      "prerequisitesAny": [],
+      "description": "Regenerate 2 health and 1% of your stamina per second, both in and out of beast form.",
+      "effects": [
+        { "type": "derivedStat", "stat": "healthRegenRate", "value": 1 },
+        { "type": "derivedStat", "stat": "staminaRegen", "value": 0.5, "isPercent": true }
+      ]
+    }
+  ]
+}

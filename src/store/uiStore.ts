@@ -6,8 +6,6 @@ export type SetupPicker =
   | "race"
   | "birthsign"
   | "deity"
-  | "vampirism"
-  | "lycanthropy"
   | "traits"
   | "major-skills"
   | "minor-skills";

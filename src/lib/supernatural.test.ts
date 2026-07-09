@@ -1,11 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { collectBuildChanges } from "@/lib/buildModifications";
 import {
-  applyLycanthropySelection,
-  applyVampirismSelection,
+  applySupernaturalOptionChange,
   hasSupernaturalCurse,
+  isSupernaturalOptionBlocked,
   isTraitBlockedBySupernatural,
+  isVampireActive,
+  isWerewolfActive,
+  migrateLegacySupernaturalBuild,
   normalizeSupernaturalState,
+  stripPerksForSkillTree,
+  SUPERNATURAL_CLAIMED_CHOICE,
+  VAMPIRE_OPTION_ID,
+  VAMPIRE_SKILL_ID,
+  WEREWOLF_OPTION_ID,
+  WEREWOLF_SKILL_ID,
 } from "@/lib/supernatural";
 import { canSelectTrait, reconcileBuild } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
@@ -13,67 +22,113 @@ import { createTestBuildState, getTestGameData } from "@/test/helpers";
 describe("supernatural", () => {
   const game = getTestGameData();
 
-  it("applies vampirism stage effects to build modifications", () => {
-    const state = createTestBuildState({ vampirismId: "stage-2", lycanthropyId: "none" });
-    const collected = collectBuildChanges(game, state);
-    const sources = collected.sourcedEffects.map((entry) => entry.source);
-
-    expect(sources).toContain("Stage 2");
-    expect(collected.sourcedEffects.some((entry) => entry.effect.type === "flag" && entry.effect.stat === "waterbreathing")).toBe(true);
-  });
-
-  it("applies werewolf effects and blocks vampirism", () => {
-    const state = applyLycanthropySelection(
+  it("activates vampire via character option and applies curse effects", () => {
+    const state = applySupernaturalOptionChange(
       game,
-      createTestBuildState({ vampirismId: "stage-3", traitIds: ["silent-dovah"] }),
-      "werewolf",
+      createTestBuildState(),
+      VAMPIRE_OPTION_ID,
+      SUPERNATURAL_CLAIMED_CHOICE,
     );
 
-    expect(state.vampirismId).toBe("none");
-    expect(state.lycanthropyId).toBe("werewolf");
-    expect(state.traitIds).not.toContain("silent-dovah");
-    expect(hasSupernaturalCurse(state)).toBe(true);
+    expect(isVampireActive(state)).toBe(true);
+    expect(isWerewolfActive(state)).toBe(false);
 
     const collected = collectBuildChanges(game, state);
-    expect(collected.sourcedEffects.some((entry) => entry.source === "Werewolf")).toBe(true);
+    expect(collected.sourcedEffects.some((entry) => entry.source === "Vampire")).toBe(true);
   });
 
-  it("selecting vampirism clears lycanthropy and incompatible traits", () => {
-    const state = applyVampirismSelection(
+  it("selecting werewolf clears vampire perks and blocks the vampire option", () => {
+    const withVampirePerk = createTestBuildState({
+      characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+      selectedPerkIds: ["vampire-stage-2", "werewolf-lycanthropic-speed"],
+      traitIds: ["silent-dovah", "angler"],
+    });
+
+    const state = applySupernaturalOptionChange(
       game,
-      createTestBuildState({ lycanthropyId: "werewolf", traitIds: ["silent-dovah", "angler"] }),
-      "stage-1",
+      withVampirePerk,
+      WEREWOLF_OPTION_ID,
+      SUPERNATURAL_CLAIMED_CHOICE,
     );
 
-    expect(state.lycanthropyId).toBe("none");
-    expect(state.vampirismId).toBe("stage-1");
+    expect(isWerewolfActive(state)).toBe(true);
+    expect(isVampireActive(state)).toBe(false);
+    expect(state.selectedPerkIds).toEqual(["werewolf-lycanthropic-speed"]);
     expect(state.traitIds).toEqual(["angler"]);
+    expect(isSupernaturalOptionBlocked(game, state, VAMPIRE_OPTION_ID)).toBe(true);
     expect(isTraitBlockedBySupernatural(game, state, "silent-dovah")).toBe(true);
     expect(canSelectTrait(game, state, "silent-dovah")).toBe(false);
   });
 
-  it("reconcileBuild normalizes unknown supernatural ids", () => {
+  it("disabling a curse strips that tree's perks", () => {
+    const state = applySupernaturalOptionChange(
+      game,
+      createTestBuildState({
+        characterOptionChoices: { [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+        selectedPerkIds: ["werewolf-lycanthropic-speed", "destiny-01"],
+      }),
+      WEREWOLF_OPTION_ID,
+      "none",
+    );
+
+    expect(isWerewolfActive(state)).toBe(false);
+    expect(state.selectedPerkIds).toEqual(["destiny-01"]);
+  });
+
+  it("stripPerksForSkillTree removes only the requested tree", () => {
+    const stripped = stripPerksForSkillTree(
+      game,
+      createTestBuildState({
+        selectedPerkIds: ["vampire-stage-1", "werewolf-lycanthropic-speed", "destiny-01"],
+      }),
+      VAMPIRE_SKILL_ID,
+    );
+
+    expect(stripped.selectedPerkIds).toEqual([
+      "werewolf-lycanthropic-speed",
+      "destiny-01",
+    ]);
+  });
+
+  it("migrates legacy vampirismId/lycanthropyId into character options", () => {
+    const migrated = migrateLegacySupernaturalBuild(
+      createTestBuildState({
+        vampirismId: "stage-2",
+        lycanthropyId: "none",
+      } as never),
+    );
+
+    expect(migrated.characterOptionChoices[VAMPIRE_OPTION_ID]).toBe(SUPERNATURAL_CLAIMED_CHOICE);
+    expect("vampirismId" in migrated).toBe(false);
+  });
+
+  it("reconcileBuild normalizes conflicting supernatural options", () => {
     const state = reconcileBuild(
       game,
       createTestBuildState({
-        vampirismId: "invalid",
-        lycanthropyId: "invalid",
+        characterOptionChoices: {
+          [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
+          [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
+        },
         traitIds: ["silent-dovah"],
       }),
     );
 
-    expect(state.vampirismId).toBe("none");
-    expect(state.lycanthropyId).toBe("none");
-    expect(state.traitIds).toContain("silent-dovah");
+    expect(isVampireActive(state)).toBe(true);
+    expect(isWerewolfActive(state)).toBe(false);
+    expect(hasSupernaturalCurse(state)).toBe(true);
+    expect(state.traitIds).not.toContain("silent-dovah");
   });
 
-  it("normalizeSupernaturalState resolves mutual exclusion in favor of vampirism", () => {
+  it("normalizeSupernaturalState removes incompatible traits only", () => {
     const state = normalizeSupernaturalState(
       game,
-      createTestBuildState({ vampirismId: "stage-2", lycanthropyId: "werewolf" }),
+      createTestBuildState({
+        characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+        traitIds: ["silent-dovah", "angler"],
+      }),
     );
 
-    expect(state.vampirismId).toBe("stage-2");
-    expect(state.lycanthropyId).toBe("none");
+    expect(state.traitIds).toEqual(["angler"]);
   });
 });

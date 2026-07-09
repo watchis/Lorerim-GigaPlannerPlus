@@ -2,11 +2,18 @@ import type { KeyboardEvent } from "react";
 import { ChevronRight, Settings, X } from "lucide-react";
 import { AttributesAllocator } from "@/components/AttributesAllocator";
 import { DestinyTreeSection } from "@/components/DestinyTreeSection";
+import { SupernaturalTreeSection } from "@/components/SupernaturalTreeSection";
 import { SkillIcon } from "@/components/SkillIcon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getTraitLimit } from "@/engine/buildEngine";
+import {
+  isVampireActive,
+  isWerewolfActive,
+  VAMPIRE_SKILL_ID,
+  WEREWOLF_SKILL_ID,
+} from "@/lib/supernatural";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
@@ -190,8 +197,6 @@ export function CharacterSetupPanel() {
   const setRace = useBuildStore((s) => s.setRace);
   const setBirthsign = useBuildStore((s) => s.setBirthsign);
   const setDeity = useBuildStore((s) => s.setDeity);
-  const setVampirism = useBuildStore((s) => s.setVampirism);
-  const setLycanthropy = useBuildStore((s) => s.setLycanthropy);
   const toggleTrait = useBuildStore((s) => s.toggleTrait);
   const toggleMajorSkill = useBuildStore((s) => s.toggleMajorSkill);
   const toggleMinorSkill = useBuildStore((s) => s.toggleMinorSkill);
@@ -230,16 +235,8 @@ export function CharacterSetupPanel() {
     build.deityId && build.deityId !== "none"
       ? (game.deities.find((b) => b.id === build.deityId)?.name ?? build.deityId)
       : null;
-  const selectedVampirismName =
-    build.vampirismId && build.vampirismId !== "none"
-      ? (game.supernatural.vampirism.stages.find((stage) => stage.id === build.vampirismId)?.name ??
-        build.vampirismId)
-      : null;
-  const selectedLycanthropyName =
-    build.lycanthropyId && build.lycanthropyId !== "none"
-      ? (game.supernatural.lycanthropy.forms.find((form) => form.id === build.lycanthropyId)?.name ??
-        build.lycanthropyId)
-      : null;
+  const vampireActive = isVampireActive(build);
+  const werewolfActive = isWerewolfActive(build);
 
   const selectedTraitItems = build.traitIds.map((id) => ({
     id,
@@ -338,32 +335,6 @@ export function CharacterSetupPanel() {
             onRemove={() => setDeity("none")}
             noneLabel={noneLabel}
           />
-          <SetupPickerRow
-            label={labels.vampirism}
-            picker="vampirism"
-            isActive={setupPicker === "vampirism"}
-            onOpen={() => toggleSetupPicker("vampirism")}
-            selectedItems={
-              selectedVampirismName
-                ? [{ id: build.vampirismId, label: selectedVampirismName }]
-                : []
-            }
-            onRemove={() => setVampirism("none")}
-            noneLabel={noneLabel}
-          />
-          <SetupPickerRow
-            label={labels.lycanthropy}
-            picker="lycanthropy"
-            isActive={setupPicker === "lycanthropy"}
-            onOpen={() => toggleSetupPicker("lycanthropy")}
-            selectedItems={
-              selectedLycanthropyName
-                ? [{ id: build.lycanthropyId, label: selectedLycanthropyName }]
-                : []
-            }
-            onRemove={() => setLycanthropy("none")}
-            noneLabel={noneLabel}
-          />
         </div>
         <div
           className={cn(
@@ -411,6 +382,16 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
         </div>
+        <SupernaturalTreeSection
+          skillId={VAMPIRE_SKILL_ID}
+          label={labels.vampireTree ?? "Vampire"}
+          isActive={vampireActive}
+        />
+        <SupernaturalTreeSection
+          skillId={WEREWOLF_SKILL_ID}
+          label={labels.werewolfTree ?? "Werewolf"}
+          isActive={werewolfActive}
+        />
         <DestinyTreeSection />
       </CardContent>
     </Card>
