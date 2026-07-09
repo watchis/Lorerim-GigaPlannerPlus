@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import type { Labels, Theme } from "@/data/schemas";
+import type { SupernaturalThemeVariant } from "@/lib/supernaturalTheme";
 
 interface ThemeContextValue {
   theme: Theme;
   labels: Labels;
+  supernaturalVariant: SupernaturalThemeVariant | null;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -15,13 +17,25 @@ function toCssVarName(key: string): string {
 interface ThemeProviderProps {
   theme: Theme;
   labels: Labels;
+  supernaturalVariant?: SupernaturalThemeVariant | null;
   children: ReactNode;
 }
 
-export function ThemeProvider({ theme, labels, children }: ThemeProviderProps) {
+export function ThemeProvider({
+  theme,
+  labels,
+  supernaturalVariant = null,
+  children,
+}: ThemeProviderProps) {
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.theme = theme.mode;
+
+    if (supernaturalVariant) {
+      root.dataset.supernaturalTheme = supernaturalVariant;
+    } else {
+      delete root.dataset.supernaturalTheme;
+    }
 
     for (const [key, value] of Object.entries(theme.colors)) {
       root.style.setProperty(toCssVarName(key), value);
@@ -37,10 +51,12 @@ export function ThemeProvider({ theme, labels, children }: ThemeProviderProps) {
     for (const [key, value] of Object.entries(theme.shadows)) {
       root.style.setProperty(`--shadow-${key}`, value);
     }
-  }, [theme]);
+  }, [theme, supernaturalVariant]);
 
   return (
-    <ThemeContext.Provider value={{ theme, labels }}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme, labels, supernaturalVariant }}>
+      {children}
+    </ThemeContext.Provider>
   );
 }
 
@@ -50,6 +66,10 @@ export function useThemeConfig() {
     throw new Error("useThemeConfig must be used within ThemeProvider");
   }
   return ctx;
+}
+
+export function useSupernaturalThemeVariant(): SupernaturalThemeVariant | null {
+  return useThemeConfig().supernaturalVariant;
 }
 
 export function usePanelLabels(panelId: string): Record<string, string> {

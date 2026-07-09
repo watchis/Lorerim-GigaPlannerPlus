@@ -13,10 +13,12 @@ import {
 } from "@/components/ui/select";
 import { OghmaInfiniumControl } from "@/components/character-options/OghmaInfiniumControl";
 import { SupernaturalOptionControl } from "@/components/character-options/SupernaturalOptionControl";
+import { SupernaturalOptionsSection } from "@/components/character-options/SupernaturalOptionsSection";
 import { OghmaSkillsPickerPanel } from "@/components/character-options/OghmaSkillsPickerPanel";
 import type { CharacterOption } from "@/data/schemas";
 import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
 import { VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
+import { getSupernaturalThemeVariant } from "@/lib/supernaturalTheme";
 import {
   getCharacterOptionSummaryLines,
   getSelectedCharacterOptionChoice,
@@ -241,6 +243,23 @@ function ToggleOptionControl({
   );
 }
 
+function PlaythroughOptionsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <h2 className="font-[family-name:var(--font-heading)] text-sm font-semibold tracking-wide text-[var(--color-foreground)]">
+        {title}
+      </h2>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
 interface ActiveRewardsSummaryProps {
   lines: { key: string; text: string }[];
   title: string;
@@ -281,6 +300,13 @@ export function CharacterOptionsPanel() {
 
   const { game } = gameData;
   const { characterOptions } = game;
+  const supernaturalVariant = getSupernaturalThemeVariant(build);
+  const supernaturalOptions = characterOptions.filter(
+    (option) => option.id === VAMPIRE_OPTION_ID || option.id === WEREWOLF_OPTION_ID,
+  );
+  const playthroughOptions = characterOptions.filter(
+    (option) => option.id !== VAMPIRE_OPTION_ID && option.id !== WEREWOLF_OPTION_ID,
+  );
 
   const activeRewardLines = characterOptions.flatMap((option) => {
     const choice = getSelectedCharacterOptionChoice(option, build.characterOptionChoices);
@@ -312,97 +338,112 @@ export function CharacterOptionsPanel() {
               lines={activeRewardLines}
               title={labels.activeRewards ?? "Active rewards"}
             />
-            {characterOptions.map((option) => {
-              const selectedChoiceId =
-                build.characterOptionChoices[option.id] ?? option.defaultChoice;
-              const onSelect = (choiceId: string) =>
-                setCharacterOptionChoice(option.id, choiceId);
-              const extension = option.extension
-                ? getCharacterOptionExtension(option.extension)
-                : undefined;
-              if (option.id === VAMPIRE_OPTION_ID) {
+            <SupernaturalOptionsSection
+              title={labels.supernaturalSectionTitle ?? "Supernatural curses"}
+              description={
+                labels.supernaturalSectionDescription ??
+                "Vampirism and lycanthropy are mutually exclusive. Activating one shows its perk tree in Character Setup."
+              }
+              activeVariant={supernaturalVariant}
+              activeBadgeLabel={
+                supernaturalVariant === "vampire"
+                  ? (labels.supernaturalVampire ?? "Vampire")
+                  : supernaturalVariant === "werewolf"
+                    ? (labels.supernaturalWerewolf ?? "Werewolf")
+                    : undefined
+              }
+            >
+              {supernaturalOptions.map((option) => {
+                const selectedChoiceId =
+                  build.characterOptionChoices[option.id] ?? option.defaultChoice;
+                const onSelect = (choiceId: string) =>
+                  setCharacterOptionChoice(option.id, choiceId);
+
                 return (
                   <SupernaturalOptionControl
                     key={option.id}
-                    optionId={VAMPIRE_OPTION_ID}
+                    optionId={option.id}
                     option={option}
                     selectedChoiceId={selectedChoiceId}
                     labels={labels}
                     onSelect={onSelect}
                   />
                 );
-              }
+              })}
+            </SupernaturalOptionsSection>
 
-              if (option.id === WEREWOLF_OPTION_ID) {
-                return (
-                  <SupernaturalOptionControl
-                    key={option.id}
-                    optionId={WEREWOLF_OPTION_ID}
-                    option={option}
-                    selectedChoiceId={selectedChoiceId}
-                    labels={labels}
-                    onSelect={onSelect}
-                  />
-                );
-              }
+            {playthroughOptions.length > 0 && (
+              <PlaythroughOptionsSection
+                title={labels.playthroughSectionTitle ?? "Playthrough rewards"}
+              >
+                {playthroughOptions.map((option) => {
+                  const selectedChoiceId =
+                    build.characterOptionChoices[option.id] ?? option.defaultChoice;
+                  const onSelect = (choiceId: string) =>
+                    setCharacterOptionChoice(option.id, choiceId);
+                  const extension = option.extension
+                    ? getCharacterOptionExtension(option.extension)
+                    : undefined;
 
-              const Control =
-                option.extension === "oghma-infinium"
-                  ? OghmaInfiniumControl
-                  : extension?.Control;
+                  const Control =
+                    option.extension === "oghma-infinium"
+                      ? OghmaInfiniumControl
+                      : extension?.Control;
 
-              if (Control) {
-                return (
-                  <Control
-                    key={option.id}
-                    option={option}
-                    selectedChoiceId={selectedChoiceId}
-                    labels={labels}
-                    onSelect={onSelect}
-                    onOpenOghmaSkillsPicker={
-                      option.extension === "oghma-infinium"
-                        ? () => setOghmaSkillsPickerOpen(true)
-                        : undefined
-                    }
-                  />
-                );
-              }
+                  if (Control) {
+                    return (
+                      <Control
+                        key={option.id}
+                        option={option}
+                        selectedChoiceId={selectedChoiceId}
+                        labels={labels}
+                        onSelect={onSelect}
+                        onOpenOghmaSkillsPicker={
+                          option.extension === "oghma-infinium"
+                            ? () => setOghmaSkillsPickerOpen(true)
+                            : undefined
+                        }
+                      />
+                    );
+                  }
 
-              const controlType = option.controlType ?? "buttons";
-              if (controlType === "select") {
-                return (
-                  <SelectOptionControl
-                    key={option.id}
-                    option={option}
-                    selectedChoiceId={selectedChoiceId}
-                    labels={labels}
-                    onSelect={onSelect}
-                  />
-                );
-              }
+                  const controlType = option.controlType ?? "buttons";
+                  if (controlType === "select") {
+                    return (
+                      <SelectOptionControl
+                        key={option.id}
+                        option={option}
+                        selectedChoiceId={selectedChoiceId}
+                        labels={labels}
+                        onSelect={onSelect}
+                      />
+                    );
+                  }
 
-              if (controlType === "toggle") {
-                return (
-                  <ToggleOptionControl
-                    key={option.id}
-                    option={option}
-                    selectedChoiceId={selectedChoiceId}
-                    labels={labels}
-                    onSelect={onSelect}
-                  />
-                );
-              }
+                  if (controlType === "toggle") {
+                    return (
+                      <ToggleOptionControl
+                        key={option.id}
+                        option={option}
+                        selectedChoiceId={selectedChoiceId}
+                        labels={labels}
+                        onSelect={onSelect}
+                      />
+                    );
+                  }
 
-              return (
-                <GenericChoiceOptionControl
-                  key={option.id}
-                  option={option}
-                  selectedChoiceId={selectedChoiceId}
-                  labels={labels}
-                  onSelect={onSelect}
-                />
-              );
-            })}
+                  return (
+                    <GenericChoiceOptionControl
+                      key={option.id}
+                      option={option}
+                      selectedChoiceId={selectedChoiceId}
+                      labels={labels}
+                      onSelect={onSelect}
+                    />
+                  );
+                })}
+              </PlaythroughOptionsSection>
+            )}
           </div>
         </ScrollArea>
       </CardContent>

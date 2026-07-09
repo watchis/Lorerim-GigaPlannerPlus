@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from "react";
-import { ChevronRight, Settings, X } from "lucide-react";
+import { ChevronRight, Moon, Settings, X } from "lucide-react";
 import { AttributesAllocator } from "@/components/AttributesAllocator";
 import { DestinyTreeSection } from "@/components/DestinyTreeSection";
 import { SupernaturalTreeSection } from "@/components/SupernaturalTreeSection";
@@ -280,12 +280,22 @@ export function CharacterSetupPanel() {
             "h-8 w-8 shrink-0 text-[var(--color-muted)]",
             characterOptionsOpen &&
               "bg-[var(--color-accent)]/10 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/15 hover:text-[var(--color-accent)]",
+            !characterOptionsOpen && vampireActive &&
+              "text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]",
+            !characterOptionsOpen && werewolfActive &&
+              "text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]",
           )}
           onClick={toggleCharacterOptions}
           aria-label={labels.openOptions ?? "Character options"}
           aria-pressed={characterOptionsOpen}
         >
-          <Settings className="h-4 w-4" />
+          {vampireActive ? (
+            <Moon className="h-4 w-4" aria-hidden />
+          ) : werewolfActive ? (
+            <SkillIcon skillId="werewolf" className="h-4 w-4" />
+          ) : (
+            <Settings className="h-4 w-4" />
+          )}
         </Button>
       </CardHeader>
       <CardContent

@@ -200,7 +200,12 @@
       "supernaturalBlockedHint": "Disabled while the other supernatural curse is active.",
       "bonuses": "Bonuses",
       "racialBonus": "Racial ability",
-      "detriments": "Detriments"
+      "detriments": "Detriments",
+      "supernaturalSectionTitle": "Supernatural curses",
+      "supernaturalSectionDescription": "Vampirism and lycanthropy are mutually exclusive. Activating one unlocks its perk tree in Character Setup and shifts the planner theme.",
+      "playthroughSectionTitle": "Playthrough rewards",
+      "curseActiveBadge": "Active",
+      "selectRaceForRacialAbility": "Select a race in Character Setup to see your racial curse ability."
     },
     "attributes": {
       "title": "Attributes",
