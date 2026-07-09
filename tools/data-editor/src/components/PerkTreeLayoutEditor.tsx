@@ -11,6 +11,7 @@ import {
 } from "@/lib/perkStacks";
 import type { PerkPrerequisiteKind, PerkTreeLike as PerkTreeEdgeInput } from "@/lib/perkTreeEdges";
 import { Button } from "@/ui/button";
+import { stripHtml } from "@/lib/stripHtml";
 import { cn } from "@/lib/utils";
 
 const MIN_GRID_SIZE = 15;
@@ -40,13 +41,6 @@ type PerkTreeDocument = {
 
 function isFiniteInt(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && Number.isInteger(value);
-}
-
-function stripHtml(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/[<>]/g, "");
 }
 
 function asStringArray(value: unknown): string[] {
