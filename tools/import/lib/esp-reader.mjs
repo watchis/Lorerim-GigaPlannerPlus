@@ -9,6 +9,7 @@ import { getRecordBufferAsync, mapConcurrent, visitAsync } from "./plugin-io.mjs
 import { normalizeAltarKey } from "./deity-eligibility.mjs";
 import {
   collectBoonMgefFormIds,
+  filterFaithMgefRecords,
   isAltarBlessingMgefEdid,
   parseShrineMgefAltarKey,
 } from "./deity-faith-from-plugins.mjs";
@@ -646,9 +647,7 @@ export async function collectImportPluginData(plugins, progress = null, options 
     mesgRecords: [...mergedByType.MESG.values()],
     questRecords: [...mergedByType.QUST.values()],
     mgefRecords: [...mergedByType.MGEF.values()],
-    wintersunMgefRecords: [...mergedByType.MGEF.values()].filter((record) =>
-      WINTERSUN_FAITH_PLUGIN_PATTERN.test(record.plugin ?? ""),
-    ),
+    wintersunMgefRecords: filterFaithMgefRecords([...mergedByType.MGEF.values()]),
     wintersunMesgRecords: [...mergedByType.MESG.values()].filter((record) =>
       wintersunPluginNames.has(record.plugin),
     ),
