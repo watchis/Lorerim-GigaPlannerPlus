@@ -22,6 +22,7 @@ import {
   buildPerkPlayerLevelReqs,
   normalizeStackPrerequisites,
 } from "../lib/append-missing-perks.mjs";
+import { resolveImportPaths } from "../lib/import-cli.mjs";
 import {
   applyPerkExtensionBindings,
   loadExtensionBindings,
@@ -232,7 +233,10 @@ export function transformPerkRecords(
   installDir = null,
   metadataIndex = null,
   membership = null,
+  importPaths = null,
 ) {
+  const paths = importPaths ?? resolveImportPaths();
+  const bindingsPath = paths.extensionBindingsPath;
   const handTunedOverrides = loadPerkHandTunedOverrides(perksDir);
   const layoutOverrides = loadPerkLayoutOverrides(perksDir);
   const graphSnapshots = loadPerkGraphSnapshots(perksDir);
@@ -255,13 +259,14 @@ export function transformPerkRecords(
     metadataIndex,
     membership,
     perkRecords,
+    bindingsPath,
   );
   applyPerkHandTunedOverrides(trees, handTunedOverrides);
   applySmithingBookPerkCosts(trees);
   const removedPerks = pruneAllPerkTrees(trees, { membership });
   applyPerkLayoutOverrides(trees, layoutOverrides);
   applyPerkGraphSnapshots(trees, graphSnapshots);
-  const extensionBindings = loadExtensionBindings();
+  const extensionBindings = loadExtensionBindings(bindingsPath);
   const { applied: extensionBindingsApplied } = applyPerkExtensionBindings(trees, extensionBindings);
   for (const tree of Object.values(trees)) {
     normalizeStackPrerequisites(tree);
@@ -275,6 +280,8 @@ export function transformPerkRecords(
   const extensionBindingWarnings = validateExtensionBindings({
     bindings: extensionBindings,
     trees,
+    characterOptionsPath: paths.characterOptionsPath,
+    extensionsDir: paths.extensionsDir,
   });
 
   return {
@@ -304,6 +311,7 @@ export async function importPerks(context) {
     context.install.installDir,
     context.derived.perkMetadataIndex,
     context.derived.avifMembership,
+    context.paths,
   );
 
   const treeKeys = Object.keys(trees);

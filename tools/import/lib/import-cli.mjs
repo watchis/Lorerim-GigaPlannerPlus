@@ -21,6 +21,9 @@ export function resolveImportPaths() {
     importRoot,
     dataDir,
     perksDir: join(dataDir, "perks"),
+    extensionBindingsPath: join(dataDir, "extension-bindings.json"),
+    characterOptionsPath: join(dataDir, "character-options.json"),
+    extensionsDir: join(repoRoot, "extensions"),
   };
 }
 

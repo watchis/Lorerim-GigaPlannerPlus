@@ -1,9 +1,20 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { canonicalPerkName } from "./perk-import-filter.mjs";
+import { resolveImportPaths } from "./import-cli.mjs";
 import { loadJsonIfExists } from "./transform-utils.mjs";
 
-const DEFAULT_BINDINGS_PATH = "data/game/extension-bindings.json";
+export function defaultExtensionBindingsPath(paths = resolveImportPaths()) {
+  return paths.extensionBindingsPath;
+}
+
+export function defaultCharacterOptionsPath(paths = resolveImportPaths()) {
+  return paths.characterOptionsPath;
+}
+
+export function defaultExtensionsDir(paths = resolveImportPaths()) {
+  return paths.extensionsDir;
+}
 
 /**
  * @typedef {object} PerkExtensionBinding
@@ -26,9 +37,13 @@ const DEFAULT_BINDINGS_PATH = "data/game/extension-bindings.json";
  */
 
 /** @returns {ExtensionBindings} */
-export function loadExtensionBindings(bindingsPath = DEFAULT_BINDINGS_PATH) {
+export function loadExtensionBindings(bindingsPath = defaultExtensionBindingsPath()) {
+  if (!existsSync(bindingsPath)) {
+    return { perks: [], characterOptions: [] };
+  }
+
   const data = loadJsonIfExists(bindingsPath);
-  if (!data) {
+  if (!data || typeof data !== "object") {
     return { perks: [], characterOptions: [] };
   }
 
@@ -125,8 +140,8 @@ export function applyPerkExtensionBindings(trees, bindings) {
 export function validateExtensionBindings({
   bindings,
   trees,
-  characterOptionsPath = "data/game/character-options.json",
-  extensionsDir = "extensions",
+  characterOptionsPath = defaultCharacterOptionsPath(),
+  extensionsDir = defaultExtensionsDir(),
 }) {
   const warnings = [];
   const bindingLookup = buildPerkExtensionBindingLookup(bindings);

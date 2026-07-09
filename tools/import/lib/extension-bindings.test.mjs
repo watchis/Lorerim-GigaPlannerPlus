@@ -5,13 +5,14 @@ import { tmpdir } from "node:os";
 import {
   applyPerkExtensionBindings,
   buildPerkExtensionLookup,
+  defaultExtensionBindingsPath,
   loadExtensionBindings,
   resolvePerkExtension,
   validateExtensionBindings,
 } from "./extension-bindings.mjs";
 import { applyPerkGraphSnapshots, loadPerkGraphSnapshots } from "./import-reset.mjs";
 
-const bindings = loadExtensionBindings("data/game/extension-bindings.json");
+const bindings = loadExtensionBindings(defaultExtensionBindingsPath());
 assert.ok(bindings.perks.length >= 2);
 assert.equal(resolvePerkExtension(bindings, "speech", "Haggling"), "speech-haggling");
 assert.equal(
@@ -106,7 +107,10 @@ const importLikeTrees = {
   },
 };
 applyPerkGraphSnapshots(importLikeTrees, extensionSnapshots);
-assert.equal(importLikeTrees["enchanting.json"].perks[0].allocation, undefined);
+assert.deepEqual(importLikeTrees["enchanting.json"].perks[0].allocation, {
+  kind: "perkPointsBudget",
+  totalLabel: "X",
+});
 applyPerkExtensionBindings(importLikeTrees, bindings);
 assert.deepEqual(importLikeTrees["enchanting.json"].perks[0].allocation, {
   kind: "perkPointsBudget",
