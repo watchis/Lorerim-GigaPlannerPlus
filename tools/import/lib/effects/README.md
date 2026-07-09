@@ -25,4 +25,4 @@ Shared logic for reading structured effects from Skyrim plugin records instead o
 
 ## Hybrid behavior
 
-`resolveEffects()` maps plugin `SPEL` → `MGEF` → `Effect[]` when the spell has mappable value-modifier effects. Otherwise it falls back to `parseBonusEffects(bonusText)`. Script-based MGEF archetypes are skipped (text fallback handles those).
+`resolveEffects()` parses bonus text first, then adds plugin-mapped stats that text did not already produce. Script-based or partial plugin chains therefore cannot drop text-parsed race, birthsign, or trait effects.

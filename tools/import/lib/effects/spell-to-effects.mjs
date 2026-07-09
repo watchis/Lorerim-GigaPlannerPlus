@@ -1,5 +1,6 @@
 import { actorValueName, resolveMgefRecord } from "./mgef-index.mjs";
 import { MGEF_EFFECT_TYPE } from "./mgef-data.mjs";
+import { dedupePluginEffects } from "./effect-merge.mjs";
 
 const MAPPABLE_EFFECT_TYPES = new Set([
   MGEF_EFFECT_TYPE.VALUE_MOD,
@@ -180,7 +181,7 @@ export function spellRecordToEffects(spellRecord, mgefIndex, masters = []) {
     effects.push(...mgefRecordToEffects(mgefRecord, entry.magnitude));
   }
 
-  return effects;
+  return dedupePluginEffects(effects);
 }
 
 /**

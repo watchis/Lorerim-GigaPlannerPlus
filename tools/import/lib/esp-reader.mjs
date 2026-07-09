@@ -475,7 +475,10 @@ function mergePluginPayload(
   mastersByPath.set(path, masters);
 
   for (const record of records) {
-    const key = `${record.type}:${record.edid}`;
+    const key =
+      record.type === "MGEF" && record.formIdentity
+        ? `${record.type}:${record.formIdentity}`
+        : `${record.type}:${record.edid}`;
     const next = { ...record, plugin: pluginName };
     const bucket = mergedByType[record.type];
     const existing = bucket.get(key);
