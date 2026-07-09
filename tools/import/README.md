@@ -29,9 +29,29 @@ Scripts in this folder regenerate [`data/game/`](../data/game/) from a local Lor
 npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim"
 
 npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
+
+# Import a single domain (re-scans plugins; uses skip cache)
+npm run import:perks -- --install "D:\Wabbajack\Modlists\Lorerim"
+npm run import:traits -- --install "D:\Wabbajack\Modlists\Lorerim"
+
+# Partial full import (one plugin scan, selected domains)
+npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --only perks,traits
 ```
 
 ## What `import:lorerim` does
+
+`import-lorerim.mjs` is the **parent orchestrator**. It discovers your MO2 install, classifies plugins, scans records **once** into a shared `ImportContext`, then calls domain importers under `importers/`.
+
+| npm script | Domain module | Output |
+|------------|---------------|--------|
+| `import:lorerim` | all domains | full `data/game/` rebuild |
+| `import:perks` | `importers/perks.mjs` | `perks/*.json`, `perk-player-level-reqs.json` |
+| `import:traits` | `importers/traits.mjs` | `traits.json` |
+| `import:races` | `importers/races.mjs` | `races.json`, `race-effects.json` |
+| `import:birthsigns` | `importers/birthsigns.mjs` | `birthsigns.json` |
+| `import:deities` | `importers/deities.mjs` | `deities.json` |
+
+Standalone domain scripts re-scan plugins (same skip cache as the parent). Use `import:lorerim --only <domains>` when you want one scan and a subset of outputs.
 
 `import-lorerim.mjs` reads **Skyrim plugin files** (`.esp` / `.esm`) from your LoreRim install.
 
@@ -57,6 +77,7 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --dry-run
 | `--dry-run` | Parse and print a summary without writing files |
 | `--plugin-limit <n>` | Scan only the first N plugins (debug) |
 | `--rescan-plugins` | Reclassify every plugin; ignore the non-mechanics skip cache |
+| `--only <domains>` | Comma-separated domains for `import:lorerim` only: `perks`, `traits`, `races`, `birthsigns`, `deities`, `manifest` |
 | `--help`, `-h` | Show usage |
 
 ### Runtime
@@ -151,10 +172,28 @@ Character options keep `extension` in `character-options.json` (never overwritte
 
 ```
 tools/import/
-  import-lorerim.mjs       # LoreRim MO2 install → data/game/
-  probe-esp.mjs            # debug: inspect PERK/RACE records in one plugin
-  sync-giga-planner-layout.mjs # regenerate lib/giga-planner-layout.json from data/game/perks
+  import-lorerim.mjs       # parent orchestrator → data/game/
+  import-perks.mjs         # standalone perks import
+  import-traits.mjs        # standalone traits import
+  import-races.mjs         # standalone races import
+  import-birthsigns.mjs    # standalone birthsigns import
+  import-deities.mjs       # standalone deities import
+  sync-perk-trees.mjs      # deprecated — use import:perks
+  importers/
+    perks.mjs              # perk trees + player level reqs
+    traits.mjs
+    races.mjs
+    birthsigns.mjs
+    deities.mjs
+    manifest.mjs
   lib/
+    import-cli.mjs         # shared CLI args and paths
+    import-context.mjs     # buildImportContext (scan + derived indexes)
+    import-io.mjs          # merge domain outputs, write JSON, dry-run diff
+    import-orchestrator.mjs # runDomainImports
+    run-import.mjs         # prepareImportContext, executeDomainImports
+    effects/README.md      # planned SPEL→MGEF effect extraction (phase 2)
+    gear/README.md         # planned gear/enchantment import (phase 3)
     append-missing-perks.mjs # supplemental perk nodes + metadata application
     avif-perk-tree.mjs     # AVIF perk tree parser (player-visible layout)
     avif-perk-membership.mjs # AVIF membership index + planner diff helpers
@@ -169,7 +208,7 @@ tools/import/
     import-reset.mjs       # empty perk shells, hand-tuned overrides, layout preservation, stale file cleanup
     extension-bindings.mjs # perk/option → extension plugin registry (reads data/game/extension-bindings.json)
     lorerim-install.mjs    # MO2 discovery, loadorder.txt, plugin paths
-    lorerim-transform.mjs  # plugin records → planner JSON
+    lorerim-transform.mjs  # backward-compat re-exports from importers/
     lorerim-version.mjs    # modpack version from Wabbajack + install fingerprints
     parse-bonus-effects.mjs # bonus text → structured effects (rule-based)
     parse-trait-body.mjs    # trait spell text → description + bonus
@@ -209,11 +248,12 @@ node tools/import/probe-race-data.mjs "D:/path/to/SomeMod.esp"
 
 ## Tests
 
-Import helpers have co-located `*.test.mjs` files under `lib/`. They use Node's built-in test runner (assert-based scripts discovered by `node --test`).
+Import helpers have co-located `*.test.mjs` files under `lib/` and `importers/`. They use Node's built-in test runner (assert-based scripts discovered by `node --test`).
 
 ```bash
 npm run test:import   # from repo root
 node --test tools/import/lib/parse-trait-body.test.mjs   # single file
+node --test tools/import/importers/importers.test.mjs    # domain importer smoke test
 ```
 
 When adding parsers or merge logic, add or extend tests in the same folder.

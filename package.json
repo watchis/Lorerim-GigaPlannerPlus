@@ -14,6 +14,11 @@
     "test:watch": "vitest",
     "preview": "vite preview",
     "import:lorerim": "node tools/import/import-lorerim.mjs",
+    "import:perks": "node tools/import/import-perks.mjs",
+    "import:traits": "node tools/import/import-traits.mjs",
+    "import:races": "node tools/import/import-races.mjs",
+    "import:birthsigns": "node tools/import/import-birthsigns.mjs",
+    "import:deities": "node tools/import/import-deities.mjs",
     "regen:effects": "node tools/import/lib/regenerate-option-effects.mjs",
     "regen:extension-stub": "node tools/regen-extension-stub.mjs"
   },
