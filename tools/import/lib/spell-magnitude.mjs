@@ -126,6 +126,61 @@ function readSpellFaithEffectEntriesRaw(recordBuffer) {
   return entries;
 }
 
+function normalizeSpellEffectMagnitude(value) {
+  if (value == null || !Number.isFinite(value) || value === 0) return null;
+  return value;
+}
+
+function readSpellEffectEntriesFromSubrecords(subRecords) {
+  const entries = [];
+  let pendingFormId = null;
+
+  for (const sub of subRecords ?? []) {
+    if (sub.type === "EFID") {
+      pendingFormId = readFormIdFromEfidSubrecord(sub);
+      continue;
+    }
+
+    if (sub.type !== "EFIT" || pendingFormId == null) continue;
+
+    const magnitude = normalizeSpellEffectMagnitude(readMagnitudeFromEfitSubrecord(sub));
+    entries.push({ formId: pendingFormId, magnitude });
+    pendingFormId = null;
+  }
+
+  return entries;
+}
+
+function readSpellEffectEntriesRaw(recordBuffer) {
+  const entries = [];
+  let index = 0;
+
+  while (index < recordBuffer.length) {
+    const efidIdx = recordBuffer.indexOf("EFID", index);
+    if (efidIdx === -1) break;
+
+    const efidSize = recordBuffer.readUInt16LE(efidIdx + 4);
+    const efidData = recordBuffer.subarray(efidIdx + 6, efidIdx + 6 + efidSize);
+    const formId = efidData.length >= 4 ? efidData.readUInt32LE(0) : null;
+
+    const efitIdx = recordBuffer.indexOf("EFIT", efidIdx + 4);
+    if (efitIdx === -1) break;
+
+    const efitSize = recordBuffer.readUInt16LE(efitIdx + 4);
+    const efitData = recordBuffer.subarray(efitIdx + 6, efitIdx + 6 + efitSize);
+    const magnitude =
+      efitData.length >= 4
+        ? normalizeSpellEffectMagnitude(efitData.readFloatLE(0))
+        : null;
+
+    if (formId != null) entries.push({ formId, magnitude });
+
+    index = efidIdx + 4;
+  }
+
+  return entries;
+}
+
 /**
  * EFID/EFIT pairs from a SPEL record in effect order.
  */
@@ -141,6 +196,27 @@ export function readSpellFaithEffectEntries(recordBuffer) {
   }
 
   return readSpellFaithEffectEntriesRaw(recordBuffer);
+}
+
+/**
+ * EFID/EFIT pairs preserving signed magnitudes (for trait/race/birthsign effect mapping).
+ */
+export function readSpellEffectEntries(recordBuffer) {
+  let fromSubs = [];
+
+  try {
+    const record = tesData.getRecord(recordBuffer);
+    if (!record.compressed) {
+      fromSubs = readSpellEffectEntriesFromSubrecords(record.subRecords);
+      if (fromSubs.some((entry) => entry.magnitude != null)) return fromSubs;
+    }
+  } catch {
+    // Fall back to raw subrecord scan below.
+  }
+
+  const fromRaw = readSpellEffectEntriesRaw(recordBuffer);
+  if (fromRaw.some((entry) => entry.magnitude != null)) return fromRaw;
+  return fromSubs.length > 0 ? fromSubs : fromRaw;
 }
 
 function readMagnitudeForMgefFormIdFromSubrecords(subRecords, mgefFormId) {

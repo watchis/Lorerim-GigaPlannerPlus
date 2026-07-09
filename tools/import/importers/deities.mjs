@@ -8,7 +8,11 @@ import {
 } from "../lib/deity-eligibility.mjs";
 import { cleanDescription, cleanName, slugify } from "../lib/transform-utils.mjs";
 import { parseBonusEffects } from "../lib/parse-bonus-effects.mjs";
-import { extractFaithEffectsFromPlugins, indexDeityFaithMgef } from "../lib/deity-faith-from-plugins.mjs";
+import {
+  extractFaithEffectsFromPlugins,
+  filterFaithMgefRecords,
+  indexDeityFaithMgef,
+} from "../lib/deity-faith-from-plugins.mjs";
 
 function blessingIdFromName(spellName, altarKey = "") {
   const match = cleanName(spellName).match(/^Blessing of (.+)$/i);
@@ -182,7 +186,7 @@ export async function importDeities(context) {
 
   const deities = transformDeityRecords(
     context.scan.spellRecords,
-    context.scan.wintersunMgefRecords,
+    filterFaithMgefRecords(context.scan.mgefRecords ?? context.scan.wintersunMgefRecords ?? []),
     context.scan.wintersunMesgRecords,
     context.paths.deitiesPath,
     context.scan.altarMagnitudes,
