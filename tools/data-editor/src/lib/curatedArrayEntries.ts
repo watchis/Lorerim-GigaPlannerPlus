@@ -177,7 +177,6 @@ export function buildCuratedArrayEntry(
         description: "",
         bonus: "",
         effects: [],
-        bonusDetails: [],
       };
       return {
         ...template,
@@ -187,7 +186,6 @@ export function buildCuratedArrayEntry(
         description: draftText(draft.description, String(template.description ?? "")),
         bonus: draftText(draft.bonus, String(template.bonus ?? "")),
         effects: Array.isArray(template.effects) ? template.effects : [],
-        bonusDetails: Array.isArray(template.bonusDetails) ? template.bonusDetails : [],
       };
     }
     case "traits": {
@@ -195,7 +193,6 @@ export function buildCuratedArrayEntry(
         description: "",
         bonus: "",
         effects: [],
-        bonusDetails: [],
       };
       return {
         ...template,
@@ -204,7 +201,6 @@ export function buildCuratedArrayEntry(
         description: draftText(draft.description, String(template.description ?? "")),
         bonus: draftText(draft.bonus, String(template.bonus ?? "")),
         effects: Array.isArray(template.effects) ? template.effects : [],
-        bonusDetails: Array.isArray(template.bonusDetails) ? template.bonusDetails : [],
       };
     }
     case "races": {

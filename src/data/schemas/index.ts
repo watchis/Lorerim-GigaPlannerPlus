@@ -247,7 +247,6 @@ export const birthsignSchema = z.object({
   group: z.string(),
   description: z.string(),
   bonus: z.string(),
-  bonusDetails: z.array(z.string()).optional(),
   effects: z.array(effectSchema),
 });
 
@@ -278,7 +277,6 @@ export const traitSchema = z.object({
   name: z.string(),
   description: z.string(),
   bonus: z.string(),
-  bonusDetails: z.array(z.string()).optional(),
   effects: z.array(effectSchema),
 });
 

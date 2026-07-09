@@ -1,9 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseTraitBody } from "./parse-trait-body.mjs";
-import {
-  parseBonusEffects,
-  extractConditionalBonusDetails,
-} from "./parse-bonus-effects.mjs";
+import { parseBonusEffects } from "./parse-bonus-effects.mjs";
 
 function reconstructRaw(trait) {
   if (!trait.bonus) return trait.description;
@@ -21,7 +18,6 @@ for (const trait of traitsData.traits) {
   trait.description = description;
   trait.bonus = bonus;
   trait.effects = parseBonusEffects(bonus);
-  trait.bonusDetails = extractConditionalBonusDetails(bonus, trait.effects);
 }
 
 writeFileSync(traitsPath, `${JSON.stringify(traitsData, null, 2)}\n`);

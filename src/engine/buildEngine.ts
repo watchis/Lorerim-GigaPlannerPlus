@@ -11,7 +11,7 @@ import {
   computeTrackedStats,
   type TrackedStatEntry,
 } from "@/lib/trackedStats";
-import { collectConditionalBonuses, type ConditionalBonusEntry } from "@/lib/conditionalBonuses";
+import { collectBuildBonuses, type BuildBonusEntry } from "@/lib/buildBonuses";
 import {
   clampTrainingRangeCount,
   computeTrainingSkillPointCredit,
@@ -147,7 +147,7 @@ export interface ComputedBuild {
   moveSpeedBonus: number;
   derivedStats: DerivedStatResult[];
   appliedBonuses: AppliedBonusEntry[];
-  conditionalBonuses: ConditionalBonusEntry[];
+  buildBonuses: BuildBonusEntry[];
   skillLevels: Record<string, number>;
   playerLevel: number;
   skillPointsSpent: number;
@@ -1204,7 +1204,7 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     aggregated.derivedStats,
   );
   const appliedBonuses = computeTrackedStats(game, state, sourcedEffects, attributes);
-  const conditionalBonuses = collectConditionalBonuses(game, state);
+  const buildBonuses = collectBuildBonuses(game, state);
   const skillLevels: Record<string, number> = {};
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
@@ -1230,7 +1230,7 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     moveSpeedBonus: race?.speedBonus ?? 0,
     derivedStats,
     appliedBonuses,
-    conditionalBonuses,
+    buildBonuses,
     skillLevels,
     playerLevel: state.playerLevel,
     skillPointsSpent,

@@ -28,7 +28,6 @@ export interface BuildModification {
   source: ModificationSource;
   effects?: Effect[];
   skillLevelGrants?: SkillLevelGrant[];
-  conditionalNotes?: string[];
   plannerNotes?: string[];
 }
 

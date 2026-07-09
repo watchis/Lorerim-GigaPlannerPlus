@@ -1,6 +1,5 @@
 import type { Birthsign, Deity, Effect, Perk, PerkAllocation, Race, Trait } from "@/data/schemas";
 import {
-  extractConditionalBonusDetails,
   mergeEffects,
   parseBonusEffects,
   resolveBonusEffects,
@@ -21,7 +20,6 @@ export function enrichTrait(trait: Trait): Trait {
   return {
     ...trait,
     effects,
-    bonusDetails: extractConditionalBonusDetails(trait.bonus, effects),
   };
 }
 
@@ -30,7 +28,6 @@ export function enrichBirthsign(birthsign: Birthsign): Birthsign {
   return {
     ...birthsign,
     effects,
-    bonusDetails: extractConditionalBonusDetails(birthsign.bonus, effects),
   };
 }
 

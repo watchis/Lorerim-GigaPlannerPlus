@@ -1,9 +1,5 @@
 import assert from "node:assert/strict";
-import {
-  parseBonusEffects,
-  extractConditionalBonusDetails,
-  trimBonusClauses,
-} from "./parse-bonus-effects.mjs";
+import { parseBonusEffects, trimBonusClauses } from "./parse-bonus-effects.mjs";
 
 function assertEffects(actual, expected) {
   assert.equal(actual.length, expected.length, `length ${actual.length} !== ${expected.length}`);
@@ -40,40 +36,6 @@ assertEffects(parseBonusEffects("Gain +200 carryweight. Selling prices are 50% w
   { type: "derivedStat", stat: "carryWeight", value: 200, isPercent: false },
   { type: "derivedStat", stat: "priceModifier", value: -50, isPercent: true },
 ]);
-
-assert.deepEqual(
-  extractConditionalBonusDetails(
-    "Handwear constricts you. Spells are 15% stronger and unarmed attacks do +30 more damage when not wearing gloves/gauntlets. However, they suffer the opposite effect when wearing gloves/gauntlets.",
-    parseBonusEffects(
-      "Spells are 15% stronger and unarmed attacks do +30 more damage when not wearing gloves/gauntlets.",
-    ),
-  ),
-  [
-    "Spells are 15% stronger and unarmed attacks do +30 more damage when not wearing gloves/gauntlets. They suffer the opposite effect when wearing gloves/gauntlets.",
-  ],
-);
-
-assert.deepEqual(
-  extractConditionalBonusDetails(
-    "When your arms are lowered you restore 2 magicka and stamina per second. However, raising your hands in combat will have the opposite effect. Those born under the sign of the Atronach only restore 1 but still drain 2.",
-    [],
-  ),
-  [
-    "When your arms are lowered you restore 2 magicka and stamina per second. Raising your hands in combat will have the opposite effect.",
-    "Those born under the sign of the Atronach only restore 1 but still drain 2.",
-  ],
-);
-
-assert.deepEqual(
-  extractConditionalBonusDetails(
-    "You can have 1 additional summon or undead thrall. However, the duration of summon and resurrecting spells is reduced by 33%.",
-    [],
-  ),
-  [
-    "You can have 1 additional summon or undead thrall.",
-    "The duration of summon and resurrecting spells is reduced by 33%.",
-  ],
-);
 
 assert.deepEqual(trimBonusClauses("However, the duration of summon and resurrecting spells is reduced by 33%."), [
   "The duration of summon and resurrecting spells is reduced by 33%.",
@@ -170,28 +132,6 @@ assertEffects(
 assertEffects(parseBonusEffects("Magicka increases by 150. Spells are 30% stronger and longer lasting when over 50% magicka."), [
   { type: "attribute", stat: "magicka", value: 150 },
 ]);
-
-assert.deepEqual(
-  extractConditionalBonusDetails(
-    "Magicka increases by 150. Spells are 30% stronger and longer lasting when over 50% magicka.",
-    parseBonusEffects("Magicka increases by 150. Spells are 30% stronger and longer lasting when over 50% magicka."),
-  ),
-  ["Spells are 30% stronger and longer lasting when over 50% magicka."],
-);
-
-assert.deepEqual(
-  extractConditionalBonusDetails(
-    "Pickpocketing is 50% easier, you are 40% harder to detect, move 20% faster when sneaking and can sneak without proficiency, 20% chance to avoid physical damage, 1% chance to take 50% more.",
-    parseBonusEffects(
-      "Pickpocketing is 50% easier, you are 40% harder to detect, move 20% faster when sneaking and can sneak without proficiency, 20% chance to avoid physical damage, 1% chance to take 50% more.",
-    ),
-  ),
-  [
-    "Pickpocketing is 50% easier.",
-    "Move 20% faster when sneaking and can sneak without proficiency.",
-    "1% chance to take 50% more.",
-  ],
-);
 
 assertEffects(
   parseBonusEffects("Increases magic resistance by 30%."),
@@ -458,15 +398,5 @@ assertEffects(parseBonusEffects("Start with 50 less Health, Magicka and Stamina.
 assertEffects(parseBonusEffects("However, you start with 100 less Magicka."), [
   { type: "attribute", stat: "magicka", value: -100 },
 ]);
-
-assert.deepEqual(
-  extractConditionalBonusDetails(
-    "For every 5 book or notes read, gain 1 point of Magicka, for up to 300 Magicka at 1500 read. However, you start with 100 less Magicka.",
-    parseBonusEffects(
-      "For every 5 book or notes read, gain 1 point of Magicka, for up to 300 Magicka at 1500 read. However, you start with 100 less Magicka.",
-    ),
-  ),
-  ["For every 5 book or notes read.", "For up to 300 Magicka at 1500 read."],
-);
 
 console.log("parse-bonus-effects: ok");

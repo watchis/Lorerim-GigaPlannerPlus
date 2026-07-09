@@ -57,7 +57,7 @@ assert.equal(
   shouldUsePluginEffects(
     "When at less than 50% health, you move 20% faster and regenerate 1 stamina per second.",
   ),
-  false,
+  true,
 );
 
 assert.equal(

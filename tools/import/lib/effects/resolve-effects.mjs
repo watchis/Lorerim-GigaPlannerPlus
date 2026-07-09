@@ -18,8 +18,7 @@ function resolveHybridEffects({ bonusText, spellRecords, mgefIndex, mastersByPat
 }
 
 /**
- * Hybrid resolver: unconditional bonus prose is authoritative; plugin effects only fill gaps
- * when text is empty and non-conditional.
+ * Hybrid resolver: text-parsed effects are authoritative when present; plugin effects fill gaps otherwise.
  *
  * @param {object} params
  * @param {string} [params.bonusText]
