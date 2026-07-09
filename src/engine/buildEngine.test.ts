@@ -29,6 +29,7 @@ import {
   removePerk,
   tryTakePerk,
   areBuildStatesEqual,
+  migrateBuildState,
 } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 
@@ -734,5 +735,33 @@ describe("areBuildStatesEqual", () => {
         oghmaSkillIds: ["smithing"],
       }),
     ).toBe(false);
+  });
+});
+
+describe("migrateBuildState", () => {
+  it("migrates legacy blessingId to deityId", () => {
+    const build = createTestBuildState({ deityId: "none" });
+    const legacy = { ...build, blessingId: "arkay" };
+
+    const migrated = migrateBuildState(legacy);
+    expect(migrated.deityId).toBe("arkay");
+    expect(migrated).not.toHaveProperty("blessingId");
+  });
+
+  it("maps null blessingId to deityId none", () => {
+    const build = createTestBuildState({ deityId: "arkay" });
+    const legacy = { ...build, blessingId: null };
+
+    const migrated = migrateBuildState(legacy);
+    expect(migrated.deityId).toBe("none");
+  });
+
+  it("defaults oghmaSkillIds when missing", () => {
+    const build = createTestBuildState();
+    const legacy = { ...build };
+    delete (legacy as { oghmaSkillIds?: string[] }).oghmaSkillIds;
+
+    const migrated = migrateBuildState(legacy);
+    expect(migrated.oghmaSkillIds).toEqual([]);
   });
 });
