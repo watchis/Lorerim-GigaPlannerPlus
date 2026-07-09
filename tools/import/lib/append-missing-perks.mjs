@@ -10,7 +10,11 @@ import {
 } from "./perk-import-filter.mjs";
 import { classifyPerkTreeSkill, isAllocatablePerkSkill } from "./perk-skill-classifier.mjs";
 import { cleanDescription, cleanName, slugify } from "./transform-utils.mjs";
-import { loadExtensionBindings, resolvePerkExtension } from "./extension-bindings.mjs";
+import {
+  loadExtensionBindings,
+  defaultExtensionBindingsPath,
+  resolvePerkExtension,
+} from "./extension-bindings.mjs";
 import { parseBonusEffects } from "./parse-bonus-effects.mjs";
 import { applyPerkMetadata, stackRankFromPerkId } from "./perk-tree-metadata.mjs";
 import { applyGigaPlannerTreeLayout } from "./giga-planner-layout.mjs";
@@ -521,8 +525,9 @@ export function appendMissingPerkNodes(
   metadataIndex = null,
   membership = null,
   perkRecords = null,
+  bindingsPath = defaultExtensionBindingsPath(),
 ) {
-  const extensionBindings = loadExtensionBindings();
+  const extensionBindings = loadExtensionBindings(bindingsPath);
   const plannerNamesBySkill = buildPlannerCanonicalNamesBySkill(trees);
   const added = [];
 

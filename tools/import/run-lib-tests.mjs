@@ -3,15 +3,22 @@ import { readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const libDir = join(dirname(fileURLToPath(import.meta.url)), "lib");
-const names = await readdir(libDir);
-const testFiles = names
-  .filter((name) => name.endsWith(".test.mjs"))
-  .sort()
-  .map((name) => join(libDir, name));
+const importRoot = dirname(fileURLToPath(import.meta.url));
+const testDirs = [join(importRoot, "lib"), join(importRoot, "importers")];
+
+const testFiles = [];
+for (const dir of testDirs) {
+  const names = await readdir(dir);
+  testFiles.push(
+    ...names
+      .filter((name) => name.endsWith(".test.mjs"))
+      .sort()
+      .map((name) => join(dir, name)),
+  );
+}
 
 if (testFiles.length === 0) {
-  console.error(`No import tests found in ${libDir}`);
+  console.error(`No import tests found in ${testDirs.join(", ")}`);
   process.exit(1);
 }
 

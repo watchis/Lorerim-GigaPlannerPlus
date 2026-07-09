@@ -296,10 +296,13 @@ export function applyPerkGraphSnapshots(trees, snapshots) {
       if (saved.extension) {
         perk.extension = saved.extension;
         perk.effects = saved.effects?.length ? saved.effects : [];
+        if (saved.allocation) {
+          perk.allocation = { ...saved.allocation };
+        }
       } else if (saved.effects?.length) {
         perk.effects = saved.effects;
       }
-      // Extension-bound perks take allocation from extension-bindings.json (applied after snapshots).
+      // Extension-bound perks take allocation from extension-bindings.json when present.
       if (saved.allocation && !saved.extension) {
         perk.allocation = saved.allocation;
       }
