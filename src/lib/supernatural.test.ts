@@ -3,6 +3,7 @@ import { collectBuildChanges } from "@/lib/buildModifications";
 import { getCharacterOptionSummaryLines } from "@/lib/characterOptions";
 import {
   applySupernaturalOptionChange,
+  getActiveSupernaturalSkillId,
   getVampireRacialBonus,
   hasSupernaturalCurse,
   isSupernaturalOptionBlocked,
@@ -18,7 +19,7 @@ import {
   WEREWOLF_OPTION_ID,
   WEREWOLF_SKILL_ID,
 } from "@/lib/supernatural";
-import { canSelectTrait, reconcileBuild } from "@/engine/buildEngine";
+import { canSelectTrait, computeBuild, reconcileBuild } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 
 describe("supernatural", () => {
@@ -67,6 +68,42 @@ describe("supernatural", () => {
     );
 
     expect(summaryLines).toEqual([{ key: "vampire-racial", text: "Preserved Blood" }]);
+  });
+
+  it("applies werewolf disease immunity and strong stomach effects", () => {
+    const state = createTestBuildState({
+      raceId: "none",
+      characterOptionChoices: { [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+    });
+    const computed = computeBuild(game, state);
+    const diseaseImmunity = computed.appliedBonuses.find((entry) => entry.id === "diseaseImmunity");
+    const strongStomach = computed.appliedBonuses.find((entry) => entry.id === "strongStomach");
+    const collected = collectBuildChanges(game, state);
+    const werewolfDiseaseEffect = collected.sourcedEffects.find(
+      (entry) =>
+        entry.labelKey === "werewolfOption" &&
+        entry.effect.type === "derivedStat" &&
+        entry.effect.stat === "diseaseResist",
+    );
+
+    expect(werewolfDiseaseEffect?.effect).toMatchObject({
+      type: "derivedStat",
+      stat: "diseaseResist",
+      value: 1000,
+    });
+    expect(diseaseImmunity).toBeTruthy();
+    expect(strongStomach).toBeTruthy();
+  });
+
+  it("resolves the active supernatural skill tree id for setup placement", () => {
+    expect(
+      getActiveSupernaturalSkillId(
+        createTestBuildState({
+          characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+        }),
+      ),
+    ).toBe("vampire");
+    expect(getActiveSupernaturalSkillId(createTestBuildState())).toBeNull();
   });
 
   it("selecting werewolf clears vampire perks and blocks the vampire option", () => {

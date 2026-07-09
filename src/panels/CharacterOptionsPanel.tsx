@@ -17,8 +17,8 @@ import { SupernaturalOptionsSection } from "@/components/character-options/Super
 import { OghmaSkillsPickerPanel } from "@/components/character-options/OghmaSkillsPickerPanel";
 import type { CharacterOption } from "@/data/schemas";
 import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
-import { VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
 import { getSupernaturalThemeVariant } from "@/lib/supernaturalTheme";
+import { VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
 import {
   getCharacterOptionSummaryLines,
   getSelectedCharacterOptionChoice,
@@ -321,6 +321,13 @@ export function CharacterOptionsPanel() {
     );
   });
 
+  const curseSubtitle =
+    supernaturalVariant === "vampire"
+      ? (labels.supernaturalVampireActive ?? "Vampiric theme active")
+      : supernaturalVariant === "werewolf"
+        ? (labels.supernaturalWerewolfActive ?? "Lycanthropic theme active")
+        : undefined;
+
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <WorkspacePanelHeader
@@ -329,7 +336,7 @@ export function CharacterOptionsPanel() {
           onClick: closeCharacterOptions,
         }}
         title={labels.title ?? "Character Options"}
-        subtitle={labels.subtitle}
+        subtitle={curseSubtitle ?? labels.subtitle}
       />
       <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
         <ScrollArea className="h-full">

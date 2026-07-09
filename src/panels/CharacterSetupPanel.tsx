@@ -2,17 +2,17 @@ import type { KeyboardEvent } from "react";
 import { ChevronRight, Moon, Settings, X } from "lucide-react";
 import { AttributesAllocator } from "@/components/AttributesAllocator";
 import { DestinyTreeSection } from "@/components/DestinyTreeSection";
-import { SupernaturalTreeSection } from "@/components/SupernaturalTreeSection";
+import { ActiveSupernaturalTreeSection } from "@/components/ActiveSupernaturalTreeSection";
 import { SkillIcon } from "@/components/SkillIcon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getTraitLimit } from "@/engine/buildEngine";
 import {
+  getVampireRacialBonus,
+  getWerewolfRacialBonus,
   isVampireActive,
   isWerewolfActive,
-  VAMPIRE_SKILL_ID,
-  WEREWOLF_SKILL_ID,
 } from "@/lib/supernatural";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
@@ -237,6 +237,11 @@ export function CharacterSetupPanel() {
       : null;
   const vampireActive = isVampireActive(build);
   const werewolfActive = isWerewolfActive(build);
+  const activeCurseRacialBonus = vampireActive
+    ? getVampireRacialBonus(game, build)
+    : werewolfActive
+      ? getWerewolfRacialBonus(game, build)
+      : undefined;
 
   const selectedTraitItems = build.traitIds.map((id) => ({
     id,
@@ -313,7 +318,17 @@ export function CharacterSetupPanel() {
             onOpen={() => toggleSetupPicker("race")}
             selectedItems={
               selectedRaceName && build.raceId
-                ? [{ id: build.raceId, label: selectedRaceName }]
+                ? [
+                    { id: build.raceId, label: selectedRaceName },
+                    ...(activeCurseRacialBonus
+                      ? [
+                          {
+                            id: `${build.raceId}-curse-racial`,
+                            label: activeCurseRacialBonus.name,
+                          },
+                        ]
+                      : []),
+                  ]
                 : []
             }
             onRemove={() => setRace("none")}
@@ -346,6 +361,19 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
         </div>
+        {(vampireActive || werewolfActive) && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.04] px-2.5 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+              {vampireActive ? (labels.vampireTree ?? "Vampire") : (labels.werewolfTree ?? "Werewolf")}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
+              {activeCurseRacialBonus
+                ? `${labels.supernaturalRaceAbility ?? "Racial ability"}: ${activeCurseRacialBonus.name}`
+                : (labels.selectRaceForRacialAbility ??
+                  "Select a race to see your racial curse ability.")}
+            </p>
+          </div>
+        )}
         <div
           className={cn(
             "border-y border-[var(--color-border)]/70",
@@ -392,16 +420,7 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
         </div>
-        <SupernaturalTreeSection
-          skillId={VAMPIRE_SKILL_ID}
-          label={labels.vampireTree ?? "Vampire"}
-          isActive={vampireActive}
-        />
-        <SupernaturalTreeSection
-          skillId={WEREWOLF_SKILL_ID}
-          label={labels.werewolfTree ?? "Werewolf"}
-          isActive={werewolfActive}
-        />
+        <ActiveSupernaturalTreeSection />
         <DestinyTreeSection />
       </CardContent>
     </Card>

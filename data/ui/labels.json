@@ -127,6 +127,9 @@
       "werewolfTree": "Werewolf",
       "racialBonus": "Racial ability",
       "detriments": "Detriments",
+      "supernaturalRaceAbility": "Racial ability",
+      "traitBlockedByCurse": "This trait cannot be taken while vampiric or lycanthropic.",
+      "selectRaceForRacialAbility": "Select a race to see your racial curse ability.",
       "attributes": "Attributes",
       "traits": "Traits",
       "majorSkills": "Major Skills",
@@ -205,7 +208,9 @@
       "supernaturalSectionDescription": "Vampirism and lycanthropy are mutually exclusive. Activating one unlocks its perk tree in Character Setup and shifts the planner theme.",
       "playthroughSectionTitle": "Playthrough rewards",
       "curseActiveBadge": "Active",
-      "selectRaceForRacialAbility": "Select a race in Character Setup to see your racial curse ability."
+      "selectRaceForRacialAbility": "Select a race in Character Setup to see your racial curse ability.",
+      "supernaturalVampireActive": "Vampiric curse active — planner theme and racial abilities apply.",
+      "supernaturalWerewolfActive": "Lycanthropic curse active — planner theme and racial abilities apply."
     },
     "attributes": {
       "title": "Attributes",
