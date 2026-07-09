@@ -9,7 +9,6 @@
     {
       "id": "speech-haggling",
       "name": "Haggling",
-      "extension": "speech-haggling",
       "skillReq": 0,
       "position": {
         "x": 20,
@@ -18,7 +17,8 @@
       "prerequisites": [],
       "description": "You've learned how to deal with Skyrim's greedy merchants Prices are 1% better per level in speech.",
       "effects": [],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "extension": "speech-haggling"
     },
     {
       "id": "speech-merchant",

@@ -176,7 +176,6 @@
     {
       "id": "enchanting-artifact-enchanter",
       "name": "Artifact Enchanter",
-      "extension": "enchanting-artifact-enchanter",
       "skillReq": 100,
       "position": {
         "x": 9,
@@ -187,7 +186,12 @@
       ],
       "description": "With great skill and dedication, you get a chance to enchant an item with extraordinary strength. [enchant one item with twice the strength, can place three enchantments with 50% strength each]",
       "effects": [],
-      "prerequisitesAny": []
+      "prerequisitesAny": [],
+      "extension": "enchanting-artifact-enchanter",
+      "allocation": {
+        "kind": "perkPointsBudget",
+        "totalLabel": "infinity"
+      }
     },
     {
       "id": "enchanting-arcane-artificery",
