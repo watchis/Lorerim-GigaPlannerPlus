@@ -1910,8 +1910,12 @@ export function migrateBuildState(
   };
 
   if ("blessingId" in build && build.blessingId !== undefined) {
-    const { blessingId, ...rest } = withOghma;
-    return { ...rest, deityId: blessingId ?? "none" };
+    const { blessingId, ...rest } = build;
+    return {
+      ...rest,
+      oghmaSkillIds: build.oghmaSkillIds ?? [],
+      deityId: blessingId ?? "none",
+    };
   }
 
   return withOghma;
