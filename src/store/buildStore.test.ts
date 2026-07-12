@@ -370,16 +370,29 @@ describe("buildStore supernatural character options", () => {
     });
   });
 
-  it("activates vampire with stage selection and strips conflicting werewolf perks", () => {
+  it("activates vampire with stage selection and strips conflicting werewolf perks", async () => {
     useBuildStore.getState().setCharacterOptionChoice("werewolf", "claimed");
     useBuildStore.getState().togglePerk("werewolf-animal-vigor");
 
     useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-3");
+    await Promise.resolve();
 
     const state = useBuildStore.getState();
     expect(state.build.characterOptionChoices.vampire).toBe("stage-3");
     expect(state.build.characterOptionChoices.werewolf).toBe("none");
     expect(state.build.selectedPerkIds).not.toContain("werewolf-animal-vigor");
     expect(state.computed).not.toBeNull();
+  });
+
+  it("updates computed after vampire hunger stage change without full reconcile churn", async () => {
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-1");
+    await Promise.resolve();
+
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-4");
+    await Promise.resolve();
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.vampire).toBe("stage-4");
+    expect(state.computed?.attributes.health).toBeGreaterThan(0);
   });
 });

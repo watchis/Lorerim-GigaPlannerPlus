@@ -12,6 +12,7 @@ import {
   isSupernaturalOptionBlocked,
   isTraitBlockedBySupernatural,
   isVampireActive,
+  isVampireStageOnlyChange,
   isWerewolfActive,
   migrateLegacySupernaturalBuild,
   normalizeSupernaturalState,
@@ -71,6 +72,22 @@ describe("supernatural", () => {
 
     expect(stage1Health?.effect.value).toBe(50);
     expect(stage4Health?.effect.value).toBe(100);
+  });
+
+  it("detects vampire hunger stage-only changes", () => {
+    const vampireBuild = applySupernaturalOptionChange(
+      game,
+      createTestBuildState(),
+      VAMPIRE_OPTION_ID,
+      "stage-2",
+    );
+
+    expect(isVampireStageOnlyChange(vampireBuild, VAMPIRE_OPTION_ID, "stage-3")).toBe(true);
+    expect(isVampireStageOnlyChange(vampireBuild, VAMPIRE_OPTION_ID, "none")).toBe(false);
+    expect(isVampireStageOnlyChange(vampireBuild, WEREWOLF_OPTION_ID, "claimed")).toBe(false);
+    expect(
+      isVampireStageOnlyChange(createTestBuildState(), VAMPIRE_OPTION_ID, "stage-1"),
+    ).toBe(false);
   });
 
   it("looks up racial curse abilities by race id for picker preview", () => {

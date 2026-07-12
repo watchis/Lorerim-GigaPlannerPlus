@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import type { AppData } from "@/data/schemas";
 import {
   allocatePerk as allocatePerkInBuild,
@@ -62,10 +62,42 @@ import { isOghmaInfiniumActive } from "@/lib/oghmaInfinium";
 import {
   applySupernaturalOptionChange,
   isSupernaturalOptionId,
+  isVampireStageOnlyChange,
 } from "@/lib/supernatural";
+import { createDebouncedPersistStorage } from "@/store/debouncedPersistStorage";
 
 function recompute(data: AppData, build: BuildState): ComputedBuild {
   return computeBuild(data.game, build);
+}
+
+let deferredComputeToken = 0;
+
+function commitBuildDeferred(
+  set: (partial: Partial<BuildStore>) => void,
+  get: () => BuildStore,
+  nextBuild: BuildState,
+): void {
+  const { gameData, savedBuilds, activeBuildId } = get();
+  if (!gameData) return;
+
+  const token = ++deferredComputeToken;
+
+  set({
+    build: nextBuild,
+    savedBuilds: updateSavedBuildInList(
+      savedBuilds,
+      activeBuildId,
+      nextBuild,
+      gameData.game.manifest.version,
+    ),
+  });
+
+  queueMicrotask(() => {
+    if (token !== deferredComputeToken) return;
+    const current = get();
+    if (current.build !== nextBuild) return;
+    set({ computed: recompute(gameData, nextBuild) });
+  });
 }
 
 function syncActiveEntryBuild(
@@ -325,15 +357,27 @@ export const useBuildStore = create<BuildStore>()(
           const option = gameData.game.characterOptions.find((entry) => entry.id === optionId);
           if (!option || !option.choices.some((choice) => choice.id === choiceId)) return;
 
-          const withChoice = isSupernaturalOptionId(optionId)
-            ? applySupernaturalOptionChange(gameData.game, build, optionId, choiceId)
-            : {
-                ...build,
-                characterOptionChoices: {
-                  ...build.characterOptionChoices,
-                  [optionId]: choiceId,
-                },
-              };
+          if (isSupernaturalOptionId(optionId)) {
+            const withChoice = applySupernaturalOptionChange(
+              gameData.game,
+              build,
+              optionId,
+              choiceId,
+            );
+            const nextBuild = isVampireStageOnlyChange(build, optionId, choiceId)
+              ? withChoice
+              : reconcileBuild(gameData.game, withChoice);
+            commitBuildDeferred(set, get, nextBuild);
+            return;
+          }
+
+          const withChoice = {
+            ...build,
+            characterOptionChoices: {
+              ...build.characterOptionChoices,
+              [optionId]: choiceId,
+            },
+          };
 
           const preserved = preserveSkillPointAllocations(gameData.game, build, withChoice);
           const leveled = ensurePlayerLevelForBuild(gameData.game, preserved, {
@@ -1104,6 +1148,11 @@ export const useBuildStore = create<BuildStore>()(
     },
     {
       name: LIBRARY_STORAGE_KEY,
+      storage: createJSONStorage(() =>
+        import.meta.env.VITEST
+          ? localStorage
+          : createDebouncedPersistStorage(localStorage),
+      ),
       partialize: (state) => ({
         build: state.build,
         savedBuilds: state.savedBuilds,

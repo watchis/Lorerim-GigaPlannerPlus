@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { PerkTreeMiniView } from "@/components/PerkTreeMiniView";
 import { SkillIcon } from "@/components/SkillIcon";
 import { getBuildPlayerLevelWarnings } from "@/engine/buildEngine";
+import { useDeferredRender } from "@/hooks/useDeferredRender";
 import { cn } from "@/lib/utils";
 import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
 import { useGoToSwipePane } from "@/layout/PlannerSwipePanels";
@@ -55,6 +56,7 @@ export function SupernaturalTreeSection({
     () => getPerkSearchPositionKeysForTree(tree, perkSearchTokens),
     [tree, perkSearchTokens],
   );
+  const showMiniTree = useDeferredRender(isActive);
 
   return (
     <div className="border-t border-[var(--color-border)]/70 pt-3">
@@ -92,13 +94,20 @@ export function SupernaturalTreeSection({
           </span>
         </div>
         <div className="flex aspect-square min-h-0 w-full items-center justify-center overflow-hidden p-px">
-          <PerkTreeMiniView
-            tree={tree}
-            compact
-            conflictPerkIds={conflictPerkIds}
-            searchPerkPositionKeys={perkSearchPositionKeys}
-            className="h-full w-full"
-          />
+          {showMiniTree ? (
+            <PerkTreeMiniView
+              tree={tree}
+              compact
+              conflictPerkIds={conflictPerkIds}
+              searchPerkPositionKeys={perkSearchPositionKeys}
+              className="h-full w-full"
+            />
+          ) : (
+            <div
+              className="h-full w-full rounded-[var(--radius-sm)] bg-[var(--color-surface-elevated)]/20"
+              aria-hidden
+            />
+          )}
         </div>
       </button>
     </div>

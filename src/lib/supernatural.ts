@@ -23,6 +23,19 @@ export function isSupernaturalOptionId(optionId: string): boolean {
   return SUPERNATURAL_OPTION_IDS.includes(optionId as (typeof SUPERNATURAL_OPTION_IDS)[number]);
 }
 
+/** Vampire hunger stage change while the curse is already active (no perk/trait/floor churn). */
+export function isVampireStageOnlyChange(
+  build: BuildState,
+  optionId: string,
+  choiceId: string,
+): boolean {
+  return (
+    optionId === VAMPIRE_OPTION_ID &&
+    isVampireActive(build) &&
+    isVampireStageId(choiceId)
+  );
+}
+
 export function getVampireChoiceId(state: BuildState): string {
   return state.characterOptionChoices[VAMPIRE_OPTION_ID] ?? "none";
 }
