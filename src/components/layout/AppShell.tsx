@@ -72,7 +72,7 @@ export function AppShell() {
               <svg
                 viewBox="0 0 32 32"
                 fill="none"
-                className="h-10 w-10 text-[var(--color-accent)] drop-shadow-[0_0_4px_rgba(201,162,39,0.15)]"
+                className="h-10 w-10 text-[var(--color-accent)] drop-shadow-[0_0_4px_color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
                 aria-hidden
               >
                 <path

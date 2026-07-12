@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import type { Labels, Theme } from "@/data/schemas";
 import type { SupernaturalThemeVariant } from "@/lib/supernaturalTheme";
+import { animateThemeColors, lerpThemeColor, toThemeCssVarName } from "@/theme/animateThemeColors";
 import { scheduleThemeTransitionsReady } from "@/theme/themeTransition";
 
 interface ThemeContextValue {
@@ -11,10 +12,6 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function toCssVarName(key: string): string {
-  return `--color-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
-}
-
 interface ThemeProviderProps {
   theme: Theme;
   labels: Labels;
@@ -22,7 +19,7 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
-function applyThemeToRoot(
+export function applyThemeToRoot(
   root: HTMLElement,
   theme: Theme,
   supernaturalVariant: SupernaturalThemeVariant | null,
@@ -36,7 +33,7 @@ function applyThemeToRoot(
   }
 
   for (const [key, value] of Object.entries(theme.colors)) {
-    root.style.setProperty(toCssVarName(key), value);
+    root.style.setProperty(toThemeCssVarName(key), value);
   }
 
   root.style.setProperty("--font-heading", theme.fonts.heading);
@@ -51,6 +48,10 @@ function applyThemeToRoot(
   }
 }
 
+function prefersReducedThemeMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 export function ThemeProvider({
   theme,
   labels,
@@ -58,15 +59,53 @@ export function ThemeProvider({
   children,
 }: ThemeProviderProps) {
   const hasAppliedTheme = useRef(false);
+  const appliedColorsRef = useRef<Record<string, string>>({});
+  const cancelAnimationRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => cancelAnimationRef.current?.(), []);
 
   useEffect(() => {
     const root = document.documentElement;
-    applyThemeToRoot(root, theme, supernaturalVariant);
 
     if (!hasAppliedTheme.current) {
+      applyThemeToRoot(root, theme, supernaturalVariant);
+      appliedColorsRef.current = { ...theme.colors };
       hasAppliedTheme.current = true;
       scheduleThemeTransitionsReady(root);
+      return;
     }
+
+    cancelAnimationRef.current?.();
+    cancelAnimationRef.current = null;
+
+    const fromColors = { ...appliedColorsRef.current };
+    const toColors = { ...theme.colors };
+    const canAnimate =
+      !prefersReducedThemeMotion() && root.classList.contains("theme-transitions-ready");
+
+    if (!canAnimate) {
+      applyThemeToRoot(root, theme, supernaturalVariant);
+      appliedColorsRef.current = toColors;
+      return;
+    }
+
+    root.dataset.theme = theme.mode;
+    if (supernaturalVariant) {
+      root.dataset.supernaturalTheme = supernaturalVariant;
+    } else {
+      delete root.dataset.supernaturalTheme;
+    }
+
+    cancelAnimationRef.current = animateThemeColors(root, fromColors, toColors, {
+      onFrame: (frameColors) => {
+        appliedColorsRef.current = frameColors;
+      },
+      onComplete: () => {
+        applyThemeToRoot(root, theme, supernaturalVariant);
+        appliedColorsRef.current = toColors;
+        cancelAnimationRef.current = null;
+      },
+    });
   }, [theme, supernaturalVariant]);
 
   return (
