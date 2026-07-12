@@ -29,7 +29,11 @@ describe("applyUrlBuildImport", () => {
 
     const importSharedBuild = vi.fn();
 
-    expect(applyUrlBuildImport(game, importSharedBuild)).toBe("imported");
+    const result = applyUrlBuildImport(game, importSharedBuild);
+    expect(result.status).toBe("imported");
+    if (result.status === "imported") {
+      expect(result.versionMismatch).toBeNull();
+    }
     expect(importSharedBuild).toHaveBeenCalledOnce();
 
     const nextUrl = replaceState.mock.calls.at(-1)?.[2] as string;
@@ -47,15 +51,22 @@ describe("applyUrlBuildImport", () => {
 
     const importSharedBuild = vi.fn();
 
-    expect(applyUrlBuildImport(game, importSharedBuild)).toBe("imported");
+    const result = applyUrlBuildImport(game, importSharedBuild);
+    expect(result.status).toBe("imported");
+    if (result.status === "imported") {
+      expect(result.versionMismatch).toEqual({
+        level: "warning",
+        sourceVersion: "5.0.3.6",
+        currentVersion: game.manifest.version,
+      });
+    }
     expect(importSharedBuild).toHaveBeenCalledOnce();
-    expect(importSharedBuild.mock.calls[0]?.[0]?.sourceModpackVersion).toBe("5.0.3.6");
   });
 
   it("skips when the URL has no build parameter", () => {
     const importSharedBuild = vi.fn();
 
-    expect(applyUrlBuildImport(game, importSharedBuild)).toBe("skipped-no-build");
+    expect(applyUrlBuildImport(game, importSharedBuild)).toEqual({ status: "skipped-no-build" });
     expect(importSharedBuild).not.toHaveBeenCalled();
   });
 
@@ -63,7 +74,7 @@ describe("applyUrlBuildImport", () => {
     window.history.pushState({}, "", "/Lorerim-GigaPlannerPlus/planner?build=not-a-valid-code");
     const importSharedBuild = vi.fn();
 
-    expect(applyUrlBuildImport(game, importSharedBuild)).toBe("skipped-invalid");
+    expect(applyUrlBuildImport(game, importSharedBuild)).toEqual({ status: "skipped-invalid" });
     expect(importSharedBuild).not.toHaveBeenCalled();
   });
 });

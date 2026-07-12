@@ -5,24 +5,38 @@ import {
   getBuildFromUrl,
   type DecodedBuildPackage,
 } from "@/engine/buildCodec";
+import {
+  getImportedBuildVersionMismatch,
+  type ImportedBuildVersionMismatch,
+} from "@/lib/modpackVersion";
 
 export type ApplyUrlBuildImportResult =
-  | "imported"
-  | "skipped-no-build"
-  | "skipped-invalid";
+  | { status: "skipped-no-build" }
+  | { status: "skipped-invalid" }
+  | {
+      status: "imported";
+      versionMismatch: ImportedBuildVersionMismatch | null;
+    };
 
 export function applyUrlBuildImport(
   game: GameData,
   importSharedBuild: (decoded: DecodedBuildPackage) => void,
 ): ApplyUrlBuildImportResult {
   const urlBuild = getBuildFromUrl();
-  if (!urlBuild) return "skipped-no-build";
+  if (!urlBuild) return { status: "skipped-no-build" };
 
   try {
-    importSharedBuild(decodeBuildPackage(urlBuild, game));
+    const decoded = decodeBuildPackage(urlBuild, game);
+    importSharedBuild(decoded);
     clearBuildFromUrl();
-    return "imported";
+    return {
+      status: "imported",
+      versionMismatch: getImportedBuildVersionMismatch(
+        decoded.sourceModpackVersion,
+        game.manifest.version,
+      ),
+    };
   } catch {
-    return "skipped-invalid";
+    return { status: "skipped-invalid" };
   }
 }
