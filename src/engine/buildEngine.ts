@@ -11,7 +11,7 @@ import {
   computeTrackedStats,
   type TrackedStatEntry,
 } from "@/lib/trackedStats";
-import { collectConditionalBonuses, type ConditionalBonusEntry } from "@/lib/conditionalBonuses";
+import type { ConditionalBonusEntry } from "@/lib/conditionalBonuses";
 import {
   clampTrainingRangeCount,
   computeTrainingSkillPointCredit,
@@ -1274,7 +1274,6 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     aggregated.derivedStats,
   );
   const appliedBonuses = computeTrackedStats(game, state, sourcedEffects, attributes);
-  const conditionalBonuses = collectConditionalBonuses(game, state);
   const skillLevels: Record<string, number> = {};
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
@@ -1300,7 +1299,7 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     moveSpeedBonus: race?.speedBonus ?? 0,
     derivedStats,
     appliedBonuses,
-    conditionalBonuses,
+    conditionalBonuses: [],
     skillLevels,
     playerLevel: state.playerLevel,
     skillPointsSpent,
@@ -1700,10 +1699,10 @@ export function tryTakePerk(game: GameData, build: BuildState, perkId: string): 
   if (build.selectedPerkIds.includes(targetId) && !isStackable) return null;
   if (!canSelectPerk(game, build, targetId)) return null;
 
-  return reconcileBuild(game, {
+  return {
     ...build,
     selectedPerkIds: [...build.selectedPerkIds, targetId],
-  });
+  };
 }
 
 function getSelectedIdsAfterRemoval(

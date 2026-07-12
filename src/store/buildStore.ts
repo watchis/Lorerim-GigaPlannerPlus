@@ -220,8 +220,17 @@ function commitBuild(
 
   const modpackVersion = gameData.game.manifest.version;
   const token = ++deferredCommitToken;
+  const computed = recompute(gameData, nextBuild);
 
-  const applyDerived = () => {
+  const applyCommit = () => set({ build: nextBuild, computed });
+
+  if (options?.deferDerived) {
+    startTransition(applyCommit);
+  } else {
+    startTransition(applyCommit);
+  }
+
+  scheduleAfterPaint(() => {
     if (token !== deferredCommitToken) return;
     const current = get();
     if (current.build !== nextBuild) return;
@@ -233,20 +242,8 @@ function commitBuild(
         nextBuild,
         modpackVersion,
       ),
-      computed: recompute(gameData, nextBuild),
     });
-  };
-
-  const applyBuild = () => set({ build: nextBuild });
-
-  if (options?.deferDerived) {
-    startTransition(applyBuild);
-    scheduleAfterPaint(applyDerived);
-    return;
-  }
-
-  startTransition(applyBuild);
-  scheduleAfterPaint(applyDerived);
+  });
 }
 
 function commitMainBuild(

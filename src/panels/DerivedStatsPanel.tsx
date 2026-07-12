@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DetailStatRow } from "@/components/option-details/DetailSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CursorTooltip } from "@/components/ui/tooltip";
+import { collectConditionalBonuses } from "@/lib/conditionalBonuses";
 import { isConditionalBonusesEnabled } from "@/lib/features";
 import {
   formatBonusSourceValue,
@@ -108,7 +110,15 @@ export function DerivedStatsPanel({ embedded = false }: DerivedStatsPanelProps) 
   const labels = usePanelLabels("derived-stats");
   const characterOptionLabels = usePanelLabels("character-options");
   const gameData = useBuildStore((s) => s.gameData);
+  const build = useBuildStore((s) => s.build);
   const computed = useBuildStore((s) => s.computed);
+  const conditionalBonuses = useMemo(
+    () =>
+      gameData && isConditionalBonusesEnabled(searchParams)
+        ? collectConditionalBonuses(gameData.game, build)
+        : [],
+    [searchParams, gameData, build],
+  );
 
   if (!computed || !gameData) return null;
 
@@ -117,9 +127,6 @@ export function DerivedStatsPanel({ embedded = false }: DerivedStatsPanelProps) 
     gameData.game.stats.categories.map((category) => [category.id, category.label]),
   );
   const groupedBonuses = groupByCategory(computed.appliedBonuses);
-  const conditionalBonuses = isConditionalBonusesEnabled(searchParams)
-    ? computed.conditionalBonuses
-    : [];
 
   const bonusRows =
     groupedBonuses.length > 0 || conditionalBonuses.length > 0 ? (
