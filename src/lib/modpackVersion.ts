@@ -65,3 +65,38 @@ export function isModpackVersionMismatch({
   );
 }
 
+export interface ImportedBuildVersionMismatch {
+  level: Exclude<ModpackVersionMismatchLevel, "none">;
+  sourceVersion: string;
+  currentVersion: string;
+}
+
+export function getImportedBuildVersionMismatch(
+  sourceModpackVersion: string | undefined | null,
+  currentModpackVersion: string,
+): ImportedBuildVersionMismatch | null {
+  const source = sourceModpackVersion?.trim();
+  if (!source) return null;
+
+  const level = getModpackVersionMismatchLevel({
+    savedModpackVersion: source,
+    currentModpackVersion,
+  });
+  if (level === "none") return null;
+
+  return {
+    level,
+    sourceVersion: source,
+    currentVersion: currentModpackVersion,
+  };
+}
+
+export function formatImportedBuildVersionWarning(
+  template: string,
+  mismatch: ImportedBuildVersionMismatch,
+): string {
+  return template
+    .replaceAll("{sourceVersion}", formatModpackVersion(mismatch.sourceVersion))
+    .replaceAll("{currentVersion}", formatModpackVersion(mismatch.currentVersion));
+}
+

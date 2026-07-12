@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   extractFaithEffectsFromPlugins,
+  filterFaithMgefRecords,
   indexDeityFaithMgef,
   parseShrineMgefAltarKey,
   parseWorshipMessage,
@@ -176,6 +177,28 @@ const hircineShrine = extractFaithEffectsFromPlugins({
   altarMagnitudes: [25],
 });
 assert.equal(hircineShrine.shrine, "Regenerate Stamina 25% faster.");
+
+const patchedAzuraMgef = filterFaithMgefRecords([
+  {
+    edid: "REQ_SomeUnrelatedEffect",
+    effectDescription: "Should be ignored.",
+    plugin: "Requiem.esp",
+  },
+  {
+    edid: "WSN_AltarBlessing_Daedra_Azura_Effect",
+    effectDescription: "Resist <mag>% of magic.",
+    plugin: "Requiem - Wintersun Patch.esp",
+  },
+]);
+assert.equal(patchedAzuraMgef.length, 1);
+
+const azuraShrine = extractFaithEffectsFromPlugins({
+  altarKey: "Daedra_Azura",
+  mgefIndex: indexDeityFaithMgef(patchedAzuraMgef),
+  altarMagnitudes: [10],
+  shrineMgefEdid: "WSN_AltarBlessing_Daedra_Azura_Effect",
+});
+assert.equal(azuraShrine.shrine, "Resist 10% of magic.");
 
 const ignoredZeroMagnitude = extractFaithEffectsFromPlugins({
   altarKey: "Daedra_Hircine",

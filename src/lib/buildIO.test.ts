@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createExportedBuild, parseExportedBuild } from "@/lib/buildIO";
-import { prepareImportedBuild } from "@/engine/buildEngine";
+import { reconcileImportedBuild } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 
 describe("buildIO supernatural backup export", () => {
@@ -15,7 +15,7 @@ describe("buildIO supernatural backup export", () => {
 
     const exported = createExportedBuild("Vampire build", build, game.manifest.version);
     const parsed = parseExportedBuild(exported);
-    const imported = prepareImportedBuild(game, parsed.build);
+    const imported = reconcileImportedBuild(game, parsed.build);
 
     expect(imported.characterOptionChoices.vampire).toBe("stage-4");
     expect(imported.characterOptionChoices.werewolf).toBe("none");
@@ -30,7 +30,7 @@ describe("buildIO supernatural backup export", () => {
     legacy.lycanthropyId = "claimed";
 
     const exported = createExportedBuild("Werewolf build", legacy, game.manifest.version);
-    const imported = prepareImportedBuild(game, parseExportedBuild(exported).build);
+    const imported = reconcileImportedBuild(game, parseExportedBuild(exported).build);
 
     expect(imported.characterOptionChoices.werewolf).toBe("claimed");
     expect(imported.characterOptionChoices.vampire).toBe("none");

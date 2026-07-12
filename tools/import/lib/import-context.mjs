@@ -5,6 +5,7 @@ import { buildAvifMembershipIndex } from "./avif-perk-membership.mjs";
 import { buildPerkMetadataIndex } from "./perk-tree-metadata.mjs";
 import { formatCount } from "./import-progress.mjs";
 import { resolveImportPaths } from "./import-cli.mjs";
+import { buildMgefIndex } from "./effects/mgef-index.mjs";
 
 /**
  * @param {object} params
@@ -41,6 +42,7 @@ export async function buildImportContext({ install, plugins, progress = null }) 
     derived: {
       perkMetadataIndex,
       avifMembership,
+      mgefIndex: buildMgefIndex(scan.mgefRecords ?? []),
     },
     paths: {
       ...paths,

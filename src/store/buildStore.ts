@@ -18,7 +18,7 @@ import {
   getEffectiveSkillFloor,
   isAllocatableSkill,
   preserveSkillPointAllocations,
-  prepareImportedBuild,
+  reconcileImportedBuild,
   reconcileBuild,
   removePerk as removePerkFromBuild,
   tryTakePerk as tryTakePerkInBuild,
@@ -140,7 +140,7 @@ function createSavedBuildFromPackage(
     ...createSavedBuild(name, defaultBuild, milestoneEntries, defaultVariantName),
     defaultVariantNotes: decoded.shared?.defaultVariantNotes ?? "",
     activeMilestoneId,
-    modpackVersion: game.manifest.version,
+    modpackVersion: decoded.sourceModpackVersion ?? game.manifest.version,
   });
 }
 
@@ -648,7 +648,8 @@ export const useBuildStore = create<BuildStore>()(
         loadSharedBuild: (decoded) => {
           const { gameData, savedBuilds, activeBuildId } = get();
           if (!gameData) return;
-          const modpackVersion = gameData.game.manifest.version;
+          const modpackVersion =
+            decoded.sourceModpackVersion ?? gameData.game.manifest.version;
 
           if (!decoded.shared) {
             get().loadBuild(decoded.build);
@@ -693,7 +694,14 @@ export const useBuildStore = create<BuildStore>()(
           const modpackVersion = gameData.game.manifest.version;
 
           if (!decoded.shared) {
-            get().importBuildAsSlot(decoded.build);
+            get().importBuildAsSlot(
+              decoded.build,
+              undefined,
+              [],
+              undefined,
+              undefined,
+              decoded.sourceModpackVersion,
+            );
             return;
           }
 
@@ -799,7 +807,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
           const currentModpackVersion = gameData.game.manifest.version;
           const importedModpackVersion = modpackVersion ?? currentModpackVersion;
-          const preparedBuild = prepareImportedBuild(gameData.game, importedBuild);
+          const preparedBuild = reconcileImportedBuild(gameData.game, importedBuild);
 
           const syncedBuilds = updateSavedBuildInList(
             savedBuilds,
@@ -810,7 +818,7 @@ export const useBuildStore = create<BuildStore>()(
           const milestones = importedMilestones.map((entry) =>
             createMilestone(
               entry.name,
-              prepareImportedBuild(gameData.game, entry.build),
+              reconcileImportedBuild(gameData.game, entry.build),
               entry.notes ?? "",
             ),
           );
@@ -848,14 +856,14 @@ export const useBuildStore = create<BuildStore>()(
             const milestones = (entry.milestones ?? []).map((milestone) =>
               createMilestone(
                 milestone.name,
-                prepareImportedBuild(gameData.game, milestone.build),
+                reconcileImportedBuild(gameData.game, milestone.build),
                 milestone.notes ?? "",
               ),
             );
             return {
               ...createSavedBuild(
                 entry.name,
-                prepareImportedBuild(gameData.game, entry.build),
+                reconcileImportedBuild(gameData.game, entry.build),
                 milestones,
                 entry.defaultVariantName,
               ),
@@ -1005,7 +1013,7 @@ export const useBuildStore = create<BuildStore>()(
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
-          const reconciled = prepareImportedBuild(gameData.game, importedBuild);
+          const reconciled = reconcileImportedBuild(gameData.game, importedBuild);
           const milestoneName =
             name?.trim() ||
             nextMilestoneName(

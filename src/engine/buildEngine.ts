@@ -825,6 +825,67 @@ export function applySkillTrainingRangeChange(
   return ensurePlayerLevelForBuild(game, next, options);
 }
 
+function isKnownId(ids: readonly { id: string }[], id: string | null | undefined): id is string {
+  return id != null && ids.some((entry) => entry.id === id);
+}
+
+/** Drop references that no longer exist in the current game data before reconciling imports. */
+export function sanitizeImportedBuildReferences(game: GameData, build: BuildState): BuildState {
+  const allocatableSkillIds = new Set(
+    game.skills.filter((skill) => isAllocatableSkill(game, skill.id)).map((skill) => skill.id),
+  );
+
+  const filterSkills = (skillIds: string[]) =>
+    skillIds.filter((skillId) => allocatableSkillIds.has(skillId));
+
+  const majorSkillIds = filterSkills(build.majorSkillIds).slice(0, game.manifest.limits.majorSkills);
+  const minorSkillIds = filterSkills(build.minorSkillIds)
+    .filter((skillId) => !majorSkillIds.includes(skillId))
+    .slice(0, game.manifest.limits.minorSkills);
+
+  const skillLevels: BuildState["skillLevels"] = {};
+  for (const [skillId, level] of Object.entries(build.skillLevels)) {
+    if (allocatableSkillIds.has(skillId)) {
+      skillLevels[skillId] = level;
+    }
+  }
+
+  const skillTrainingRanges: BuildState["skillTrainingRanges"] = {};
+  for (const [skillId, ranges] of Object.entries(build.skillTrainingRanges ?? {})) {
+    if (allocatableSkillIds.has(skillId)) {
+      skillTrainingRanges[skillId] = ranges;
+    }
+  }
+
+  return {
+    ...build,
+    raceId: isKnownId(game.races, build.raceId) ? build.raceId : "none",
+    birthsignId: isKnownId(game.birthsigns, build.birthsignId) ? build.birthsignId : "none",
+    deityId: isKnownId(game.deities, build.deityId) ? build.deityId : "none",
+    traitIds: build.traitIds.filter((traitId) => isKnownId(game.traits, traitId)),
+    majorSkillIds,
+    minorSkillIds,
+    oghmaSkillIds: filterSkills(build.oghmaSkillIds),
+    selectedPerkIds: build.selectedPerkIds.filter((perkId) => getPerkById(game, perkId) !== undefined),
+    skillLevels,
+    skillTrainingRanges,
+  };
+}
+
+export function reconcileImportedBuild(game: GameData, build: BuildState): BuildState {
+  const importReconcileOptions: BuildReconcileOptions = {
+    ignoreSkillPointCap: true,
+    ignoreTrainingCap: true,
+    ignorePerkPointCap: true,
+    ensureMinimumPlayerLevel: true,
+  };
+  return reconcileBuild(
+    game,
+    migrateBuildState(sanitizeImportedBuildReferences(game, build)),
+    importReconcileOptions,
+  );
+}
+
 export function reconcileBuild(
   game: GameData,
   build: BuildState,
@@ -1931,11 +1992,6 @@ export function migrateBuildState(
 
   return withSupernatural;
 }
-
-export function prepareImportedBuild(game: GameData, build: BuildState): BuildState {
-  return reconcileBuild(game, migrateBuildState(build));
-}
-
 function stringArraysEqual(a: string[] | undefined, b: string[] | undefined): boolean {
   const left = a ?? [];
   const right = b ?? [];

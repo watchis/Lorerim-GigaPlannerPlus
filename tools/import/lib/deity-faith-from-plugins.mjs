@@ -5,6 +5,18 @@ const BOON1_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon1_Effect(?:_Ab)?$/i;
 const BOON2_PATTERN = /^WSN(?:_AltarBlessing)?_(.+)_Boon2_Effect(?:_Ab)?$/i;
 const FAITH_MGEF_VARIANT_PATTERN = /Gift|Cloak|BuffOnly|NoAutocast/i;
 
+/**
+ * Wintersun faith MGEF after load-order merge. Use EDID (not owning plugin): later patches
+ * can override shrine templates while living in non-Wintersun plugins.
+ *
+ * @param {Array<{ edid?: string }>} mgefRecords
+ */
+export function filterFaithMgefRecords(mgefRecords) {
+  return mgefRecords.filter(
+    (record) => record.edid?.startsWith("WSN_") && !/_old/i.test(record.edid),
+  );
+}
+
 export function isVariantFaithMgefEdid(edid) {
   return FAITH_MGEF_VARIANT_PATTERN.test(String(edid ?? ""));
 }

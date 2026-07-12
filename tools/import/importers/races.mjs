@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { cleanDescription, cleanName, cleanWintersunEffectText } from "../lib/transform-utils.mjs";
 import { parseBonusEffects, mergeEffects } from "../lib/parse-bonus-effects.mjs";
 import { parseRaceData } from "../lib/race-data-parser.mjs";
+import { resolveEffectsFromSpells } from "../lib/effects/resolve-effects.mjs";
 
 const PLAYABLE_RACE_EDIDS = new Set([
   "ArgonianRace",
@@ -35,6 +36,10 @@ const RACE_DISPLAY_NAMES = {
   OrcRace: "Orsimer",
   WoodElfRace: "Bosmer",
 };
+
+const ID_TO_RACE_EDID = Object.fromEntries(
+  Object.entries(RACE_ID_MAP).map(([edid, id]) => [id, edid]),
+);
 
 const RACE_ABILITY_SEGMENT = {
   ArgonianRace: "Argonian",
@@ -135,13 +140,50 @@ function mergeImportedRaceStats(prior, importedStats) {
   };
 }
 
-export function buildRaceEffectsFromRaces(races) {
+function collectRaceAbilitySpells(raceEdid, abilityByKey) {
+  const segment = RACE_ABILITY_SEGMENT[raceEdid];
+  if (!segment) return [];
+
+  const spells = [];
+
+  for (const [key, record] of abilityByKey) {
+    if (!key.startsWith(`${segment}_`) || key.endsWith("_Buff")) continue;
+    spells.push(record);
+  }
+
+  for (const sharedKey of SHARED_RACE_ABILITIES[raceEdid] ?? []) {
+    const record = abilityByKey.get(sharedKey);
+    if (record) spells.push(record);
+  }
+
+  return spells;
+}
+
+export function buildRaceEffectsFromRaces(races, abilityByKey = null, derived = {}, scan = {}, plugins = []) {
   const raceEffects = {};
+  const mgefIndex = derived.mgefIndex ?? { byIdentity: new Map(), byEdid: new Map() };
+  const mastersByPath = scan.mastersByPath ?? new Map();
 
   for (const race of races) {
     if (race.id === "none") continue;
-    raceEffects[race.id] = mergeEffects(
-      ...race.bonuses.map((bonus) => parseBonusEffects(bonus)),
+
+    const raceEdid = ID_TO_RACE_EDID[race.id];
+    const abilitySpells =
+      abilityByKey && raceEdid ? collectRaceAbilitySpells(raceEdid, abilityByKey) : [];
+
+    if (abilitySpells.length === 0) {
+      raceEffects[race.id] = mergeEffects(
+        ...race.bonuses.map((bonus) => parseBonusEffects(bonus)),
+      );
+      continue;
+    }
+
+    raceEffects[race.id] = resolveEffectsFromSpells(
+      abilitySpells,
+      race.bonuses.join(". "),
+      mgefIndex,
+      mastersByPath,
+      plugins,
     );
   }
 
@@ -153,6 +195,9 @@ export function transformRaceRecords(
   spellRecords,
   racesPath,
   lorerimRaceRecords = [],
+  derived = {},
+  scanContext = {},
+  plugins = [],
 ) {
   const existing = JSON.parse(readFileSync(racesPath, "utf8"));
   const existingById = new Map(existing.races.map((race) => [race.id, race]));
@@ -204,7 +249,13 @@ export function transformRaceRecords(
   const playableRaces = none ? [none, ...races] : races;
   return {
     races: { races: playableRaces },
-    raceEffects: buildRaceEffectsFromRaces(races),
+    raceEffects: buildRaceEffectsFromRaces(
+      races,
+      abilityByKey,
+      derived,
+      scanContext,
+      plugins,
+    ),
   };
 }
 
@@ -214,6 +265,9 @@ export async function importRaces(context) {
     context.scan.spellRecords,
     context.paths.racesPath,
     context.scan.lorerimRaceRecords,
+    context.derived,
+    { mastersByPath: context.scan.mastersByPath },
+    context.plugins,
   );
 
   return {

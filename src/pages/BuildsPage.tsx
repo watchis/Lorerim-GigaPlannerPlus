@@ -21,6 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BugReportButton } from "@/components/BugReportButton";
 import { ImportedBuildBadge } from "@/components/ImportedBuildBadge";
+import { ImportedBuildVersionWarning } from "@/components/ImportedBuildVersionWarning";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import type { GameData } from "@/data/schemas";
 import {
@@ -42,8 +43,10 @@ import {
 } from "@/lib/buildIO";
 import { cn } from "@/lib/utils";
 import {
+  getImportedBuildVersionMismatch,
   getModpackVersionForBuildCard,
   getModpackVersionMismatchLevel,
+  type ImportedBuildVersionMismatch,
 } from "@/lib/modpackVersion";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
@@ -284,6 +287,8 @@ interface TransferSidebarProps {
   onCopyActiveLink: () => void;
   activeCodeCopied: "code" | "link" | null;
   importFeedback: ImportFeedback | null;
+  importVersionWarning: ImportedBuildVersionMismatch | null;
+  onDismissImportVersionWarning: () => void;
   fileInputRef: RefObject<HTMLInputElement | null>;
   fileDragOver: boolean;
   onFileDragOver: (event: DragEvent<HTMLButtonElement>) => void;
@@ -305,6 +310,8 @@ function TransferSidebar({
   onCopyActiveLink,
   activeCodeCopied,
   importFeedback,
+  importVersionWarning,
+  onDismissImportVersionWarning,
   fileInputRef,
   fileDragOver,
   onFileDragOver,
@@ -371,6 +378,17 @@ function TransferSidebar({
                 {codeFeedback && (
                   <div className="pt-2">
                     <ImportFeedbackLine feedback={codeFeedback} />
+                  </div>
+                )}
+                {importVersionWarning && (
+                  <div className="pt-2">
+                    <ImportedBuildVersionWarning
+                      mismatch={importVersionWarning}
+                      warningLabel={labels.importedVersionWarning}
+                      errorLabel={labels.importedVersionMismatchError}
+                      dismissLabel={labels.dismissImportedVersionWarning}
+                      onDismiss={onDismissImportVersionWarning}
+                    />
                   </div>
                 )}
               </div>
@@ -688,6 +706,8 @@ export function BuildsPage() {
 
   const [codeInput, setCodeInput] = useState("");
   const [importFeedback, setImportFeedback] = useState<ImportFeedback | null>(null);
+  const [importVersionWarning, setImportVersionWarning] =
+    useState<ImportedBuildVersionMismatch | null>(null);
   const [fileDragOver, setFileDragOver] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -733,6 +753,10 @@ export function BuildsPage() {
   const handleImportCode = (replaceActive: boolean) => {
     try {
       const decoded = decodeBuildPackage(codeInput.trim(), gameData.game);
+      const versionMismatch = getImportedBuildVersionMismatch(
+        decoded.sourceModpackVersion,
+        modpackVersion,
+      );
       if (replaceActive) {
         loadSharedBuild(decoded);
         showSuccess(labels.importedToActive, "code");
@@ -740,8 +764,10 @@ export function BuildsPage() {
         importSharedBuild(decoded);
         showSuccess(labels.importedAsNew, "code");
       }
+      setImportVersionWarning(versionMismatch);
       setCodeInput("");
     } catch {
+      setImportVersionWarning(null);
       setImportFeedback({
         type: "error",
         message: allLabels.errors.invalidBuildCode,
@@ -974,12 +1000,17 @@ export function BuildsPage() {
               if (importFeedback?.context === "code") {
                 setImportFeedback(null);
               }
+              if (importVersionWarning) {
+                setImportVersionWarning(null);
+              }
             }}
             onImportCode={handleImportCode}
             onCopyActiveCode={handleCopyActiveCode}
             onCopyActiveLink={handleCopyActiveLink}
             activeCodeCopied={activeCodeCopied}
             importFeedback={importFeedback}
+            importVersionWarning={importVersionWarning}
+            onDismissImportVersionWarning={() => setImportVersionWarning(null)}
             fileInputRef={fileInputRef}
             fileDragOver={fileDragOver}
             onFileDragOver={(e) => {
