@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createDebouncedJSONStorage,
   createDebouncedPersistStorage,
   flushDebouncedPersistStorage,
 } from "@/store/debouncedPersistStorage";
@@ -57,7 +58,7 @@ describe("debouncedPersistStorage", () => {
 
   it("works with zustand persist middleware", async () => {
     const { create } = await import("zustand");
-    const { createJSONStorage, persist } = await import("zustand/middleware");
+    const { persist } = await import("zustand/middleware");
     const backing = createStorageMock();
     const debounced = createDebouncedPersistStorage(backing);
     const useStore = create(
@@ -65,7 +66,16 @@ describe("debouncedPersistStorage", () => {
         () => ({ notes: "" }),
         {
           name: "test-library",
-          storage: createJSONStorage(() => debounced),
+          storage: {
+            getItem: (name) => {
+              const raw = debounced.getItem(name);
+              return raw ? JSON.parse(raw) : null;
+            },
+            setItem: (name, value) => {
+              debounced.setItem(name, JSON.stringify(value));
+            },
+            removeItem: (name) => debounced.removeItem(name),
+          },
           partialize: (state) => ({ notes: state.notes }),
         },
       ),
@@ -75,5 +85,34 @@ describe("debouncedPersistStorage", () => {
     flushDebouncedPersistStorage(debounced);
 
     expect(backing.getItem("test-library")).toContain("hello");
+  });
+
+  it("debounces JSON serialization and writes for zustand persist", async () => {
+    const { create } = await import("zustand");
+    const { persist } = await import("zustand/middleware");
+    const backing = createStorageMock();
+    const debounced = createDebouncedJSONStorage(() => backing, 250);
+    const stringifySpy = vi.spyOn(JSON, "stringify");
+    const useStore = create(
+      persist(
+        () => ({ notes: "" }),
+        {
+          name: "test-library",
+          storage: debounced,
+          partialize: (state) => ({ notes: state.notes }),
+        },
+      ),
+    );
+
+    useStore.setState({ notes: "one" });
+    useStore.setState({ notes: "two" });
+    expect(stringifySpy).not.toHaveBeenCalled();
+    expect(backing.getItem("test-library")).toBeNull();
+
+    vi.advanceTimersByTime(250);
+    expect(stringifySpy).toHaveBeenCalledTimes(1);
+    expect(backing.getItem("test-library")).toContain("two");
+
+    stringifySpy.mockRestore();
   });
 });

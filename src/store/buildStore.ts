@@ -64,42 +64,27 @@ import {
   applySupernaturalOptionChange,
   isSupernaturalOptionId,
 } from "@/lib/supernatural";
-import { createDebouncedPersistStorage } from "@/store/debouncedPersistStorage";
+import { createDebouncedJSONStorage } from "@/store/debouncedPersistStorage";
+import { scheduleAfterPaint } from "@/store/scheduleAfterPaint";
 
 function recompute(data: AppData, build: BuildState): ComputedBuild {
   return computeBuild(data.game, build);
 }
 
-let deferredComputeToken = 0;
+let deferredCommitToken = 0;
 
-/** Supernatural toggles: paint build state first, persist + compute on the next microtask. */
-function commitSupernaturalBuild(
-  set: (partial: Partial<BuildStore>) => void,
-  get: () => BuildStore,
-  nextBuild: BuildState,
-): void {
-  const token = ++deferredComputeToken;
+interface CommitBuildOptions {
+  /** Defer library sync and derived stats until after paint (heavy supernatural toggles). */
+  deferDerived?: boolean;
+}
 
-  set({ build: nextBuild });
-
-  queueMicrotask(() => {
-    if (token !== deferredComputeToken) return;
-    const current = get();
-    if (current.build !== nextBuild) return;
-
-    const { gameData, savedBuilds, activeBuildId } = current;
-    if (!gameData) return;
-
-    set({
-      savedBuilds: updateSavedBuildInList(
-        savedBuilds,
-        activeBuildId,
-        nextBuild,
-        gameData.game.manifest.version,
-      ),
-      computed: recompute(gameData, nextBuild),
-    });
-  });
+function syncActiveSavedBuild(
+  savedBuilds: SavedBuild[],
+  activeBuildId: string,
+  build: BuildState,
+  modpackVersion: string,
+): SavedBuild[] {
+  return updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
 }
 
 function syncActiveEntryBuild(
@@ -227,19 +212,54 @@ function commitBuild(
   set: (partial: Partial<BuildStore>) => void,
   get: () => BuildStore,
   nextBuild: BuildState,
+  options?: CommitBuildOptions,
 ): void {
-  const { gameData, savedBuilds, activeBuildId } = get();
+  const { gameData } = get();
   if (!gameData) return;
+
+  const modpackVersion = gameData.game.manifest.version;
+  const token = ++deferredCommitToken;
+
+  const applyDerived = () => {
+    if (token !== deferredCommitToken) return;
+    const current = get();
+    if (current.build !== nextBuild) return;
+
+    set({
+      savedBuilds: syncActiveSavedBuild(
+        current.savedBuilds,
+        current.activeBuildId,
+        nextBuild,
+        modpackVersion,
+      ),
+      computed: recompute(gameData, nextBuild),
+    });
+  };
+
+  if (options?.deferDerived) {
+    set({ build: nextBuild });
+    scheduleAfterPaint(applyDerived);
+    return;
+  }
 
   set({
     build: nextBuild,
-    savedBuilds: updateSavedBuildInList(
-      savedBuilds,
-      activeBuildId,
-      nextBuild,
-      gameData.game.manifest.version,
-    ),
     computed: recompute(gameData, nextBuild),
+  });
+
+  scheduleAfterPaint(() => {
+    if (token !== deferredCommitToken) return;
+    const current = get();
+    if (current.build !== nextBuild) return;
+
+    set({
+      savedBuilds: syncActiveSavedBuild(
+        current.savedBuilds,
+        current.activeBuildId,
+        nextBuild,
+        modpackVersion,
+      ),
+    });
   });
 }
 
@@ -366,7 +386,7 @@ export const useBuildStore = create<BuildStore>()(
               optionId,
               choiceId,
             );
-            commitSupernaturalBuild(set, get, nextBuild);
+            commitBuild(set, get, nextBuild, { deferDerived: true });
             return;
           }
 
@@ -1160,11 +1180,9 @@ export const useBuildStore = create<BuildStore>()(
     },
     {
       name: LIBRARY_STORAGE_KEY,
-      storage: createJSONStorage(() =>
-        import.meta.env.VITEST
-          ? localStorage
-          : createDebouncedPersistStorage(localStorage),
-      ),
+      storage: import.meta.env.VITEST
+        ? createJSONStorage(() => localStorage)
+        : createDebouncedJSONStorage(() => localStorage),
       partialize: (state) => ({
         build: state.build,
         savedBuilds: state.savedBuilds,
