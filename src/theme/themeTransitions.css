@@ -1,0 +1,140 @@
+/* Smooth curse-theme shifts (~2s). Requires @property so inline setProperty() values interpolate. */
+/* Duration: see SUPERNATURAL_THEME_TRANSITION_MS in themeTransition.ts */
+
+@property --color-background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0f1117;
+}
+
+@property --color-surface {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1a1d27;
+}
+
+@property --color-surface-elevated {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #242836;
+}
+
+@property --color-border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #2e3344;
+}
+
+@property --color-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e8eaef;
+}
+
+@property --color-muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #8b92a8;
+}
+
+@property --color-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #c9a227;
+}
+
+@property --color-accent-muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #8a7020;
+}
+
+@property --color-health {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #8b2942;
+}
+
+@property --color-error {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #d64a5f;
+}
+
+@property --color-error-muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f0b0bb;
+}
+
+@property --color-magicka {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #4a6fa5;
+}
+
+@property --color-stamina {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3d7a52;
+}
+
+@property --color-perk-available {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #6d8499;
+}
+
+@property --color-perk-selected {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #c9a227;
+}
+
+@property --color-perk-partial {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #4eb3f5;
+}
+
+@property --color-perk-locked {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #2a2e38;
+}
+
+@property --color-perk-prereq {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #5a6278;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-transitions-ready {
+    transition:
+      --color-background 2s ease-in-out,
+      --color-surface 2s ease-in-out,
+      --color-surface-elevated 2s ease-in-out,
+      --color-border 2s ease-in-out,
+      --color-foreground 2s ease-in-out,
+      --color-muted 2s ease-in-out,
+      --color-accent 2s ease-in-out,
+      --color-accent-muted 2s ease-in-out,
+      --color-health 2s ease-in-out,
+      --color-error 2s ease-in-out,
+      --color-error-muted 2s ease-in-out,
+      --color-magicka 2s ease-in-out,
+      --color-stamina 2s ease-in-out,
+      --color-perk-available 2s ease-in-out,
+      --color-perk-selected 2s ease-in-out,
+      --color-perk-partial 2s ease-in-out,
+      --color-perk-locked 2s ease-in-out,
+      --color-perk-prereq 2s ease-in-out;
+  }
+
+  html.theme-transitions-ready body {
+    transition:
+      background-color 2s ease-in-out,
+      color 2s ease-in-out;
+  }
+}

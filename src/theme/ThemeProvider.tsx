@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import type { Labels, Theme } from "@/data/schemas";
 import type { SupernaturalThemeVariant } from "@/lib/supernaturalTheme";
+import { scheduleThemeTransitionsReady } from "@/theme/themeTransition";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -21,35 +22,50 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
+function applyThemeToRoot(
+  root: HTMLElement,
+  theme: Theme,
+  supernaturalVariant: SupernaturalThemeVariant | null,
+): void {
+  root.dataset.theme = theme.mode;
+
+  if (supernaturalVariant) {
+    root.dataset.supernaturalTheme = supernaturalVariant;
+  } else {
+    delete root.dataset.supernaturalTheme;
+  }
+
+  for (const [key, value] of Object.entries(theme.colors)) {
+    root.style.setProperty(toCssVarName(key), value);
+  }
+
+  root.style.setProperty("--font-heading", theme.fonts.heading);
+  root.style.setProperty("--font-body", theme.fonts.body);
+
+  for (const [key, value] of Object.entries(theme.radius)) {
+    root.style.setProperty(`--radius-${key}`, value);
+  }
+
+  for (const [key, value] of Object.entries(theme.shadows)) {
+    root.style.setProperty(`--shadow-${key}`, value);
+  }
+}
+
 export function ThemeProvider({
   theme,
   labels,
   supernaturalVariant = null,
   children,
 }: ThemeProviderProps) {
+  const hasAppliedTheme = useRef(false);
+
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.theme = theme.mode;
+    applyThemeToRoot(root, theme, supernaturalVariant);
 
-    if (supernaturalVariant) {
-      root.dataset.supernaturalTheme = supernaturalVariant;
-    } else {
-      delete root.dataset.supernaturalTheme;
-    }
-
-    for (const [key, value] of Object.entries(theme.colors)) {
-      root.style.setProperty(toCssVarName(key), value);
-    }
-
-    root.style.setProperty("--font-heading", theme.fonts.heading);
-    root.style.setProperty("--font-body", theme.fonts.body);
-
-    for (const [key, value] of Object.entries(theme.radius)) {
-      root.style.setProperty(`--radius-${key}`, value);
-    }
-
-    for (const [key, value] of Object.entries(theme.shadows)) {
-      root.style.setProperty(`--shadow-${key}`, value);
+    if (!hasAppliedTheme.current) {
+      hasAppliedTheme.current = true;
+      scheduleThemeTransitionsReady(root);
     }
   }, [theme, supernaturalVariant]);
 
