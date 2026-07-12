@@ -9,7 +9,7 @@ import { LandingPage } from "@/pages/LandingPage";
 import { PlannerPage } from "@/pages/PlannerPage";
 import { BuildsPage } from "@/pages/BuildsPage";
 import { useBuildStore } from "@/store/buildStore";
-import { ThemeProvider } from "@/theme/ThemeProvider";
+import { BuildThemeBridge } from "@/theme/BuildThemeBridge";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
@@ -27,7 +27,7 @@ function AppRoutes() {
   if (!gameData) return <LoadingScreen />;
 
   return (
-    <ThemeProvider theme={gameData.ui.theme} labels={gameData.ui.labels}>
+    <BuildThemeBridge baseTheme={gameData.ui.theme} labels={gameData.ui.labels}>
       <TooltipProvider delayDuration={100} skipDelayDuration={0} disableHoverableContent={false}>
         <Routes>
           <Route element={<AppShell />}>
@@ -38,7 +38,7 @@ function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </TooltipProvider>
-    </ThemeProvider>
+    </BuildThemeBridge>
   );
 }
 

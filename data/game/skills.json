@@ -19,6 +19,8 @@
     { "id": "alteration", "name": "Alteration", "category": "magic", "majorEligible": true, "minorEligible": true },
     { "id": "enchanting", "name": "Enchanting", "category": "crafting", "majorEligible": true, "minorEligible": true },
     { "id": "destiny", "name": "Destiny", "category": "special", "majorEligible": false, "minorEligible": false },
+    { "id": "vampire", "name": "Vampire", "category": "special", "majorEligible": false, "minorEligible": false },
+    { "id": "werewolf", "name": "Werewolf", "category": "special", "majorEligible": false, "minorEligible": false },
     { "id": "traits", "name": "Traits", "category": "special", "majorEligible": false, "minorEligible": false }
   ]
 }

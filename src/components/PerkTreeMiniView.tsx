@@ -1,4 +1,4 @@
-import { useId, useMemo } from "react";
+import { memo, useId, useMemo } from "react";
 import type { PerkTree } from "@/data/schemas";
 import { cn } from "@/lib/utils";
 import {
@@ -13,10 +13,11 @@ import {
   getVisiblePerksForTree,
   groupPerksByPosition,
 } from "@/lib/perkTreeGrid";
-import { useBuildStore } from "@/store/buildStore";
 
-interface PerkTreeMiniViewProps {
+export interface PerkTreeMiniViewProps {
   tree: PerkTree;
+  selectedPerkIds: string[];
+  perkPointsRemaining?: number;
   className?: string;
   compact?: boolean;
   conflictPerkIds?: string[];
@@ -31,7 +32,10 @@ const COMPACT_EDGE_STROKE_ACTIVE = 0.25;
 const COMPACT_SELECTED_FILL = "color-mix(in srgb, var(--color-perk-selected) 90%, #fff0c8)";
 const COMPACT_PARTIAL_FILL = "color-mix(in srgb, var(--color-perk-partial) 90%, #d8f4ff)";
 const COMPACT_CONFLICT_FILL = "color-mix(in srgb, var(--color-error) 88%, #ffd4dc)";
-const COMPACT_UNSELECTED_FILL = "var(--color-perk-available)";
+const COMPACT_UNSELECTED_FILL =
+  "var(--color-perk-mini-unselected, var(--color-perk-available))";
+const COMPACT_INACTIVE_EDGE_STROKE =
+  "var(--color-perk-mini-unselected, var(--color-perk-available))";
 
 const COMPACT_NODE_HALO_PAD = 0.1;
 const COMPACT_HIGHLIGHT_HALO_OPACITY = 0.62;
@@ -133,16 +137,33 @@ function CompactSearchMatchNode({
   );
 }
 
-export function PerkTreeMiniView({
+function arraysEqual(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) return false;
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) return false;
+  }
+  return true;
+}
+
+function setsEqual(left: ReadonlySet<string> | undefined, right: ReadonlySet<string> | undefined): boolean {
+  if (left === right) return true;
+  if (!left || !right || left.size !== right.size) return false;
+  for (const value of left) {
+    if (!right.has(value)) return false;
+  }
+  return true;
+}
+
+export const PerkTreeMiniView = memo(function PerkTreeMiniView({
   tree,
+  selectedPerkIds,
+  perkPointsRemaining = 0,
   className,
   compact = false,
   conflictPerkIds = [],
   searchPerkPositionKeys,
 }: PerkTreeMiniViewProps) {
   const glowFilterId = useId().replace(/:/g, "");
-  const selectedPerkIds = useBuildStore((s) => s.build.selectedPerkIds);
-  const perkPointsRemaining = useBuildStore((s) => s.computed?.perkPointsRemaining ?? 0);
   const gridBounds = useMemo(() => getPerkTreeGridBounds(tree), [tree]);
   const { width, height, origin } = gridBounds;
 
@@ -250,7 +271,7 @@ export function PerkTreeMiniView({
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke="var(--color-perk-available)"
+                  stroke={COMPACT_INACTIVE_EDGE_STROKE}
                   strokeWidth={COMPACT_EDGE_STROKE}
                   strokeOpacity={COMPACT_INACTIVE_EDGE_OPACITY}
                   strokeLinecap="round"
@@ -464,4 +485,14 @@ export function PerkTreeMiniView({
       </svg>
     </div>
   );
-}
+}, (previous, next) => {
+  return (
+    previous.tree === next.tree &&
+    previous.compact === next.compact &&
+    previous.className === next.className &&
+    previous.perkPointsRemaining === next.perkPointsRemaining &&
+    arraysEqual(previous.selectedPerkIds, next.selectedPerkIds) &&
+    arraysEqual(previous.conflictPerkIds ?? [], next.conflictPerkIds ?? []) &&
+    setsEqual(previous.searchPerkPositionKeys, next.searchPerkPositionKeys)
+  );
+});

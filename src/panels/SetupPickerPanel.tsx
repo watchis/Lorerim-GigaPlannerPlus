@@ -7,6 +7,7 @@ import { DeityDetailContent } from "@/components/option-details/DeityDetailConte
 import { RaceDetailContent } from "@/components/option-details/RaceDetailContent";
 import { BirthsignDetailContent } from "@/components/option-details/BirthsignDetailContent";
 import { TraitDetailContent } from "@/components/option-details/TraitDetailContent";
+import { SupernaturalRaceDetail } from "@/components/option-details/SupernaturalRaceDetail";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -16,6 +17,13 @@ import {
   getTraitLimit,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
+import {
+  getVampireRacialBonusForRace,
+  getWerewolfRacialBonusForRace,
+  isTraitBlockedBySupernatural,
+  isVampireActive,
+  isWerewolfActive,
+} from "@/lib/supernatural";
 import { SingleSelectPickerView, type SingleSelectOption } from "@/panels/SingleSelectPickerView";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
@@ -118,6 +126,13 @@ export function SetupPickerPanel() {
   if (!gameData || !setupPicker) return null;
 
   const { game } = gameData;
+  const vampireActive = isVampireActive(build);
+  const werewolfActive = isWerewolfActive(build);
+  const activeCurseLabel = vampireActive
+    ? (labels.vampireTree ?? "Vampire")
+    : werewolfActive
+      ? (labels.werewolfTree ?? "Werewolf")
+      : null;
   const detailPicker = isDetailPicker(setupPicker);
   const showRemaining =
     setupPicker === "traits" ||
@@ -139,6 +154,7 @@ export function SetupPickerPanel() {
     staminaRegen: labels.staminaRegen,
     carryWeight: labels.carryWeight,
     unarmedDamage: labels.unarmedDamage,
+    racialBonus: labels.racialBonus ?? "Racial ability",
   };
 
   let detailOptions: SingleSelectOption[] = [];
@@ -152,18 +168,35 @@ export function SetupPickerPanel() {
       name: race.name,
       isSelected: (build.raceId ?? "none") === race.id,
       onSelect: () => setRace(race.id),
-      detail:
+      renderDetail: () =>
         race.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
             No race bonuses will be applied to this build.
           </p>
         ) : (
-          <RaceDetailContent
-            race={race}
-            skills={game.skills}
-            labels={detailLabels}
-            hideHeader
-          />
+          <>
+            <RaceDetailContent
+              race={race}
+              skills={game.skills}
+              labels={detailLabels}
+              hideHeader
+            />
+            {activeCurseLabel && (
+              <SupernaturalRaceDetail
+                curseLabel={activeCurseLabel}
+                racialBonusLabel={detailLabels.racialBonus}
+                racialBonus={
+                  vampireActive
+                    ? getVampireRacialBonusForRace(game, race.id)
+                    : getWerewolfRacialBonusForRace(game, race.id)
+                }
+                selectRaceHint={
+                  labels.selectRaceForRacialAbility ??
+                  "Select a race to see your racial curse ability."
+                }
+              />
+            )}
+          </>
         ),
     }));
   } else if (setupPicker === "birthsign") {
@@ -173,7 +206,7 @@ export function SetupPickerPanel() {
       name: birthsign.name,
       isSelected: (build.birthsignId ?? "none") === birthsign.id,
       onSelect: () => setBirthsign(birthsign.id),
-      detail:
+      renderDetail: () =>
         birthsign.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
             No birthsign bonus will be applied to this build.
@@ -193,7 +226,7 @@ export function SetupPickerPanel() {
       name: deity.name,
       isSelected: (build.deityId ?? "none") === deity.id,
       onSelect: () => setDeity(deity.id),
-      detail:
+      renderDetail: () =>
         deity.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
             No deity will be applied to this build.
@@ -223,12 +256,20 @@ export function SetupPickerPanel() {
       isSelected: build.traitIds.includes(trait.id),
       isEnabled: canSelectTrait(game, build, trait.id),
       onSelect: () => toggleTrait(trait.id),
-      detail: (
-        <TraitDetailContent
-          trait={trait}
-          labels={{ bonuses: labels.bonuses }}
-          hideHeader
-        />
+      renderDetail: () => (
+        <>
+          <TraitDetailContent
+            trait={trait}
+            labels={{ bonuses: labels.bonuses }}
+            hideHeader
+          />
+          {isTraitBlockedBySupernatural(game, build, trait.id) && (
+            <p className="mt-3 text-xs leading-relaxed text-[var(--color-error)]">
+              {labels.traitBlockedByCurse ??
+                "This trait cannot be taken while vampiric or lycanthropic."}
+            </p>
+          )}
+        </>
       ),
     }));
   } else {

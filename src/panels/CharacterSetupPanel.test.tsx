@@ -30,6 +30,10 @@ vi.mock("@/components/DestinyTreeSection", () => ({
   DestinyTreeSection: () => <div data-testid="destiny-tree" />,
 }));
 
+vi.mock("@/components/ActiveSupernaturalTreeSection", () => ({
+  ActiveSupernaturalTreeSection: () => <div data-testid="supernatural-tree" />,
+}));
+
 vi.mock("@/components/SkillIcon", () => ({
   SkillIcon: () => <div data-testid="skill-icon" />,
 }));

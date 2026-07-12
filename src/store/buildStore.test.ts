@@ -369,3 +369,96 @@ describe("buildStore shared build import", () => {
     expect(restored.modpackVersion).toBe("4.9.0.1");
   });
 });
+
+describe("buildStore supernatural character options", () => {
+  const appData = getTestAppData();
+
+  beforeAll(async () => {
+    ({ useBuildStore } = await import("@/store/buildStore"));
+  });
+
+  beforeEach(() => {
+    localStorageMock.clear();
+    const initialBuild = createTestBuildState();
+    const activeEntry = createSavedBuild("Curse build", initialBuild);
+    useBuildStore.setState({
+      gameData: appData,
+      build: initialBuild,
+      savedBuilds: [activeEntry],
+      activeBuildId: activeEntry.id,
+      computed: null,
+    });
+  });
+
+  it("updates build synchronously when activating a supernatural curse", () => {
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-1");
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.vampire).toBe("stage-1");
+  });
+
+  it("activates vampire with stage selection and strips conflicting werewolf perks", async () => {
+    useBuildStore.getState().setCharacterOptionChoice("werewolf", "claimed");
+    useBuildStore.getState().togglePerk("werewolf-animal-vigor");
+
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-3");
+    await Promise.resolve();
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.vampire).toBe("stage-3");
+    expect(state.build.characterOptionChoices.werewolf).toBe("none");
+    expect(state.build.selectedPerkIds).not.toContain("werewolf-animal-vigor");
+    expect(state.computed).not.toBeNull();
+  });
+
+  it("updates computed after vampire hunger stage change without full reconcile churn", async () => {
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-1");
+    await Promise.resolve();
+
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-4");
+    await Promise.resolve();
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.vampire).toBe("stage-4");
+    expect(state.computed?.attributes.health).toBeGreaterThan(0);
+  });
+
+  it("imports supernatural curse builds from share codes", async () => {
+    const curseBuild = createTestBuildState({
+      characterOptionChoices: { vampire: "stage-2", werewolf: "none" },
+      selectedPerkIds: ["vampire-scion"],
+      description: "Imported vampire",
+    });
+    const decoded = decodeBuildPackage(encodeBuild(curseBuild, appData.game), appData.game);
+
+    useBuildStore.getState().importSharedBuild(decoded);
+    await Promise.resolve();
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.vampire).toBe("stage-2");
+    expect(state.build.characterOptionChoices.werewolf).toBe("none");
+    expect(state.build.selectedPerkIds).toContain("vampire-scion");
+  });
+
+  it("imports supernatural curse builds from JSON backups", () => {
+    const curseBuild = createTestBuildState({
+      characterOptionChoices: { vampire: "none", werewolf: "claimed" },
+      selectedPerkIds: ["werewolf-animal-vigor"],
+    });
+    const exported = createExportedBuild("Werewolf backup", curseBuild, appData.game.manifest.version);
+
+    useBuildStore.getState().importBuildAsSlot(
+      exported.build,
+      exported.name,
+      exported.milestones,
+      exported.defaultVariantName,
+      exported.defaultVariantNotes,
+      exported.modpackVersion,
+    );
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.werewolf).toBe("claimed");
+    expect(state.build.characterOptionChoices.vampire).toBe("none");
+    expect(state.build.selectedPerkIds).toEqual(["werewolf-animal-vigor"]);
+  });
+});

@@ -79,7 +79,7 @@ export function MobileSingleSelectPickerView({
           </div>
         </button>
         <ScrollArea className="min-h-0 flex-1">
-          <div className="px-3 py-3">{previewOption.detail}</div>
+          <div className="px-3 py-3">{previewOption.renderDetail()}</div>
         </ScrollArea>
         <div className="shrink-0 border-t border-[var(--color-border)]/70 p-3">
           <Button

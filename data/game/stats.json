@@ -63,6 +63,8 @@
 
     { "id": "waterbreathing", "label": "Waterbreathing", "category": "abilities", "valueKind": "flag" },
     { "id": "rawFood", "label": "Raw Food Safe", "category": "abilities", "valueKind": "flag" },
+    { "id": "strongStomach", "label": "Strong Stomach", "category": "abilities", "valueKind": "flag" },
+    { "id": "diseaseImmunity", "label": "Disease Immunity", "category": "abilities", "valueKind": "flag" },
     { "id": "nightEye", "label": "Night Eye", "category": "abilities", "valueKind": "flag" },
     { "id": "noMagickaRegen", "label": "No Magicka Regen", "category": "abilities", "valueKind": "flag" },
     { "id": "noSprintCost", "label": "No Sprint Cost", "category": "abilities", "valueKind": "flag" }

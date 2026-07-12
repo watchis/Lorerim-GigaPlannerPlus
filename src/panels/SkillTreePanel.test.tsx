@@ -116,8 +116,9 @@ vi.mock("@/engine/buildEngine", async () => {
   };
 });
 
-import { createInitialBuildState } from "@/engine/buildEngine";
+import { createInitialBuildState, getOrderedPerkTrees } from "@/engine/buildEngine";
 import { useBuildStore } from "@/store/buildStore";
+import { useUiStore } from "@/store/uiStore";
 import { SkillTreePanel } from "@/panels/SkillTreePanel";
 
 describe("SkillTreePanel", () => {
@@ -154,6 +155,32 @@ describe("SkillTreePanel", () => {
     const stickyEl = container?.querySelector(".sticky");
     expect(stickyEl).toBeTruthy();
     expect((stickyEl as HTMLElement).className).toContain("top-0");
+  });
+
+  it("hides training controls for supernatural perk trees", () => {
+    vi.mocked(getOrderedPerkTrees).mockReturnValueOnce([
+      {
+        skillId: "vampire",
+        skillName: "Vampire",
+        perks: [{ id: "vampire-scion" }],
+      },
+    ] as any);
+
+    useUiStore.setState({
+      middleView: "skill-trees",
+      activeSkillTreeId: "vampire",
+      skillWorkspaceMode: "training",
+    });
+
+    act(() => {
+      root!.render(createElement(SkillTreePanel));
+    });
+
+    expect(container?.textContent).not.toContain("Training");
+    expect(container?.textContent).not.toContain("Skill Level");
+    expect(container?.querySelector('[data-testid="skill-training-section"]')).toBeNull();
+    expect(container?.querySelector('[data-testid="numeric-level-input"]')).toBeNull();
+    expect(useUiStore.getState().skillWorkspaceMode).toBe("perks");
   });
 });
 

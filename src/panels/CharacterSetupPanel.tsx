@@ -1,15 +1,23 @@
 import type { KeyboardEvent } from "react";
-import { ChevronRight, Settings, X } from "lucide-react";
+import { ChevronRight, Moon, Settings, X } from "lucide-react";
 import { AttributesAllocator } from "@/components/AttributesAllocator";
 import { DestinyTreeSection } from "@/components/DestinyTreeSection";
+import { ActiveSupernaturalTreeSection } from "@/components/ActiveSupernaturalTreeSection";
 import { SkillIcon } from "@/components/SkillIcon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getTraitLimit } from "@/engine/buildEngine";
+import {
+  getVampireRacialBonus,
+  getWerewolfRacialBonus,
+  isVampireActive,
+  isWerewolfActive,
+} from "@/lib/supernatural";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
+import { useShallow } from "zustand/react/shallow";
+import type { BuildState } from "@/engine/buildEngine";
 import {
   usePlannerLayoutScale,
   usePlannerSideWidths,
@@ -186,7 +194,18 @@ function SetupPickerRow({
 export function CharacterSetupPanel() {
   const labels = usePanelLabels("character-setup");
   const gameData = useBuildStore((s) => s.gameData);
-  const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
+  const build = useBuildStore(
+    useShallow((s) => ({
+      raceId: s.build.raceId,
+      birthsignId: s.build.birthsignId,
+      deityId: s.build.deityId,
+      traitIds: s.build.traitIds,
+      majorSkillIds: s.build.majorSkillIds,
+      minorSkillIds: s.build.minorSkillIds,
+      characterOptionChoices: s.build.characterOptionChoices,
+    })),
+  );
   const setRace = useBuildStore((s) => s.setRace);
   const setBirthsign = useBuildStore((s) => s.setBirthsign);
   const setDeity = useBuildStore((s) => s.setDeity);
@@ -212,7 +231,7 @@ export function CharacterSetupPanel() {
   const { game } = gameData;
   const majorRemaining = game.manifest.limits.majorSkills - build.majorSkillIds.length;
   const minorRemaining = game.manifest.limits.minorSkills - build.minorSkillIds.length;
-  const traitsRemaining = getTraitLimit(game, build) - build.traitIds.length;
+  const traitsRemaining = (computed?.traitLimit ?? game.manifest.limits.traits) - build.traitIds.length;
   const noneLabel = labels.noneSelected ?? "None selected";
 
   const selectedRaceName =
@@ -228,6 +247,14 @@ export function CharacterSetupPanel() {
     build.deityId && build.deityId !== "none"
       ? (game.deities.find((b) => b.id === build.deityId)?.name ?? build.deityId)
       : null;
+  const buildForSupernatural = build as BuildState;
+  const vampireActive = isVampireActive(buildForSupernatural);
+  const werewolfActive = isWerewolfActive(buildForSupernatural);
+  const activeCurseRacialBonus = vampireActive
+    ? getVampireRacialBonus(game, buildForSupernatural)
+    : werewolfActive
+      ? getWerewolfRacialBonus(game, buildForSupernatural)
+      : undefined;
 
   const selectedTraitItems = build.traitIds.map((id) => ({
     id,
@@ -271,12 +298,22 @@ export function CharacterSetupPanel() {
             "h-8 w-8 shrink-0 text-[var(--color-muted)]",
             characterOptionsOpen &&
               "bg-[var(--color-accent)]/10 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/15 hover:text-[var(--color-accent)]",
+            !characterOptionsOpen && vampireActive &&
+              "text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]",
+            !characterOptionsOpen && werewolfActive &&
+              "text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]",
           )}
           onClick={toggleCharacterOptions}
           aria-label={labels.openOptions ?? "Character options"}
           aria-pressed={characterOptionsOpen}
         >
-          <Settings className="h-4 w-4" />
+          {vampireActive ? (
+            <Moon className="h-4 w-4" aria-hidden />
+          ) : werewolfActive ? (
+            <SkillIcon skillId="werewolf" className="h-4 w-4" />
+          ) : (
+            <Settings className="h-4 w-4" />
+          )}
         </Button>
       </CardHeader>
       <CardContent
@@ -294,7 +331,17 @@ export function CharacterSetupPanel() {
             onOpen={() => toggleSetupPicker("race")}
             selectedItems={
               selectedRaceName && build.raceId
-                ? [{ id: build.raceId, label: selectedRaceName }]
+                ? [
+                    { id: build.raceId, label: selectedRaceName },
+                    ...(activeCurseRacialBonus
+                      ? [
+                          {
+                            id: `${build.raceId}-curse-racial`,
+                            label: activeCurseRacialBonus.name,
+                          },
+                        ]
+                      : []),
+                  ]
                 : []
             }
             onRemove={() => setRace("none")}
@@ -327,6 +374,19 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
         </div>
+        {(vampireActive || werewolfActive) && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.04] px-2.5 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+              {vampireActive ? (labels.vampireTree ?? "Vampire") : (labels.werewolfTree ?? "Werewolf")}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
+              {activeCurseRacialBonus
+                ? `${labels.supernaturalRaceAbility ?? "Racial ability"}: ${activeCurseRacialBonus.name}`
+                : (labels.selectRaceForRacialAbility ??
+                  "Select a race to see your racial curse ability.")}
+            </p>
+          </div>
+        )}
         <div
           className={cn(
             "border-y border-[var(--color-border)]/70",
@@ -373,6 +433,7 @@ export function CharacterSetupPanel() {
             noneLabel={noneLabel}
           />
         </div>
+        <ActiveSupernaturalTreeSection />
         <DestinyTreeSection />
       </CardContent>
     </Card>

@@ -9,7 +9,9 @@
   },
   "nonAllocatableSkills": [
     "destiny",
-    "traits"
+    "traits",
+    "vampire",
+    "werewolf"
   ],
   "skills": [
     "smithing",
@@ -31,6 +33,8 @@
     "alteration",
     "enchanting",
     "destiny",
-    "traits"
+    "traits",
+    "vampire",
+    "werewolf"
   ]
 }

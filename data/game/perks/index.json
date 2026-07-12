@@ -17,5 +17,7 @@
   "restoration": "restoration.json",
   "alteration": "alteration.json",
   "enchanting": "enchanting.json",
-  "destiny": "destiny.json"
+  "destiny": "destiny.json",
+  "vampire": "vampire.json",
+  "werewolf": "werewolf.json"
 }

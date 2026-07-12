@@ -17,7 +17,8 @@ export interface SingleSelectOption {
   isSelected: boolean;
   isEnabled?: boolean;
   onSelect: () => void;
-  detail: ReactNode;
+  /** Lazily render preview content — only the focused option should be mounted. */
+  renderDetail: () => ReactNode;
   leading?: ReactNode;
 }
 
@@ -145,7 +146,7 @@ export function SingleSelectPickerView({
               )}
             </div>
             <ScrollArea className="min-h-0 flex-1">
-              <div className="px-4 py-3">{previewOption.detail}</div>
+              <div className="px-4 py-3">{previewOption.renderDetail()}</div>
             </ScrollArea>
           </>
         ) : (

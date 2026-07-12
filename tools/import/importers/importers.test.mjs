@@ -14,6 +14,7 @@ assert.deepEqual(IMPORT_DOMAINS, [
   "races",
   "birthsigns",
   "deities",
+  "supernatural",
   "manifest",
 ]);
 

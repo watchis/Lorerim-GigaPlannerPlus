@@ -6,12 +6,13 @@ import {
   collectBuildChanges,
   sumCollectedBudgetEffects,
 } from "@/lib/buildModifications";
+import { createBuildEvaluation, type BuildEvaluation } from "@/lib/buildEvaluation";
 import {
   aggregateEffects,
   computeTrackedStats,
   type TrackedStatEntry,
 } from "@/lib/trackedStats";
-import { collectConditionalBonuses, type ConditionalBonusEntry } from "@/lib/conditionalBonuses";
+import type { ConditionalBonusEntry } from "@/lib/conditionalBonuses";
 import {
   clampTrainingRangeCount,
   computeTrainingSkillPointCredit,
@@ -41,6 +42,11 @@ import {
   getOghmaFloorBonus,
   migrateOghmaInfiniumBuild,
 } from "@/lib/oghmaInfinium";
+import {
+  isTraitBlockedBySupernatural,
+  migrateLegacySupernaturalBuild,
+  normalizeSupernaturalState,
+} from "@/lib/supernatural";
 export {
   formatTrainingTierRange,
   getMaxTrainingSkillLevel,
@@ -160,6 +166,12 @@ export interface ComputedBuild {
   perkPointsRemaining: number;
   perkPointsPerLevel: number;
   plannerNotesByPerkId: Record<string, string[]>;
+  playerLevelWarnings: BuildPlayerLevelWarnings;
+  skillReqConflicts: SkillReqConflictPerk[];
+  /** Lowest player level that satisfies skills, perks, and point budgets. */
+  minimumPlayerLevel: number;
+  destinyPerkPointsRemaining: number;
+  traitLimit: number;
 }
 
 function emptyAttributes(): Attributes {
@@ -219,9 +231,10 @@ export function getSkillLevelBaseline(
   state: BuildState,
   skillId: string,
   baseline: SkillLevelBaseline,
+  evaluation?: BuildEvaluation,
 ): number {
   if (baseline === "skillFloor") {
-    return getEffectiveSkillFloor(game, state, skillId);
+    return getEffectiveSkillFloor(game, state, skillId, evaluation);
   }
   if (baseline === "raceStarting") {
     const race = resolveRace(game, state.raceId);
@@ -236,13 +249,18 @@ export function getSkillIncreaseAboveBaseline(
   skillId: string,
   level: number,
   baseline: SkillLevelBaseline,
+  evaluation?: BuildEvaluation,
 ): number {
-  const base = getSkillLevelBaseline(game, state, skillId, baseline);
+  const base = getSkillLevelBaseline(game, state, skillId, baseline, evaluation);
   return Math.max(0, level - base);
 }
 
-export function getSkillPointsPerLevel(game: GameData, state: BuildState): number {
-  const collected = collectBuildChanges(game, state);
+export function getSkillPointsPerLevel(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
+  const collected = evaluation?.collected ?? collectBuildChanges(game, state);
   const bonus = aggregateEffects(collected.sourcedEffects.map((entry) => entry.effect))
     .skillPointsPerLevel;
 
@@ -272,23 +290,38 @@ export function computeSkillPointsToReach(
   return total;
 }
 
-export function getEffectiveSkillFloor(game: GameData, state: BuildState, skillId: string): number {
+export function getEffectiveSkillFloor(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+  evaluation?: BuildEvaluation,
+): number {
   return (
     getSkillFloor(game, state, skillId) +
-    getSkillLevelGrantFloorBonus(game, state, skillId) +
+    getSkillLevelGrantFloorBonus(game, state, skillId, evaluation) +
     getOghmaFloorBonus(game, state, skillId)
   );
 }
 
-export function getStoredSkillLevel(game: GameData, state: BuildState, skillId: string): number {
-  const floor = getEffectiveSkillFloor(game, state, skillId);
+export function getStoredSkillLevel(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+  evaluation?: BuildEvaluation,
+): number {
+  const floor = getEffectiveSkillFloor(game, state, skillId, evaluation);
   const stored = state.skillLevels[skillId] ?? floor;
   return Math.min(getMaxSkillLevel(game), Math.max(floor, stored));
 }
 
-export function getEffectiveSkillLevel(game: GameData, state: BuildState, skillId: string): number {
-  const stored = getStoredSkillLevel(game, state, skillId);
-  const grantBonus = getSkillLevelGrantBonus(game, state, skillId);
+export function getEffectiveSkillLevel(
+  game: GameData,
+  state: BuildState,
+  skillId: string,
+  evaluation?: BuildEvaluation,
+): number {
+  const stored = getStoredSkillLevel(game, state, skillId, evaluation);
+  const grantBonus = getSkillLevelGrantBonus(game, state, skillId, evaluation);
   return Math.min(getMaxSkillLevel(game), stored + grantBonus);
 }
 
@@ -354,6 +387,7 @@ export function getRequiredPlayerLevelFromTraining(
 function getRequiredPlayerLevelFromSkillLevelIncreases(
   game: GameData,
   state: BuildState,
+  evaluation?: BuildEvaluation,
 ): number {
   const { baseLevel, playerLevelSkillBaseline, skillLevelIncreasesPerPlayerLevel } =
     game.mechanics.leveling;
@@ -364,14 +398,15 @@ function getRequiredPlayerLevelFromSkillLevelIncreases(
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
 
-    const level = getStoredSkillLevel(game, state, skillId);
-    const bypassIncrease = getBypassSkillIncreaseGrantBonus(game, state, skillId);
+    const level = getStoredSkillLevel(game, state, skillId, evaluation);
+    const bypassIncrease = getBypassSkillIncreaseGrantBonus(game, state, skillId, evaluation);
     const increase = getSkillIncreaseAboveBaseline(
       game,
       state,
       skillId,
       Math.max(0, level - bypassIncrease),
       playerLevelSkillBaseline,
+      evaluation,
     );
     if (increase <= 0) continue;
 
@@ -448,15 +483,16 @@ function computePaidSkillPoints(
   state: BuildState,
   skillId: string,
   level: number,
+  evaluation?: BuildEvaluation,
 ): number {
   const { skillPointBaseline, skillPointFreeThroughFloor } = game.mechanics.leveling;
-  const pointBase = getSkillLevelBaseline(game, state, skillId, skillPointBaseline);
-  const floor = getEffectiveSkillFloor(game, state, skillId);
+  const pointBase = getSkillLevelBaseline(game, state, skillId, skillPointBaseline, evaluation);
+  const floor = getEffectiveSkillFloor(game, state, skillId, evaluation);
   const effectiveLevel = Math.max(floor, Math.min(getMaxSkillLevel(game), level));
   const chargeFrom = skillPointFreeThroughFloor
     ? Math.max(pointBase, floor)
     : pointBase;
-  const freeTopLevels = getSkillLevelGrantFreeTopLevels(game, state, skillId);
+  const freeTopLevels = getSkillLevelGrantFreeTopLevels(game, state, skillId, evaluation);
   const paidToLevel = Math.max(chargeFrom, effectiveLevel - freeTopLevels);
   const gross = computeSkillPointsToReach(game.mechanics, chargeFrom, paidToLevel);
   const trainingCredit = computeTrainingSkillPointCredit(
@@ -472,13 +508,14 @@ export function computeTotalSkillPointsForLevels(
   game: GameData,
   state: BuildState,
   levels: Record<string, number>,
+  evaluation?: BuildEvaluation,
 ): number {
   let total = 0;
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    const floor = getEffectiveSkillFloor(game, state, skillId);
-    total += computePaidSkillPoints(game, state, skillId, levels[skillId] ?? floor);
+    const floor = getEffectiveSkillFloor(game, state, skillId, evaluation);
+    total += computePaidSkillPoints(game, state, skillId, levels[skillId] ?? floor, evaluation);
   }
 
   return total;
@@ -497,22 +534,30 @@ export function computeSkillPointsSpentOnSkill(
   );
 }
 
-export function computeTotalSkillPointsSpent(game: GameData, state: BuildState): number {
+export function computeTotalSkillPointsSpent(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   const levels: Record<string, number> = {};
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    levels[skillId] = getStoredSkillLevel(game, state, skillId);
+    levels[skillId] = getStoredSkillLevel(game, state, skillId, evaluation);
   }
 
-  return computeTotalSkillPointsForLevels(game, state, levels);
+  return computeTotalSkillPointsForLevels(game, state, levels, evaluation);
 }
 
-export function getEarnedSkillPoints(game: GameData, state: BuildState): number {
+export function getEarnedSkillPoints(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   const { baseLevel } = game.mechanics.leveling;
   const playerLevel = state.playerLevel ?? baseLevel;
   const levelsAboveBase = Math.max(0, playerLevel - baseLevel);
-  return levelsAboveBase * getSkillPointsPerLevel(game, state);
+  return levelsAboveBase * getSkillPointsPerLevel(game, state, evaluation);
 }
 
 export function getRemainingSkillPoints(game: GameData, state: BuildState): number {
@@ -537,11 +582,17 @@ export function perkCostsPerkPoint(game: GameData, perkId: string): boolean {
   return perk.costsPerkPoint;
 }
 
-export function getEarnedPerkPoints(game: GameData, state: BuildState): number {
+export function getEarnedPerkPoints(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   const { baseLevel } = game.mechanics.leveling;
   const playerLevel = state.playerLevel ?? baseLevel;
   const levelsAboveBase = Math.max(0, playerLevel - baseLevel);
-  const { perkPoints } = sumCollectedBudgetEffects(collectBuildChanges(game, state));
+  const perkPoints =
+    evaluation?.budgetEffects.perkPoints ??
+    sumCollectedBudgetEffects(collectBuildChanges(game, state)).perkPoints;
   return (
     getInitialPerkPoints(game) +
     levelsAboveBase * getPerkPointsPerLevel(game) +
@@ -618,17 +669,21 @@ export function clampPlayerLevel(game: GameData, level: number): number {
   return Math.min(maxPlayerLevel, Math.max(baseLevel, Math.floor(level)));
 }
 
-export function getRequiredPlayerLevelFromSkills(game: GameData, state: BuildState): number {
+export function getRequiredPlayerLevelFromSkills(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   const { baseLevel, maxSkillAbovePlayerLevel } = game.mechanics.leveling;
   let required = baseLevel;
 
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    const level = getStoredSkillLevel(game, state, skillId);
+    const level = getStoredSkillLevel(game, state, skillId, evaluation);
     required = Math.max(required, level - maxSkillAbovePlayerLevel);
   }
 
-  required = Math.max(required, getRequiredPlayerLevelFromSkillLevelIncreases(game, state));
+  required = Math.max(required, getRequiredPlayerLevelFromSkillLevelIncreases(game, state, evaluation));
 
   return clampPlayerLevel(game, required);
 }
@@ -648,11 +703,15 @@ export function getRequiredPlayerLevelFromPerks(game: GameData, state: BuildStat
   return clampPlayerLevel(game, required);
 }
 
-export function getRequiredPlayerLevel(game: GameData, state: BuildState): number {
+export function getRequiredPlayerLevel(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   return clampPlayerLevel(
     game,
     Math.max(
-      getRequiredPlayerLevelFromSkills(game, state),
+      getRequiredPlayerLevelFromSkills(game, state, evaluation),
       getRequiredPlayerLevelFromPerks(game, state),
     ),
   );
@@ -663,21 +722,32 @@ function getRequiredPlayerLevelFromAttributeChoices(game: GameData, state: Build
   return baseLevel + getUsedAttributeChoices(state);
 }
 
-function getRequiredPlayerLevelFromSkillPointBudget(game: GameData, state: BuildState): number {
+function getRequiredPlayerLevelFromSkillPointBudget(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   const { baseLevel, maxPlayerLevel } = game.mechanics.leveling;
-  const spent = computeTotalSkillPointsSpent(game, state);
-  const perLevel = getSkillPointsPerLevel(game, state);
+  const spent = computeTotalSkillPointsSpent(game, state, evaluation);
+  const perLevel = getSkillPointsPerLevel(game, state, evaluation);
   if (spent <= 0) return baseLevel;
   if (perLevel <= 0) return maxPlayerLevel;
 
   return baseLevel + Math.ceil(spent / perLevel);
 }
 
-function getRequiredPlayerLevelFromPerkPointBudget(game: GameData, state: BuildState): number {
+function getRequiredPlayerLevelFromPerkPointBudget(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   const { baseLevel, maxPlayerLevel } = game.mechanics.leveling;
   const spent = computePerkPointsSpent(game, state);
   const perLevel = getPerkPointsPerLevel(game);
-  const deficit = spent - getInitialPerkPoints(game) - sumCollectedBudgetEffects(collectBuildChanges(game, state)).perkPoints;
+  const perkPoints =
+    evaluation?.budgetEffects.perkPoints ??
+    sumCollectedBudgetEffects(collectBuildChanges(game, state)).perkPoints;
+  const deficit = spent - getInitialPerkPoints(game) - perkPoints;
   if (deficit <= 0) return baseLevel;
   if (perLevel <= 0) return maxPlayerLevel;
 
@@ -699,15 +769,19 @@ function getRequiredPlayerLevelFromDestinyPointBudget(game: GameData, state: Bui
 }
 
 /** Lowest player level that satisfies the current build's skills, perks, and point budgets. */
-export function getMinimumPlayerLevelForBuild(game: GameData, state: BuildState): number {
+export function getMinimumPlayerLevelForBuild(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
   return clampPlayerLevel(
     game,
     Math.max(
-      getRequiredPlayerLevel(game, state),
+      getRequiredPlayerLevel(game, state, evaluation),
       getRequiredPlayerLevelFromTraining(game, state),
       getRequiredPlayerLevelFromAttributeChoices(game, state),
-      getRequiredPlayerLevelFromSkillPointBudget(game, state),
-      getRequiredPlayerLevelFromPerkPointBudget(game, state),
+      getRequiredPlayerLevelFromSkillPointBudget(game, state, evaluation),
+      getRequiredPlayerLevelFromPerkPointBudget(game, state, evaluation),
       getRequiredPlayerLevelFromDestinyPointBudget(game, state),
     ),
   );
@@ -923,7 +997,11 @@ export function reconcileBuild(
       ? leveledBuild.traitIds.slice(0, traitLimit)
       : leveledBuild.traitIds;
 
-  const normalized = normalizeBuildSkillLevels(game, { ...leveledBuild, traitIds }, options);
+  const normalized = normalizeBuildSkillLevels(
+    game,
+    normalizeSupernaturalState(game, { ...leveledBuild, traitIds }),
+    options,
+  );
   return normalized;
 }
 
@@ -1045,6 +1123,7 @@ export function getSkillsExceedingPlayerLevelCap(
   game: GameData,
   state: BuildState,
   playerLevel: number,
+  evaluation?: BuildEvaluation,
 ): PlayerLevelSkillCap[] {
   const maxAllowed = getMaxAllowedSkillLevel(game, { ...state, playerLevel });
   const skills: PlayerLevelSkillCap[] = [];
@@ -1052,7 +1131,7 @@ export function getSkillsExceedingPlayerLevelCap(
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
 
-    const skillLevel = getStoredSkillLevel(game, state, skillId);
+    const skillLevel = getStoredSkillLevel(game, state, skillId, evaluation);
     if (skillLevel <= maxAllowed) continue;
 
     const tree = game.perkTrees[skillId];
@@ -1072,6 +1151,7 @@ export function getSkillsExceedingSkillLevelIncreaseLimit(
   game: GameData,
   state: BuildState,
   playerLevel: number,
+  evaluation?: BuildEvaluation,
 ): PlayerLevelSkillIncreaseConflict[] {
   const { baseLevel, playerLevelSkillBaseline, skillLevelIncreasesPerPlayerLevel } =
     game.mechanics.leveling;
@@ -1082,14 +1162,15 @@ export function getSkillsExceedingSkillLevelIncreaseLimit(
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
 
-    const skillLevel = getStoredSkillLevel(game, state, skillId);
-    const bypassIncrease = getBypassSkillIncreaseGrantBonus(game, state, skillId);
+    const skillLevel = getStoredSkillLevel(game, state, skillId, evaluation);
+    const bypassIncrease = getBypassSkillIncreaseGrantBonus(game, state, skillId, evaluation);
     const increase = getSkillIncreaseAboveBaseline(
       game,
       state,
       skillId,
       Math.max(0, skillLevel - bypassIncrease),
       playerLevelSkillBaseline,
+      evaluation,
     );
     if (increase <= 0) continue;
 
@@ -1171,13 +1252,19 @@ export function normalizeSkillTraining(
 export function getBuildPlayerLevelWarnings(
   game: GameData,
   state: BuildState,
+  evaluation?: BuildEvaluation,
 ): BuildPlayerLevelWarnings {
   const playerLevel = state.playerLevel ?? game.mechanics.leveling.baseLevel;
   const perks = getPerksRequiringHigherPlayerLevel(game, state, playerLevel);
 
   return {
-    skills: getSkillsExceedingPlayerLevelCap(game, state, playerLevel),
-    skillIncreases: getSkillsExceedingSkillLevelIncreaseLimit(game, state, playerLevel),
+    skills: getSkillsExceedingPlayerLevelCap(game, state, playerLevel, evaluation),
+    skillIncreases: getSkillsExceedingSkillLevelIncreaseLimit(
+      game,
+      state,
+      playerLevel,
+      evaluation,
+    ),
     training: getTrainingBudgetConflict(game, state, playerLevel),
     perks: perks.flatMap((perk) => {
       const skillId = getPerkSkillId(game, perk.id);
@@ -1228,6 +1315,7 @@ export function normalizeBuildSkillLevels(
 }
 
 export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
+  const evaluation = createBuildEvaluation(game, state);
   const race = resolveRace(game, state.raceId);
   const baseAttributes = race
     ? {
@@ -1249,7 +1337,7 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
       state.attributeBonus.stamina * getAttributePointsPerChoice(game, "stamina"),
   };
 
-  const buildChanges = collectBuildChanges(game, state);
+  const buildChanges = evaluation.collected;
   const sourcedEffects = buildChanges.sourcedEffects;
   const aggregated = aggregateEffects(sourcedEffects.map((entry) => entry.effect));
 
@@ -1265,24 +1353,28 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     aggregated.derivedStats,
   );
   const appliedBonuses = computeTrackedStats(game, state, sourcedEffects, attributes);
-  const conditionalBonuses = collectConditionalBonuses(game, state);
   const skillLevels: Record<string, number> = {};
   for (const skillId of game.manifest.skills) {
     if (!isAllocatableSkill(game, skillId)) continue;
-    skillLevels[skillId] = getEffectiveSkillLevel(game, state, skillId);
+    skillLevels[skillId] = getEffectiveSkillLevel(game, state, skillId, evaluation);
   }
 
   const plannerNotesByPerkId = Object.fromEntries(buildChanges.plannerNotesByPerkId);
 
-  const skillPointsPerLevel = getSkillPointsPerLevel(game, state);
-  const skillPointsSpent = computeTotalSkillPointsSpent(game, state);
-  const skillPointsRemaining = getEarnedSkillPoints(game, state) - skillPointsSpent;
+  const skillPointsPerLevel = getSkillPointsPerLevel(game, state, evaluation);
+  const skillPointsSpent = computeTotalSkillPointsSpent(game, state, evaluation);
+  const skillPointsRemaining = getEarnedSkillPoints(game, state, evaluation) - skillPointsSpent;
   const trainingLevelsPerLevel = getTrainingLevelsPerPlayerLevel(game);
   const trainingLevelsUsed = getTotalTrainingUsed(game, state);
   const trainingLevelsRemaining = getEarnedTrainingLevels(game, state) - trainingLevelsUsed;
   const perkPointsPerLevel = getPerkPointsPerLevel(game);
   const perkPointsSpent = computePerkPointsSpent(game, state);
-  const perkPointsRemaining = getEarnedPerkPoints(game, state) - perkPointsSpent;
+  const perkPointsRemaining = getEarnedPerkPoints(game, state, evaluation) - perkPointsSpent;
+  const playerLevelWarnings = getBuildPlayerLevelWarnings(game, state, evaluation);
+  const skillReqConflicts = getSelectedPerksBelowSkillRequirement(game, state);
+  const minimumPlayerLevel = getMinimumPlayerLevelForBuild(game, state, evaluation);
+  const destinyPerkPointsRemaining = getRemainingDestinyPerkPoints(game, state);
+  const traitLimit = getTraitLimit(game, state, evaluation);
 
   return {
     attributes,
@@ -1291,7 +1383,7 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     moveSpeedBonus: race?.speedBonus ?? 0,
     derivedStats,
     appliedBonuses,
-    conditionalBonuses,
+    conditionalBonuses: [],
     skillLevels,
     playerLevel: state.playerLevel,
     skillPointsSpent,
@@ -1304,6 +1396,11 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     perkPointsRemaining,
     perkPointsPerLevel,
     plannerNotesByPerkId,
+    playerLevelWarnings,
+    skillReqConflicts,
+    minimumPlayerLevel,
+    destinyPerkPointsRemaining,
+    traitLimit,
   };
 }
 
@@ -1314,20 +1411,11 @@ export function getOrderedPerkTrees(game: GameData): PerkTree[] {
 }
 
 export function getPerkById(game: GameData, perkId: string): Perk | undefined {
-  for (const tree of Object.values(game.perkTrees)) {
-    const perk = tree.perks.find((p) => p.id === perkId);
-    if (perk) return perk;
-  }
-  return undefined;
+  return game.perkById[perkId];
 }
 
 export function getPerkSkillId(game: GameData, perkId: string): string | undefined {
-  for (const [skillId, tree] of Object.entries(game.perkTrees)) {
-    if (tree.perks.some((perk) => perk.id === perkId)) {
-      return skillId;
-    }
-  }
-  return undefined;
+  return game.perkSkillIdByPerkId[perkId];
 }
 
 function getPerkTreeForPerk(game: GameData, perkId: string): PerkTree | undefined {
@@ -1691,10 +1779,10 @@ export function tryTakePerk(game: GameData, build: BuildState, perkId: string): 
   if (build.selectedPerkIds.includes(targetId) && !isStackable) return null;
   if (!canSelectPerk(game, build, targetId)) return null;
 
-  return reconcileBuild(game, {
+  return {
     ...build,
     selectedPerkIds: [...build.selectedPerkIds, targetId],
-  });
+  };
 }
 
 function getSelectedIdsAfterRemoval(
@@ -1947,14 +2035,20 @@ export function canSelectMinorSkill(game: GameData, state: BuildState, skillId: 
   return skill?.minorEligible ?? false;
 }
 
-export function getTraitLimit(game: GameData, state: BuildState): number {
-  return (
-    game.manifest.limits.traits + sumCollectedBudgetEffects(collectBuildChanges(game, state)).traitSlots
-  );
+export function getTraitLimit(
+  game: GameData,
+  state: BuildState,
+  evaluation?: BuildEvaluation,
+): number {
+  const traitSlots =
+    evaluation?.budgetEffects.traitSlots ??
+    sumCollectedBudgetEffects(collectBuildChanges(game, state)).traitSlots;
+  return game.manifest.limits.traits + traitSlots;
 }
 
 export function canSelectTrait(game: GameData, state: BuildState, traitId: string): boolean {
   if (state.traitIds.includes(traitId)) return true;
+  if (isTraitBlockedBySupernatural(game, state, traitId)) return false;
   return state.traitIds.length < getTraitLimit(game, state);
 }
 
@@ -1969,9 +2063,10 @@ export function migrateBuildState(
     ...build,
     oghmaSkillIds: build.oghmaSkillIds ?? [],
   };
+  const withSupernatural = migrateLegacySupernaturalBuild(withOghma);
 
-  if ("blessingId" in build && build.blessingId !== undefined) {
-    const { blessingId, ...rest } = build;
+  if ("blessingId" in withSupernatural && withSupernatural.blessingId !== undefined) {
+    const { blessingId, ...rest } = withSupernatural as BuildState & { blessingId?: string | null };
     return {
       ...rest,
       oghmaSkillIds: build.oghmaSkillIds ?? [],
@@ -1979,9 +2074,8 @@ export function migrateBuildState(
     };
   }
 
-  return withOghma;
+  return withSupernatural;
 }
-
 function stringArraysEqual(a: string[] | undefined, b: string[] | undefined): boolean {
   const left = a ?? [];
   const right = b ?? [];

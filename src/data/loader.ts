@@ -4,6 +4,7 @@ import statsJson from "../../data/game/stats.json";
 import racesJson from "../../data/game/races.json";
 import raceEffectsJson from "../../data/game/race-effects.json";
 import birthsignsJson from "../../data/game/birthsigns.json";
+import supernaturalJson from "../../data/game/supernatural.json";
 import deitiesJson from "../../data/game/deities.json";
 import characterOptionsJson from "../../data/game/character-options.json";
 import traitsJson from "../../data/game/traits.json";
@@ -21,6 +22,7 @@ import {
   racesSchema,
   raceEffectsSchema,
   birthsignsSchema,
+  supernaturalSchema,
   deitiesSchema,
   characterOptionsSchema,
   traitsSchema,
@@ -32,6 +34,7 @@ import {
   layoutSchema,
   labelsSchema,
   type AppData,
+  type Perk,
   type PerkTree,
 } from "./schemas";
 import {
@@ -76,6 +79,7 @@ export function loadAppData(): AppData {
   }));
   const { birthsigns: rawBirthsigns } = parse(birthsignsSchema, birthsignsJson, "birthsigns.json");
   const birthsigns = rawBirthsigns.map(enrichBirthsign);
+  const supernatural = parse(supernaturalSchema, supernaturalJson, "supernatural.json");
   const { deities: rawDeities } = parse(deitiesSchema, deitiesJson, "deities.json");
   const deities = rawDeities.map(enrichDeity);
   const { options: characterOptions } = parse(
@@ -94,6 +98,8 @@ export function loadAppData(): AppData {
   );
 
   const perkTrees: Record<string, PerkTree> = {};
+  const perkById: Record<string, Perk> = {};
+  const perkSkillIdByPerkId: Record<string, string> = {};
   for (const [skillId, filename] of Object.entries(perkIndex)) {
     const raw = perkTreeFiles[filename];
     if (!raw) {
@@ -109,6 +115,10 @@ export function loadAppData(): AppData {
         return enrichPerk(withLevel);
       }),
     };
+    for (const perk of perkTrees[skillId]!.perks) {
+      perkById[perk.id] = perk;
+      perkSkillIdByPerkId[perk.id] = skillId;
+    }
   }
 
   const theme = parse(themeSchema, themeJson, "theme.json");
@@ -123,10 +133,13 @@ export function loadAppData(): AppData {
       characterOptions,
       races,
       birthsigns,
+      supernatural,
       deities,
       traits,
       skills,
       perkTrees,
+      perkById,
+      perkSkillIdByPerkId,
     },
     ui: { theme, layout, labels },
   };

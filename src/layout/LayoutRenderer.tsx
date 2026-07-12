@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 
 import type { Layout } from "@/data/schemas";
 
@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils";
 
 import {
   computePlannerLayoutMetrics,
+  getInitialPlannerLayoutMetrics,
+  plannerLayoutMetricsEqual,
   PlannerLayoutContext,
-  type PlannerLayoutMetrics,
 } from "@/layout/plannerLayout";
 import { panelRegistry } from "@/layout/panelRegistry";
 import { PlannerSwipePanels } from "@/layout/PlannerSwipePanels";
@@ -20,28 +21,21 @@ export function isFullHeightPanel(panelId: string): boolean {
   return panelId === "skill-trees" || panelId === "character-setup" || panelId === "skill-trees-sidebar";
 }
 
-const defaultLayoutMetrics: PlannerLayoutMetrics = {
-  useThreeColumnLayout: false,
-  scale: 1,
-  gridTemplateColumns: null,
-  sideWidths: null,
-  centerWidth: 0,
-};
-
 interface LayoutRendererProps {
   layout: Layout;
 }
 
 export function LayoutRenderer({ layout }: LayoutRendererProps) {
   const layoutRef = useRef<HTMLDivElement>(null);
-  const [layoutMetrics, setLayoutMetrics] = useState<PlannerLayoutMetrics>(defaultLayoutMetrics);
+  const [layoutMetrics, setLayoutMetrics] = useState(() => getInitialPlannerLayoutMetrics(layout));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = layoutRef.current;
     if (!element) return;
 
     const update = () => {
-      setLayoutMetrics(computePlannerLayoutMetrics(element.clientWidth, layout));
+      const next = computePlannerLayoutMetrics(element.clientWidth, layout);
+      setLayoutMetrics((previous) => (plannerLayoutMetricsEqual(previous, next) ? previous : next));
     };
 
     const observer = new ResizeObserver(update);

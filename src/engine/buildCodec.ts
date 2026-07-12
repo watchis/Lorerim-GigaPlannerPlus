@@ -207,6 +207,10 @@ function compactPayloadFromBuildIds(
   for (const option of game.characterOptions) {
     const selectedId = state.characterOptionChoices[option.id] ?? option.defaultChoice;
     if (selectedId === option.defaultChoice) continue;
+    const validChoice = option.choices.some((choice) => choice.id === selectedId);
+    if (!validChoice) {
+      throw new Error(`Unknown character option choice: ${option.id}/${selectedId}`);
+    }
     characterOptionEntries.push([option.id, selectedId]);
   }
   if (characterOptionEntries.length > 0) {

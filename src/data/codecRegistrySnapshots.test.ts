@@ -20,4 +20,33 @@ describe("codec registry snapshots", () => {
     expect(registry.perks.length).toBe(460);
     expect(registry.perks).not.toEqual(createBuildCodecRegistryForVersion(game, game.manifest.version).perks);
   });
+
+  it("includes supernatural perk trees and character options in the current snapshot", () => {
+    const snapshot = getCodecRegistrySnapshot(game.manifest.version);
+    expect(snapshot).not.toBeNull();
+    expect(snapshot?.skills).toContain("vampire");
+    expect(snapshot?.skills).toContain("werewolf");
+    expect(snapshot?.characterOptions).toEqual(
+      expect.arrayContaining([
+        "vampire",
+        "werewolf",
+        "oghma-infinium",
+        "alduin-bonus-trait",
+        "au-naturel-gear",
+      ]),
+    );
+    expect(snapshot?.characterOptionChoices).toEqual(
+      expect.arrayContaining([
+        ["none", "stage-1", "stage-2", "stage-3", "stage-4"],
+        ["none", "claimed"],
+      ]),
+    );
+    expect(snapshot?.perks).toContain("vampire-scion");
+    expect(snapshot?.perks).toContain("werewolf-animal-vigor");
+    expect(snapshot?.perks.length).toBe(512);
+
+    const registry = createBuildCodecRegistryForVersion(game, game.manifest.version);
+    expect(registry.perks).toEqual(snapshot?.perks);
+    expect(registry.characterOptions).toEqual(snapshot?.characterOptions);
+  });
 });

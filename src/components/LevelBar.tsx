@@ -15,12 +15,6 @@ import {
   useSupportsHover,
 } from "@/components/ui/tooltip";
 import {
-  getBuildPlayerLevelWarnings,
-  ensurePlayerLevelForBuild,
-  getMinimumPlayerLevelForBuild,
-  getRemainingDestinyPerkPoints,
-  getSelectedPerksBelowSkillRequirement,
-  getSkillLevelForPerkChecks,
   type BuildPlayerLevelWarnings,
 } from "@/engine/buildEngine";
 import {
@@ -779,10 +773,8 @@ function LevelBarContent({
 
   const { baseLevel, maxPlayerLevel, standardMaxPlayerLevel, initialPerkPoints } =
     game.mechanics.leveling;
-  const minimumPlayerLevel = getMinimumPlayerLevelForBuild(game, build);
-  const ensuredPlayerLevel = ensurePlayerLevelForBuild(game, build, {
-    ensureMinimumPlayerLevel: true,
-  }).playerLevel;
+  const minimumPlayerLevel = computed.minimumPlayerLevel;
+  const ensuredPlayerLevel = Math.max(build.playerLevel, minimumPlayerLevel);
   const perkPointsInfo = formatLabel(barLabels.perkPointsInfo, {
     initial: initialPerkPoints,
     perLevel: computed.perkPointsPerLevel,
@@ -797,15 +789,15 @@ function LevelBarContent({
   });
   const skillOverBudget = computed.skillPointsRemaining < 0;
   const perkOverBudget = computed.perkPointsRemaining < 0;
-  const destinyOverBudget = getRemainingDestinyPerkPoints(game, build) < 0;
+  const destinyOverBudget = computed.destinyPerkPointsRemaining < 0;
   const trainingOverBudget = computed.trainingLevelsRemaining < 0;
   const skillOverBy = skillOverBudget ? Math.abs(computed.skillPointsRemaining) : 0;
   const perkOverBy = perkOverBudget ? Math.abs(computed.perkPointsRemaining) : 0;
   const destinyOverBy = destinyOverBudget
-    ? Math.abs(getRemainingDestinyPerkPoints(game, build))
+    ? Math.abs(computed.destinyPerkPointsRemaining)
     : 0;
-  const warnings = getBuildPlayerLevelWarnings(game, build);
-  const skillReqConflicts = getSelectedPerksBelowSkillRequirement(game, build);
+  const warnings = computed.playerLevelWarnings;
+  const skillReqConflicts = computed.skillReqConflicts;
 
   const perkOverBudgetMessage = perkOverBudget
     ? formatLabel(barLabels.perkOverBudgetAlert, {
@@ -843,11 +835,7 @@ function LevelBarContent({
           formatLabel(barLabels.skillReqConflictSingle, {
             perk: skillReqConflicts[0].name,
             required: skillReqConflicts[0].skillReq,
-            current: getSkillLevelForPerkChecks(
-              game,
-              build,
-              skillReqConflicts[0].skillId,
-            ),
+            current: computed.skillLevels[skillReqConflicts[0].skillId] ?? 0,
           }),
         ]
       : skillReqConflicts.length > 1

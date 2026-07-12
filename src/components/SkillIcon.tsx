@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Layers,
   MessagesSquare,
+  Moon,
   Shield,
   Sparkles,
   Star,
@@ -21,6 +22,7 @@ import {
   Tags,
   Users,
   Wind,
+  PawPrint,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +70,8 @@ const SKILL_ICONS: Record<string, LucideIcon> = {
   alteration: Layers,
   enchanting: Gem,
   destiny: Star,
+  vampire: Moon,
+  werewolf: PawPrint,
   traits: Tags,
 };
 

@@ -11,6 +11,7 @@ export const IMPORT_DOMAINS = [
   "races",
   "birthsigns",
   "deities",
+  "supernatural",
   "manifest",
 ];
 
@@ -23,6 +24,7 @@ export function resolveImportPaths() {
     perksDir: join(dataDir, "perks"),
     extensionBindingsPath: join(dataDir, "extension-bindings.json"),
     characterOptionsPath: join(dataDir, "character-options.json"),
+    supernaturalPath: join(dataDir, "supernatural.json"),
     extensionsDir: join(repoRoot, "extensions"),
   };
 }

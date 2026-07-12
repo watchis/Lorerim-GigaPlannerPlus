@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./theme/themeTransitions.css";
 
 :root {
   color-scheme: dark;
@@ -79,8 +80,61 @@ body {
 
 .app-shell {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201, 162, 39, 0.08), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(45, 90, 135, 0.06), transparent),
+    radial-gradient(
+      ellipse 70% 45% at 50% -15%,
+      color-mix(in srgb, var(--color-accent) 14%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 50% 35% at 0% 100%,
+      color-mix(in srgb, var(--color-magicka) 12%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 100% 80%,
+      color-mix(in srgb, var(--color-stamina) 10%, transparent),
+      transparent
+    ),
+    var(--color-background, #0f1117);
+}
+
+:root[data-supernatural-theme="vampire"] .app-shell {
+  background:
+    radial-gradient(
+      ellipse 75% 50% at 50% -18%,
+      color-mix(in srgb, var(--color-accent) 10%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 55% 40% at 100% 100%,
+      color-mix(in srgb, var(--color-magicka) 14%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 0% 85%,
+      color-mix(in srgb, var(--color-accent-muted) 8%, transparent),
+      transparent
+    ),
+    var(--color-background, #0f1117);
+}
+
+:root[data-supernatural-theme="werewolf"] .app-shell {
+  background:
+    radial-gradient(
+      ellipse 80% 55% at 50% -12%,
+      color-mix(in srgb, var(--color-accent) 12%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 0% 100%,
+      color-mix(in srgb, var(--color-stamina) 14%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 40% 35% at 100% 70%,
+      color-mix(in srgb, var(--color-accent-muted) 9%, transparent),
+      transparent
+    ),
     var(--color-background, #0f1117);
 }
 
@@ -100,7 +154,7 @@ body {
 }
 
 ::selection {
-  background: rgba(201, 162, 39, 0.25);
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
   color: var(--color-foreground, #e8eaef);
 }
 

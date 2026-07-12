@@ -79,6 +79,8 @@ describe("character option codec coverage", () => {
       "oghma-infinium": "claimed",
       "alduin-bonus-trait": "claimed",
       "au-naturel-gear": "2",
+      vampire: "none",
+      werewolf: "none",
     });
     expect(decoded.oghmaSkillIds).toEqual(["block", "smithing"]);
   });
@@ -90,6 +92,8 @@ describe("character option codec coverage", () => {
       "oghma-infinium": "none",
       "alduin-bonus-trait": "none",
       "au-naturel-gear": "0",
+      vampire: "none",
+      werewolf: "none",
     });
   });
 

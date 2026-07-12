@@ -13,18 +13,11 @@ import type { BuildState } from "@/engine/buildEngine";
 import type { SourcedEffect } from "@/lib/trackedStats";
 
 function getPerkById(game: GameData, perkId: string) {
-  for (const tree of Object.values(game.perkTrees)) {
-    const perk = tree.perks.find((entry) => entry.id === perkId);
-    if (perk) return perk;
-  }
-  return undefined;
+  return game.perkById[perkId];
 }
 
 function getPerkSkillId(game: GameData, perkId: string): string | null {
-  for (const [skillId, tree] of Object.entries(game.perkTrees)) {
-    if (tree.perks.some((perk) => perk.id === perkId)) return skillId;
-  }
-  return null;
+  return game.perkSkillIdByPerkId[perkId] ?? null;
 }
 
 function getStoredSkillLevel(game: GameData, state: BuildState, skillId: string): number {

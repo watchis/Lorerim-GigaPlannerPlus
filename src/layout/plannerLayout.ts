@@ -4,6 +4,8 @@ import type { Layout } from "@/data/schemas";
 
 const CENTER_TO_SIDES_RATIO = 1.5;
 export const PLANNER_COLUMN_GAP_PX = 16;
+/** Matches LayoutRenderer outer wrapper `max-w-[1800px]`. */
+export const PLANNER_LAYOUT_MAX_WIDTH_PX = 1800;
 /** Below this inner layout width, panes stack vertically (phones / narrow portrait). */
 export const STACKED_LAYOUT_MAX_WIDTH = 720;
 /** Side-by-side picker layout needs at least this much center column width. */
@@ -88,6 +90,42 @@ function getSideDesignWidths(layout: Layout): { left: number; right: number } | 
 export interface PlannerLayoutMetrics extends PlannerLayoutState {
   sideWidths: { left: number; right: number } | null;
   centerWidth: number;
+}
+
+function getPlannerLayoutHorizontalPaddingPx(viewportWidth: number): number {
+  // Keep in sync with LayoutRenderer outer padding: p-2 sm:p-4 lg:p-6
+  if (viewportWidth >= 1024) return 48;
+  if (viewportWidth >= 640) return 32;
+  return 16;
+}
+
+/** Estimate inner layout width before the layout container is measured. */
+export function estimatePlannerLayoutContainerWidth(
+  viewportWidth = typeof globalThis.window !== "undefined" ? globalThis.window.innerWidth : 0,
+): number {
+  if (viewportWidth <= 0) return 0;
+
+  const contentWidth = Math.min(viewportWidth, PLANNER_LAYOUT_MAX_WIDTH_PX);
+  return Math.max(0, contentWidth - getPlannerLayoutHorizontalPaddingPx(viewportWidth));
+}
+
+export function plannerLayoutMetricsEqual(
+  left: PlannerLayoutMetrics,
+  right: PlannerLayoutMetrics,
+): boolean {
+  return (
+    left.useThreeColumnLayout === right.useThreeColumnLayout &&
+    left.scale === right.scale &&
+    left.gridTemplateColumns === right.gridTemplateColumns &&
+    left.centerWidth === right.centerWidth &&
+    left.sideWidths?.left === right.sideWidths?.left &&
+    left.sideWidths?.right === right.sideWidths?.right
+  );
+}
+
+/** Synchronous first-paint layout so desktop does not mount swipe panes then remount the grid. */
+export function getInitialPlannerLayoutMetrics(layout: Layout): PlannerLayoutMetrics {
+  return computePlannerLayoutMetrics(estimatePlannerLayoutContainerWidth(), layout);
 }
 
 export function computePlannerLayoutMetrics(

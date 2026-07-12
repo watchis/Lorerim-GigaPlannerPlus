@@ -11,12 +11,15 @@ export interface BuildCodecRegistry {
   traits: readonly string[];
   skills: readonly string[];
   perks: readonly string[];
+  characterOptions?: readonly string[];
+  characterOptionChoices?: readonly (readonly string[])[];
   raceIndex: ReadonlyMap<string, number>;
   birthsignIndex: ReadonlyMap<string, number>;
   deityIndex: ReadonlyMap<string, number>;
   traitIndex: ReadonlyMap<string, number>;
   skillIndex: ReadonlyMap<string, number>;
   perkIndex: ReadonlyMap<string, number>;
+  characterOptionIndex?: ReadonlyMap<string, number>;
 }
 
 function indexById(ids: string[]): ReadonlyMap<string, number> {
@@ -45,6 +48,8 @@ function createRegistryFromLists(
     traits: readonly string[];
     skills: readonly string[];
     perks: readonly string[];
+    characterOptions?: readonly string[];
+    characterOptionChoices?: readonly (readonly string[])[];
   },
 ): BuildCodecRegistry {
   return {
@@ -56,12 +61,17 @@ function createRegistryFromLists(
     traits: lists.traits,
     skills: lists.skills,
     perks: lists.perks,
+    characterOptions: lists.characterOptions,
+    characterOptionChoices: lists.characterOptionChoices,
     raceIndex: indexById([...lists.races]),
     birthsignIndex: indexById([...lists.birthsigns]),
     deityIndex: indexById([...lists.deities]),
     traitIndex: indexById([...lists.traits]),
     skillIndex: indexById([...lists.skills]),
     perkIndex: indexById([...lists.perks]),
+    characterOptionIndex: lists.characterOptions
+      ? indexById([...lists.characterOptions])
+      : undefined,
   };
 }
 

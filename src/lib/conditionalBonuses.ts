@@ -1,4 +1,4 @@
-import type { GameData } from "@/data/schemas";
+import type { GameData, Perk } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
 import { extractConditionalBonusDetails } from "@/lib/resolveOptionEffects";
 import { trimBonusClauses } from "@/lib/trimBonusClause";
@@ -8,6 +8,10 @@ export { extractConditionalBonusDetails };
 export interface ConditionalBonusEntry {
   source: string;
   text: string;
+}
+
+function getPerkById(game: GameData, perkId: string): Perk | undefined {
+  return game.perkById[perkId];
 }
 
 export function collectConditionalBonuses(
@@ -44,14 +48,12 @@ export function collectConditionalBonuses(
   }
 
   for (const perkId of state.selectedPerkIds) {
-    for (const tree of Object.values(game.perkTrees)) {
-      const perk = tree.perks.find((entry) => entry.id === perkId);
-      if (!perk) continue;
-      const details = extractConditionalBonusDetails(perk.description, perk.effects);
-      for (const text of details) {
-        for (const trimmed of trimBonusClauses(text)) {
-          entries.push({ source: perk.name, text: trimmed });
-        }
+    const perk = getPerkById(game, perkId);
+    if (!perk) continue;
+    const details = extractConditionalBonusDetails(perk.description, perk.effects);
+    for (const text of details) {
+      for (const trimmed of trimBonusClauses(text)) {
+        entries.push({ source: perk.name, text: trimmed });
       }
     }
   }

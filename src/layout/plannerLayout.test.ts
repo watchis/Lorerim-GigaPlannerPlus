@@ -4,9 +4,13 @@ import type { Layout } from "@/data/schemas";
 
 import {
   computePlannerLayoutMetrics,
+  estimatePlannerLayoutContainerWidth,
+  getInitialPlannerLayoutMetrics,
   getSwipePanelIds,
   getThreeColumnDesignWidth,
   PICKER_SIDE_BY_SIDE_MIN_WIDTH,
+  PLANNER_LAYOUT_MAX_WIDTH_PX,
+  plannerLayoutMetricsEqual,
   STACKED_LAYOUT_MAX_WIDTH,
 } from "@/layout/plannerLayout";
 
@@ -96,5 +100,30 @@ describe("plannerLayout", () => {
 
   it("exports picker compact threshold constant", () => {
     expect(PICKER_SIDE_BY_SIDE_MIN_WIDTH).toBe(520);
+  });
+
+  it("estimates inner layout width from viewport size and padding", () => {
+    expect(estimatePlannerLayoutContainerWidth(500)).toBe(484);
+    expect(estimatePlannerLayoutContainerWidth(800)).toBe(768);
+    expect(estimatePlannerLayoutContainerWidth(1400)).toBe(1352);
+    expect(estimatePlannerLayoutContainerWidth(PLANNER_LAYOUT_MAX_WIDTH_PX + 200)).toBe(
+      PLANNER_LAYOUT_MAX_WIDTH_PX - 48,
+    );
+  });
+
+  it("uses three-column layout on first paint for wide viewports", () => {
+    const metrics = getInitialPlannerLayoutMetrics(lorerimLayout);
+    expect(metrics.useThreeColumnLayout).toBe(
+      estimatePlannerLayoutContainerWidth() > STACKED_LAYOUT_MAX_WIDTH,
+    );
+  });
+
+  it("compares planner layout metrics by value", () => {
+    const left = computePlannerLayoutMetrics(1800, lorerimLayout);
+    const right = computePlannerLayoutMetrics(1800, lorerimLayout);
+    const narrow = computePlannerLayoutMetrics(600, lorerimLayout);
+
+    expect(plannerLayoutMetricsEqual(left, right)).toBe(true);
+    expect(plannerLayoutMetricsEqual(left, narrow)).toBe(false);
   });
 });

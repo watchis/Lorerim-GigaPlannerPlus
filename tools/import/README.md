@@ -50,6 +50,7 @@ npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --only perks
 | `import:races` | `importers/races.mjs` | `races.json`, `race-effects.json` |
 | `import:birthsigns` | `importers/birthsigns.mjs` | `birthsigns.json` |
 | `import:deities` | `importers/deities.mjs` | `deities.json` |
+| `import:supernatural` | `importers/supernatural.mjs` | `supernatural.json` |
 
 Standalone domain scripts re-scan plugins (same skip cache as the parent). Use `import:lorerim --only <domains>` when you want one scan and a subset of outputs.
 
@@ -68,6 +69,7 @@ Standalone domain scripts re-scan plugins (same skip cache as the parent). Use `
 | Playable races | `data/game/races.json` |
 | Big Tweaks `REQ_Ability_Birthsign_*` + `doom*MSG` | `data/game/birthsigns.json` |
 | Wintersun altar deity MGEF descriptions + worship tenets | `data/game/deities.json` |
+| Requiem `REQ_Vampire_*` / `REQ_Werewolf_*` ability spells | `data/game/supernatural.json` |
 
 ### CLI options
 
@@ -77,7 +79,7 @@ Standalone domain scripts re-scan plugins (same skip cache as the parent). Use `
 | `--dry-run` | Parse and print a summary without writing files |
 | `--plugin-limit <n>` | Scan only the first N plugins (debug) |
 | `--rescan-plugins` | Reclassify every plugin; ignore the non-mechanics skip cache |
-| `--only <domains>` | Comma-separated domains for `import:lorerim` only: `perks`, `traits`, `races`, `birthsigns`, `deities`, `manifest` |
+| `--only <domains>` | Comma-separated domains for `import:lorerim` only: `perks`, `traits`, `races`, `birthsigns`, `deities`, `supernatural`, `manifest` |
 | `--help`, `-h` | Show usage |
 
 ### Runtime
@@ -114,6 +116,7 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA`, parsed race `effects` in `race-effects.json` | race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
 | Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
+| Vampirism stage bonuses (`REQ_Vampire_Stage1`–`Stage4`), werewolf human-form bonuses (`REQ_Werewolf_HumanForm`), racial curse abilities | Hand-tuned stage names/descriptions, `bonusDetails`, and racial bonus text in `supernatural.json` |
 | `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
 
 When `effects` is empty, the importer parses the `bonus` text with rule-based patterns in `lib/parse-bonus-effects.mjs` (percent modifiers, attribute flat bonuses, common weapon/resist phrases). Conditional or narrative-only bonuses may stay empty until rules are extended.
@@ -147,6 +150,8 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 - `data/game/character-options.json`
 - `data/game/extension-bindings.json` — registry linking perks/options to extension plugins (applied during import; not generated from plugins)
 - `data/ui/*`
+
+`supernatural.json` is **imported** from plugins but hand-tuned descriptions and racial bonus copy are preserved from the existing file (same merge pattern as races).
 
 ### Extension plugins
 

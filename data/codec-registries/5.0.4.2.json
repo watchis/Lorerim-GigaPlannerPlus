@@ -178,6 +178,8 @@
     "alteration",
     "enchanting",
     "destiny",
+    "vampire",
+    "werewolf",
     "traits"
   ],
   "perks": [
@@ -641,6 +643,95 @@
     "destiny-48",
     "destiny-49",
     "destiny-50",
-    "destiny-51"
+    "destiny-51",
+    "vampire-scion",
+    "vampire-unearthly-will",
+    "vampire-night-cloak",
+    "vampire-energy-vampire",
+    "vampire-shapechanger",
+    "vampire-vampiric-grip",
+    "vampire-fountain-of-blood",
+    "vampire-slasher",
+    "vampire-hemomancer",
+    "vampire-blood-storm",
+    "vampire-auspex",
+    "vampire-courts-chef",
+    "vampire-wings-of-the-strix",
+    "vampire-maelstrom",
+    "vampire-gutwrench",
+    "vampire-mist-form",
+    "vampire-supernatural-reflexes",
+    "vampire-tremor",
+    "vampire-vampiric-seed",
+    "vampire-vampiric-orb",
+    "vampire-vampiric-cloak",
+    "vampire-blood-from-a-stone",
+    "vampire-starving-artist",
+    "vampire-make-them-beautiful",
+    "werewolf-bestial-strength",
+    "werewolf-bestial-strength-r2",
+    "werewolf-bestial-strength-r3",
+    "werewolf-bestial-strength-r4",
+    "werewolf-animal-vigor",
+    "werewolf-gorging",
+    "werewolf-savage-feeding",
+    "werewolf-rampage",
+    "werewolf-feral-instincts",
+    "werewolf-infinite-duress",
+    "werewolf-supernatural-strength",
+    "werewolf-roadkill",
+    "werewolf-swipe",
+    "werewolf-improved-bloodthirst",
+    "werewolf-improved-bloodthirst-r2",
+    "werewolf-lycanthropic-speed",
+    "werewolf-lycanthropic-regeneration",
+    "werewolf-lycanthropic-regeneration-r2",
+    "werewolf-totem-of-terror",
+    "werewolf-totem-of-terror-r2",
+    "werewolf-totem-of-the-hunt",
+    "werewolf-totem-of-the-hunt-r2",
+    "werewolf-totem-of-ice-brothers",
+    "werewolf-totem-of-ice-brothers-r2",
+    "werewolf-bury-the-beast",
+    "werewolf-wolf-among-men",
+    "werewolf-spread-the-beastblood"
+  ],
+  "characterOptions": [
+    "oghma-infinium",
+    "alduin-bonus-trait",
+    "vampire",
+    "werewolf",
+    "au-naturel-gear"
+  ],
+  "characterOptionChoices": [
+    [
+      "none",
+      "claimed",
+      "warrior",
+      "mage",
+      "thief"
+    ],
+    [
+      "none",
+      "claimed"
+    ],
+    [
+      "none",
+      "stage-1",
+      "stage-2",
+      "stage-3",
+      "stage-4"
+    ],
+    [
+      "none",
+      "claimed"
+    ],
+    [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ]
   ]
 }

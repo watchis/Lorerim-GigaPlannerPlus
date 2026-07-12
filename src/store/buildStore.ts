@@ -1,5 +1,6 @@
+import { startTransition } from "react";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import type { AppData } from "@/data/schemas";
 import {
   allocatePerk as allocatePerkInBuild,
@@ -18,6 +19,7 @@ import {
   getEffectiveSkillFloor,
   isAllocatableSkill,
   preserveSkillPointAllocations,
+  reconcileImportedBuild,
   reconcileBuild,
   removePerk as removePerkFromBuild,
   tryTakePerk as tryTakePerkInBuild,
@@ -59,18 +61,37 @@ import {
 } from "@/store/savedBuilds";
 import type { DecodedBuildPackage } from "@/engine/buildCodec";
 import { isOghmaInfiniumActive } from "@/lib/oghmaInfinium";
+import {
+  applySupernaturalOptionChange,
+  isSupernaturalOptionId,
+} from "@/lib/supernatural";
+import { createDebouncedJSONStorage } from "@/store/debouncedPersistStorage";
+import { scheduleAfterPaint } from "@/store/scheduleAfterPaint";
 
 function recompute(data: AppData, build: BuildState): ComputedBuild {
   return computeBuild(data.game, build);
 }
 
-function syncActiveEntryBuild(
+let deferredCommitToken = 0;
+
+function syncActiveSavedBuild(
   savedBuilds: SavedBuild[],
   activeBuildId: string,
   build: BuildState,
   modpackVersion: string,
 ): SavedBuild[] {
   return updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion);
+}
+
+function reconcileAndRecompute(gameData: AppData, build: BuildState): {
+  build: BuildState;
+  computed: ComputedBuild;
+} {
+  const nextBuild = reconcileBuild(gameData.game, build);
+  return {
+    build: nextBuild,
+    computed: recompute(gameData, nextBuild),
+  };
 }
 
 function getActiveBuildFromPackage(decoded: DecodedBuildPackage): BuildState {
@@ -181,8 +202,23 @@ function updateActiveEntry(
   updater: (entry: SavedBuild) => SavedBuild,
 ): SavedBuild[] {
   return savedBuilds.map((entry) =>
-    entry.id === activeBuildId ? updater(normalizeSavedBuild(entry)) : normalizeSavedBuild(entry),
+    entry.id === activeBuildId ? updater(normalizeSavedBuild(entry)) : entry,
   );
+}
+
+function commitPreservedBuildMutation(
+  set: (partial: Partial<BuildStore>) => void,
+  get: () => BuildStore,
+  candidate: BuildState,
+): void {
+  const { gameData, build } = get();
+  if (!gameData) return;
+
+  const preserved = preserveSkillPointAllocations(gameData.game, build, candidate);
+  const leveled = ensurePlayerLevelForBuild(gameData.game, preserved, {
+    ensureMinimumPlayerLevel: true,
+  });
+  commitBuild(set, get, leveled);
 }
 
 function commitBuild(
@@ -190,18 +226,28 @@ function commitBuild(
   get: () => BuildStore,
   nextBuild: BuildState,
 ): void {
-  const { gameData, savedBuilds, activeBuildId } = get();
+  const { gameData } = get();
   if (!gameData) return;
 
-  set({
-    build: nextBuild,
-    savedBuilds: updateSavedBuildInList(
-      savedBuilds,
-      activeBuildId,
-      nextBuild,
-      gameData.game.manifest.version,
-    ),
-    computed: recompute(gameData, nextBuild),
+  const modpackVersion = gameData.game.manifest.version;
+  const token = ++deferredCommitToken;
+
+  startTransition(() => set({ build: nextBuild }));
+
+  scheduleAfterPaint(() => {
+    if (token !== deferredCommitToken) return;
+    const current = get();
+    if (current.build !== nextBuild) return;
+
+    set({
+      computed: recompute(gameData, nextBuild),
+      savedBuilds: syncActiveSavedBuild(
+        current.savedBuilds,
+        current.activeBuildId,
+        nextBuild,
+        modpackVersion,
+      ),
+    });
   });
 }
 
@@ -213,7 +259,7 @@ function commitMainBuild(
   const { gameData, savedBuilds, activeBuildId } = get();
   if (!gameData) return;
 
-  const syncedBuilds = syncActiveEntryBuild(
+  const syncedBuilds = syncActiveSavedBuild(
     savedBuilds,
     activeBuildId,
     get().build,
@@ -294,13 +340,14 @@ export const useBuildStore = create<BuildStore>()(
         setRace: (raceId) => {
           const { gameData, build } = get();
           if (!gameData) return;
-          const previous = reconcileBuild(gameData.game, build);
-          const candidate = { ...previous, raceId };
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
-          const reconciled = reconcileBuild(gameData.game, preserved);
-          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
-            ensureMinimumPlayerLevel: true,
-          });
+          const reconciled = reconcileBuild(gameData.game, build);
+          const candidate = { ...reconciled, raceId };
+          const preserved = preserveSkillPointAllocations(gameData.game, reconciled, candidate);
+          const leveled = ensurePlayerLevelForBuild(
+            gameData.game,
+            reconcileBuild(gameData.game, preserved),
+            { ensureMinimumPlayerLevel: true },
+          );
           commitBuild(set, get, leveled);
         },
 
@@ -321,16 +368,27 @@ export const useBuildStore = create<BuildStore>()(
           const option = gameData.game.characterOptions.find((entry) => entry.id === optionId);
           if (!option || !option.choices.some((choice) => choice.id === choiceId)) return;
 
-          const characterOptionChoices = {
-            ...build.characterOptionChoices,
-            [optionId]: choiceId,
+          if (isSupernaturalOptionId(optionId)) {
+            const nextBuild = applySupernaturalOptionChange(
+              gameData.game,
+              build,
+              optionId,
+              choiceId,
+            );
+            commitBuild(set, get, nextBuild);
+            return;
+          }
+
+          const withChoice = {
+            ...build,
+            characterOptionChoices: {
+              ...build.characterOptionChoices,
+              [optionId]: choiceId,
+            },
           };
 
-          const previous = reconcileBuild(gameData.game, build);
-          const candidate = { ...previous, characterOptionChoices };
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
-          const reconciled = reconcileBuild(gameData.game, preserved);
-          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+          const preserved = preserveSkillPointAllocations(gameData.game, build, withChoice);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, preserved, {
             ensureMinimumPlayerLevel: true,
           });
           commitBuild(set, get, leveled);
@@ -365,15 +423,7 @@ export const useBuildStore = create<BuildStore>()(
             majorSkillIds.push(skillId);
           }
 
-          // Keep absolute skill levels — major/minor only changes the floor bonus, not invested levels.
-          const previous = reconcileBuild(gameData.game, build);
-          const candidate = { ...previous, majorSkillIds };
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
-          const reconciled = reconcileBuild(gameData.game, preserved);
-          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
-            ensureMinimumPlayerLevel: true,
-          });
-          commitBuild(set, get, leveled);
+          commitPreservedBuildMutation(set, get, { ...build, majorSkillIds });
         },
 
         toggleMinorSkill: (skillId) => {
@@ -387,14 +437,7 @@ export const useBuildStore = create<BuildStore>()(
             minorSkillIds.push(skillId);
           }
 
-          const previous = reconcileBuild(gameData.game, build);
-          const candidate = { ...previous, minorSkillIds };
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
-          const reconciled = reconcileBuild(gameData.game, preserved);
-          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
-            ensureMinimumPlayerLevel: true,
-          });
-          commitBuild(set, get, leveled);
+          commitPreservedBuildMutation(set, get, { ...build, minorSkillIds });
         },
 
         toggleOghmaSkill: (skillId) => {
@@ -408,14 +451,7 @@ export const useBuildStore = create<BuildStore>()(
             oghmaSkillIds.push(skillId);
           }
 
-          const previous = reconcileBuild(gameData.game, build);
-          const candidate = { ...previous, oghmaSkillIds };
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
-          const reconciled = reconcileBuild(gameData.game, preserved);
-          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
-            ensureMinimumPlayerLevel: true,
-          });
-          commitBuild(set, get, leveled);
+          commitPreservedBuildMutation(set, get, { ...build, oghmaSkillIds });
         },
 
         adjustAttribute: (stat, delta) => {
@@ -631,11 +667,7 @@ export const useBuildStore = create<BuildStore>()(
 
           set({
             savedBuilds: nextBuilds,
-            build: reconcileBuild(gameData.game, migrateBuildState(activeBuild)),
-            computed: recompute(
-              gameData,
-              reconcileBuild(gameData.game, migrateBuildState(activeBuild)),
-            ),
+            ...reconcileAndRecompute(gameData, migrateBuildState(activeBuild)),
           });
         },
 
@@ -669,11 +701,7 @@ export const useBuildStore = create<BuildStore>()(
           set({
             savedBuilds: [...syncedBuilds, newEntry],
             activeBuildId: newEntry.id,
-            build: reconcileBuild(gameData.game, migrateBuildState(activeBuild)),
-            computed: recompute(
-              gameData,
-              reconcileBuild(gameData.game, migrateBuildState(activeBuild)),
-            ),
+            ...reconcileAndRecompute(gameData, migrateBuildState(activeBuild)),
           });
         },
 
@@ -758,6 +786,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
           const currentModpackVersion = gameData.game.manifest.version;
           const importedModpackVersion = modpackVersion ?? currentModpackVersion;
+          const preparedBuild = reconcileImportedBuild(gameData.game, importedBuild);
 
           const syncedBuilds = updateSavedBuildInList(
             savedBuilds,
@@ -766,12 +795,16 @@ export const useBuildStore = create<BuildStore>()(
             currentModpackVersion,
           );
           const milestones = importedMilestones.map((entry) =>
-            createMilestone(entry.name, reconcileBuild(gameData.game, entry.build), entry.notes ?? ""),
+            createMilestone(
+              entry.name,
+              reconcileImportedBuild(gameData.game, entry.build),
+              entry.notes ?? "",
+            ),
           );
           const newEntry = markSavedBuildImported({
             ...createSavedBuild(
               uniqueBuildName(name ?? "", syncedBuilds),
-              importedBuild,
+              preparedBuild,
               milestones,
               defaultVariantName,
             ),
@@ -784,8 +817,8 @@ export const useBuildStore = create<BuildStore>()(
           set({
             savedBuilds: [...syncedBuilds, newEntry],
             activeBuildId: newEntry.id,
-            build: importedBuild,
-            computed: recompute(gameData, importedBuild),
+            build: preparedBuild,
+            computed: recompute(gameData, preparedBuild),
           });
         },
 
@@ -802,14 +835,14 @@ export const useBuildStore = create<BuildStore>()(
             const milestones = (entry.milestones ?? []).map((milestone) =>
               createMilestone(
                 milestone.name,
-                reconcileBuild(gameData.game, milestone.build),
+                reconcileImportedBuild(gameData.game, milestone.build),
                 milestone.notes ?? "",
               ),
             );
             return {
               ...createSavedBuild(
                 entry.name,
-                entry.build,
+                reconcileImportedBuild(gameData.game, entry.build),
                 milestones,
                 entry.defaultVariantName,
               ),
@@ -856,7 +889,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
           const modpackVersion = gameData.game.manifest.version;
 
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
+          const syncedBuilds = syncActiveSavedBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
@@ -881,7 +914,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const modpackVersion = gameData.game.manifest.version;
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
+          const syncedBuilds = syncActiveSavedBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
@@ -916,7 +949,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const modpackVersion = gameData.game.manifest.version;
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
+          const syncedBuilds = syncActiveSavedBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
@@ -950,7 +983,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const effectiveModpackVersion = modpackVersion ?? gameData.game.manifest.version;
-          const syncedBuilds = syncActiveEntryBuild(
+          const syncedBuilds = syncActiveSavedBuild(
             savedBuilds,
             activeBuildId,
             build,
@@ -959,7 +992,7 @@ export const useBuildStore = create<BuildStore>()(
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry) return;
 
-          const reconciled = reconcileBuild(gameData.game, importedBuild);
+          const reconciled = reconcileImportedBuild(gameData.game, importedBuild);
           const milestoneName =
             name?.trim() ||
             nextMilestoneName(
@@ -1015,7 +1048,7 @@ export const useBuildStore = create<BuildStore>()(
           if (!gameData) return;
 
           const modpackVersion = gameData.game.manifest.version;
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
+          const syncedBuilds = syncActiveSavedBuild(savedBuilds, activeBuildId, build, modpackVersion);
           const entry = getActiveSavedBuild(syncedBuilds, activeBuildId);
           if (!entry || getVariantCount(entry) <= 1) return;
 
@@ -1092,7 +1125,7 @@ export const useBuildStore = create<BuildStore>()(
           const { savedBuilds, activeBuildId, build, gameData } = get();
           if (!gameData) return;
           const modpackVersion = gameData.game.manifest.version;
-          const syncedBuilds = syncActiveEntryBuild(savedBuilds, activeBuildId, build, modpackVersion);
+          const syncedBuilds = syncActiveSavedBuild(savedBuilds, activeBuildId, build, modpackVersion);
 
           set({
             savedBuilds: updateActiveEntry(syncedBuilds, activeBuildId, (entry) => ({
@@ -1106,6 +1139,9 @@ export const useBuildStore = create<BuildStore>()(
     },
     {
       name: LIBRARY_STORAGE_KEY,
+      storage: import.meta.env.VITEST
+        ? createJSONStorage(() => localStorage)
+        : createDebouncedJSONStorage(() => localStorage),
       partialize: (state) => ({
         build: state.build,
         savedBuilds: state.savedBuilds,

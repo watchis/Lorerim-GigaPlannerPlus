@@ -25,7 +25,8 @@ async function importBuildStore() {
   const storage = createLocalStorageMock();
   vi.stubGlobal("localStorage", storage);
   vi.stubGlobal("window", { localStorage: storage });
-  return import("@/store/buildStore");
+  const { useBuildStore } = await import("@/store/buildStore");
+  return { useBuildStore, storage };
 }
 
 describe("buildStore variant notes persistence", () => {

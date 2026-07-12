@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 
 import {
   collectPerkBadgeLayoutNodes,
@@ -32,29 +32,17 @@ export function usePerkBadgePlacements(
     setPlacements((current) => (perkBadgePlacementsEqual(current, next) ? current : next));
   }, [containerRef]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     revisionRef.current = revision;
     runLayout();
 
-    let frame2 = 0;
-    let frame3 = 0;
-    const frame1 = requestAnimationFrame(() => {
+    const frame = requestAnimationFrame(() => {
       if (revisionRef.current !== revision) return;
       runLayout();
-      frame2 = requestAnimationFrame(() => {
-        if (revisionRef.current !== revision) return;
-        runLayout();
-        frame3 = requestAnimationFrame(() => {
-          if (revisionRef.current !== revision) return;
-          runLayout();
-        });
-      });
     });
 
     return () => {
-      cancelAnimationFrame(frame1);
-      cancelAnimationFrame(frame2);
-      cancelAnimationFrame(frame3);
+      cancelAnimationFrame(frame);
     };
   }, [runLayout, revision]);
 

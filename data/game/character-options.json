@@ -31,6 +31,33 @@
       ]
     },
     {
+      "id": "vampire",
+      "titleLabel": "vampireOption",
+      "descriptionLabel": "vampireOptionDescription",
+      "defaultChoice": "none",
+      "extension": "supernatural-vampire",
+      "controlType": "select",
+      "choices": [
+        { "id": "none", "label": "supernaturalNone" },
+        { "id": "stage-1", "label": "vampireStage1" },
+        { "id": "stage-2", "label": "vampireStage2" },
+        { "id": "stage-3", "label": "vampireStage3" },
+        { "id": "stage-4", "label": "vampireStage4" }
+      ]
+    },
+    {
+      "id": "werewolf",
+      "titleLabel": "werewolfOption",
+      "descriptionLabel": "werewolfOptionDescription",
+      "defaultChoice": "none",
+      "extension": "supernatural-werewolf",
+      "controlType": "toggle",
+      "choices": [
+        { "id": "none", "label": "supernaturalNone" },
+        { "id": "claimed", "label": "supernaturalWerewolf" }
+      ]
+    },
+    {
       "id": "au-naturel-gear",
       "titleLabel": "auNaturelGear",
       "descriptionLabel": "auNaturelGearDescription",

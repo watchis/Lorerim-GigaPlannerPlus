@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createBuildCodecRegistry,
+  createBuildCodecRegistryForVersion,
   lookupId,
   lookupIdSafe,
   lookupIndex,
@@ -9,12 +10,34 @@ import { getTestGameData } from "@/test/helpers";
 
 describe("buildCodecRegistry", () => {
   const game = getTestGameData();
-  const registry = createBuildCodecRegistry(game);
+  const registry = createBuildCodecRegistryForVersion(game, game.manifest.version);
 
   it("indexes races, skills, and perks", () => {
     expect(registry.races).toContain("nord");
     expect(registry.skills).toContain("block");
     expect(registry.perks.length).toBeGreaterThan(100);
+  });
+
+  it("indexes supernatural character option choices for codec round-trip", () => {
+    const vampireIndex = lookupIndex(registry.characterOptionIndex!, "vampire", "character option");
+    const werewolfIndex = lookupIndex(registry.characterOptionIndex!, "werewolf", "character option");
+    expect(vampireIndex).toBeTypeOf("number");
+    expect(werewolfIndex).toBeTypeOf("number");
+
+    const vampireChoices = registry.characterOptionChoices[vampireIndex!];
+    const werewolfChoices = registry.characterOptionChoices[werewolfIndex!];
+
+    expect(vampireChoices).toEqual(["none", "stage-1", "stage-2", "stage-3", "stage-4"]);
+    expect(werewolfChoices).toEqual(["none", "claimed"]);
+  });
+
+  it("indexes supernatural perk trees from manifest skills", () => {
+    expect(registry.skills).toContain("vampire");
+    expect(registry.skills).toContain("werewolf");
+    expect(registry.perks).toContain("vampire-scion");
+    expect(registry.perks).toContain("vampire-hemomancer");
+    expect(registry.perks).toContain("werewolf-animal-vigor");
+    expect(registry.perks).toContain("werewolf-bestial-strength");
   });
 
   it("looks up ids by index and back", () => {
