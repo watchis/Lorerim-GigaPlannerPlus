@@ -78,7 +78,6 @@ describe("LayoutRenderer isFullHeightPanel", () => {
 
 describe("LayoutRenderer full-height panel sizing", () => {
   it("renders full-height panels in a flex-1 wrapper (stable pane sizing)", async () => {
-    // Minimal layout: 3 columns with the standard three panels.
     const layout = {
       columns: [
         { width: "320px", panels: ["character-setup"] },
@@ -104,6 +103,38 @@ describe("LayoutRenderer full-height panel sizing", () => {
     );
     expect(wrappers.length).toBeGreaterThan(0);
 
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it("renders the three-column grid on first paint for wide viewports", async () => {
+    const layout = {
+      columns: [
+        { width: "320px", panels: ["character-setup"] },
+        { width: "minmax(0, 1fr)", panels: ["skill-trees"] },
+        { width: "340px", panels: ["skill-trees-sidebar"] },
+      ],
+    } as any;
+
+    const originalInnerWidth = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { value: 1400, configurable: true });
+
+    const { act, createElement } = await import("react");
+    const { createRoot } = await import("react-dom/client");
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(createElement(LayoutRenderer, { layout }));
+    });
+
+    const grid = container.querySelector(".grid.min-h-0.flex-1");
+    expect(grid).not.toBeNull();
+    expect((grid as HTMLElement).style.gridTemplateColumns).not.toBe("");
+
+    Object.defineProperty(window, "innerWidth", { value: originalInnerWidth, configurable: true });
     act(() => root.unmount());
     container.remove();
   });
