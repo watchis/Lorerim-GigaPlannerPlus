@@ -37,7 +37,7 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
       perkAvailable: "#c0bac6",
       perkMiniUnselected: "#75717c",
       perkSelected: "#dc6680",
-      perkPartial: "#c898ff",
+      perkPartial: "#b371ff",
       perkLocked: "#524e58",
       perkPrereq: "#9d97a6",
     },
