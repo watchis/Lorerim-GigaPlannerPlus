@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import themeJson from "../../data/ui/theme.json";
+import { parseColor } from "@/theme/colorInterpolation";
 import {
   applySupernaturalThemeVariant,
   getSupernaturalThemeVariant,
@@ -11,6 +12,12 @@ import { createTestBuildState } from "@/test/helpers";
 import type { Theme } from "@/data/schemas";
 
 const baseTheme = themeJson as Theme;
+
+function relativeLuminance(hex: string): number {
+  const rgb = parseColor(hex);
+  if (!rgb) return 0;
+  return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+}
 
 describe("supernaturalTheme", () => {
   it("returns vampire variant when vampire option is active", () => {
@@ -79,5 +86,18 @@ describe("supernaturalTheme", () => {
 
   it("returns the base theme when variant is null", () => {
     expect(applySupernaturalThemeVariant(baseTheme, null)).toEqual(baseTheme);
+  });
+
+  it("uses curse backgrounds near base-theme brightness for readability", () => {
+    const baseBackgroundLuminance = relativeLuminance(baseTheme.colors.background);
+
+    for (const variant of ["vampire", "werewolf"] as const) {
+      const themed = applySupernaturalThemeVariant(baseTheme, variant);
+      const backgroundLuminance = relativeLuminance(themed.colors.background);
+      const surfaceLuminance = relativeLuminance(themed.colors.surface);
+
+      expect(backgroundLuminance).toBeGreaterThanOrEqual(baseBackgroundLuminance * 0.9);
+      expect(surfaceLuminance).toBeGreaterThanOrEqual(relativeLuminance(baseTheme.colors.surface) * 0.9);
+    }
   });
 });
