@@ -19,8 +19,8 @@ const snapshotModules = import.meta.glob("../../data/codec-registries/*.json", {
 
 const SNAPSHOTS = Object.fromEntries(
   Object.entries(snapshotModules)
-    .filter(([path]) => !path.endsWith("/index.json"))
-    .map(([path, snapshot]) => [snapshot.version, snapshot]),
+    .filter((entry) => !entry[0].endsWith("/index.json"))
+    .map(([, snapshot]) => [snapshot.version, snapshot]),
 );
 
 export const codecRegistryVersions = registryIndex.versions;

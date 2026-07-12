@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "test": "npm run test:app && npm run test:import",
     "test:app": "vitest run",
-    "test:import": "node tools/import/run-lib-tests.mjs && node --test tools/export-codec-registry.test.mjs",
+    "test:import": "node tools/import/run-lib-tests.mjs",
     "test:watch": "vitest",
     "preview": "vite preview",
     "import:lorerim": "node tools/import/import-lorerim.mjs",

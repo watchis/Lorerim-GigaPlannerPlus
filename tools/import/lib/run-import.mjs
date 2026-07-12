@@ -4,6 +4,11 @@ import { filterPluginsForImport } from "./plugin-skip-cache.mjs";
 import { buildImportContext } from "./import-context.mjs";
 import { mergeDomainFiles, writeImportOutputs } from "./import-io.mjs";
 import {
+  exportCodecRegistry,
+  shouldExportCodecRegistry,
+} from "./export-codec-registry.mjs";
+import { loadJsonIfExists } from "./transform-utils.mjs";
+import {
   buildAggregateSummary,
   reportDomainSummaries,
   runDomainImports,
@@ -86,6 +91,8 @@ export async function executeDomainImports({ domains, context, progress, options
 
   const summary = buildAggregateSummary(context, domainResults, scanMeta);
   const { files, postWriteHooks, stalePerkFiles } = mergeDomainFiles(domainResults);
+  const previousManifest = loadJsonIfExists(context.paths.manifestPath);
+  const previousVersion = previousManifest?.version ?? null;
 
   if (options.dryRun) {
     progress.phase("Dry run complete", 5, 5);
@@ -102,6 +109,13 @@ export async function executeDomainImports({ domains, context, progress, options
       dryRun: true,
     });
 
+    const nextVersion = summary.modpackVersion ?? previousVersion;
+    if (shouldExportCodecRegistry({ previousVersion, modpackVersion: nextVersion })) {
+      progress.step(
+        `Codec registry: would export snapshot for ${nextVersion} after write`,
+      );
+    }
+
     return { ok: true, dryRun: true, summary, diff, domainResults };
   }
 
@@ -117,6 +131,19 @@ export async function executeDomainImports({ domains, context, progress, options
     if (removedPerkFiles?.length > 0) {
       progress.step(`Removed stale perk files: ${removedPerkFiles.join(", ")}`);
     }
+  }
+
+  const updatedManifest = loadJsonIfExists(context.paths.manifestPath);
+  const modpackVersion = updatedManifest?.version ?? summary.modpackVersion ?? null;
+  if (shouldExportCodecRegistry({ previousVersion, modpackVersion })) {
+    const exported = exportCodecRegistry({
+      gameDir: context.paths.dataDir,
+      repoRoot: context.paths.repoRoot,
+    });
+    progress.step(
+      `Codec registry: exported snapshot for ${exported.version} (${exported.perkCount} perks)`,
+    );
+    summary.codecRegistryExported = exported.version;
   }
 
   printImportSummary(progress, summary, { elapsed: progress.elapsed() });
