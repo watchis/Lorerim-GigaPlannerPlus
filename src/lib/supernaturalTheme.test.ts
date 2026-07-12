@@ -3,6 +3,7 @@ import themeJson from "../../data/ui/theme.json";
 import {
   applySupernaturalThemeVariant,
   getSupernaturalThemeVariant,
+  getSupernaturalThemeVariantFromChoices,
   SUPERNATURAL_THEME_OVERRIDES,
 } from "@/lib/supernaturalTheme";
 import { SUPERNATURAL_CLAIMED_CHOICE, VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
@@ -30,6 +31,22 @@ describe("supernaturalTheme", () => {
 
   it("returns null when no supernatural curse is active", () => {
     expect(getSupernaturalThemeVariant(createTestBuildState())).toBeNull();
+    expect(getSupernaturalThemeVariantFromChoices({})).toBeNull();
+  });
+
+  it("derives theme variant from character option choices only", () => {
+    expect(
+      getSupernaturalThemeVariantFromChoices({
+        [VAMPIRE_OPTION_ID]: "stage-2",
+        [WEREWOLF_OPTION_ID]: "none",
+      }),
+    ).toBe("vampire");
+    expect(
+      getSupernaturalThemeVariantFromChoices({
+        [VAMPIRE_OPTION_ID]: "none",
+        [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
+      }),
+    ).toBe("werewolf");
   });
 
   it("prefers vampire when both curses are set (reconcile should clear one)", () => {

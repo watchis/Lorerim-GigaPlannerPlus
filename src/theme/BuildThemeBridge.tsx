@@ -2,7 +2,7 @@ import { useMemo, type ReactNode } from "react";
 import type { Labels, Theme } from "@/data/schemas";
 import {
   applySupernaturalThemeVariant,
-  getSupernaturalThemeVariant,
+  getSupernaturalThemeVariantFromChoices,
 } from "@/lib/supernaturalTheme";
 import { useBuildStore } from "@/store/buildStore";
 import { ThemeProvider } from "@/theme/ThemeProvider";
@@ -14,8 +14,9 @@ interface BuildThemeBridgeProps {
 }
 
 export function BuildThemeBridge({ baseTheme, labels, children }: BuildThemeBridgeProps) {
-  const build = useBuildStore((s) => s.build);
-  const supernaturalVariant = getSupernaturalThemeVariant(build);
+  const supernaturalVariant = useBuildStore((state) =>
+    getSupernaturalThemeVariantFromChoices(state.build.characterOptionChoices),
+  );
   const theme = useMemo(
     () => applySupernaturalThemeVariant(baseTheme, supernaturalVariant),
     [baseTheme, supernaturalVariant],

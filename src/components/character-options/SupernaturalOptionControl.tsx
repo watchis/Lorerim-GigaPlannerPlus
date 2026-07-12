@@ -1,9 +1,9 @@
 import { Moon, X } from "lucide-react";
-import type { ChangeEventHandler, ReactNode } from "react";
-import { useRef, useState } from "react";
+import { startTransition, useRef, useState, type ChangeEventHandler, type ReactNode } from "react";
 import type { CharacterOptionControlProps } from "@/extension-api";
 import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
+import { VampireStageSelector } from "@/components/character-options/VampireStageSelector";
 import { CursorTooltip, useSupportsHover } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -140,11 +140,23 @@ export function SupernaturalOptionControl({
     racialBonus: labels.racialBonus ?? "Racial ability",
     detriments: labels.detriments ?? "Detriments",
   };
-  const stageChoices = option.choices.filter((choice) => isVampireStageId(choice.id));
   const claimedChoice =
     option.choices.find((choice) => choice.id !== option.defaultChoice)?.id ??
     SUPERNATURAL_CLAIMED_CHOICE;
   const showBlockedHint = blocked && !checked;
+  const inactiveLabel =
+    labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
+    "Inactive";
+  const activeLabel = isVampire
+    ? (labels.supernaturalVampire ?? "Vampire")
+    : (labels[option.choices.find((choice) => choice.id === claimedChoice)?.label ?? "claimed"] ??
+      "Active");
+
+  const selectChoice = (choiceId: string) => {
+    startTransition(() => {
+      onSelect(choiceId);
+    });
+  };
 
   return (
     <article
@@ -191,7 +203,7 @@ export function SupernaturalOptionControl({
         {checked && (
           <button
             type="button"
-            onClick={() => onSelect(option.defaultChoice)}
+            onClick={() => selectChoice(option.defaultChoice)}
             aria-label={`${labels.clearSelection ?? "Clear"} ${labels[option.titleLabel] ?? option.titleLabel}`}
             className="flex shrink-0 items-center gap-1 rounded-[var(--radius-md)] border border-[var(--color-border)]/70 px-2 py-1 text-[10px] font-medium text-[var(--color-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:bg-[var(--color-accent)]/8 hover:text-[var(--color-accent)]"
           >
@@ -202,7 +214,7 @@ export function SupernaturalOptionControl({
       </div>
 
       {isVampire ? (
-        <>
+        <div className="space-y-3">
           <CurseToggleRow
             checked={checked}
             showBlockedHint={showBlockedHint}
@@ -213,7 +225,7 @@ export function SupernaturalOptionControl({
                 : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
             )}
             onChange={(event) =>
-              onSelect(
+              selectChoice(
                 event.target.checked
                   ? isVampireStageId(selectedChoiceId)
                     ? selectedChoiceId
@@ -221,39 +233,19 @@ export function SupernaturalOptionControl({
                   : option.defaultChoice,
               )
             }
-            labelText={
-              checked
-                ? (vampireStage?.name ?? labels.supernaturalVampire ?? "Vampire")
-                : (labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
-                  "Inactive")
-            }
+            labelText={checked ? activeLabel : inactiveLabel}
           />
 
-          {checked && stageChoices.length > 0 && (
-            <div className="mt-3 space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">
-                {labels.vampireStageLabel ?? "Hunger stage"}
-              </p>
-              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                {stageChoices.map((choice) => (
-                  <button
-                    key={choice.id}
-                    type="button"
-                    onClick={() => onSelect(choice.id)}
-                    className={cn(
-                      "rounded-[var(--radius-md)] border px-2 py-2 text-left text-xs font-medium transition-colors",
-                      selectedChoiceId === choice.id
-                        ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/12 text-[var(--color-accent)]"
-                        : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 text-[var(--color-foreground)] hover:border-[var(--color-accent-muted)]/40",
-                    )}
-                  >
-                    {labels[choice.label] ?? choice.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {checked && (
+            <VampireStageSelector
+              option={option}
+              selectedChoiceId={selectedChoiceId}
+              stageLabel={labels.vampireStageLabel ?? "Hunger stage"}
+              labels={labels}
+              onSelect={selectChoice}
+            />
           )}
-        </>
+        </div>
       ) : (
         <CurseToggleRow
           checked={checked}
@@ -265,15 +257,9 @@ export function SupernaturalOptionControl({
               : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
           )}
           onChange={(event) =>
-            onSelect(event.target.checked ? claimedChoice : option.defaultChoice)
+            selectChoice(event.target.checked ? claimedChoice : option.defaultChoice)
           }
-          labelText={
-            checked
-              ? (labels[option.choices.find((choice) => choice.id === claimedChoice)?.label ?? "claimed"] ??
-                "Active")
-              : (labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
-                "Inactive")
-          }
+          labelText={checked ? activeLabel : inactiveLabel}
         />
       )}
 

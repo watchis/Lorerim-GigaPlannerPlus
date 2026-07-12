@@ -1,6 +1,11 @@
 import type { Theme } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
-import { isVampireActive, isWerewolfActive } from "@/lib/supernatural";
+import {
+  isVampireStageId,
+  SUPERNATURAL_CLAIMED_CHOICE,
+  VAMPIRE_OPTION_ID,
+  WEREWOLF_OPTION_ID,
+} from "@/lib/supernatural";
 
 export type SupernaturalThemeVariant = "vampire" | "werewolf";
 
@@ -63,8 +68,16 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
 export function getSupernaturalThemeVariant(
   state: BuildState,
 ): SupernaturalThemeVariant | null {
-  if (isVampireActive(state)) return "vampire";
-  if (isWerewolfActive(state)) return "werewolf";
+  return getSupernaturalThemeVariantFromChoices(state.characterOptionChoices);
+}
+
+export function getSupernaturalThemeVariantFromChoices(
+  characterOptionChoices: BuildState["characterOptionChoices"],
+): SupernaturalThemeVariant | null {
+  const vampireChoice = characterOptionChoices[VAMPIRE_OPTION_ID] ?? "none";
+  const werewolfChoice = characterOptionChoices[WEREWOLF_OPTION_ID] ?? "none";
+  if (isVampireStageId(vampireChoice)) return "vampire";
+  if (werewolfChoice === SUPERNATURAL_CLAIMED_CHOICE) return "werewolf";
   return null;
 }
 

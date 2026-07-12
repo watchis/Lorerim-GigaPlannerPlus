@@ -325,20 +325,18 @@ export const useBuildStore = create<BuildStore>()(
           const option = gameData.game.characterOptions.find((entry) => entry.id === optionId);
           if (!option || !option.choices.some((choice) => choice.id === choiceId)) return;
 
-          const previous = reconcileBuild(gameData.game, build);
-          const withSupernatural = isSupernaturalOptionId(optionId)
-            ? applySupernaturalOptionChange(gameData.game, previous, optionId, choiceId)
+          const withChoice = isSupernaturalOptionId(optionId)
+            ? applySupernaturalOptionChange(gameData.game, build, optionId, choiceId)
             : {
-                ...previous,
+                ...build,
                 characterOptionChoices: {
-                  ...previous.characterOptionChoices,
+                  ...build.characterOptionChoices,
                   [optionId]: choiceId,
                 },
               };
 
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, withSupernatural);
-          const reconciled = reconcileBuild(gameData.game, preserved);
-          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
+          const preserved = preserveSkillPointAllocations(gameData.game, build, withChoice);
+          const leveled = ensurePlayerLevelForBuild(gameData.game, preserved, {
             ensureMinimumPlayerLevel: true,
           });
           commitBuild(set, get, leveled);

@@ -349,3 +349,37 @@ describe("buildStore shared build import", () => {
     expect(restored.modpackVersion).toBe("4.9.0.1");
   });
 });
+
+describe("buildStore supernatural character options", () => {
+  const appData = getTestAppData();
+
+  beforeAll(async () => {
+    ({ useBuildStore } = await import("@/store/buildStore"));
+  });
+
+  beforeEach(() => {
+    localStorageMock.clear();
+    const initialBuild = createTestBuildState();
+    const activeEntry = createSavedBuild("Curse build", initialBuild);
+    useBuildStore.setState({
+      gameData: appData,
+      build: initialBuild,
+      savedBuilds: [activeEntry],
+      activeBuildId: activeEntry.id,
+      computed: null,
+    });
+  });
+
+  it("activates vampire with stage selection and strips conflicting werewolf perks", () => {
+    useBuildStore.getState().setCharacterOptionChoice("werewolf", "claimed");
+    useBuildStore.getState().togglePerk("werewolf-animal-vigor");
+
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-3");
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.vampire).toBe("stage-3");
+    expect(state.build.characterOptionChoices.werewolf).toBe("none");
+    expect(state.build.selectedPerkIds).not.toContain("werewolf-animal-vigor");
+    expect(state.computed).not.toBeNull();
+  });
+});
