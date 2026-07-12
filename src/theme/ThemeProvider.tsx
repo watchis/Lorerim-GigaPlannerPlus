@@ -23,18 +23,24 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
+export function applySupernaturalDataset(
+  root: HTMLElement,
+  supernaturalVariant: SupernaturalThemeVariant | null,
+): void {
+  if (supernaturalVariant) {
+    root.dataset.supernaturalTheme = supernaturalVariant;
+  } else {
+    delete root.dataset.supernaturalTheme;
+  }
+}
+
 export function applyThemeToRoot(
   root: HTMLElement,
   theme: Theme,
   supernaturalVariant: SupernaturalThemeVariant | null,
 ): void {
   root.dataset.theme = theme.mode;
-
-  if (supernaturalVariant) {
-    root.dataset.supernaturalTheme = supernaturalVariant;
-  } else {
-    delete root.dataset.supernaturalTheme;
-  }
+  applySupernaturalDataset(root, supernaturalVariant);
 
   for (const [key, value] of Object.entries(theme.colors)) {
     root.style.setProperty(toThemeCssVarName(key), value);
@@ -77,6 +83,8 @@ export function ThemeProvider({
     const toColors = { ...theme.colors };
     const colorKeys = Object.keys(toColors);
 
+    applySupernaturalDataset(root, supernaturalVariant);
+
     if (!hasAppliedTheme.current) {
       applyThemeToRoot(root, theme, supernaturalVariant);
       hasAppliedTheme.current = true;
@@ -97,15 +105,25 @@ export function ThemeProvider({
       return;
     }
 
-    const fromColors = readCurrentThemeColors(colorKeys);
-    const transition = runThemeColorTransition(root, fromColors, toColors);
-    activeTransitionRef.current = transition;
+    let cancelled = false;
+    const frameId = requestAnimationFrame(() => {
+      if (cancelled) return;
 
-    void transition.finished.then(() => {
-      if (activeTransitionRef.current !== transition) return;
-      applyThemeToRoot(root, theme, supernaturalVariant);
-      activeTransitionRef.current = null;
+      const fromColors = readCurrentThemeColors(colorKeys);
+      const transition = runThemeColorTransition(root, fromColors, toColors);
+      activeTransitionRef.current = transition;
+
+      void transition.finished.then(() => {
+        if (activeTransitionRef.current !== transition) return;
+        applyThemeToRoot(root, theme, supernaturalVariant);
+        activeTransitionRef.current = null;
+      });
     });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameId);
+    };
   }, [theme, supernaturalVariant]);
 
   return (

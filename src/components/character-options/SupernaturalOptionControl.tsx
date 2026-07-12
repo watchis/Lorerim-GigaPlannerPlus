@@ -1,5 +1,5 @@
 import { Moon, X } from "lucide-react";
-import { startTransition, type ChangeEventHandler, type ReactNode } from "react";
+import { useOptimistic, type ChangeEventHandler, type ReactNode } from "react";
 import type { CharacterOptionControlProps } from "@/extension-api";
 import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
@@ -7,10 +7,10 @@ import { VampireStageSelector } from "@/components/character-options/VampireStag
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_VAMPIRE_STAGE,
-  getActiveVampireStage,
-  getVampireRacialBonus,
+  getVampireRacialBonusForRace,
+  getVampireStage,
   getWerewolfForm,
-  getWerewolfRacialBonus,
+  getWerewolfRacialBonusForRace,
   isVampireStageId,
   SUPERNATURAL_CLAIMED_CHOICE,
   VAMPIRE_OPTION_ID,
@@ -57,20 +57,30 @@ export function SupernaturalOptionControl({
   labels,
   onSelect,
 }: SupernaturalOptionControlProps) {
-  const gameData = useBuildStore((s) => s.gameData);
-  const build = useBuildStore((s) => s.build);
+  const game = useBuildStore((s) => s.gameData?.game);
+  const raceId = useBuildStore((s) => s.build.raceId);
+  const [displayChoiceId, setDisplayChoiceId] = useOptimistic(selectedChoiceId);
 
-  if (!gameData) return null;
+  if (!game) return null;
 
   const isVampire = optionId === VAMPIRE_OPTION_ID;
-  const checked = selectedChoiceId !== option.defaultChoice;
+  const checked = displayChoiceId !== option.defaultChoice;
   const description = option.descriptionLabel ? labels[option.descriptionLabel] : undefined;
-  const vampireStage = isVampire ? getActiveVampireStage(gameData.game, build) : undefined;
-  const form = isVampire ? vampireStage : getWerewolfForm(gameData.game);
-  const racialBonus = isVampire
-    ? getVampireRacialBonus(gameData.game, build)
-    : getWerewolfRacialBonus(gameData.game, build);
-  const hasRace = Boolean(build.raceId && build.raceId !== "none");
+  const vampireStage =
+    isVampire && isVampireStageId(displayChoiceId)
+      ? getVampireStage(game, displayChoiceId)
+      : undefined;
+  const form = isVampire ? vampireStage : checked ? getWerewolfForm(game) : undefined;
+  const resolvedRaceId = raceId && raceId !== "none" ? raceId : null;
+  const racialBonus = resolvedRaceId
+    ? isVampire
+      ? checked
+        ? getVampireRacialBonusForRace(game, resolvedRaceId)
+        : undefined
+      : checked
+        ? getWerewolfRacialBonusForRace(game, resolvedRaceId)
+        : undefined
+    : undefined;
   const detailLabels = {
     bonuses: labels.bonuses ?? "Bonuses",
     racialBonus: labels.racialBonus ?? "Racial ability",
@@ -88,9 +98,8 @@ export function SupernaturalOptionControl({
       "Active");
 
   const selectChoice = (choiceId: string) => {
-    startTransition(() => {
-      onSelect(choiceId);
-    });
+    setDisplayChoiceId(choiceId);
+    onSelect(choiceId);
   };
 
   return (
@@ -159,8 +168,8 @@ export function SupernaturalOptionControl({
             onChange={(event) =>
               selectChoice(
                 event.target.checked
-                  ? isVampireStageId(selectedChoiceId)
-                    ? selectedChoiceId
+                  ? isVampireStageId(displayChoiceId)
+                    ? displayChoiceId
                     : DEFAULT_VAMPIRE_STAGE
                   : option.defaultChoice,
               )
@@ -171,7 +180,7 @@ export function SupernaturalOptionControl({
           {checked && (
             <VampireStageSelector
               option={option}
-              selectedChoiceId={selectedChoiceId}
+              selectedChoiceId={displayChoiceId}
               stageLabel={labels.vampireStageLabel ?? "Hunger stage"}
               labels={labels}
               onSelect={selectChoice}
@@ -201,7 +210,7 @@ export function SupernaturalOptionControl({
             labels={detailLabels}
             hideHeader
           />
-          {!hasRace && (
+          {!resolvedRaceId && (
             <p className="text-xs leading-relaxed text-[var(--color-muted)]">
               {labels.selectRaceForRacialAbility ??
                 "Select a race in Character Setup to see your racial curse ability."}

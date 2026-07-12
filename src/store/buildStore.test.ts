@@ -370,6 +370,13 @@ describe("buildStore supernatural character options", () => {
     });
   });
 
+  it("updates build synchronously when activating a supernatural curse", () => {
+    useBuildStore.getState().setCharacterOptionChoice("vampire", "stage-1");
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.vampire).toBe("stage-1");
+  });
+
   it("activates vampire with stage selection and strips conflicting werewolf perks", async () => {
     useBuildStore.getState().setCharacterOptionChoice("werewolf", "claimed");
     useBuildStore.getState().togglePerk("werewolf-animal-vigor");

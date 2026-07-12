@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, Sparkles, X } from "lucide-react";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -288,6 +288,7 @@ export function CharacterOptionsPanel() {
   const setupLabels = usePanelLabels("character-setup");
   const closeCharacterOptions = useUiStore((s) => s.closeCharacterOptions);
   const gameData = useBuildStore((s) => s.gameData);
+  const characterOptionChoices = useBuildStore((s) => s.build.characterOptionChoices);
   const build = useBuildStore((s) => s.build);
   const setCharacterOptionChoice = useBuildStore((s) => s.setCharacterOptionChoice);
   const [oghmaSkillsPickerOpen, setOghmaSkillsPickerOpen] = useState(false);
@@ -308,18 +309,22 @@ export function CharacterOptionsPanel() {
     (option) => option.id !== VAMPIRE_OPTION_ID && option.id !== WEREWOLF_OPTION_ID,
   );
 
-  const activeRewardLines = characterOptions.flatMap((option) => {
-    const choice = getSelectedCharacterOptionChoice(option, build.characterOptionChoices);
-    if (choice.id === option.defaultChoice) return [];
-    return getCharacterOptionSummaryLines(
-      game,
-      option,
-      choice,
-      labels,
-      attributeLabels,
-      build,
-    );
-  });
+  const activeRewardLines = useMemo(
+    () =>
+      characterOptions.flatMap((option) => {
+        const choice = getSelectedCharacterOptionChoice(option, characterOptionChoices);
+        if (choice.id === option.defaultChoice) return [];
+        return getCharacterOptionSummaryLines(
+          game,
+          option,
+          choice,
+          labels,
+          attributeLabels,
+          build,
+        );
+      }),
+    [attributeLabels, build, characterOptionChoices, characterOptions, game, labels],
+  );
 
   const curseSubtitle =
     supernaturalVariant === "vampire"
@@ -362,7 +367,7 @@ export function CharacterOptionsPanel() {
             >
               {supernaturalOptions.map((option) => {
                 const selectedChoiceId =
-                  build.characterOptionChoices[option.id] ?? option.defaultChoice;
+                  characterOptionChoices[option.id] ?? option.defaultChoice;
                 const onSelect = (choiceId: string) =>
                   setCharacterOptionChoice(option.id, choiceId);
 
@@ -385,7 +390,7 @@ export function CharacterOptionsPanel() {
               >
                 {playthroughOptions.map((option) => {
                   const selectedChoiceId =
-                    build.characterOptionChoices[option.id] ?? option.defaultChoice;
+                    characterOptionChoices[option.id] ?? option.defaultChoice;
                   const onSelect = (choiceId: string) =>
                     setCharacterOptionChoice(option.id, choiceId);
                   const extension = option.extension

@@ -62,7 +62,6 @@ import { isOghmaInfiniumActive } from "@/lib/oghmaInfinium";
 import {
   applySupernaturalOptionChange,
   isSupernaturalOptionId,
-  isVampireStageOnlyChange,
 } from "@/lib/supernatural";
 import { createDebouncedPersistStorage } from "@/store/debouncedPersistStorage";
 
@@ -72,31 +71,33 @@ function recompute(data: AppData, build: BuildState): ComputedBuild {
 
 let deferredComputeToken = 0;
 
-function commitBuildDeferred(
+/** Supernatural toggles: paint build state first, persist + compute on the next microtask. */
+function commitSupernaturalBuild(
   set: (partial: Partial<BuildStore>) => void,
   get: () => BuildStore,
   nextBuild: BuildState,
 ): void {
-  const { gameData, savedBuilds, activeBuildId } = get();
-  if (!gameData) return;
-
   const token = ++deferredComputeToken;
 
-  set({
-    build: nextBuild,
-    savedBuilds: updateSavedBuildInList(
-      savedBuilds,
-      activeBuildId,
-      nextBuild,
-      gameData.game.manifest.version,
-    ),
-  });
+  set({ build: nextBuild });
 
   queueMicrotask(() => {
     if (token !== deferredComputeToken) return;
     const current = get();
     if (current.build !== nextBuild) return;
-    set({ computed: recompute(gameData, nextBuild) });
+
+    const { gameData, savedBuilds, activeBuildId } = current;
+    if (!gameData) return;
+
+    set({
+      savedBuilds: updateSavedBuildInList(
+        savedBuilds,
+        activeBuildId,
+        nextBuild,
+        gameData.game.manifest.version,
+      ),
+      computed: recompute(gameData, nextBuild),
+    });
   });
 }
 
@@ -358,16 +359,13 @@ export const useBuildStore = create<BuildStore>()(
           if (!option || !option.choices.some((choice) => choice.id === choiceId)) return;
 
           if (isSupernaturalOptionId(optionId)) {
-            const withChoice = applySupernaturalOptionChange(
+            const nextBuild = applySupernaturalOptionChange(
               gameData.game,
               build,
               optionId,
               choiceId,
             );
-            const nextBuild = isVampireStageOnlyChange(build, optionId, choiceId)
-              ? withChoice
-              : reconcileBuild(gameData.game, withChoice);
-            commitBuildDeferred(set, get, nextBuild);
+            commitSupernaturalBuild(set, get, nextBuild);
             return;
           }
 
