@@ -16,6 +16,21 @@
       ]
     },
     {
+      "id": "alduin-bonus-trait",
+      "titleLabel": "alduinBonusTrait",
+      "descriptionLabel": "alduinBonusTraitDescription",
+      "defaultChoice": "none",
+      "controlType": "toggle",
+      "choices": [
+        { "id": "none", "label": "alduinBonusTraitNone" },
+        {
+          "id": "claimed",
+          "label": "alduinBonusTraitClaimed",
+          "effects": [{ "type": "traitSlot", "value": 1 }]
+        }
+      ]
+    },
+    {
       "id": "au-naturel-gear",
       "titleLabel": "auNaturelGear",
       "descriptionLabel": "auNaturelGearDescription",
@@ -29,21 +44,6 @@
         { "id": "2", "label": "auNaturelGear2" },
         { "id": "3", "label": "auNaturelGear3" },
         { "id": "4", "label": "auNaturelGear4" }
-      ]
-    },
-    {
-      "id": "alduin-bonus-trait",
-      "titleLabel": "alduinBonusTrait",
-      "descriptionLabel": "alduinBonusTraitDescription",
-      "defaultChoice": "none",
-      "controlType": "toggle",
-      "choices": [
-        { "id": "none", "label": "alduinBonusTraitNone" },
-        {
-          "id": "claimed",
-          "label": "alduinBonusTraitClaimed",
-          "effects": [{ "type": "traitSlot", "value": 1 }]
-        }
       ]
     }
   ]

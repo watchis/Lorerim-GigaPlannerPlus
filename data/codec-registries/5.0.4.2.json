@@ -645,8 +645,8 @@
   ],
   "characterOptions": [
     "oghma-infinium",
-    "au-naturel-gear",
-    "alduin-bonus-trait"
+    "alduin-bonus-trait",
+    "au-naturel-gear"
   ],
   "characterOptionChoices": [
     [
@@ -657,15 +657,15 @@
       "thief"
     ],
     [
+      "none",
+      "claimed"
+    ],
+    [
       "0",
       "1",
       "2",
       "3",
       "4"
-    ],
-    [
-      "none",
-      "claimed"
     ]
   ]
 }
