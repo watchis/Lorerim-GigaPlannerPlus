@@ -274,7 +274,7 @@ export const supernaturalFormSchema = z.object({
 export const supernaturalSchema = z.object({
   incompatibleTraitIds: z.array(z.string()),
   vampirism: z.object({
-    forms: z.array(supernaturalFormSchema).min(1),
+    stages: z.array(supernaturalFormSchema).min(1),
     racialBonuses: z.record(z.string(), supernaturalRacialBonusSchema),
   }),
   lycanthropy: z.object({

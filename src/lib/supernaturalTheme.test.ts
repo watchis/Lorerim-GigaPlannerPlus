@@ -14,7 +14,7 @@ const baseTheme = themeJson as Theme;
 describe("supernaturalTheme", () => {
   it("returns vampire variant when vampire option is active", () => {
     const state = createTestBuildState({
-      characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+      characterOptionChoices: { [VAMPIRE_OPTION_ID]: "stage-4" },
     });
 
     expect(getSupernaturalThemeVariant(state)).toBe("vampire");
@@ -35,7 +35,7 @@ describe("supernaturalTheme", () => {
   it("prefers vampire when both curses are set (reconcile should clear one)", () => {
     const state = createTestBuildState({
       characterOptionChoices: {
-        [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
+        [VAMPIRE_OPTION_ID]: "stage-4",
         [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
       },
     });

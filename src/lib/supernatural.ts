@@ -6,17 +6,29 @@ export const VAMPIRE_OPTION_ID = "vampire";
 export const WEREWOLF_OPTION_ID = "werewolf";
 export const SUPERNATURAL_CLAIMED_CHOICE = "claimed";
 
+export const VAMPIRE_STAGE_IDS = ["stage-1", "stage-2", "stage-3", "stage-4"] as const;
+export type VampireStageId = (typeof VAMPIRE_STAGE_IDS)[number];
+export const DEFAULT_VAMPIRE_STAGE: VampireStageId = "stage-1";
+
 export const VAMPIRE_SKILL_ID = "vampire";
 export const WEREWOLF_SKILL_ID = "werewolf";
 
 export const SUPERNATURAL_OPTION_IDS = [VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID] as const;
 
+export function isVampireStageId(choiceId: string): choiceId is VampireStageId {
+  return VAMPIRE_STAGE_IDS.includes(choiceId as VampireStageId);
+}
+
 export function isSupernaturalOptionId(optionId: string): boolean {
   return SUPERNATURAL_OPTION_IDS.includes(optionId as (typeof SUPERNATURAL_OPTION_IDS)[number]);
 }
 
+export function getVampireChoiceId(state: BuildState): string {
+  return state.characterOptionChoices[VAMPIRE_OPTION_ID] ?? "none";
+}
+
 export function isVampireActive(state: BuildState): boolean {
-  return state.characterOptionChoices[VAMPIRE_OPTION_ID] === SUPERNATURAL_CLAIMED_CHOICE;
+  return isVampireStageId(getVampireChoiceId(state));
 }
 
 export function isWerewolfActive(state: BuildState): boolean {
@@ -37,8 +49,20 @@ function resolveRaceId(state: BuildState): string | null {
   return state.raceId && state.raceId !== "none" ? state.raceId : null;
 }
 
-export function getVampireForm(game: GameData): SupernaturalForm | undefined {
-  return game.supernatural.vampirism.forms.find((entry) => entry.id === "vampire");
+export function getVampireStage(
+  game: GameData,
+  stageId: string,
+): SupernaturalForm | undefined {
+  if (!isVampireStageId(stageId)) return undefined;
+  return game.supernatural.vampirism.stages.find((entry) => entry.id === stageId);
+}
+
+export function getActiveVampireStage(
+  game: GameData,
+  state: BuildState,
+): SupernaturalForm | undefined {
+  const stageId = getVampireChoiceId(state);
+  return getVampireStage(game, stageId);
 }
 
 export function getWerewolfForm(game: GameData): SupernaturalForm | undefined {
@@ -110,6 +134,18 @@ export function stripPerksForSkillTree(
 
 export function normalizeSupernaturalState(game: GameData, build: BuildState): BuildState {
   let next = { ...build };
+
+  const vampireChoice = next.characterOptionChoices[VAMPIRE_OPTION_ID];
+  if (vampireChoice === SUPERNATURAL_CLAIMED_CHOICE) {
+    next = {
+      ...next,
+      characterOptionChoices: {
+        ...next.characterOptionChoices,
+        [VAMPIRE_OPTION_ID]: "stage-4",
+      },
+    };
+  }
+
   const vampireActive = isVampireActive(next);
   const werewolfActive = isWerewolfActive(next);
 
@@ -192,7 +228,10 @@ export function migrateLegacySupernaturalBuild(build: BuildState): BuildState {
   const characterOptionChoices = { ...build.characterOptionChoices };
 
   if (legacy.vampirismId && legacy.vampirismId !== "none") {
-    characterOptionChoices[VAMPIRE_OPTION_ID] = SUPERNATURAL_CLAIMED_CHOICE;
+    const stageId = isVampireStageId(legacy.vampirismId)
+      ? legacy.vampirismId
+      : DEFAULT_VAMPIRE_STAGE;
+    characterOptionChoices[VAMPIRE_OPTION_ID] = stageId;
   }
   if (legacy.lycanthropyId && legacy.lycanthropyId !== "none") {
     characterOptionChoices[WEREWOLF_OPTION_ID] = SUPERNATURAL_CLAIMED_CHOICE;

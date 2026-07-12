@@ -114,7 +114,7 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA`, parsed race `effects` in `race-effects.json` | race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
 | Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
-| Vampirism stage bonuses (`REQ_Vampire_Stage*`), werewolf human-form bonuses (`REQ_Werewolf_HumanForm`), racial curse abilities | Hand-tuned form names/descriptions, `bonusDetails`, and racial bonus text in `supernatural.json` |
+| Vampirism stage bonuses (`REQ_Vampire_Stage1`–`Stage4`), werewolf human-form bonuses (`REQ_Werewolf_HumanForm`), racial curse abilities | Hand-tuned stage names/descriptions, `bonusDetails`, and racial bonus text in `supernatural.json` |
 | `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
 
 When `effects` is empty, the importer parses the `bonus` text with rule-based patterns in `lib/parse-bonus-effects.mjs` (percent modifiers, attribute flat bonuses, common weapon/resist phrases). Conditional or narrative-only bonuses may stay empty until rules are extended.

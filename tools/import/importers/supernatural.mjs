@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs";
 import { cleanDescription, cleanName } from "../lib/transform-utils.mjs";
 import { parseBonusEffects, extractConditionalBonusDetails } from "../lib/parse-bonus-effects.mjs";
 
-const VAMPIRISM_FORM_EDIDS = [{ id: "vampire", edid: "REQ_Vampire_Stage4" }];
+const VAMPIRISM_STAGE_EDIDS = [
+  { id: "stage-1", edid: "REQ_Vampire_Stage1" },
+  { id: "stage-2", edid: "REQ_Vampire_Stage2" },
+  { id: "stage-3", edid: "REQ_Vampire_Stage3" },
+  { id: "stage-4", edid: "REQ_Vampire_Stage4" },
+];
 const LYCANTHROPY_FORM_EDIDS = [{ id: "werewolf", edid: "REQ_Werewolf_HumanForm" }];
 
 const VAMPIRISM_RACIAL_PREFIX = "REQ_Vampire_Race_";
@@ -19,6 +24,13 @@ const RACE_EDID_TO_ID = {
   Orc: "orsimer",
   Redguard: "redguard",
   WoodElf: "bosmer",
+};
+
+const STAGE_FALLBACK_NAMES = {
+  "stage-1": "Stage 1",
+  "stage-2": "Stage 2",
+  "stage-3": "Stage 3",
+  "stage-4": "Stage 4",
 };
 
 function cleanSupernaturalText(text) {
@@ -68,6 +80,31 @@ function mergeRacialBonuses(imported, prior = {}) {
   return merged;
 }
 
+function transformStage(spellByEdid, stageConfig, priorStage) {
+  const spell = spellByEdid.get(stageConfig.edid);
+  const bonus = spell?.description ? cleanSupernaturalText(spell.description) : priorStage?.bonus ?? "";
+  const effects = bonus ? parseBonusEffects(bonus) : (priorStage?.effects ?? []);
+
+  return {
+    ...(priorStage ?? {
+      id: stageConfig.id,
+      name: STAGE_FALLBACK_NAMES[stageConfig.id] ?? stageConfig.id,
+      description: "",
+      bonus: "",
+      effects: [],
+      bonusDetails: [],
+    }),
+    id: stageConfig.id,
+    description: priorStage?.description ?? "",
+    bonus,
+    effects: priorStage?.effects?.length && !bonus ? priorStage.effects : effects,
+    bonusDetails:
+      priorStage?.bonusDetails?.length && !bonus
+        ? priorStage.bonusDetails
+        : extractConditionalBonusDetails(bonus, effects),
+  };
+}
+
 function transformForm(spellByEdid, formConfig, priorForm, fallbackName) {
   const spell = spellByEdid.get(formConfig.edid);
   const bonus = spell?.description ? cleanSupernaturalText(spell.description) : priorForm?.bonus ?? "";
@@ -97,11 +134,11 @@ export function transformSupernaturalRecords(spellRecords, supernaturalPath) {
   const existing = JSON.parse(readFileSync(supernaturalPath, "utf8"));
   const spellByEdid = new Map(spellRecords.map((record) => [record.edid, record]));
 
-  const priorVampireForms = new Map((existing.vampirism?.forms ?? []).map((form) => [form.id, form]));
+  const priorStages = new Map((existing.vampirism?.stages ?? []).map((stage) => [stage.id, stage]));
   const priorWerewolfForms = new Map((existing.lycanthropy?.forms ?? []).map((form) => [form.id, form]));
 
-  const vampirismForms = [
-    priorVampireForms.get("none") ?? {
+  const vampirismStages = [
+    priorStages.get("none") ?? {
       id: "none",
       name: "None",
       description: "",
@@ -109,13 +146,8 @@ export function transformSupernaturalRecords(spellRecords, supernaturalPath) {
       effects: [],
       bonusDetails: [],
     },
-    ...VAMPIRISM_FORM_EDIDS.map((formConfig) =>
-      transformForm(
-        spellByEdid,
-        formConfig,
-        priorVampireForms.get(formConfig.id),
-        "Vampire",
-      ),
+    ...VAMPIRISM_STAGE_EDIDS.map((stageConfig) =>
+      transformStage(spellByEdid, stageConfig, priorStages.get(stageConfig.id)),
     ),
   ];
 
@@ -141,7 +173,7 @@ export function transformSupernaturalRecords(spellRecords, supernaturalPath) {
   return {
     incompatibleTraitIds: existing.incompatibleTraitIds ?? ["silent-dovah"],
     vampirism: {
-      forms: vampirismForms,
+      stages: vampirismStages,
       racialBonuses: mergeRacialBonuses(
         parseRacialBonuses(spellRecords, VAMPIRISM_RACIAL_PREFIX),
         existing.vampirism?.racialBonuses ?? {},
@@ -166,7 +198,7 @@ export async function importSupernatural(context) {
   return {
     files: [["supernatural.json", supernatural]],
     summary: {
-      vampirismForms: supernatural.vampirism.forms.length,
+      vampirismStages: supernatural.vampirism.stages.length,
       lycanthropyForms: supernatural.lycanthropy.forms.length,
     },
   };

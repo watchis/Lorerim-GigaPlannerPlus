@@ -36,10 +36,13 @@
       "descriptionLabel": "vampireOptionDescription",
       "defaultChoice": "none",
       "extension": "supernatural-vampire",
-      "controlType": "toggle",
+      "controlType": "select",
       "choices": [
         { "id": "none", "label": "supernaturalNone" },
-        { "id": "claimed", "label": "supernaturalVampire" }
+        { "id": "stage-1", "label": "vampireStage1" },
+        { "id": "stage-2", "label": "vampireStage2" },
+        { "id": "stage-3", "label": "vampireStage3" },
+        { "id": "stage-4", "label": "vampireStage4" }
       ]
     },
     {

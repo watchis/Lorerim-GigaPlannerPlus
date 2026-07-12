@@ -1,6 +1,6 @@
 import { defineCharacterOption } from "@/extension-api";
 import {
-  getVampireForm,
+  getActiveVampireStage,
   getVampireRacialBonus,
 } from "@/lib/supernatural";
 
@@ -10,11 +10,11 @@ export default defineCharacterOption({
     if (choice.id === option.defaultChoice) return [];
 
     const modifications = [];
-    const form = getVampireForm(game);
-    if (form?.effects.length) {
+    const stage = getActiveVampireStage(game, state);
+    if (stage?.effects.length) {
       modifications.push({
         source: { labelKey: option.titleLabel },
-        effects: form.effects,
+        effects: stage.effects,
       });
     }
 
@@ -31,14 +31,23 @@ export default defineCharacterOption({
   getSummaryLines({ choice, option, game, state }) {
     if (choice.id === option.defaultChoice) return [];
 
-    const racialBonus = getVampireRacialBonus(game, state);
-    if (!racialBonus) return [];
+    const lines: { key: string; text: string }[] = [];
+    const stage = getActiveVampireStage(game, state);
+    if (stage) {
+      lines.push({
+        key: `${option.id}-stage`,
+        text: stage.name,
+      });
+    }
 
-    return [
-      {
+    const racialBonus = getVampireRacialBonus(game, state);
+    if (racialBonus) {
+      lines.push({
         key: `${option.id}-racial`,
         text: racialBonus.name,
-      },
-    ];
+      });
+    }
+
+    return lines;
   },
 });

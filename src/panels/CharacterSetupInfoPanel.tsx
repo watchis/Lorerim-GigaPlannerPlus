@@ -15,7 +15,7 @@ import {
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
 import {
-  getVampireForm,
+  getActiveVampireStage,
   getVampireRacialBonus,
   getWerewolfForm,
   getWerewolfRacialBonus,
@@ -122,7 +122,7 @@ export function CharacterSetupInfoPanel() {
     .filter((trait): trait is NonNullable<typeof trait> => trait !== undefined);
   const vampireActive = isVampireActive(build);
   const werewolfActive = isWerewolfActive(build);
-  const vampireForm = vampireActive ? getVampireForm(game) : undefined;
+  const vampireForm = vampireActive ? getActiveVampireStage(game, build) : undefined;
   const werewolfForm = werewolfActive ? getWerewolfForm(game) : undefined;
   const vampireRacialBonus = vampireActive ? getVampireRacialBonus(game, build) : undefined;
   const werewolfRacialBonus = werewolfActive ? getWerewolfRacialBonus(game, build) : undefined;

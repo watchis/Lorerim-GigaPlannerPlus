@@ -25,12 +25,12 @@ import { createTestBuildState, getTestGameData } from "@/test/helpers";
 describe("supernatural", () => {
   const game = getTestGameData();
 
-  it("activates vampire via character option and applies curse effects", () => {
+  it("activates vampire via stage choice and applies curse effects", () => {
     const state = applySupernaturalOptionChange(
       game,
       createTestBuildState(),
       VAMPIRE_OPTION_ID,
-      SUPERNATURAL_CLAIMED_CHOICE,
+      "stage-4",
     );
 
     expect(isVampireActive(state)).toBe(true);
@@ -45,19 +45,44 @@ describe("supernatural", () => {
     expect(collected.sourcedEffects.some((entry) => entry.labelKey === "vampireOption")).toBe(true);
   });
 
+  it("applies stage-specific vampire bonuses", () => {
+    const stage1 = applySupernaturalOptionChange(
+      game,
+      createTestBuildState(),
+      VAMPIRE_OPTION_ID,
+      "stage-1",
+    );
+    const stage4 = applySupernaturalOptionChange(
+      game,
+      createTestBuildState(),
+      VAMPIRE_OPTION_ID,
+      "stage-4",
+    );
+
+    const stage1Health = collectBuildChanges(game, stage1).sourcedEffects.find(
+      (entry) => entry.effect.type === "attribute" && entry.effect.stat === "health",
+    );
+    const stage4Health = collectBuildChanges(game, stage4).sourcedEffects.find(
+      (entry) => entry.effect.type === "attribute" && entry.effect.stat === "health",
+    );
+
+    expect(stage1Health?.effect.value).toBe(50);
+    expect(stage4Health?.effect.value).toBe(100);
+  });
+
   it("includes the racial vampire ability for the selected race", () => {
     const state = applySupernaturalOptionChange(
       game,
       createTestBuildState({ raceId: "nord" }),
       VAMPIRE_OPTION_ID,
-      SUPERNATURAL_CLAIMED_CHOICE,
+      "stage-2",
     );
 
     const racialBonus = getVampireRacialBonus(game, state);
     expect(racialBonus?.name).toBe("Preserved Blood");
 
     const vampireOption = game.characterOptions.find((entry) => entry.id === VAMPIRE_OPTION_ID)!;
-    const choice = vampireOption.choices.find((entry) => entry.id === SUPERNATURAL_CLAIMED_CHOICE)!;
+    const choice = vampireOption.choices.find((entry) => entry.id === "stage-2")!;
     const summaryLines = getCharacterOptionSummaryLines(
       game,
       vampireOption,
@@ -67,7 +92,10 @@ describe("supernatural", () => {
       state,
     );
 
-    expect(summaryLines).toEqual([{ key: "vampire-racial", text: "Preserved Blood" }]);
+    expect(summaryLines).toEqual([
+      { key: "vampire-stage", text: "Stage 2" },
+      { key: "vampire-racial", text: "Preserved Blood" },
+    ]);
   });
 
   it("applies werewolf disease immunity and strong stomach effects", () => {
@@ -99,7 +127,7 @@ describe("supernatural", () => {
     expect(
       getActiveSupernaturalSkillId(
         createTestBuildState({
-          characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+          characterOptionChoices: { [VAMPIRE_OPTION_ID]: "stage-3" },
         }),
       ),
     ).toBe("vampire");
@@ -108,8 +136,8 @@ describe("supernatural", () => {
 
   it("selecting werewolf clears vampire perks and blocks the vampire option", () => {
     const withVampirePerk = createTestBuildState({
-      characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
-      selectedPerkIds: ["vampire-stage-2", "werewolf-lycanthropic-speed"],
+      characterOptionChoices: { [VAMPIRE_OPTION_ID]: "stage-2" },
+      selectedPerkIds: ["vampire-hemomancer", "werewolf-lycanthropic-speed"],
       traitIds: ["silent-dovah", "angler"],
     });
 
@@ -134,7 +162,7 @@ describe("supernatural", () => {
       game,
       createTestBuildState({
         characterOptionChoices: { [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
-        selectedPerkIds: ["werewolf-lycanthropic-speed", "destiny-01"],
+        selectedPerkIds: ["werewolf-animal-vigor", "destiny-01"],
       }),
       WEREWOLF_OPTION_ID,
       "none",
@@ -148,13 +176,13 @@ describe("supernatural", () => {
     const stripped = stripPerksForSkillTree(
       game,
       createTestBuildState({
-        selectedPerkIds: ["vampire-stage-1", "werewolf-lycanthropic-speed", "destiny-01"],
+        selectedPerkIds: ["vampire-hemomancer", "werewolf-animal-vigor", "destiny-01"],
       }),
       VAMPIRE_SKILL_ID,
     );
 
     expect(stripped.selectedPerkIds).toEqual([
-      "werewolf-lycanthropic-speed",
+      "werewolf-animal-vigor",
       "destiny-01",
     ]);
   });
@@ -167,8 +195,19 @@ describe("supernatural", () => {
       } as never),
     );
 
-    expect(migrated.characterOptionChoices[VAMPIRE_OPTION_ID]).toBe(SUPERNATURAL_CLAIMED_CHOICE);
+    expect(migrated.characterOptionChoices[VAMPIRE_OPTION_ID]).toBe("stage-2");
     expect("vampirismId" in migrated).toBe(false);
+  });
+
+  it("normalizes legacy claimed vampire choice to stage 4", () => {
+    const state = normalizeSupernaturalState(
+      game,
+      createTestBuildState({
+        characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+      }),
+    );
+
+    expect(state.characterOptionChoices[VAMPIRE_OPTION_ID]).toBe("stage-4");
   });
 
   it("reconcileBuild normalizes conflicting supernatural options", () => {
@@ -176,7 +215,7 @@ describe("supernatural", () => {
       game,
       createTestBuildState({
         characterOptionChoices: {
-          [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
+          [VAMPIRE_OPTION_ID]: "stage-4",
           [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
         },
         traitIds: ["silent-dovah"],
@@ -193,7 +232,7 @@ describe("supernatural", () => {
     const state = normalizeSupernaturalState(
       game,
       createTestBuildState({
-        characterOptionChoices: { [VAMPIRE_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+        characterOptionChoices: { [VAMPIRE_OPTION_ID]: "stage-1" },
         traitIds: ["silent-dovah", "angler"],
       }),
     );

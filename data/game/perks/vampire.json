@@ -2,83 +2,367 @@
   "skillId": "vampire",
   "skillName": "Vampire",
   "grid": {
-    "width": 20,
-    "height": 8
+    "width": 24,
+    "height": 12
   },
   "perks": [
     {
-      "id": "vampire-stage-1",
-      "name": "Stage 1",
+      "id": "vampire-scion",
+      "name": "Scion",
       "skillReq": 0,
-      "position": { "x": 4, "y": 4 },
+      "position": {
+        "x": 14,
+        "y": 10
+      },
       "prerequisites": [],
       "prerequisitesAny": [],
-      "description": "Early vampirism — modest attribute bonuses with growing weaknesses to fire.",
-      "effects": [
-        { "type": "attribute", "stat": "health", "value": 50 },
-        { "type": "attribute", "stat": "magicka", "value": 50 },
-        { "type": "attribute", "stat": "stamina", "value": 50 },
-        { "type": "derivedStat", "stat": "frostResist", "value": 25, "isPercent": true },
-        { "type": "derivedStat", "stat": "detectDifficulty", "value": 15, "isPercent": true },
-        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
-        { "type": "derivedStat", "stat": "fireResist", "value": -75, "isPercent": true }
-      ]
+      "description": "As a Vampire Lord, gain a 50 point bonus to all attributes (Health, Magicka, Stamina).",
+      "effects": []
     },
     {
-      "id": "vampire-stage-2",
-      "name": "Stage 2",
+      "id": "vampire-unearthly-will",
+      "name": "Unearthly Will",
       "skillReq": 0,
-      "position": { "x": 8, "y": 4 },
-      "prerequisites": ["vampire-stage-1"],
+      "position": {
+        "x": 10,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
       "prerequisitesAny": [],
-      "description": "Hungry vampire — stronger bonuses and waterbreathing, with harsher fire weakness.",
-      "effects": [
-        { "type": "attribute", "stat": "health", "value": 25 },
-        { "type": "attribute", "stat": "magicka", "value": 25 },
-        { "type": "attribute", "stat": "stamina", "value": 25 },
-        { "type": "flag", "stat": "waterbreathing" },
-        { "type": "derivedStat", "stat": "frostResist", "value": 15, "isPercent": true },
-        { "type": "derivedStat", "stat": "detectDifficulty", "value": 5, "isPercent": true },
-        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
-        { "type": "derivedStat", "stat": "fireResist", "value": -10, "isPercent": true }
-      ]
+      "description": "As a Vampire Lord, all spells and powers cost 25% less to cast.",
+      "effects": []
     },
     {
-      "id": "vampire-stage-3",
-      "name": "Stage 3",
+      "id": "vampire-night-cloak",
+      "name": "Night Cloak",
       "skillReq": 0,
-      "position": { "x": 12, "y": 4 },
-      "prerequisites": ["vampire-stage-2"],
+      "position": {
+        "x": 12,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
       "prerequisitesAny": [],
-      "description": "Starving vampire — powerful resistances and combat bonuses with severe fire vulnerability.",
-      "effects": [
-        { "type": "attribute", "stat": "health", "value": 25 },
-        { "type": "attribute", "stat": "magicka", "value": 25 },
-        { "type": "attribute", "stat": "stamina", "value": 25 },
-        { "type": "derivedStat", "stat": "poisonResist", "value": 100, "isPercent": true },
-        { "type": "derivedStat", "stat": "frostResist", "value": 20, "isPercent": true },
-        { "type": "derivedStat", "stat": "detectDifficulty", "value": 5, "isPercent": true },
-        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
-        { "type": "derivedStat", "stat": "fireResist", "value": -15, "isPercent": true }
-      ]
+      "description": "As a Vampire Lord, a cloud of bats absorbs 5 Health per second from each nearby living enemy in combat.",
+      "effects": []
     },
     {
-      "id": "vampire-stage-4",
-      "name": "Stage 4",
+      "id": "vampire-energy-vampire",
+      "name": "Energy Vampire",
       "skillReq": 0,
-      "position": { "x": 16, "y": 4 },
-      "prerequisites": ["vampire-stage-3"],
+      "position": {
+        "x": 14,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
       "prerequisitesAny": [],
-      "description": "Fully realized vampire — peak power with devastating fire weakness.",
-      "effects": [
-        { "type": "attribute", "stat": "magicka", "value": 25 },
-        { "type": "derivedStat", "stat": "moveSpeed", "value": 10, "isPercent": true },
-        { "type": "derivedStat", "stat": "armorRating", "value": 100 },
-        { "type": "derivedStat", "stat": "unarmedDamage", "value": 30 },
-        { "type": "derivedStat", "stat": "detectDifficulty", "value": 5, "isPercent": true },
-        { "type": "derivedStat", "stat": "meleeDamage", "value": 5, "isPercent": true },
-        { "type": "derivedStat", "stat": "fireResist", "value": -50, "isPercent": true }
-      ]
+      "description": "As a Vampire Lord, your attacks also absorb Magicka and your damaging spells also absorb Stamina.",
+      "effects": []
+    },
+    {
+      "id": "vampire-shapechanger",
+      "name": "Shapechanger",
+      "skillReq": 0,
+      "position": {
+        "x": 16,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
+      "prerequisitesAny": [],
+      "description": "As a Vampire Lord, your attacks weaken targets to your damaging spells and your damaging spells weaken targets to your attacks, increasing damage by 25% for 10 seconds.",
+      "effects": []
+    },
+    {
+      "id": "vampire-vampiric-grip",
+      "name": "Vampiric Grip",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
+      "prerequisitesAny": [],
+      "description": "Blood Magic: Pulls a living target to you from a distance, absorbing Health and Stamina at close range.",
+      "effects": []
+    },
+    {
+      "id": "vampire-fountain-of-blood",
+      "name": "Fountain of Blood",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 6
+      },
+      "prerequisites": [
+        "vampire-night-cloak"
+      ],
+      "prerequisitesAny": [],
+      "description": "Draining a person or killing a person with a power attack bite restores three times as much Health and also restores Magicka and Stamina.",
+      "effects": []
+    },
+    {
+      "id": "vampire-slasher",
+      "name": "Slasher",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 5
+      },
+      "prerequisites": [
+        "vampire-fountain-of-blood"
+      ],
+      "prerequisitesAny": [],
+      "description": "As a Vampire Lord, your power attacks are 25% stronger and hit all targets in front of you.",
+      "effects": []
+    },
+    {
+      "id": "vampire-hemomancer",
+      "name": "Hemomancer",
+      "skillReq": 0,
+      "position": {
+        "x": 10,
+        "y": 6
+      },
+      "prerequisites": [
+        "vampire-unearthly-will"
+      ],
+      "prerequisitesAny": [],
+      "description": "Vampiric blood spells deal 0.4% more damage per level of Destruction.",
+      "effects": []
+    },
+    {
+      "id": "vampire-blood-storm",
+      "name": "Blood Storm",
+      "skillReq": 0,
+      "position": {
+        "x": 10,
+        "y": 5
+      },
+      "prerequisites": [
+        "vampire-hemomancer"
+      ],
+      "prerequisitesAny": [],
+      "description": "As a Vampire Lord, upgrades your Raze spell to Blood Storm, which deals 15% more damage and can be held down for rapid fire.",
+      "effects": []
+    },
+    {
+      "id": "vampire-auspex",
+      "name": "Auspex",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
+      "prerequisites": [
+        "vampire-energy-vampire"
+      ],
+      "prerequisitesAny": [],
+      "description": "Your Vampiric senses warn you when enemies approach within 150 feet, briefly revealing them.",
+      "effects": []
+    },
+    {
+      "id": "vampire-courts-chef",
+      "name": "Court's Chef",
+      "skillReq": 0,
+      "position": {
+        "x": 16,
+        "y": 6
+      },
+      "prerequisites": [
+        "vampire-shapechanger"
+      ],
+      "prerequisitesAny": [],
+      "description": "Able to create a variety of beneficial Potions from Human Flesh or Human Hearts at a cooking pot.",
+      "effects": []
+    },
+    {
+      "id": "vampire-wings-of-the-strix",
+      "name": "Wings of the Strix",
+      "skillReq": 0,
+      "position": {
+        "x": 16,
+        "y": 5
+      },
+      "prerequisites": [
+        "vampire-courts-chef"
+      ],
+      "prerequisitesAny": [],
+      "description": "As a Vampire Lord, sprinting in caster stance allows you to glide, greatly reducing fall speed.",
+      "effects": []
+    },
+    {
+      "id": "vampire-maelstrom",
+      "name": "Maelstrom",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 6
+      },
+      "prerequisites": [
+        "vampire-vampiric-grip"
+      ],
+      "prerequisitesAny": [],
+      "description": "Blood Magic: Vortex pulls targets within range to the center, briefly weakening them to magic.",
+      "effects": []
+    },
+    {
+      "id": "vampire-gutwrench",
+      "name": "Gutwrench",
+      "skillReq": 0,
+      "position": {
+        "x": 20,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-vampiric-grip"
+      ],
+      "prerequisitesAny": [],
+      "description": "Blood Magic: Absorb Health from nearby living targets, tearing them apart when maintained for long enough.",
+      "effects": []
+    },
+    {
+      "id": "vampire-mist-form",
+      "name": "Mist Form",
+      "skillReq": 0,
+      "position": {
+        "x": 10,
+        "y": 4
+      },
+      "prerequisites": [
+        "vampire-unearthly-will"
+      ],
+      "prerequisitesAny": [],
+      "description": "Night Power: Turn into invisible and invulnerable mist, regenerating Health, Magicka and Stamina.",
+      "effects": []
+    },
+    {
+      "id": "vampire-supernatural-reflexes",
+      "name": "Supernatural Reflexes",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 4
+      },
+      "prerequisites": [
+        "vampire-mist-form"
+      ],
+      "prerequisitesAny": [],
+      "description": "Night Power: Slow time as you move and attack faster and your power attacks knock targets down.",
+      "effects": []
+    },
+    {
+      "id": "vampire-tremor",
+      "name": "Tremor",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 4
+      },
+      "prerequisites": [
+        "vampire-mist-form"
+      ],
+      "prerequisitesAny": [],
+      "description": "Night Power: Shake the earth, staggering nearby targets and throwing them into the air.",
+      "effects": []
+    },
+    {
+      "id": "vampire-vampiric-seed",
+      "name": "Vampiric Seed",
+      "skillReq": 0,
+      "position": {
+        "x": 8,
+        "y": 4
+      },
+      "prerequisites": [
+        "vampire-hemomancer"
+      ],
+      "prerequisitesAny": [],
+      "description": "Mortal Hemomancy: Bone shards pierce a living target, absorbing Health and dealing magic damage.",
+      "effects": []
+    },
+    {
+      "id": "vampire-vampiric-orb",
+      "name": "Vampiric Orb",
+      "skillReq": 0,
+      "position": {
+        "x": 8,
+        "y": 3
+      },
+      "prerequisites": [
+        "vampire-vampiric-seed"
+      ],
+      "prerequisitesAny": [],
+      "description": "Mortal Hemomancy: Impales living targets in the area, absorbing Health and dealing magic damage.",
+      "effects": []
+    },
+    {
+      "id": "vampire-vampiric-cloak",
+      "name": "Vampiric Cloak",
+      "skillReq": 0,
+      "position": {
+        "x": 8,
+        "y": 2
+      },
+      "prerequisites": [
+        "vampire-vampiric-orb"
+      ],
+      "prerequisitesAny": [],
+      "description": "Mortal Hemomancy: Bats attack living targets. Absorbs Health and deals magic damage.",
+      "effects": []
+    },
+    {
+      "id": "vampire-blood-from-a-stone",
+      "name": "Blood From a Stone",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 2
+      },
+      "prerequisites": [
+        "vampire-hemomancer"
+      ],
+      "prerequisitesAny": [],
+      "description": "Vampiric blood spells can now damage nonliving targets.",
+      "effects": []
+    },
+    {
+      "id": "vampire-starving-artist",
+      "name": "Starving Artist",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 1
+      },
+      "prerequisites": [
+        "vampire-blood-from-a-stone"
+      ],
+      "prerequisitesAny": [],
+      "description": "Vampiric blood spells absorb Stamina equal to 50% of damage dealt.",
+      "effects": []
+    },
+    {
+      "id": "vampire-make-them-beautiful",
+      "name": "Make Them Beautiful",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 0
+      },
+      "prerequisites": [
+        "vampire-starving-artist"
+      ],
+      "prerequisitesAny": [],
+      "description": "Vampiric blood spells tear apart targets below 25% Health, killing them instantly.",
+      "effects": []
     }
   ]
 }

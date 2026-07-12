@@ -4,11 +4,13 @@ import { SupernaturalDetailContent } from "@/components/option-details/Supernatu
 import { SkillIcon } from "@/components/SkillIcon";
 import { cn } from "@/lib/utils";
 import {
-  getVampireForm,
+  DEFAULT_VAMPIRE_STAGE,
+  getActiveVampireStage,
   getVampireRacialBonus,
   getWerewolfForm,
   getWerewolfRacialBonus,
   isSupernaturalOptionBlocked,
+  isVampireStageId,
   SUPERNATURAL_CLAIMED_CHOICE,
   VAMPIRE_OPTION_ID,
 } from "@/lib/supernatural";
@@ -31,14 +33,12 @@ export function SupernaturalOptionControl({
   if (!gameData) return null;
 
   const isVampire = optionId === VAMPIRE_OPTION_ID;
-  const claimedChoice =
-    option.choices.find((choice) => choice.id !== option.defaultChoice)?.id ??
-    SUPERNATURAL_CLAIMED_CHOICE;
   const checked = selectedChoiceId !== option.defaultChoice;
   const blocked = isSupernaturalOptionBlocked(gameData.game, build, optionId);
   const description = option.descriptionLabel ? labels[option.descriptionLabel] : undefined;
   const blockedHint = labels.supernaturalBlockedHint;
-  const form = isVampire ? getVampireForm(gameData.game) : getWerewolfForm(gameData.game);
+  const vampireStage = isVampire ? getActiveVampireStage(gameData.game, build) : undefined;
+  const form = isVampire ? vampireStage : getWerewolfForm(gameData.game);
   const racialBonus = isVampire
     ? getVampireRacialBonus(gameData.game, build)
     : getWerewolfRacialBonus(gameData.game, build);
@@ -48,6 +48,10 @@ export function SupernaturalOptionControl({
     racialBonus: labels.racialBonus ?? "Racial ability",
     detriments: labels.detriments ?? "Detriments",
   };
+  const stageChoices = option.choices.filter((choice) => isVampireStageId(choice.id));
+  const claimedChoice =
+    option.choices.find((choice) => choice.id !== option.defaultChoice)?.id ??
+    SUPERNATURAL_CLAIMED_CHOICE;
 
   return (
     <article
@@ -107,32 +111,93 @@ export function SupernaturalOptionControl({
         )}
       </div>
 
-      <label
-        className={cn(
-          "flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
-          checked
-            ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"
-            : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
-          blocked && !checked && "cursor-not-allowed",
-        )}
-      >
-        <input
-          type="checkbox"
-          checked={checked}
-          disabled={blocked && !checked}
-          onChange={(event) =>
-            onSelect(event.target.checked ? claimedChoice : option.defaultChoice)
-          }
-          className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed"
-        />
-        <span className="text-sm font-medium text-[var(--color-foreground)]">
-          {checked
-            ? (labels[option.choices.find((choice) => choice.id === claimedChoice)?.label ?? "claimed"] ??
-              "Active")
-            : (labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
-              "Inactive")}
-        </span>
-      </label>
+      {isVampire ? (
+        <>
+          <label
+            className={cn(
+              "flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
+              checked
+                ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"
+                : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
+              blocked && !checked && "cursor-not-allowed",
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={checked}
+              disabled={blocked && !checked}
+              onChange={(event) =>
+                onSelect(
+                  event.target.checked
+                    ? isVampireStageId(selectedChoiceId)
+                      ? selectedChoiceId
+                      : DEFAULT_VAMPIRE_STAGE
+                    : option.defaultChoice,
+                )
+              }
+              className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed"
+            />
+            <span className="text-sm font-medium text-[var(--color-foreground)]">
+              {checked
+                ? (vampireStage?.name ?? labels.supernaturalVampire ?? "Vampire")
+                : (labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
+                  "Inactive")}
+            </span>
+          </label>
+
+          {checked && stageChoices.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">
+                {labels.vampireStageLabel ?? "Hunger stage"}
+              </p>
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                {stageChoices.map((choice) => (
+                  <button
+                    key={choice.id}
+                    type="button"
+                    onClick={() => onSelect(choice.id)}
+                    className={cn(
+                      "rounded-[var(--radius-md)] border px-2 py-2 text-left text-xs font-medium transition-colors",
+                      selectedChoiceId === choice.id
+                        ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/12 text-[var(--color-accent)]"
+                        : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 text-[var(--color-foreground)] hover:border-[var(--color-accent-muted)]/40",
+                    )}
+                  >
+                    {labels[choice.label] ?? choice.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <label
+          className={cn(
+            "flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
+            checked
+              ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"
+              : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
+            blocked && !checked && "cursor-not-allowed",
+          )}
+        >
+          <input
+            type="checkbox"
+            checked={checked}
+            disabled={blocked && !checked}
+            onChange={(event) =>
+              onSelect(event.target.checked ? claimedChoice : option.defaultChoice)
+            }
+            className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed"
+          />
+          <span className="text-sm font-medium text-[var(--color-foreground)]">
+            {checked
+              ? (labels[option.choices.find((choice) => choice.id === claimedChoice)?.label ?? "claimed"] ??
+                "Active")
+              : (labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
+                "Inactive")}
+          </span>
+        </label>
+      )}
 
       {checked && form && (
         <div className="mt-3 space-y-3 border-t border-[var(--color-border)]/50 pt-3">
