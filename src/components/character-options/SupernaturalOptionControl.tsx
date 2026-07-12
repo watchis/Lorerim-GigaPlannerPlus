@@ -1,9 +1,10 @@
 import { Moon, X } from "lucide-react";
-import type { ChangeEventHandler } from "react";
+import type { ChangeEventHandler, ReactNode } from "react";
+import { useRef, useState } from "react";
 import type { CharacterOptionControlProps } from "@/extension-api";
 import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
-import { HoverTapTooltip } from "@/components/ui/tooltip";
+import { CursorTooltip, useSupportsHover } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_VAMPIRE_STAGE,
@@ -22,47 +23,93 @@ interface SupernaturalOptionControlProps extends CharacterOptionControlProps {
   optionId: string;
 }
 
-function CurseToggleCheckbox({
+function CurseToggleRow({
   checked,
   showBlockedHint,
   blockedHint,
   onChange,
+  className,
+  labelText,
 }: {
   checked: boolean;
   showBlockedHint: boolean;
   blockedHint?: string;
   onChange: ChangeEventHandler<HTMLInputElement>;
+  className?: string;
+  labelText: ReactNode;
 }) {
-  const checkbox = (
-    <input
-      type="checkbox"
-      checked={checked}
-      disabled={showBlockedHint}
-      onChange={onChange}
-      className={cn(
-        "h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed",
-        showBlockedHint && "pointer-events-none",
-      )}
-    />
+  const supportsHover = useSupportsHover();
+  const [touchOpen, setTouchOpen] = useState(false);
+  const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  const rowClassName = cn(
+    "flex items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
+    className,
+    showBlockedHint ? "cursor-not-allowed" : "cursor-pointer",
   );
 
-  if (showBlockedHint && blockedHint) {
+  const rowContent = (
+    <>
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={showBlockedHint}
+        onChange={onChange}
+        className={cn(
+          "h-4 w-4 shrink-0 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed",
+          showBlockedHint && "pointer-events-none",
+        )}
+      />
+      <span className="text-sm font-medium text-[var(--color-foreground)]">{labelText}</span>
+    </>
+  );
+
+  if (!showBlockedHint || !blockedHint) {
+    return <label className={rowClassName}>{rowContent}</label>;
+  }
+
+  const hintContent = <span className="text-xs leading-relaxed">{blockedHint}</span>;
+
+  if (!supportsHover) {
     return (
-      <HoverTapTooltip
-        content={<span className="text-xs leading-relaxed">{blockedHint}</span>}
-        side="top"
-        align="start"
+      <CursorTooltip
+        open={touchOpen}
+        onOpenChange={setTouchOpen}
+        touchAnchor={touchAnchor}
+        dismissOnPointerDownOutside
+        dismissOutsideRefs={[rowRef]}
+        content={hintContent}
         contentClassName="max-w-xs"
-        triggerClassName="shrink-0"
+        className={cn(rowClassName, "touch-manipulation")}
       >
-        <span className="inline-flex shrink-0 cursor-not-allowed" aria-label={blockedHint}>
-          {checkbox}
-        </span>
-      </HoverTapTooltip>
+        <div
+          ref={rowRef}
+          role="group"
+          aria-label={blockedHint}
+          className="flex w-full items-center gap-3"
+          onClick={(event) => {
+            setTouchAnchor({ x: event.clientX, y: event.clientY });
+            setTouchOpen((open) => !open);
+          }}
+        >
+          {rowContent}
+        </div>
+      </CursorTooltip>
     );
   }
 
-  return checkbox;
+  return (
+    <CursorTooltip
+      content={hintContent}
+      contentClassName="max-w-xs"
+      className={rowClassName}
+    >
+      <div className="flex w-full items-center gap-3" aria-label={blockedHint}>
+        {rowContent}
+      </div>
+    </CursorTooltip>
+  );
 }
 
 export function SupernaturalOptionControl({
@@ -156,36 +203,31 @@ export function SupernaturalOptionControl({
 
       {isVampire ? (
         <>
-          <label
+          <CurseToggleRow
+            checked={checked}
+            showBlockedHint={showBlockedHint}
+            blockedHint={blockedHint}
             className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
               checked
                 ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"
                 : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
-              blocked && !checked && "cursor-not-allowed",
             )}
-          >
-            <CurseToggleCheckbox
-              checked={checked}
-              showBlockedHint={showBlockedHint}
-              blockedHint={blockedHint}
-              onChange={(event) =>
-                onSelect(
-                  event.target.checked
-                    ? isVampireStageId(selectedChoiceId)
-                      ? selectedChoiceId
-                      : DEFAULT_VAMPIRE_STAGE
-                    : option.defaultChoice,
-                )
-              }
-            />
-            <span className="text-sm font-medium text-[var(--color-foreground)]">
-              {checked
+            onChange={(event) =>
+              onSelect(
+                event.target.checked
+                  ? isVampireStageId(selectedChoiceId)
+                    ? selectedChoiceId
+                    : DEFAULT_VAMPIRE_STAGE
+                  : option.defaultChoice,
+              )
+            }
+            labelText={
+              checked
                 ? (vampireStage?.name ?? labels.supernaturalVampire ?? "Vampire")
                 : (labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
-                  "Inactive")}
-            </span>
-          </label>
+                  "Inactive")
+            }
+          />
 
           {checked && stageChoices.length > 0 && (
             <div className="mt-3 space-y-2">
@@ -213,31 +255,26 @@ export function SupernaturalOptionControl({
           )}
         </>
       ) : (
-        <label
+        <CurseToggleRow
+          checked={checked}
+          showBlockedHint={showBlockedHint}
+          blockedHint={blockedHint}
           className={cn(
-            "flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
             checked
               ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"
               : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
-            blocked && !checked && "cursor-not-allowed",
           )}
-        >
-          <CurseToggleCheckbox
-            checked={checked}
-            showBlockedHint={showBlockedHint}
-            blockedHint={blockedHint}
-            onChange={(event) =>
-              onSelect(event.target.checked ? claimedChoice : option.defaultChoice)
-            }
-          />
-          <span className="text-sm font-medium text-[var(--color-foreground)]">
-            {checked
+          onChange={(event) =>
+            onSelect(event.target.checked ? claimedChoice : option.defaultChoice)
+          }
+          labelText={
+            checked
               ? (labels[option.choices.find((choice) => choice.id === claimedChoice)?.label ?? "claimed"] ??
                 "Active")
               : (labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
-                "Inactive")}
-          </span>
-        </label>
+                "Inactive")
+          }
+        />
       )}
 
       {checked && form && (
