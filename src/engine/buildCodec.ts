@@ -11,6 +11,7 @@ import {
   lookupIndex,
   type BuildCodecRegistry,
 } from "@/engine/buildCodecRegistry";
+import { getModpackMajorVersion } from "@/lib/modpackVersion";
 import {
   DEFAULT_VARIANT_NAME,
   getActiveVariantIndex,
@@ -77,6 +78,8 @@ export interface SharedBuildPackage {
 export interface DecodedBuildPackage {
   build: BuildState;
   shared?: SharedBuildPackage;
+  /** Modpack version embedded in the share code (may differ from the current planner). */
+  sourceModpackVersion?: string;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -405,16 +408,24 @@ function decodeBuildV2(code: string, registry: BuildCodecRegistry): DecodedBuild
     throw new Error(`Unsupported build codec version: ${payload.v}`);
   }
 
-  if (payload.mv !== registry.modpackVersion) {
+  const sourceModpackVersion = payload.mv.trim();
+  if (
+    getModpackMajorVersion(sourceModpackVersion) !==
+    getModpackMajorVersion(registry.modpackVersion)
+  ) {
     throw new Error(
-      `Build is for modpack ${payload.mv}, but this planner is on ${registry.modpackVersion}`,
+      `Build is for modpack ${sourceModpackVersion}, but this planner is on ${registry.modpackVersion}`,
     );
   }
 
   const shared = sharedPackageFromPayload(payload, registry);
   const build = buildStateFromCompactPayload(payload, registry);
 
-  return { build, shared };
+  return {
+    build,
+    shared,
+    sourceModpackVersion: sourceModpackVersion || undefined,
+  };
 }
 
 function payloadToBuildState(partial: {

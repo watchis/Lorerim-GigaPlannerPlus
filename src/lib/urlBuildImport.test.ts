@@ -36,6 +36,22 @@ describe("applyUrlBuildImport", () => {
     expect(nextUrl).not.toContain("build=");
   });
 
+  it("imports a cross-patch shared build from the URL", () => {
+    const importedBuild = createTestBuildState({ description: "Shared build" });
+    const otherGame = {
+      ...game,
+      manifest: { ...game.manifest, version: "5.0.3.6" },
+    };
+    const code = encodeBuild(importedBuild, otherGame);
+    window.history.pushState({}, "", `/Lorerim-GigaPlannerPlus/planner?build=${encodeURIComponent(code)}`);
+
+    const importSharedBuild = vi.fn();
+
+    expect(applyUrlBuildImport(game, importSharedBuild)).toBe("imported");
+    expect(importSharedBuild).toHaveBeenCalledOnce();
+    expect(importSharedBuild.mock.calls[0]?.[0]?.sourceModpackVersion).toBe("5.0.3.6");
+  });
+
   it("skips when the URL has no build parameter", () => {
     const importSharedBuild = vi.fn();
 

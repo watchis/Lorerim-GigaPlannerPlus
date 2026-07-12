@@ -118,6 +118,26 @@ describe("buildStore shared build import", () => {
     expect(state.build.description).toBe("Baseline");
   });
 
+  it("importSharedBuild preserves the source modpack version from cross-patch share codes", () => {
+    const importedBuild = createTestBuildState({
+      raceId: "breton",
+      description: "Cross-patch shared build",
+    });
+    const olderGame = {
+      ...game,
+      manifest: { ...game.manifest, version: "5.0.3.6" },
+    };
+    const decoded = decodeBuildPackage(encodeBuild(importedBuild, olderGame), game);
+
+    useBuildStore.getState().importSharedBuild(decoded);
+
+    const importedSlot = useBuildStore
+      .getState()
+      .savedBuilds.find((entry) => entry.id === useBuildStore.getState().activeBuildId);
+
+    expect(importedSlot?.modpackVersion).toBe("5.0.3.6");
+  });
+
   it("importSharedBuild renames imported builds that collide with existing names", () => {
     const importedBuild = createTestBuildState({
       raceId: "breton",

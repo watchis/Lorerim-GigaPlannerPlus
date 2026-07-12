@@ -80,16 +80,34 @@ describe("buildCodec", () => {
     expect(decoded.skillTrainingRanges.block).toEqual([2, 1, 0, 0]);
   });
 
-  it("rejects builds from a different modpack version", () => {
+  it("rejects builds from a different modpack major version", () => {
     const state = createTestBuildState();
     const code = encodeBuild(state, game);
 
     const otherGame = {
       ...game,
-      manifest: { ...game.manifest, version: "0.0.0-test" },
+      manifest: { ...game.manifest, version: "4.9.0.1" },
     };
 
     expect(() => decodeBuild(code, otherGame)).toThrow(/modpack/);
+  });
+
+  it("decodes builds from a different patch version within the same major", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      playerLevel: 10,
+      description: "Cross-patch build",
+    });
+    const code = encodeBuild(state, game);
+
+    const otherGame = {
+      ...game,
+      manifest: { ...game.manifest, version: "5.0.3.6" },
+    };
+
+    const decoded = decodeBuildPackage(code, otherGame);
+    expect(decoded.build.description).toBe("Cross-patch build");
+    expect(decoded.sourceModpackVersion).toBe(game.manifest.version);
   });
 
   it("round-trips saved build metadata and variants", () => {
