@@ -1,8 +1,6 @@
-import { useSearchParams } from "react-router-dom";
 import { DetailStatRow } from "@/components/option-details/DetailSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CursorTooltip } from "@/components/ui/tooltip";
-import { isConditionalBonusesEnabled } from "@/lib/features";
 import {
   formatBonusSourceValue,
   formatTrackedStatValue,
@@ -94,7 +92,7 @@ function BonusStatRow({
   );
 }
 
-function ConditionalBonusRow({ text, source }: { text: string; source: string }) {
+function BuildBonusRow({ text, source }: { text: string; source: string }) {
   return (
     <div className="flex items-start justify-between gap-3 px-2 py-1 text-xs">
       <span className="min-w-0 flex-1 leading-relaxed text-[var(--color-muted)]">{text}</span>
@@ -104,7 +102,6 @@ function ConditionalBonusRow({ text, source }: { text: string; source: string })
 }
 
 export function DerivedStatsPanel({ embedded = false }: DerivedStatsPanelProps) {
-  const [searchParams] = useSearchParams();
   const labels = usePanelLabels("derived-stats");
   const characterOptionLabels = usePanelLabels("character-options");
   const gameData = useBuildStore((s) => s.gameData);
@@ -117,12 +114,10 @@ export function DerivedStatsPanel({ embedded = false }: DerivedStatsPanelProps) 
     gameData.game.stats.categories.map((category) => [category.id, category.label]),
   );
   const groupedBonuses = groupByCategory(computed.appliedBonuses);
-  const conditionalBonuses = isConditionalBonusesEnabled(searchParams)
-    ? computed.conditionalBonuses
-    : [];
+  const buildBonuses = computed.buildBonuses;
 
   const bonusRows =
-    groupedBonuses.length > 0 || conditionalBonuses.length > 0 ? (
+    groupedBonuses.length > 0 || buildBonuses.length > 0 ? (
       <div className="space-y-4">
         {groupedBonuses.map(([categoryId, bonuses]) => (
           <section key={categoryId} className="space-y-1.5">
@@ -141,14 +136,14 @@ export function DerivedStatsPanel({ embedded = false }: DerivedStatsPanelProps) 
             </div>
           </section>
         ))}
-        {conditionalBonuses.length > 0 && (
+        {buildBonuses.length > 0 && (
           <section className="space-y-1.5">
             <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent-muted)]">
-              {labels["category.conditional"] ?? "Conditional"}
+              {labels["category.sources"] ?? "Sources"}
             </h4>
             <div className="divide-y divide-[var(--color-border)]/50 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)]/50 bg-[var(--color-surface-elevated)]/30">
-              {conditionalBonuses.map((entry, index) => (
-                <ConditionalBonusRow
+              {buildBonuses.map((entry, index) => (
+                <BuildBonusRow
                   key={`${entry.source}-${index}`}
                   text={entry.text}
                   source={entry.source}

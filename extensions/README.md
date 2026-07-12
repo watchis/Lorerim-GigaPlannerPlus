@@ -52,7 +52,7 @@ npm run regen:extension-stub -- --type character-option my-option
 Import from `@/extension-api`:
 
 - `defineCharacterOption`, `definePerk`
-- `BuildModification` — `effects`, `skillLevelGrants`, `plannerNotes`, `conditionalNotes`
+- `BuildModification` — `effects`, `skillLevelGrants`, `plannerNotes`
 - `scaleDerivedStatBySkillLevel(stat, skillLevel, percentPerLevel, opts?)`
 
 ### Character option example (Oghma)

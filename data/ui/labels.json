@@ -140,7 +140,6 @@
       "baseStats": "Base Stats",
       "startingSkills": "Starting skills",
       "bonuses": "Bonuses",
-      "conditional": "Conditional",
       "health": "Health",
       "magicka": "Magicka",
       "stamina": "Stamina",
@@ -286,7 +285,7 @@
       "category.utility": "Utility",
       "category.progression": "Progression",
       "category.abilities": "Abilities",
-      "category.conditional": "Conditional"
+      "category.sources": "Sources"
     },
     "build-library": {
       "eyebrow": "Build Library",

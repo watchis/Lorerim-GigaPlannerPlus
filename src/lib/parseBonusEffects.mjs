@@ -162,23 +162,12 @@ function splitCommaClauses(clause) {
 const CONDITIONAL_MARKERS =
   /\b(?:when|if|while|unless|without wearing|not wearing|without proficiency|below|above|less than|more than|per level|per \d+|each piece|for each|for every|up to|stackable|otherwise|the opposite|outdoors|in combat|crouched|standing up|friendly toward|cannot read skill books|cannot |can only|only benefit|only restore|those born under|sunny|snowy|rainy|weather|at less than|at more than|against four|against three|wearing an|while wearing|under the effects|when not under|when hit|when below|when above|in sunny|in the rain|in snowy|lose potency|enhanced during|excel in|weaken under|made of iron|made of|other beings|undead|daedra|werewolves|playable races|summon|thrall|resurrect|hostile shouts|non-hostile|every 5 levels|perk point|birthsigns? bonuses|divine amulet|gloves|gauntlets|armor slot|empty armor|raw and wriggling|eating fish|eating skeever|craft skooma|blessings|standing stones|soul gems|use scrolls and staves|dwemer armor|dwemer weapons|fishing rods|mudcrab|slaughterfish|spriggans|druidic|lifebloom|axes and|fire and|naturally regenerate|moonshadow|serpent's curse|don't affect you|do not adversely|fighting alone|not wearing|is active|are active|out of combat|pickpocketing)\b/i;
 
-const MECHANICAL_MARKERS =
-  /\d+%|\+\d+|-\d+|\d+(?:\.\d+)?x|\d+(?:\.\d+)?\s*(?:\/s|per\s+second)|\*\s*your\s+level|\bper\s+level\b|\bhalf\s+damage\b|\bdouble\s+damage\b|\bno\s+(?:health|magicka|stamina)\b|\bcannot\b|\bcan only\b|\bperk point\b|\bskill point\b|\bpower\b|\bspell\b|\bshout\b/i;
-
 /**
  * @param {string} clause
  * @returns {boolean}
  */
 function isConditionalClause(clause) {
   return CONDITIONAL_MARKERS.test(clause);
-}
-
-/**
- * @param {string} clause
- * @returns {boolean}
- */
-function isMechanicalClause(clause) {
-  return MECHANICAL_MARKERS.test(clause);
 }
 
 /**
@@ -1589,86 +1578,6 @@ export function trimBonusClauses(clause) {
       return ensurePeriod(capitalizeSentence(withoutPeriod));
     })
     .filter(Boolean);
-}
-
-/**
- * @param {string} text
- * @returns {string[]}
- */
-function splitBonusClauses(text) {
-  return String(text ?? "")
-    .split(/\.\s+/)
-    .map((clause) => clause.trim())
-    .filter(Boolean)
-    .map((clause) => (clause.endsWith(".") ? clause : `${clause}.`));
-}
-
-/** Flip-side sentence that restates the prior clause's conditional (not a separate bonus). */
-const OPPOSITE_FLIP_CLAUSE =
-  /^(?:however,?\s*)?(?:(?:they|it)\s+)?(?:suffer\s+the\s+opposite\s+effect|have\s+the\s+opposite\s+effect|.+?\s+will\s+have\s+the\s+opposite\s+effect)\b/i;
-
-/**
- * @param {string[]} clauses
- * @returns {string[]}
- */
-function mergeOppositeFlipClauses(clauses) {
-  /** @type {string[]} */
-  const merged = [];
-
-  for (const clause of clauses) {
-    const stripped = clause.trim().replace(/\.$/, "");
-    if (OPPOSITE_FLIP_CLAUSE.test(stripped) && merged.length > 0) {
-      const flip =
-        trimBonusClauses(clause)[0] ?? ensurePeriod(stripped.replace(LEADING_FILLER, ""));
-      const prior = merged.pop().replace(/\.$/, "");
-      merged.push(
-        ensurePeriod(`${prior}. ${flip.replace(/\.$/, "")}`),
-      );
-      continue;
-    }
-    merged.push(clause);
-  }
-
-  return merged;
-}
-
-/**
- * Clauses with conditional triggers, plus mechanical text the rule parser did not cover.
- *
- * @param {string} bonusText
- * @param {Effect[]} [effects]
- * @returns {string[]}
- */
-export function extractConditionalBonusDetails(bonusText, effects = []) {
-  const text = String(bonusText ?? "").trim();
-  if (!text) return [];
-
-  const parsedEffects = effects.length > 0 ? effects : parseBonusEffects(text);
-  const clauses = splitBonusClauses(text);
-  const conditional = [];
-
-  for (const clause of clauses) {
-    const subClauses = splitCommaClauses(clause);
-    const parts = subClauses.length > 0 ? subClauses : [clause.replace(/\.$/, "")];
-
-    for (const part of parts) {
-      if (isConditionalClause(part)) {
-        conditional.push(ensurePeriod(part));
-        continue;
-      }
-      if (parseSegment(part, text).length === 0 && isMechanicalClause(part)) {
-        conditional.push(ensurePeriod(part));
-      }
-    }
-  }
-
-  if (conditional.length === 0 && parsedEffects.length === 0) {
-    return clauses.flatMap((clause) => trimBonusClauses(clause));
-  }
-
-  return mergeOppositeFlipClauses(conditional).flatMap((clause) =>
-    trimBonusClauses(clause),
-  );
 }
 
 /**

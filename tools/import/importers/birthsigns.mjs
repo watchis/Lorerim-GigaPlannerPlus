@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { cleanDescription, slugify } from "../lib/transform-utils.mjs";
-import { extractConditionalBonusDetails } from "../lib/parse-bonus-effects.mjs";
 import { resolveEffects } from "../lib/effects/resolve-effects.mjs";
 
 const BIRTHSIGN_NAMES = [
@@ -123,7 +122,6 @@ export function transformStandingStoneRecords(
       description: fromMesg?.description || fromSpell?.description || prior?.description || "",
       bonus,
       effects,
-      bonusDetails: extractConditionalBonusDetails(bonus, effects),
     });
   }
 

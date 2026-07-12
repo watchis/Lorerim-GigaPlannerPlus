@@ -1,7 +1,6 @@
 import { parseTraitBody } from "../lib/parse-trait-body.mjs";
 import { collectTraitAbilitySpells } from "../lib/trait-ability-list.mjs";
 import { cleanDescription, cleanName, slugify } from "../lib/transform-utils.mjs";
-import { extractConditionalBonusDetails } from "../lib/parse-bonus-effects.mjs";
 import { resolveEffects } from "../lib/effects/resolve-effects.mjs";
 
 function resolveTraitText(spellRecord) {
@@ -52,7 +51,6 @@ export async function transformTraitRecords(spellRecords, install = null, plugin
       description,
       bonus,
       effects,
-      bonusDetails: extractConditionalBonusDetails(bonus, effects),
     });
   }
 

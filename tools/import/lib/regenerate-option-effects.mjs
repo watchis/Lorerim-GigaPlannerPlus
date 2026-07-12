@@ -1,10 +1,6 @@
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  parseBonusEffects,
-  extractConditionalBonusDetails,
-  mergeEffects,
-} from "./parse-bonus-effects.mjs";
+import { parseBonusEffects, mergeEffects } from "./parse-bonus-effects.mjs";
 
 function writeJson(path, data) {
   writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
@@ -15,14 +11,9 @@ const birthsignsData = JSON.parse(readFileSync(birthsignsPath, "utf8"));
 for (const birthsign of birthsignsData.birthsigns) {
   if (!birthsign.bonus) {
     birthsign.effects = birthsign.effects ?? [];
-    birthsign.bonusDetails = birthsign.bonusDetails ?? [];
     continue;
   }
   birthsign.effects = parseBonusEffects(birthsign.bonus);
-  birthsign.bonusDetails = extractConditionalBonusDetails(
-    birthsign.bonus,
-    birthsign.effects,
-  );
 }
 writeJson(birthsignsPath, birthsignsData);
 
@@ -30,10 +21,6 @@ const traitsPath = "data/game/traits.json";
 const traitsData = JSON.parse(readFileSync(traitsPath, "utf8"));
 for (const trait of traitsData.traits) {
   trait.effects = parseBonusEffects(trait.bonus ?? "");
-  trait.bonusDetails = extractConditionalBonusDetails(
-    trait.bonus ?? "",
-    trait.effects,
-  );
 }
 writeJson(traitsPath, traitsData);
 
