@@ -102,7 +102,7 @@ function createSavedBuildFromPackage(
     ...createSavedBuild(name, defaultBuild, milestoneEntries, defaultVariantName),
     defaultVariantNotes: decoded.shared?.defaultVariantNotes ?? "",
     activeMilestoneId,
-    modpackVersion: game.manifest.version,
+    modpackVersion: decoded.sourceModpackVersion ?? game.manifest.version,
   });
 }
 
@@ -599,7 +599,8 @@ export const useBuildStore = create<BuildStore>()(
         loadSharedBuild: (decoded) => {
           const { gameData, savedBuilds, activeBuildId } = get();
           if (!gameData) return;
-          const modpackVersion = gameData.game.manifest.version;
+          const modpackVersion =
+            decoded.sourceModpackVersion ?? gameData.game.manifest.version;
 
           if (!decoded.shared) {
             get().loadBuild(decoded.build);
@@ -644,7 +645,14 @@ export const useBuildStore = create<BuildStore>()(
           const modpackVersion = gameData.game.manifest.version;
 
           if (!decoded.shared) {
-            get().importBuildAsSlot(decoded.build);
+            get().importBuildAsSlot(
+              decoded.build,
+              undefined,
+              [],
+              undefined,
+              undefined,
+              decoded.sourceModpackVersion,
+            );
             return;
           }
 

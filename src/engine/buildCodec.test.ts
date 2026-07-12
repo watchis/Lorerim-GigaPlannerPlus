@@ -1,12 +1,27 @@
+import { gzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
-import { decodeBuild, decodeBuildPackage, encodeBuild, encodeSavedBuild } from "@/engine/buildCodec";
+import {
+  decodeBuild,
+  decodeBuildPackage,
+  encodeBuild,
+  encodeSavedBuild,
+} from "@/engine/buildCodec";
+import { createBuildCodecRegistry, lookupIndex } from "@/engine/buildCodecRegistry";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 import { createMilestone, createSavedBuild } from "@/store/savedBuilds";
+
+function toBase64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
 
 describe("buildCodec", () => {
   const game = getTestGameData();
 
-  it("round-trips a minimal build through v2 codec", () => {
+  it("round-trips a minimal build through v3 codec", () => {
     const state = createTestBuildState({
       raceId: "nord",
       birthsignId: "none",
@@ -23,7 +38,7 @@ describe("buildCodec", () => {
     const code = encodeBuild(state, game);
     const decoded = decodeBuild(code, game);
 
-    expect(code.startsWith("2.")).toBe(true);
+    expect(code.startsWith("3.")).toBe(true);
     expect(decoded.raceId).toBe("nord");
     expect(decoded.majorSkillIds).toEqual(["block"]);
     expect(decoded.minorSkillIds).toEqual(["one-handed"]);
@@ -80,16 +95,40 @@ describe("buildCodec", () => {
     expect(decoded.skillTrainingRanges.block).toEqual([2, 1, 0, 0]);
   });
 
-  it("rejects builds from a different modpack version", () => {
-    const state = createTestBuildState();
+  it("decodes builds from a different modpack version and preserves the source version", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      playerLevel: 10,
+      description: "Cross-version build",
+    });
     const code = encodeBuild(state, game);
 
     const otherGame = {
       ...game,
-      manifest: { ...game.manifest, version: "0.0.0-test" },
+      manifest: { ...game.manifest, version: "4.9.0.1" },
     };
 
-    expect(() => decodeBuild(code, otherGame)).toThrow(/modpack/);
+    const decoded = decodeBuildPackage(code, otherGame);
+    expect(decoded.build.description).toBe("Cross-version build");
+    expect(decoded.sourceModpackVersion).toBe(game.manifest.version);
+  });
+
+  it("decodes builds from a different patch version within the same major", () => {
+    const state = createTestBuildState({
+      raceId: "nord",
+      playerLevel: 10,
+      description: "Cross-patch build",
+    });
+    const code = encodeBuild(state, game);
+
+    const otherGame = {
+      ...game,
+      manifest: { ...game.manifest, version: "5.0.3.6" },
+    };
+
+    const decoded = decodeBuildPackage(code, otherGame);
+    expect(decoded.build.description).toBe("Cross-patch build");
+    expect(decoded.sourceModpackVersion).toBe(game.manifest.version);
   });
 
   it("round-trips saved build metadata and variants", () => {
@@ -129,5 +168,25 @@ describe("buildCodec", () => {
     expect(decoded.shared?.activeVariantIndex).toBe(1);
     expect(decoded.build.playerLevel).toBe(10);
     expect(decoded.build.selectedPerkIds).toEqual(["block-improved-blocking"]);
+  });
+
+  it("ignores out-of-range compact indices during decode", () => {
+    const registry = createBuildCodecRegistry(game);
+    const payload = {
+      v: 2 as const,
+      mv: "9.9.9.9",
+      r: 999,
+      M: [999, lookupIndex(registry.skillIndex, "block", "skill")!],
+      p: [999, lookupIndex(registry.perkIndex, "block-improved-blocking", "perk")!],
+      lv: 10,
+    };
+    const compressed = gzipSync(new TextEncoder().encode(JSON.stringify(payload)));
+    const code = `2.${toBase64Url(compressed)}`;
+
+    const decoded = decodeBuildPackage(code, game);
+    expect(decoded.build.raceId).toBe("none");
+    expect(decoded.build.majorSkillIds).toEqual(["block"]);
+    expect(decoded.build.selectedPerkIds).toEqual(["block-improved-blocking"]);
+    expect(decoded.sourceModpackVersion).toBe("9.9.9.9");
   });
 });

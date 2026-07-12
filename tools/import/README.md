@@ -97,6 +97,8 @@ Set `IMPORT_PLUGIN_CONCURRENCY` to tune parallel plugin reads (default `8`). Set
 
 This is the same version Wabbajack shows for the list.
 
+When the detected modpack version changes, `import:lorerim` also writes a matching codec registry snapshot under `data/codec-registries/<version>.json`. These snapshots preserve perk/skill index ordering so older v2 share links decode correctly after a modpack update. You can refresh the current snapshot manually with `npm run export:codec-registry`.
+
 ### Merge behavior
 
 The importer **rebuilds** perk trees, traits, races, birthsigns, and deities from plugin records each run. Existing entries in those files are not kept as a base — only fields that are not derived from plugins are carried forward (see table below). Stale perk tree files under `data/game/perks/` are deleted after import if they are no longer in the index.

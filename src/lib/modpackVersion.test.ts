@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatImportedBuildVersionWarning,
   formatModpackVersion,
+  getImportedBuildVersionMismatch,
   getModpackMajorVersion,
   getModpackVersionForBuildCard,
   getModpackVersionMismatchLevel,
@@ -105,6 +107,46 @@ describe("isModpackVersionMismatch", () => {
     expect(
       isModpackVersionMismatch({ savedModpackVersion: undefined, currentModpackVersion: current }),
     ).toBe(false);
+  });
+});
+
+describe("getImportedBuildVersionMismatch", () => {
+  const current = "5.0.4.2";
+
+  it("returns null when the source version matches or is missing", () => {
+    expect(getImportedBuildVersionMismatch("5.0.4.2", current)).toBeNull();
+    expect(getImportedBuildVersionMismatch(undefined, current)).toBeNull();
+  });
+
+  it("returns warning details for patch-level differences", () => {
+    expect(getImportedBuildVersionMismatch("5.0.3.6", current)).toEqual({
+      level: "warning",
+      sourceVersion: "5.0.3.6",
+      currentVersion: current,
+    });
+  });
+
+  it("returns error details for major-version differences", () => {
+    expect(getImportedBuildVersionMismatch("4.9.0.1", current)).toEqual({
+      level: "error",
+      sourceVersion: "4.9.0.1",
+      currentVersion: current,
+    });
+  });
+});
+
+describe("formatImportedBuildVersionWarning", () => {
+  it("substitutes formatted modpack versions into the template", () => {
+    const message = formatImportedBuildVersionWarning(
+      "Shared from {sourceVersion}, planner on {currentVersion}.",
+      {
+        level: "warning",
+        sourceVersion: "5.0.3.6",
+        currentVersion: "5.0.4.2",
+      },
+    );
+
+    expect(message).toBe("Shared from v5.0.3.6, planner on v5.0.4.2.");
   });
 });
 
