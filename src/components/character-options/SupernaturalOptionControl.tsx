@@ -1,7 +1,9 @@
 import { Moon, X } from "lucide-react";
+import type { ChangeEventHandler } from "react";
 import type { CharacterOptionControlProps } from "@/extension-api";
 import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
+import { HoverTapTooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_VAMPIRE_STAGE,
@@ -18,6 +20,49 @@ import { useBuildStore } from "@/store/buildStore";
 
 interface SupernaturalOptionControlProps extends CharacterOptionControlProps {
   optionId: string;
+}
+
+function CurseToggleCheckbox({
+  checked,
+  showBlockedHint,
+  blockedHint,
+  onChange,
+}: {
+  checked: boolean;
+  showBlockedHint: boolean;
+  blockedHint?: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+}) {
+  const checkbox = (
+    <input
+      type="checkbox"
+      checked={checked}
+      disabled={showBlockedHint}
+      onChange={onChange}
+      className={cn(
+        "h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed",
+        showBlockedHint && "pointer-events-none",
+      )}
+    />
+  );
+
+  if (showBlockedHint && blockedHint) {
+    return (
+      <HoverTapTooltip
+        content={<span className="text-xs leading-relaxed">{blockedHint}</span>}
+        side="top"
+        align="start"
+        contentClassName="max-w-xs"
+        triggerClassName="shrink-0"
+      >
+        <span className="inline-flex shrink-0 cursor-not-allowed" aria-label={blockedHint}>
+          {checkbox}
+        </span>
+      </HoverTapTooltip>
+    );
+  }
+
+  return checkbox;
 }
 
 export function SupernaturalOptionControl({
@@ -52,6 +97,7 @@ export function SupernaturalOptionControl({
   const claimedChoice =
     option.choices.find((choice) => choice.id !== option.defaultChoice)?.id ??
     SUPERNATURAL_CLAIMED_CHOICE;
+  const showBlockedHint = blocked && !checked;
 
   return (
     <article
@@ -93,9 +139,6 @@ export function SupernaturalOptionControl({
             {description && (
               <p className="text-xs leading-relaxed text-[var(--color-muted)]">{description}</p>
             )}
-            {blocked && !checked && blockedHint && (
-              <p className="text-xs leading-relaxed text-[var(--color-muted)]">{blockedHint}</p>
-            )}
           </div>
         </div>
         {checked && (
@@ -122,10 +165,10 @@ export function SupernaturalOptionControl({
               blocked && !checked && "cursor-not-allowed",
             )}
           >
-            <input
-              type="checkbox"
+            <CurseToggleCheckbox
               checked={checked}
-              disabled={blocked && !checked}
+              showBlockedHint={showBlockedHint}
+              blockedHint={blockedHint}
               onChange={(event) =>
                 onSelect(
                   event.target.checked
@@ -135,7 +178,6 @@ export function SupernaturalOptionControl({
                     : option.defaultChoice,
                 )
               }
-              className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed"
             />
             <span className="text-sm font-medium text-[var(--color-foreground)]">
               {checked
@@ -180,14 +222,13 @@ export function SupernaturalOptionControl({
             blocked && !checked && "cursor-not-allowed",
           )}
         >
-          <input
-            type="checkbox"
+          <CurseToggleCheckbox
             checked={checked}
-            disabled={blocked && !checked}
+            showBlockedHint={showBlockedHint}
+            blockedHint={blockedHint}
             onChange={(event) =>
               onSelect(event.target.checked ? claimedChoice : option.defaultChoice)
             }
-            className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed"
           />
           <span className="text-sm font-medium text-[var(--color-foreground)]">
             {checked
