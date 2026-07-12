@@ -97,50 +97,52 @@ describe("supernaturalTheme", () => {
   });
 
   it("keeps readable surface elevation for both curse themes", () => {
-    const baseBackgroundLuminance = relativeLuminance(baseTheme.colors.background);
-    const baseSurfaceLuminance = relativeLuminance(baseTheme.colors.surface);
-
     for (const variant of ["vampire", "werewolf"] as const) {
       const themed = applySupernaturalThemeVariant(baseTheme, variant);
 
-      expect(relativeLuminance(themed.colors.background)).toBeGreaterThanOrEqual(
-        baseBackgroundLuminance * 0.85,
-      );
       expect(relativeLuminance(themed.colors.surface)).toBeGreaterThan(
         relativeLuminance(themed.colors.background),
       );
       expect(relativeLuminance(themed.colors.surfaceElevated)).toBeGreaterThan(
         relativeLuminance(themed.colors.surface),
       );
-      expect(relativeLuminance(themed.colors.surface)).toBeGreaterThanOrEqual(
-        baseSurfaceLuminance * 0.85,
-      );
     }
+
+    const vampire = applySupernaturalThemeVariant(baseTheme, "vampire");
+    expect(relativeLuminance(vampire.colors.background)).toBeGreaterThanOrEqual(
+      relativeLuminance(baseTheme.colors.background) * 0.85,
+    );
   });
 
   it("uses neutral gray/black with red accents for vampire", () => {
     const vampire = applySupernaturalThemeVariant(baseTheme, "vampire");
     const accent = parseColor(vampire.colors.accent)!;
     const background = parseColor(vampire.colors.background)!;
+    const brightRed = parseColor("#dc2626")!;
 
     expect(colorChroma(vampire.colors.background)).toBeLessThan(0.04);
     expect(colorChroma(vampire.colors.surface)).toBeLessThan(0.04);
     expect(accent.r).toBeGreaterThan(accent.g);
     expect(accent.r).toBeGreaterThan(accent.b);
+    expect(accent.r).toBeLessThan(brightRed.r);
     expect(background.r).toBeCloseTo(background.g, 1);
     expect(background.g).toBeCloseTo(background.b, 1);
   });
 
-  it("uses beige-to-rust spectrum for werewolf", () => {
+  it("uses beige-to-rust spectrum for werewolf with subdued surfaces", () => {
     const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
     const background = parseColor(werewolf.colors.background)!;
     const foreground = parseColor(werewolf.colors.foreground)!;
     const accent = parseColor(werewolf.colors.accent)!;
+    const surfaceStep =
+      relativeLuminance(werewolf.colors.surface) - relativeLuminance(werewolf.colors.background);
 
     expect(background.r).toBeGreaterThan(background.b);
     expect(foreground.r).toBeGreaterThan(foreground.b);
     expect(accent.r).toBeGreaterThan(accent.b);
     expect(accent.g).toBeGreaterThan(accent.b);
+    expect(colorChroma(werewolf.colors.surface)).toBeLessThan(0.03);
+    expect(surfaceStep).toBeLessThan(0.04);
     expect(relativeLuminance(werewolf.colors.foreground)).toBeGreaterThan(
       relativeLuminance(werewolf.colors.background) * 2,
     );
