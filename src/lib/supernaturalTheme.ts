@@ -38,7 +38,7 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
       magicka: "#3d4560",
       perkAvailable: "#75717c",
       perkSelected: "#dc6680",
-      perkPartial: "#aa7888",
+      perkPartial: "#a878e8",
       perkLocked: "#141318",
       perkPrereq: "#56525e",
     },
@@ -50,8 +50,8 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
   werewolf: {
     colors: {
       background: "#100e0c",
-      surface: "#181613",
-      surfaceElevated: "#201e1a",
+      surface: "#181715",
+      surfaceElevated: "#211e1a",
       border: "#2b2824",
       foreground: "#ebe3d6",
       muted: "#877b6e",
@@ -62,7 +62,7 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
       stamina: "#a87230",
       perkAvailable: "#756b60",
       perkSelected: "#d89448",
-      perkPartial: "#b08858",
+      perkPartial: "#e0a848",
       perkLocked: "#0e0c0a",
       perkPrereq: "#524a42",
     },

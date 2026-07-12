@@ -117,6 +117,7 @@ describe("supernaturalTheme", () => {
   it("uses neutral gray/black with red accents for vampire", () => {
     const vampire = applySupernaturalThemeVariant(baseTheme, "vampire");
     const accent = parseColor(vampire.colors.accent)!;
+    const partial = parseColor(vampire.colors.perkPartial)!;
     const background = parseColor(vampire.colors.background)!;
     const brightRed = parseColor("#dc2626")!;
 
@@ -125,6 +126,9 @@ describe("supernaturalTheme", () => {
     expect(accent.r).toBeGreaterThan(accent.g);
     expect(accent.r).toBeGreaterThan(accent.b);
     expect(accent.r).toBeLessThan(brightRed.r);
+    expect(partial.b).toBeGreaterThan(partial.r);
+    expect(partial.b).toBeGreaterThan(partial.g);
+    expect(colorChroma(vampire.colors.perkPartial)).toBeGreaterThan(0.15);
     expect(background.r).toBeCloseTo(background.g, 1);
     expect(background.g).toBeCloseTo(background.b, 1);
   });
