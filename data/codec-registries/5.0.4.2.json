@@ -180,7 +180,8 @@
     "destiny",
     "vampire",
     "werewolf",
-    "traits"
+    "traits",
+    "lich"
   ],
   "perks": [
     "smithing-craftsmanship",
@@ -694,14 +695,26 @@
     "werewolf-totem-of-ice-brothers-r2",
     "werewolf-bury-the-beast",
     "werewolf-wolf-among-men",
-    "werewolf-spread-the-beastblood"
+    "werewolf-spread-the-beastblood",
+    "lich-magicka-weave",
+    "lich-frozen-cadavers",
+    "lich-hardened-weave",
+    "lich-mirror-weave",
+    "lich-flesh-transcendence",
+    "lich-one-body",
+    "lich-supreme-weave",
+    "lich-wraith-form",
+    "lich-join-the-march",
+    "lich-dark-pact",
+    "lich-spirit-of-midnight"
   ],
   "characterOptions": [
     "oghma-infinium",
     "alduin-bonus-trait",
     "vampire",
     "werewolf",
-    "au-naturel-gear"
+    "au-naturel-gear",
+    "lich"
   ],
   "characterOptionChoices": [
     [
@@ -732,6 +745,10 @@
       "2",
       "3",
       "4"
+    ],
+    [
+      "none",
+      "claimed"
     ]
   ]
 }

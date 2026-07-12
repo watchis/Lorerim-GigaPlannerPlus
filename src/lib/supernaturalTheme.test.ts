@@ -7,7 +7,7 @@ import {
   getSupernaturalThemeVariantFromChoices,
   SUPERNATURAL_THEME_OVERRIDES,
 } from "@/lib/supernaturalTheme";
-import { SUPERNATURAL_CLAIMED_CHOICE, VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
+import { SUPERNATURAL_CLAIMED_CHOICE, LICH_OPTION_ID, VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
 import { createTestBuildState } from "@/test/helpers";
 import type { Theme } from "@/data/schemas";
 
@@ -44,6 +44,14 @@ describe("supernaturalTheme", () => {
     expect(getSupernaturalThemeVariant(state)).toBe("werewolf");
   });
 
+  it("returns lich variant when lich option is active", () => {
+    const state = createTestBuildState({
+      characterOptionChoices: { [LICH_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+    });
+
+    expect(getSupernaturalThemeVariant(state)).toBe("lich");
+  });
+
   it("returns null when no supernatural curse is active", () => {
     expect(getSupernaturalThemeVariant(createTestBuildState())).toBeNull();
     expect(getSupernaturalThemeVariantFromChoices({})).toBeNull();
@@ -62,6 +70,13 @@ describe("supernaturalTheme", () => {
         [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
       }),
     ).toBe("werewolf");
+    expect(
+      getSupernaturalThemeVariantFromChoices({
+        [VAMPIRE_OPTION_ID]: "none",
+        [WEREWOLF_OPTION_ID]: "none",
+        [LICH_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE,
+      }),
+    ).toBe("lich");
   });
 
   it("prefers vampire when both curses are set (reconcile should clear one)", () => {
@@ -91,8 +106,15 @@ describe("supernaturalTheme", () => {
     expect(themed.shadows.glow).toBe(SUPERNATURAL_THEME_OVERRIDES.werewolf.shadows?.glow);
   });
 
+  it("applies lich palette overrides", () => {
+    const themed = applySupernaturalThemeVariant(baseTheme, "lich");
+
+    expect(themed.colors.accent).toBe(SUPERNATURAL_THEME_OVERRIDES.lich.colors.accent);
+    expect(themed.shadows.glow).toBe(SUPERNATURAL_THEME_OVERRIDES.lich.shadows?.glow);
+  });
+
   it("keeps health, magicka, and stamina colors from the base theme", () => {
-    for (const variant of ["vampire", "werewolf"] as const) {
+    for (const variant of ["vampire", "werewolf", "lich"] as const) {
       const themed = applySupernaturalThemeVariant(baseTheme, variant);
 
       expect(themed.colors.health).toBe(baseTheme.colors.health);
@@ -106,7 +128,7 @@ describe("supernaturalTheme", () => {
   });
 
   it("keeps readable surface elevation for both curse themes", () => {
-    for (const variant of ["vampire", "werewolf"] as const) {
+    for (const variant of ["vampire", "werewolf", "lich"] as const) {
       const themed = applySupernaturalThemeVariant(baseTheme, variant);
 
       expect(relativeLuminance(themed.colors.surface)).toBeGreaterThan(
@@ -241,5 +263,17 @@ describe("supernaturalTheme", () => {
     expect(partial.g).toBeGreaterThan(partial.b);
     expect(selected.r).toBeGreaterThan(selected.b);
     expect(colorChroma(werewolf.colors.perkPartial)).toBeGreaterThan(0.2);
+  });
+
+  it("uses a rose complement for lich partial nodes against teal selected", () => {
+    const lich = applySupernaturalThemeVariant(baseTheme, "lich");
+    const partial = parseColor(lich.colors.perkPartial)!;
+    const selected = parseColor(lich.colors.perkSelected)!;
+
+    expect(selected.g).toBeGreaterThan(selected.r);
+    expect(selected.b).toBeGreaterThan(selected.r);
+    expect(partial.r).toBeGreaterThan(partial.g);
+    expect(partial.r).toBeGreaterThan(partial.b);
+    expect(colorChroma(lich.colors.perkPartial)).toBeGreaterThan(0.2);
   });
 });

@@ -186,6 +186,20 @@ export function transformSupernaturalRecords(spellRecords, supernaturalPath) {
         existing.lycanthropy?.racialBonuses ?? {},
       ),
     },
+    // Lichdom is planner-authored (Undeath / Prelude to Purgatory); preserve on import.
+    lichdom: existing.lichdom ?? {
+      forms: [
+        {
+          id: "none",
+          name: "None",
+          description: "",
+          bonus: "",
+          effects: [],
+          bonusDetails: [],
+        },
+      ],
+      racialBonuses: {},
+    },
   };
 }
 
@@ -200,6 +214,7 @@ export async function importSupernatural(context) {
     summary: {
       vampirismStages: supernatural.vampirism.stages.length,
       lycanthropyForms: supernatural.lycanthropy.forms.length,
+      lichdomForms: supernatural.lichdom?.forms?.length ?? 0,
     },
   };
 }

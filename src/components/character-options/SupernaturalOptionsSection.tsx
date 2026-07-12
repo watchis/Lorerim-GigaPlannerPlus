@@ -48,6 +48,8 @@ export function SupernaturalOptionsSection({
             >
               {activeVariant === "werewolf" ? (
                 <SkillIcon skillId="werewolf" className="h-4 w-4" />
+              ) : activeVariant === "lich" ? (
+                <SkillIcon skillId="lich" className="h-4 w-4" />
               ) : activeVariant === "vampire" ? (
                 <Moon className="h-4 w-4" aria-hidden />
               ) : (

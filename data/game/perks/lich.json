@@ -1,0 +1,120 @@
+{
+  "skillId": "lich",
+  "skillName": "Lich",
+  "grid": {
+    "width": 15,
+    "height": 13
+  },
+  "perks": [
+    {
+      "id": "lich-magicka-weave",
+      "name": "Magicka Weave",
+      "skillReq": 0,
+      "position": { "x": 7, "y": 12 },
+      "prerequisites": [],
+      "prerequisitesAny": [],
+      "description": "Gain 50 Magicka and 25% Magicka Regeneration, doubled in Lich form. In Lich form, you are surrounded by a Magicka Weave.",
+      "effects": []
+    },
+    {
+      "id": "lich-frozen-cadavers",
+      "name": "Frozen Cadavers",
+      "skillReq": 0,
+      "position": { "x": 2, "y": 9 },
+      "prerequisites": ["lich-magicka-weave"],
+      "prerequisitesAny": [],
+      "description": "You may control an additional summoned or reanimated undead. Nearby allied reanimated undead gain 150 Armor and 10% Magic Resist, and are empowered when struck by Frost spells.",
+      "effects": []
+    },
+    {
+      "id": "lich-hardened-weave",
+      "name": "Hardened Weave",
+      "skillReq": 0,
+      "position": { "x": 5, "y": 9 },
+      "prerequisites": ["lich-magicka-weave"],
+      "prerequisitesAny": [],
+      "description": "Your Magicka Weave partially resists incoming physical damage, converting it to Magicka damage. You gain 150 Armor in Lich form.",
+      "effects": []
+    },
+    {
+      "id": "lich-mirror-weave",
+      "name": "Mirror Weave",
+      "skillReq": 0,
+      "position": { "x": 9, "y": 9 },
+      "prerequisites": ["lich-magicka-weave"],
+      "prerequisitesAny": [],
+      "description": "Your Magicka Weave has a chance based on your Magicka to retaliate against hostile spells. You gain 10% Magic Resist.",
+      "effects": []
+    },
+    {
+      "id": "lich-flesh-transcendence",
+      "name": "Flesh Transcendence",
+      "skillReq": 0,
+      "position": { "x": 12, "y": 9 },
+      "prerequisites": ["lich-magicka-weave"],
+      "prerequisitesAny": [],
+      "description": "Necrotic Rejuvenation is stronger, and you may change your appearance in both Lich and humanoid form.",
+      "effects": []
+    },
+    {
+      "id": "lich-one-body",
+      "name": "One Body",
+      "skillReq": 0,
+      "position": { "x": 2, "y": 6 },
+      "prerequisites": ["lich-frozen-cadavers"],
+      "prerequisitesAny": [],
+      "description": "If you would take physical damage, it is first mitigated among your commanded reanimated undead.",
+      "effects": []
+    },
+    {
+      "id": "lich-supreme-weave",
+      "name": "Supreme Weave",
+      "skillReq": 0,
+      "position": { "x": 7, "y": 6 },
+      "prerequisites": [],
+      "prerequisitesAny": ["lich-hardened-weave", "lich-mirror-weave"],
+      "description": "You regenerate Magicka faster while you have 50% or less of your maximum Magicka. Gain additional Magicka Regeneration, doubled in Lich form.",
+      "effects": []
+    },
+    {
+      "id": "lich-wraith-form",
+      "name": "Wraith Form",
+      "skillReq": 0,
+      "position": { "x": 12, "y": 6 },
+      "prerequisites": ["lich-flesh-transcendence"],
+      "prerequisitesAny": [],
+      "description": "Grants the \"Wraith Form\" power in Lich form. At will, become Ethereal and absorb the essence of fallen creatures, regaining 50 Health, Magicka, and Stamina when a creature dies.",
+      "effects": []
+    },
+    {
+      "id": "lich-join-the-march",
+      "name": "Join the March",
+      "skillReq": 0,
+      "position": { "x": 2, "y": 3 },
+      "prerequisites": ["lich-one-body"],
+      "prerequisitesAny": [],
+      "description": "If an enemy would die within 3 seconds of receiving physical damage from an allied reanimated undead, it is revived under that undead's control.",
+      "effects": []
+    },
+    {
+      "id": "lich-dark-pact",
+      "name": "Dark Pact",
+      "skillReq": 0,
+      "position": { "x": 12, "y": 3 },
+      "prerequisites": ["lich-wraith-form"],
+      "prerequisitesAny": [],
+      "description": "Dark Pact lets you temporarily gain Magicka Regeneration in exchange for maximum Health.",
+      "effects": []
+    },
+    {
+      "id": "lich-spirit-of-midnight",
+      "name": "Spirit of Midnight",
+      "skillReq": 0,
+      "position": { "x": 12, "y": 0 },
+      "prerequisites": ["lich-dark-pact"],
+      "prerequisitesAny": [],
+      "description": "Grants the \"Spirit of Midnight\" spell. At will, summon a spirit of midnight to aid you in combat until it is slain.",
+      "effects": []
+    }
+  ]
+}

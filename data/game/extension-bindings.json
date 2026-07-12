@@ -29,6 +29,10 @@
       "extension": "supernatural-werewolf"
     },
     {
+      "optionId": "lich",
+      "extension": "supernatural-lich"
+    },
+    {
       "optionId": "au-naturel-gear",
       "extension": "au-naturel"
     }

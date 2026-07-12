@@ -78,6 +78,19 @@ describe("buildCodec", () => {
     expect(decodedWerewolf.characterOptionChoices.werewolf).toBe("claimed");
     expect(decodedWerewolf.characterOptionChoices.vampire).toBe("none");
     expect(decodedWerewolf.selectedPerkIds).toEqual(["werewolf-animal-vigor"]);
+
+    const lichBuild = createTestBuildState({
+      raceId: "breton",
+      characterOptionChoices: { vampire: "none", werewolf: "none", lich: "claimed" },
+      selectedPerkIds: ["lich-magicka-weave", "lich-supreme-weave"],
+    });
+
+    const decodedLich = decodeBuild(encodeBuild(lichBuild, game), game);
+
+    expect(decodedLich.characterOptionChoices.lich).toBe("claimed");
+    expect(decodedLich.characterOptionChoices.vampire).toBe("none");
+    expect(decodedLich.characterOptionChoices.werewolf).toBe("none");
+    expect(decodedLich.selectedPerkIds).toEqual(["lich-magicka-weave", "lich-supreme-weave"]);
   });
 
   it("round-trips supernatural choices in saved build variants", () => {
@@ -158,6 +171,7 @@ describe("buildCodec", () => {
       "alduin-bonus-trait": "claimed",
       vampire: "none",
       werewolf: "none",
+      lich: "none",
       "au-naturel-gear": "0",
     });
     expect(decoded.oghmaSkillIds).toEqual([
@@ -243,6 +257,7 @@ describe("buildCodec", () => {
       "oghma-infinium": "none",
       vampire: "none",
       werewolf: "none",
+      lich: "none",
     });
   });
 

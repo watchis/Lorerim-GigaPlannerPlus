@@ -2,12 +2,13 @@ import type { Theme } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
 import {
   isVampireStageId,
+  LICH_OPTION_ID,
   SUPERNATURAL_CLAIMED_CHOICE,
   VAMPIRE_OPTION_ID,
   WEREWOLF_OPTION_ID,
 } from "@/lib/supernatural";
 
-export type SupernaturalThemeVariant = "vampire" | "werewolf";
+export type SupernaturalThemeVariant = "vampire" | "werewolf" | "lich";
 
 interface SupernaturalThemeOverrides {
   colors: Partial<Record<string, string>>;
@@ -67,6 +68,28 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
       panel: "0 4px 24px rgba(0, 0, 0, 0.38)",
     },
   },
+  lich: {
+    colors: {
+      background: "#0e1214",
+      surface: "#161b1e",
+      surfaceElevated: "#1e2529",
+      border: "#2a3338",
+      foreground: "#e8eef0",
+      muted: "#7f8d92",
+      accent: "#4db8a8",
+      accentMuted: "#2f7a70",
+      perkAvailable: "#a8b8bc",
+      perkMiniUnselected: "#6a787c",
+      perkSelected: "#5cc4b4",
+      perkPartial: "#d46a88",
+      perkLocked: "#455055",
+      perkPrereq: "#8a989c",
+    },
+    shadows: {
+      glow: "0 0 24px rgba(77, 184, 168, 0.12)",
+      panel: "0 4px 24px rgba(0, 0, 0, 0.42)",
+    },
+  },
 };
 
 export function getSupernaturalThemeVariant(
@@ -80,8 +103,10 @@ export function getSupernaturalThemeVariantFromChoices(
 ): SupernaturalThemeVariant | null {
   const vampireChoice = characterOptionChoices[VAMPIRE_OPTION_ID] ?? "none";
   const werewolfChoice = characterOptionChoices[WEREWOLF_OPTION_ID] ?? "none";
+  const lichChoice = characterOptionChoices[LICH_OPTION_ID] ?? "none";
   if (isVampireStageId(vampireChoice)) return "vampire";
   if (werewolfChoice === SUPERNATURAL_CLAIMED_CHOICE) return "werewolf";
+  if (lichChoice === SUPERNATURAL_CLAIMED_CHOICE) return "lich";
   return null;
 }
 

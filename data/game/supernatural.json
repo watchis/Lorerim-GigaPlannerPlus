@@ -461,5 +461,78 @@
         "bonusDetails": []
       }
     }
+  },
+  "lichdom": {
+    "forms": [
+      {
+        "id": "none",
+        "name": "None",
+        "description": "",
+        "bonus": "",
+        "effects": [],
+        "bonusDetails": []
+      },
+      {
+        "id": "lich",
+        "name": "Lich",
+        "description": "Curse of lichdom \u2014 undead immortality and magicka mastery with fire weakness and lost mortal healing.",
+        "bonus": "Magicka +50. Frost resistance +50%. Disease resistance +1000%. Poison resistance +1000%. Waterbreathing. Fire resistance -100%. Potion effectiveness -50%.",
+        "effects": [
+          {
+            "type": "attribute",
+            "stat": "magicka",
+            "value": 50
+          },
+          {
+            "type": "derivedStat",
+            "stat": "frostResist",
+            "value": 50,
+            "isPercent": true
+          },
+          {
+            "type": "derivedStat",
+            "stat": "diseaseResist",
+            "value": 1000,
+            "isPercent": true
+          },
+          {
+            "type": "flag",
+            "stat": "diseaseImmunity"
+          },
+          {
+            "type": "derivedStat",
+            "stat": "poisonResist",
+            "value": 1000,
+            "isPercent": true
+          },
+          {
+            "type": "flag",
+            "stat": "waterbreathing"
+          },
+          {
+            "type": "derivedStat",
+            "stat": "fireResist",
+            "value": -100,
+            "isPercent": true
+          },
+          {
+            "type": "derivedStat",
+            "stat": "potionEffectiveness",
+            "value": -50,
+            "isPercent": true
+          }
+        ],
+        "bonusDetails": [
+          "Immune to disease and poison.",
+          "No passive health regeneration.",
+          "Conventional healing spells and potions do not heal you \u2014 use Necrotic Rejuvenation and other undead healing.",
+          "Take 2\u00d7 damage from silver and holy weapons.",
+          "Improved Physical Form: 15% resistance to non-silver melee and 33% resistance to arrows.",
+          "Resurrect at your phylactery when you die.",
+          "Cannot take the Silent Dovah trait."
+        ]
+      }
+    ],
+    "racialBonuses": {}
   }
 }

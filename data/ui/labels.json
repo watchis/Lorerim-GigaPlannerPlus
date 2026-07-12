@@ -125,6 +125,7 @@
       "deity": "Deity",
       "vampireTree": "Vampire",
       "werewolfTree": "Werewolf",
+      "lichTree": "Lich",
       "racialBonus": "Racial ability",
       "detriments": "Detriments",
       "supernaturalRaceAbility": "Racial ability",
@@ -219,9 +220,12 @@
       "vampireStageLabel": "Hunger stage",
       "werewolfOption": "Werewolf",
       "werewolfOptionDescription": "Plan a lycanthropic build with curse bonuses and the werewolf perk tree.",
+      "lichOption": "Lich",
+      "lichOptionDescription": "Plan an undead lich build with curse bonuses and the lich perk tree.",
       "supernaturalNone": "Not cursed",
       "supernaturalVampire": "Vampire",
       "supernaturalWerewolf": "Werewolf",
+      "supernaturalLich": "Lich",
       "bonuses": "Bonuses",
       "racialBonus": "Racial ability",
       "detriments": "Detriments",
@@ -231,7 +235,8 @@
       "curseActiveBadge": "Active",
       "selectRaceForRacialAbility": "Select a race in Character Setup to see your racial curse ability.",
       "supernaturalVampireActive": "Vampiric curse active — planner theme and racial abilities apply.",
-      "supernaturalWerewolfActive": "Lycanthropic curse active — planner theme and racial abilities apply."
+      "supernaturalWerewolfActive": "Lycanthropic curse active — planner theme and racial abilities apply.",
+      "supernaturalLichActive": "Lichdom curse active — planner theme and undead abilities apply."
     },
     "attributes": {
       "title": "Attributes",

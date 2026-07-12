@@ -81,6 +81,7 @@ describe("character option codec coverage", () => {
       "au-naturel-gear": "2",
       vampire: "none",
       werewolf: "none",
+      lich: "none",
     });
     expect(decoded.oghmaSkillIds).toEqual(["block", "smithing"]);
   });
@@ -94,6 +95,7 @@ describe("character option codec coverage", () => {
       "au-naturel-gear": "0",
       vampire: "none",
       werewolf: "none",
+      lich: "none",
     });
   });
 

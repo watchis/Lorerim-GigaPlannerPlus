@@ -283,6 +283,10 @@ export const supernaturalSchema = z.object({
     forms: z.array(supernaturalFormSchema).min(1),
     racialBonuses: z.record(z.string(), supernaturalRacialBonusSchema),
   }),
+  lichdom: z.object({
+    forms: z.array(supernaturalFormSchema).min(1),
+    racialBonuses: z.record(z.string(), supernaturalRacialBonusSchema),
+  }),
 });
 
 export const deitySchema = z.object({

@@ -59,6 +59,27 @@ writeFileSync(
       ],
       racialBonuses: {},
     },
+    lichdom: {
+      forms: [
+        {
+          id: "none",
+          name: "None",
+          description: "",
+          bonus: "",
+          effects: [],
+          bonusDetails: [],
+        },
+        {
+          id: "lich",
+          name: "Lich",
+          description: "Hand-tuned lich.",
+          bonus: "Magicka +50.",
+          effects: [{ type: "attribute", stat: "magicka", value: 50 }],
+          bonusDetails: [],
+        },
+      ],
+      racialBonuses: {},
+    },
   }),
 );
 
@@ -106,6 +127,8 @@ assert.equal(
   transformed.lycanthropy.racialBonuses.breton.description,
   "Your Breton blood reduces Beast Form cooldown by 50%.",
 );
+assert.equal(transformed.lichdom.forms[1].description, "Hand-tuned lich.");
+assert.equal(transformed.lichdom.forms[1].bonus, "Magicka +50.");
 
 const context = {
   scan: { spellRecords },
@@ -116,5 +139,6 @@ const result = await importSupernatural(context);
 assert.equal(result.files[0][0], "supernatural.json");
 assert.equal(result.summary.vampirismStages, 5);
 assert.equal(result.summary.lycanthropyForms, 2);
+assert.equal(result.summary.lichdomForms, 2);
 
 console.log("supernatural.test.mjs: ok");

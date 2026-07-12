@@ -21,6 +21,7 @@
     { "id": "destiny", "name": "Destiny", "category": "special", "majorEligible": false, "minorEligible": false },
     { "id": "vampire", "name": "Vampire", "category": "special", "majorEligible": false, "minorEligible": false },
     { "id": "werewolf", "name": "Werewolf", "category": "special", "majorEligible": false, "minorEligible": false },
+    { "id": "lich", "name": "Lich", "category": "special", "majorEligible": false, "minorEligible": false },
     { "id": "traits", "name": "Traits", "category": "special", "majorEligible": false, "minorEligible": false }
   ]
 }
