@@ -868,7 +868,17 @@ export function sanitizeImportedBuildReferences(game: GameData, build: BuildStat
 }
 
 export function reconcileImportedBuild(game: GameData, build: BuildState): BuildState {
-  return reconcileBuild(game, migrateBuildState(sanitizeImportedBuildReferences(game, build)));
+  const importReconcileOptions: BuildReconcileOptions = {
+    ignoreSkillPointCap: true,
+    ignoreTrainingCap: true,
+    ignorePerkPointCap: true,
+    ensureMinimumPlayerLevel: true,
+  };
+  return reconcileBuild(
+    game,
+    migrateBuildState(sanitizeImportedBuildReferences(game, build)),
+    importReconcileOptions,
+  );
 }
 
 export function reconcileBuild(

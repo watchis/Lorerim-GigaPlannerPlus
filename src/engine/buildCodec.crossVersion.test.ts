@@ -13,6 +13,19 @@ describe("user shared build link", () => {
     expect(decoded.shared?.name).toBe("Build 2");
     expect(decoded.build.playerLevel).toBe(50);
     expect(decoded.sourceModpackVersion).toBe("5.0.3.6");
-    expect(decoded.build.selectedPerkIds.length).toBeGreaterThan(0);
+    expect(decoded.build.selectedPerkIds).toHaveLength(59);
+    expect(decoded.build.skillLevels["one-handed"]).toBe(100);
+    expect(decoded.build.skillLevels.alchemy).toBe(100);
+    expect(decoded.build.majorSkillIds).toEqual(["one-handed", "evasion", "alchemy"]);
+  });
+
+  it("maps v2 perk indices using the source modpack registry", () => {
+    const decoded = decodeBuildPackage(USER_BUILD_CODE, game);
+
+    expect(decoded.build.selectedPerkIds).toContain("evasion-athletics-r2");
+    expect(decoded.build.selectedPerkIds).toContain("sneak-stealth-r2");
+    expect(decoded.build.selectedPerkIds).toContain("wayfarer-cheap-tricks");
+    expect(decoded.build.selectedPerkIds).not.toContain("evasion-unarmored-r2");
+    expect(decoded.build.selectedPerkIds).not.toContain("sneak-shadow-opportunist");
   });
 });

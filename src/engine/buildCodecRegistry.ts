@@ -1,4 +1,6 @@
 import type { GameData } from "@/data/schemas";
+import type { CodecRegistrySnapshot } from "@/data/codecRegistrySnapshots";
+import { getCodecRegistrySnapshot } from "@/data/codecRegistrySnapshots";
 
 export interface BuildCodecRegistry {
   game: GameData;
@@ -36,6 +38,59 @@ function collectPerkIds(game: GameData): string[] {
   return ids;
 }
 
+function createRegistryFromLists(
+  game: GameData,
+  lists: {
+    version: string;
+    races: readonly string[];
+    birthsigns: readonly string[];
+    deities: readonly string[];
+    traits: readonly string[];
+    skills: readonly string[];
+    perks: readonly string[];
+    characterOptions: readonly string[];
+    characterOptionChoices: readonly (readonly string[])[];
+  },
+): BuildCodecRegistry {
+  return {
+    game,
+    modpackVersion: lists.version,
+    races: lists.races,
+    birthsigns: lists.birthsigns,
+    deities: lists.deities,
+    traits: lists.traits,
+    skills: lists.skills,
+    perks: lists.perks,
+    characterOptions: lists.characterOptions,
+    characterOptionChoices: lists.characterOptionChoices,
+    raceIndex: indexById([...lists.races]),
+    birthsignIndex: indexById([...lists.birthsigns]),
+    deityIndex: indexById([...lists.deities]),
+    traitIndex: indexById([...lists.traits]),
+    skillIndex: indexById([...lists.skills]),
+    perkIndex: indexById([...lists.perks]),
+    characterOptionIndex: indexById([...lists.characterOptions]),
+  };
+}
+
+export function createBuildCodecRegistryFromSnapshot(
+  game: GameData,
+  snapshot: CodecRegistrySnapshot,
+): BuildCodecRegistry {
+  return createRegistryFromLists(game, snapshot);
+}
+
+export function createBuildCodecRegistryForVersion(
+  game: GameData,
+  modpackVersion: string,
+): BuildCodecRegistry {
+  const snapshot = getCodecRegistrySnapshot(modpackVersion);
+  if (snapshot) {
+    return createBuildCodecRegistryFromSnapshot(game, snapshot);
+  }
+  return createBuildCodecRegistry(game);
+}
+
 export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
   const races = game.races.map((race) => race.id);
   const birthsigns = game.birthsigns.map((birthsign) => birthsign.id);
@@ -48,9 +103,8 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
     option.choices.map((choice) => choice.id),
   );
 
-  return {
-    game,
-    modpackVersion: game.manifest.version,
+  return createRegistryFromLists(game, {
+    version: game.manifest.version,
     races,
     birthsigns,
     deities,
@@ -59,14 +113,7 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
     perks,
     characterOptions,
     characterOptionChoices,
-    raceIndex: indexById(races),
-    birthsignIndex: indexById(birthsigns),
-    deityIndex: indexById(deities),
-    traitIndex: indexById(traits),
-    skillIndex: indexById(skills),
-    perkIndex: indexById(perks),
-    characterOptionIndex: indexById(characterOptions),
-  };
+  });
 }
 
 export function lookupIndex(

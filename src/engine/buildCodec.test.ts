@@ -21,7 +21,7 @@ function toBase64Url(bytes: Uint8Array): string {
 describe("buildCodec", () => {
   const game = getTestGameData();
 
-  it("round-trips a minimal build through v2 codec", () => {
+  it("round-trips a minimal build through v3 codec", () => {
     const state = createTestBuildState({
       raceId: "nord",
       birthsignId: "none",
@@ -38,7 +38,7 @@ describe("buildCodec", () => {
     const code = encodeBuild(state, game);
     const decoded = decodeBuild(code, game);
 
-    expect(code.startsWith("2.")).toBe(true);
+    expect(code.startsWith("3.")).toBe(true);
     expect(decoded.raceId).toBe("nord");
     expect(decoded.majorSkillIds).toEqual(["block"]);
     expect(decoded.minorSkillIds).toEqual(["one-handed"]);

@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "test": "npm run test:app && npm run test:import",
     "test:app": "vitest run",
-    "test:import": "node tools/import/run-lib-tests.mjs",
+    "test:import": "node tools/import/run-lib-tests.mjs && node --test tools/export-codec-registry.test.mjs",
     "test:watch": "vitest",
     "preview": "vite preview",
     "import:lorerim": "node tools/import/import-lorerim.mjs",
@@ -19,6 +19,7 @@
     "import:races": "node tools/import/import-races.mjs",
     "import:birthsigns": "node tools/import/import-birthsigns.mjs",
     "import:deities": "node tools/import/import-deities.mjs",
+    "export:codec-registry": "node tools/export-codec-registry.mjs",
     "regen:effects": "node tools/import/lib/regenerate-option-effects.mjs",
     "regen:extension-stub": "node tools/regen-extension-stub.mjs"
   },
