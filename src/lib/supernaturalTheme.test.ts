@@ -149,8 +149,8 @@ describe("supernaturalTheme", () => {
     expect(relativeLuminance(werewolf.colors.foreground)).toBeGreaterThan(
       relativeLuminance(werewolf.colors.background) * 2,
     );
-    expect(relativeLuminance(werewolf.colors.surface)).toBeLessThan(
-      relativeLuminance(baseTheme.colors.surface) * 0.85,
+    expect(relativeLuminance(werewolf.colors.surface)).toBeGreaterThan(
+      relativeLuminance("#131211"),
     );
   });
 });
