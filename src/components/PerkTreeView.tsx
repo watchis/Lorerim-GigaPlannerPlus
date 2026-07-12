@@ -11,7 +11,6 @@ import {
   arePrerequisitesMet,
   computeDestinyPerkPointsSpent,
   getEarnedDestinyPerkPoints,
-  getEffectiveSkillLevel,
   getPerkSkillId,
 } from "@/engine/buildEngine";
 import type { PerkTree } from "@/data/schemas";
@@ -49,6 +48,7 @@ import {
   zoomTreeViewAtPoint,
 } from "@/lib/perkTreeViewLayout";
 import { useBuildStore } from "@/store/buildStore";
+import { useShallow } from "zustand/react/shallow";
 import { useUiStore } from "@/store/uiStore";
 import { usePerkBadgePlacements } from "@/hooks/usePerkBadgePlacements";
 import { DEFAULT_PERK_BADGE_PLACEMENT } from "@/lib/perkBadgeLayout";
@@ -113,8 +113,17 @@ function PerkTreeView({
   className,
 }: PerkTreeViewProps) {
   const gameData = useBuildStore((s) => s.gameData);
-  const build = useBuildStore((s) => s.build);
+  const selectedPerkIds = useBuildStore(useShallow((s) => s.build.selectedPerkIds));
+  const playerLevel = useBuildStore((s) => s.build.playerLevel);
+  const buildForDestiny = useBuildStore(
+    useShallow((s) =>
+      tree.skillId === DESTINY_SKILL_ID
+        ? s.build
+        : null,
+    ),
+  );
   const perkPointsRemaining = useBuildStore((s) => s.computed?.perkPointsRemaining ?? 0);
+  const skillLevels = useBuildStore(useShallow((s) => s.computed?.skillLevels ?? {}));
   const plannerNotesByPerkId = useBuildStore((s) => s.computed?.plannerNotesByPerkId ?? {});
   const tryTakePerk = useBuildStore((s) => s.tryTakePerk);
   const allocatePerk = useBuildStore((s) => s.allocatePerk);
@@ -337,8 +346,8 @@ function PerkTreeView({
     );
   }, [fit, containerSize, aspect, fitTuning.regionInsetRatio]);
   const visiblePerks = useMemo(
-    () => getVisiblePerksForTree(tree, build.selectedPerkIds),
-    [tree, build.selectedPerkIds],
+    () => getVisiblePerksForTree(tree, selectedPerkIds),
+    [tree, selectedPerkIds],
   );
   const { gridUnitPx, nodeDiameterPx, treeEdgePaddingPx } = useMemo(
     () => resolveTreeLayoutMetrics(bounds, fit, fitSize, visiblePerks, fitTuning),
@@ -373,10 +382,10 @@ function PerkTreeView({
         perkBadgeVisibility.playerLevelReq,
         perkBadgeVisibility.skillLevelReq,
         perkBadgeVisibility.perkName,
-        build.selectedPerkIds.join(","),
+        selectedPerkIds.join(","),
         visiblePerks.length,
       ].join(":"),
-    [badgeLayoutRevision, perkBadgeVisibility, build.selectedPerkIds, visiblePerks.length],
+    [badgeLayoutRevision, perkBadgeVisibility, selectedPerkIds, visiblePerks.length],
   );
   const badgePlacements = usePerkBadgePlacements(treeCanvasRef, badgeLayoutRevisionKey);
 
@@ -393,10 +402,10 @@ function PerkTreeView({
 
   const edges = useMemo(
     () =>
-      computePerkTreeEdgesPercentInBounds(tree, build.selectedPerkIds, bounds, {
+      computePerkTreeEdgesPercentInBounds(tree, selectedPerkIds, bounds, {
         nodeRadiusByPerkId: () => nodeRadiusGrid,
       }),
-    [tree, build.selectedPerkIds, bounds, nodeRadiusGrid],
+    [tree, selectedPerkIds, bounds, nodeRadiusGrid],
   );
 
   const stacksByPosition = useMemo(() => groupPerksByPosition(tree), [tree]);
@@ -433,10 +442,11 @@ function PerkTreeView({
   }, [playerLevelConflictPerkIds, tree.perks]);
 
   if (!gameData) return null;
-  const destinyRemaining = isDestinyTree
-    ? getEarnedDestinyPerkPoints(gameData.game, build) -
-      computeDestinyPerkPointsSpent(gameData.game, build)
-    : 0;
+  const destinyRemaining =
+    isDestinyTree && gameData && buildForDestiny
+      ? getEarnedDestinyPerkPoints(gameData.game, buildForDestiny) -
+        computeDestinyPerkPointsSpent(gameData.game, buildForDestiny)
+      : 0;
 
   const treeCanvas = (
     <div
@@ -475,15 +485,19 @@ function PerkTreeView({
         const stack = stacksByPosition.get(positionKey) ?? [perk];
         const stackRank =
           stack.length > 1
-            ? getPerkStackRank(stack, build.selectedPerkIds)
-            : getPerkAllocationRank(perk, build.selectedPerkIds);
-        const nextRank = getNextRankInStack(stack, build.selectedPerkIds);
-        const isSelected = build.selectedPerkIds.includes(perk.id);
-        const prereqsMet = arePrerequisitesMet(gameData.game, build, perk);
+            ? getPerkStackRank(stack, selectedPerkIds)
+            : getPerkAllocationRank(perk, selectedPerkIds);
+        const nextRank = getNextRankInStack(stack, selectedPerkIds);
+        const isSelected = selectedPerkIds.includes(perk.id);
+        const prereqsMet = arePrerequisitesMet(
+          gameData.game,
+          { selectedPerkIds } as Parameters<typeof arePrerequisitesMet>[1],
+          perk,
+        );
         const isConflict =
           conflictPositionKeys.has(positionKey) ||
           playerLevelConflictPositionKeys.has(positionKey);
-        const takeTargetId = resolvePerkTakeTarget(stack, build.selectedPerkIds);
+        const takeTargetId = resolvePerkTakeTarget(stack, selectedPerkIds);
         const takeTargetPerk = stack.find((candidate) => candidate.id === takeTargetId) ?? perk;
         const tooltipPerk = isSelected ? perk : takeTargetPerk;
         const badgePerk = nextRank ?? takeTargetPerk;
@@ -499,7 +513,7 @@ function PerkTreeView({
 
         const meetsPlayerLevelReq = (() => {
           const playerLevelReq = getPerkNodeRequirements(takeTargetPerk).playerLevelReq;
-          return playerLevelReq == null || build.playerLevel >= playerLevelReq;
+          return playerLevelReq == null || playerLevel >= playerLevelReq;
         })();
 
         const meetsPerkReq =
@@ -508,7 +522,7 @@ function PerkTreeView({
             ? !takeTargetPerk.costsPerkPoint || destinyRemaining >= 1
             : (() => {
                 const skillId = getPerkSkillId(gameData.game, takeTargetPerk.id);
-                const skillLevel = skillId ? getEffectiveSkillLevel(gameData.game, build, skillId) : 0;
+                const skillLevel = skillId ? (skillLevels[skillId] ?? 0) : 0;
                 if (skillLevel < takeTargetPerk.skillReq) return false;
                 if (!takeTargetPerk.costsPerkPoint) return true;
                 return perkPointsRemaining >= 1;

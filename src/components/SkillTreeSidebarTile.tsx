@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import type { PerkTree } from "@/data/schemas";
 import { SkillLevelBonusIndicator } from "@/components/SkillLevelBonusIndicator";
 import { SkillIcon } from "@/components/SkillIcon";
-import { TreeMiniPreview } from "@/components/TreeMiniPreview";
+import { LazyTreeMiniPreview } from "@/components/LazyTreeMiniPreview";
 import type { SkillLevelBonusLine } from "@/lib/skillLevelBonuses";
 import { cn } from "@/lib/utils";
 
@@ -105,7 +105,7 @@ export const SkillTreeSidebarTile = memo(function SkillTreeSidebarTile({
         </span>
       </div>
       <div className="flex min-h-0 items-center justify-center overflow-hidden p-px">
-        <TreeMiniPreview
+        <LazyTreeMiniPreview
           tree={tree}
           conflictPerkIds={stableConflictPerkIds}
           searchPerkPositionKeys={searchPerkPositionKeys}

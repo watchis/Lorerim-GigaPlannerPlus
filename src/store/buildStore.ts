@@ -1,3 +1,4 @@
+import { startTransition } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { AppData } from "@/data/schemas";
@@ -236,13 +237,15 @@ function commitBuild(
     });
   };
 
+  const applyBuild = () => set({ build: nextBuild });
+
   if (options?.deferDerived) {
-    set({ build: nextBuild });
+    startTransition(applyBuild);
     scheduleAfterPaint(applyDerived);
     return;
   }
 
-  set({ build: nextBuild });
+  startTransition(applyBuild);
   scheduleAfterPaint(applyDerived);
 }
 
@@ -335,13 +338,14 @@ export const useBuildStore = create<BuildStore>()(
         setRace: (raceId) => {
           const { gameData, build } = get();
           if (!gameData) return;
-          const previous = reconcileBuild(gameData.game, build);
-          const candidate = { ...previous, raceId };
-          const preserved = preserveSkillPointAllocations(gameData.game, previous, candidate);
-          const reconciled = reconcileBuild(gameData.game, preserved);
-          const leveled = ensurePlayerLevelForBuild(gameData.game, reconciled, {
-            ensureMinimumPlayerLevel: true,
-          });
+          const reconciled = reconcileBuild(gameData.game, build);
+          const candidate = { ...reconciled, raceId };
+          const preserved = preserveSkillPointAllocations(gameData.game, reconciled, candidate);
+          const leveled = ensurePlayerLevelForBuild(
+            gameData.game,
+            reconcileBuild(gameData.game, preserved),
+            { ensureMinimumPlayerLevel: true },
+          );
           commitBuild(set, get, leveled);
         },
 

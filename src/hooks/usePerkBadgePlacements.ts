@@ -36,25 +36,13 @@ export function usePerkBadgePlacements(
     revisionRef.current = revision;
     runLayout();
 
-    let frame2 = 0;
-    let frame3 = 0;
-    const frame1 = requestAnimationFrame(() => {
+    const frame = requestAnimationFrame(() => {
       if (revisionRef.current !== revision) return;
       runLayout();
-      frame2 = requestAnimationFrame(() => {
-        if (revisionRef.current !== revision) return;
-        runLayout();
-        frame3 = requestAnimationFrame(() => {
-          if (revisionRef.current !== revision) return;
-          runLayout();
-        });
-      });
     });
 
     return () => {
-      cancelAnimationFrame(frame1);
-      cancelAnimationFrame(frame2);
-      cancelAnimationFrame(frame3);
+      cancelAnimationFrame(frame);
     };
   }, [runLayout, revision]);
 

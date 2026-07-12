@@ -44,6 +44,7 @@ export function SkillTreesSidebarPanel() {
     (sideWidths?.right ?? Number.POSITIVE_INFINITY) < RESET_ICON_ONLY_MAX_WIDTH;
   const gameData = useBuildStore((s) => s.gameData);
   const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
   const resetAllPerks = useBuildStore((s) => s.resetAllPerks);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
@@ -127,7 +128,7 @@ export function SkillTreesSidebarPanel() {
     [goToSwipePane, openSkillTree, stackedLayout],
   );
 
-  if (!gameData || !playerWarnings) return null;
+  if (!gameData || !playerWarnings || !computed) return null;
 
   return (
     <Card
@@ -181,7 +182,9 @@ export function SkillTreesSidebarPanel() {
         >
           {trees.map((tree) => {
             const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
-            const skillLevel = getStoredSkillLevel(gameData.game, build, tree.skillId);
+            const skillLevel =
+              computed.skillLevels[tree.skillId] ??
+              getStoredSkillLevel(gameData.game, build, tree.skillId);
             const isDestinyTree = tree.skillId === "destiny";
             const skillBonusLines = !isDestinyTree
               ? getSkillLevelBonusLines(gameData.game, build, tree.skillId, labels)

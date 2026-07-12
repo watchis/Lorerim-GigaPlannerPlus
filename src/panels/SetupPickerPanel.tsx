@@ -168,7 +168,7 @@ export function SetupPickerPanel() {
       name: race.name,
       isSelected: (build.raceId ?? "none") === race.id,
       onSelect: () => setRace(race.id),
-      detail:
+      renderDetail: () =>
         race.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
             No race bonuses will be applied to this build.
@@ -206,7 +206,7 @@ export function SetupPickerPanel() {
       name: birthsign.name,
       isSelected: (build.birthsignId ?? "none") === birthsign.id,
       onSelect: () => setBirthsign(birthsign.id),
-      detail:
+      renderDetail: () =>
         birthsign.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
             No birthsign bonus will be applied to this build.
@@ -226,7 +226,7 @@ export function SetupPickerPanel() {
       name: deity.name,
       isSelected: (build.deityId ?? "none") === deity.id,
       onSelect: () => setDeity(deity.id),
-      detail:
+      renderDetail: () =>
         deity.id === "none" ? (
           <p className="text-sm text-[var(--color-muted)]">
             No deity will be applied to this build.
@@ -256,7 +256,7 @@ export function SetupPickerPanel() {
       isSelected: build.traitIds.includes(trait.id),
       isEnabled: canSelectTrait(game, build, trait.id),
       onSelect: () => toggleTrait(trait.id),
-      detail: (
+      renderDetail: () => (
         <>
           <TraitDetailContent
             trait={trait}
