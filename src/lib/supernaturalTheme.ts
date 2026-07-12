@@ -62,7 +62,7 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
       stamina: "#a87230",
       perkAvailable: "#756b60",
       perkSelected: "#d89448",
-      perkPartial: "#52c8f0",
+      perkPartial: "#58d868",
       perkLocked: "#0e0c0a",
       perkPrereq: "#524a42",
     },
