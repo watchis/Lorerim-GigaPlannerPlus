@@ -16,6 +16,19 @@ describe("buildCodecRegistry", () => {
     expect(registry.perks.length).toBeGreaterThan(100);
   });
 
+  it("indexes supernatural character option choices for codec round-trip", () => {
+    const vampireIndex = lookupIndex(registry.characterOptionIndex, "vampire", "character option");
+    const werewolfIndex = lookupIndex(registry.characterOptionIndex, "werewolf", "character option");
+    expect(vampireIndex).toBeTypeOf("number");
+    expect(werewolfIndex).toBeTypeOf("number");
+
+    const vampireChoices = registry.characterOptionChoices[vampireIndex!];
+    const werewolfChoices = registry.characterOptionChoices[werewolfIndex!];
+
+    expect(vampireChoices).toEqual(["none", "stage-1", "stage-2", "stage-3", "stage-4"]);
+    expect(werewolfChoices).toEqual(["none", "claimed"]);
+  });
+
   it("looks up ids by index and back", () => {
     const raceIndex = lookupIndex(registry.raceIndex, "nord", "race");
     expect(raceIndex).toBeTypeOf("number");

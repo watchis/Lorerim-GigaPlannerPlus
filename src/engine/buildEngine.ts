@@ -1932,6 +1932,10 @@ export function migrateBuildState(
   return withSupernatural;
 }
 
+export function prepareImportedBuild(game: GameData, build: BuildState): BuildState {
+  return reconcileBuild(game, migrateBuildState(build));
+}
+
 function stringArraysEqual(a: string[] | undefined, b: string[] | undefined): boolean {
   const left = a ?? [];
   const right = b ?? [];

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decodeBuild, decodeBuildPackage, encodeBuild, encodeSavedBuild } from "@/engine/buildCodec";
+import { prepareImportedBuild } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 import { createMilestone, createSavedBuild } from "@/store/savedBuilds";
 
@@ -32,6 +33,99 @@ describe("buildCodec", () => {
     expect(decoded.selectedPerkIds).toEqual(["block-improved-blocking"]);
     expect(decoded.attributeBonus).toEqual({ health: 2, magicka: 1, stamina: 0 });
     expect(decoded.description).toBe("Test build");
+  });
+
+  it("round-trips supernatural vampire stage, werewolf curse, and curse perks", () => {
+    const vampireBuild = createTestBuildState({
+      raceId: "nord",
+      characterOptionChoices: { vampire: "stage-3", werewolf: "none" },
+      selectedPerkIds: ["vampire-scion", "block-improved-blocking"],
+      traitIds: ["angler"],
+    });
+
+    const decodedVampire = decodeBuild(encodeBuild(vampireBuild, game), game);
+
+    expect(decodedVampire.characterOptionChoices.vampire).toBe("stage-3");
+    expect(decodedVampire.characterOptionChoices.werewolf).toBe("none");
+    expect(decodedVampire.selectedPerkIds).toEqual(
+      expect.arrayContaining(["vampire-scion", "block-improved-blocking"]),
+    );
+    expect(decodedVampire.selectedPerkIds).toHaveLength(2);
+
+    const werewolfBuild = createTestBuildState({
+      raceId: "nord",
+      characterOptionChoices: { vampire: "none", werewolf: "claimed" },
+      selectedPerkIds: ["werewolf-animal-vigor"],
+    });
+
+    const decodedWerewolf = decodeBuild(encodeBuild(werewolfBuild, game), game);
+
+    expect(decodedWerewolf.characterOptionChoices.werewolf).toBe("claimed");
+    expect(decodedWerewolf.characterOptionChoices.vampire).toBe("none");
+    expect(decodedWerewolf.selectedPerkIds).toEqual(["werewolf-animal-vigor"]);
+  });
+
+  it("round-trips supernatural choices in saved build variants", () => {
+    const defaultBuild = createTestBuildState({
+      characterOptionChoices: { vampire: "stage-1", werewolf: "none" },
+      selectedPerkIds: ["vampire-scion"],
+    });
+    const milestoneBuild = createTestBuildState({
+      characterOptionChoices: { vampire: "none", werewolf: "claimed" },
+      selectedPerkIds: ["werewolf-animal-vigor"],
+    });
+    const entry = createSavedBuild(
+      "Curse variants",
+      defaultBuild,
+      [createMilestone("Werewolf path", milestoneBuild)],
+    );
+
+    const decoded = decodeBuildPackage(encodeSavedBuild(entry, game), game);
+
+    expect(decoded.build.characterOptionChoices.vampire).toBe("stage-1");
+    expect(decoded.build.selectedPerkIds).toEqual(["vampire-scion"]);
+    expect(decoded.shared?.milestones[0]?.build.characterOptionChoices.werewolf).toBe("claimed");
+    expect(decoded.shared?.milestones[0]?.build.selectedPerkIds).toEqual(["werewolf-animal-vigor"]);
+  });
+
+  it("rejects unknown supernatural choice ids during encode", () => {
+    const state = createTestBuildState({
+      characterOptionChoices: { vampire: "stage-99", werewolf: "none" },
+    });
+
+    expect(() => encodeBuild(state, game)).toThrow(/Unknown character option choice/);
+  });
+
+  it("normalizes conflicting supernatural curses on decode", () => {
+    const state = createTestBuildState({
+      characterOptionChoices: { vampire: "stage-2", werewolf: "claimed" },
+      selectedPerkIds: ["vampire-scion", "werewolf-animal-vigor", "block-improved-blocking"],
+    });
+
+    const decoded = decodeBuild(encodeBuild(state, game), game);
+
+    expect(decoded.characterOptionChoices.vampire).toBe("stage-2");
+    expect(decoded.characterOptionChoices.werewolf).toBe("none");
+    expect(decoded.selectedPerkIds).toEqual(
+      expect.arrayContaining(["vampire-scion", "block-improved-blocking"]),
+    );
+    expect(decoded.selectedPerkIds).not.toContain("werewolf-animal-vigor");
+  });
+
+  it("migrates legacy supernatural fields when preparing imported builds", () => {
+    const legacy = createTestBuildState({
+      selectedPerkIds: ["vampire-scion"],
+    }) as ReturnType<typeof createTestBuildState> & {
+      vampirismId: string;
+      lycanthropyId: string;
+    };
+    legacy.vampirismId = "stage-3";
+    legacy.lycanthropyId = "none";
+
+    const imported = prepareImportedBuild(game, legacy);
+
+    expect(imported.characterOptionChoices.vampire).toBe("stage-3");
+    expect(imported.characterOptionChoices.werewolf).toBe("none");
   });
 
   it("round-trips character option choices and migrates legacy Oghma paths", () => {
