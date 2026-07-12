@@ -91,6 +91,12 @@ export function lookupId(list: readonly string[], index: number | undefined, lab
   return id;
 }
 
+/** Best-effort decode lookup: returns null for missing or out-of-range indices. */
+export function lookupIdSafe(list: readonly string[], index: number | undefined): string | null {
+  if (index === undefined) return null;
+  return list[index] ?? null;
+}
+
 export function lookupCharacterOptionChoiceIndex(
   registry: BuildCodecRegistry,
   optionId: string,
@@ -117,4 +123,14 @@ export function lookupCharacterOptionChoiceId(
     throw new Error(`Invalid character option choice index: ${optionIndex}/${choiceIndex}`);
   }
   return choiceId;
+}
+
+export function lookupCharacterOptionChoiceIdSafe(
+  registry: BuildCodecRegistry,
+  optionIndex: number,
+  choiceIndex: number,
+): string | null {
+  const optionId = lookupIdSafe(registry.characterOptions, optionIndex);
+  if (!optionId) return null;
+  return registry.characterOptionChoices[optionIndex]?.[choiceIndex] ?? null;
 }

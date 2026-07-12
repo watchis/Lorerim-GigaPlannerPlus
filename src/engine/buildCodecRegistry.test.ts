@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createBuildCodecRegistry,
   lookupId,
+  lookupIdSafe,
   lookupIndex,
 } from "@/engine/buildCodecRegistry";
 import { getTestGameData } from "@/test/helpers";
@@ -24,5 +25,10 @@ describe("buildCodecRegistry", () => {
 
   it("throws for unknown ids", () => {
     expect(() => lookupIndex(registry.raceIndex, "not-a-race", "race")).toThrow(/Unknown race/);
+  });
+
+  it("returns null for out-of-range indices during best-effort decode", () => {
+    expect(lookupIdSafe(registry.races, 999)).toBeNull();
+    expect(lookupIdSafe(registry.races, undefined)).toBeNull();
   });
 });

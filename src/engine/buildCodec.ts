@@ -1,17 +1,20 @@
 import { gzipSync, gunzipSync } from "fflate";
 import type { GameData } from "@/data/schemas";
-import { migrateBuildState, type BuildState } from "@/engine/buildEngine";
-import { getEffectiveSkillFloor, reconcileBuild } from "@/engine/buildEngine";
+import {
+  getEffectiveSkillFloor,
+  migrateBuildState,
+  reconcileImportedBuild,
+  type BuildState,
+} from "@/engine/buildEngine";
 import { migrateLegacySkillTrainingCounts } from "@/lib/skillTraining";
 import {
   createBuildCodecRegistry,
-  lookupCharacterOptionChoiceId,
+  lookupCharacterOptionChoiceIdSafe,
   lookupCharacterOptionChoiceIndex,
-  lookupId,
+  lookupIdSafe,
   lookupIndex,
   type BuildCodecRegistry,
 } from "@/engine/buildCodecRegistry";
-import { getModpackMajorVersion } from "@/lib/modpackVersion";
 import {
   DEFAULT_VARIANT_NAME,
   getActiveVariantIndex,
@@ -215,6 +218,12 @@ function compactPayloadFromBuild(
   return payload;
 }
 
+function mapIndexedIds(list: readonly string[], indices: number[] | undefined): string[] {
+  return (indices ?? [])
+    .map((index) => lookupIdSafe(list, index))
+    .filter((id): id is string => id !== null);
+}
+
 function buildStateFromCompactPayload(
   payload: CompactBuildPayload,
   registry: BuildCodecRegistry,
@@ -222,8 +231,9 @@ function buildStateFromCompactPayload(
   const attrs = payload.a ?? [0, 0, 0];
   const skillLevels = Object.fromEntries(
     (payload.l ?? [])
-      .map(([index, level]) => [lookupId(registry.skills, index, "skill")!, level] as const)
-      .filter(([skillId]) => skillId !== null),
+      .map(([index, level]) => [lookupIdSafe(registry.skills, index), level] as const)
+      .filter(([skillId]) => skillId !== null)
+      .map(([skillId, level]) => [skillId!, level] as const),
   );
   const skillTrainingRanges: Record<string, number[]> = {};
   const legacyTrainingCounts: Record<string, number> = {};
@@ -231,7 +241,7 @@ function buildStateFromCompactPayload(
   for (const entry of payload.tr ?? []) {
     if (entry.length >= 3) {
       const [skillIndex, tierIndex, count] = entry;
-      const skillId = lookupId(registry.skills, skillIndex, "skill");
+      const skillId = lookupIdSafe(registry.skills, skillIndex);
       if (!skillId || count <= 0) continue;
 
       const ranges = skillTrainingRanges[skillId] ?? [];
@@ -242,7 +252,7 @@ function buildStateFromCompactPayload(
 
     if (entry.length === 2) {
       const [skillIndex, count] = entry;
-      const skillId = lookupId(registry.skills, skillIndex, "skill");
+      const skillId = lookupIdSafe(registry.skills, skillIndex);
       if (skillId && count > 0) {
         legacyTrainingCounts[skillId] = count;
       }
@@ -258,29 +268,26 @@ function buildStateFromCompactPayload(
 
   const characterOptionChoices: Record<string, string> = {};
   for (const [optionIndex, choiceIndex] of payload.co ?? []) {
-    const optionId = lookupId(registry.characterOptions, optionIndex, "character option");
-    if (!optionId) continue;
-    characterOptionChoices[optionId] = lookupCharacterOptionChoiceId(
-      registry,
-      optionIndex,
-      choiceIndex,
-    );
+    const optionId = lookupIdSafe(registry.characterOptions, optionIndex);
+    const choiceId = lookupCharacterOptionChoiceIdSafe(registry, optionIndex, choiceIndex);
+    if (!optionId || !choiceId) continue;
+    characterOptionChoices[optionId] = choiceId;
   }
 
   return payloadToBuildState({
-    raceId: lookupId(registry.races, payload.r, "race") ?? "none",
-    birthsignId: lookupId(registry.birthsigns, payload.s, "birthsign"),
-    deityId: lookupId(registry.deities, payload.b, "deity"),
-    traitIds: (payload.t ?? []).map((index) => lookupId(registry.traits, index, "trait")!),
-    majorSkillIds: (payload.M ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
-    minorSkillIds: (payload.m ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
-    oghmaSkillIds: (payload.oi ?? []).map((index) => lookupId(registry.skills, index, "skill")!),
+    raceId: lookupIdSafe(registry.races, payload.r) ?? "none",
+    birthsignId: lookupIdSafe(registry.birthsigns, payload.s),
+    deityId: lookupIdSafe(registry.deities, payload.b),
+    traitIds: mapIndexedIds(registry.traits, payload.t),
+    majorSkillIds: mapIndexedIds(registry.skills, payload.M),
+    minorSkillIds: mapIndexedIds(registry.skills, payload.m),
+    oghmaSkillIds: mapIndexedIds(registry.skills, payload.oi),
     attributeBonus: {
       health: attrs[0] ?? 0,
       magicka: attrs[1] ?? 0,
       stamina: attrs[2] ?? 0,
     },
-    selectedPerkIds: (payload.p ?? []).map((index) => lookupId(registry.perks, index, "perk")!),
+    selectedPerkIds: mapIndexedIds(registry.perks, payload.p),
     skillLevels,
     skillTrainingRanges,
     characterOptionChoices,
@@ -409,14 +416,6 @@ function decodeBuildV2(code: string, registry: BuildCodecRegistry): DecodedBuild
   }
 
   const sourceModpackVersion = payload.mv.trim();
-  if (
-    getModpackMajorVersion(sourceModpackVersion) !==
-    getModpackMajorVersion(registry.modpackVersion)
-  ) {
-    throw new Error(
-      `Build is for modpack ${sourceModpackVersion}, but this planner is on ${registry.modpackVersion}`,
-    );
-  }
 
   const shared = sharedPackageFromPayload(payload, registry);
   const build = buildStateFromCompactPayload(payload, registry);
@@ -461,7 +460,7 @@ function payloadToBuildState(partial: {
     description: partial.description,
   };
 
-  return game ? reconcileBuild(game, build) : build;
+  return game ? reconcileImportedBuild(game, build) : build;
 }
 
 export function encodeBuild(state: BuildState, game: GameData): string {
@@ -479,7 +478,7 @@ export function decodeBuildPackage(code: string, game: GameData): DecodedBuildPa
   if (trimmed.startsWith(V2_PREFIX)) {
     return decodeBuildV2(trimmed.slice(V2_PREFIX.length), createBuildCodecRegistry(game));
   }
-  return { build: decodeBuildV1(trimmed) };
+  return { build: reconcileImportedBuild(game, decodeBuildV1(trimmed)) };
 }
 
 export function decodeBuild(code: string, game: GameData): BuildState {
