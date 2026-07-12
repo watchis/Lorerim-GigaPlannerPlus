@@ -1,6 +1,5 @@
 import type { GameData, SupernaturalForm, SupernaturalRacialBonus } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
-import { getSelectedCharacterOptionChoice } from "@/lib/characterOptions";
 
 export const VAMPIRE_OPTION_ID = "vampire";
 export const WEREWOLF_OPTION_ID = "werewolf";

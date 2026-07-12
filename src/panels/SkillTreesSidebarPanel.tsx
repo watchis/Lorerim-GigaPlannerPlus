@@ -173,9 +173,7 @@ export function SkillTreesSidebarPanel() {
         >
           {trees.map((tree) => {
             const isActive = skillTreeOpen && activeSkillTreeId === tree.skillId;
-            const skillLevel =
-              computed.skillLevels[tree.skillId] ??
-              getStoredSkillLevel(gameData.game, build, tree.skillId);
+            const skillLevel = computed.skillLevels[tree.skillId] ?? 0;
             const isDestinyTree = tree.skillId === "destiny";
             const skillBonusLines = !isDestinyTree
               ? getSkillLevelBonusLines(gameData.game, build, tree.skillId, labels)

@@ -1,4 +1,4 @@
-import type { Effect, GameData, Perk } from "@/data/schemas";
+import type { GameData, Perk } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
 import { extractConditionalBonusDetails } from "@/lib/resolveOptionEffects";
 import { trimBonusClauses } from "@/lib/trimBonusClause";
