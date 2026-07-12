@@ -195,6 +195,15 @@ describe("supernaturalTheme", () => {
     expect(borderContrast(locked)).toBeGreaterThan(0.08);
   });
 
+  it("keeps vampire mini previews dimmer than full-tree available borders", () => {
+    const vampire = applySupernaturalThemeVariant(baseTheme, "vampire");
+
+    expect(vampire.colors.perkMiniUnselected).toBe("#75717c");
+    expect(relativeLuminance(vampire.colors.perkMiniUnselected!)).toBeLessThan(
+      relativeLuminance(vampire.colors.perkAvailable),
+    );
+  });
+
   it("uses brighter unselected perk borders on werewolf theme", () => {
     const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
     const surface = parseColor(werewolf.colors.surfaceElevated)!;

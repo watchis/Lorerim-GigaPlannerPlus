@@ -35,6 +35,7 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
       accent: "#d4566a",
       accentMuted: "#964052",
       perkAvailable: "#c0bac6",
+      perkMiniUnselected: "#75717c",
       perkSelected: "#dc6680",
       perkPartial: "#c898ff",
       perkLocked: "#524e58",

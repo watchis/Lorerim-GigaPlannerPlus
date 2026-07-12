@@ -32,7 +32,10 @@ const COMPACT_EDGE_STROKE_ACTIVE = 0.25;
 const COMPACT_SELECTED_FILL = "color-mix(in srgb, var(--color-perk-selected) 90%, #fff0c8)";
 const COMPACT_PARTIAL_FILL = "color-mix(in srgb, var(--color-perk-partial) 90%, #d8f4ff)";
 const COMPACT_CONFLICT_FILL = "color-mix(in srgb, var(--color-error) 88%, #ffd4dc)";
-const COMPACT_UNSELECTED_FILL = "var(--color-perk-available)";
+const COMPACT_UNSELECTED_FILL =
+  "var(--color-perk-mini-unselected, var(--color-perk-available))";
+const COMPACT_INACTIVE_EDGE_STROKE =
+  "var(--color-perk-mini-unselected, var(--color-perk-available))";
 
 const COMPACT_NODE_HALO_PAD = 0.1;
 const COMPACT_HIGHLIGHT_HALO_OPACITY = 0.62;
@@ -268,7 +271,7 @@ export const PerkTreeMiniView = memo(function PerkTreeMiniView({
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke="var(--color-perk-available)"
+                  stroke={COMPACT_INACTIVE_EDGE_STROKE}
                   strokeWidth={COMPACT_EDGE_STROKE}
                   strokeOpacity={COMPACT_INACTIVE_EDGE_OPACITY}
                   strokeLinecap="round"
