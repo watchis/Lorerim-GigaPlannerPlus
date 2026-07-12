@@ -1,10 +1,9 @@
 import { Moon, X } from "lucide-react";
-import { startTransition, useRef, useState, type ChangeEventHandler, type ReactNode } from "react";
+import { startTransition, type ChangeEventHandler, type ReactNode } from "react";
 import type { CharacterOptionControlProps } from "@/extension-api";
 import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
 import { VampireStageSelector } from "@/components/character-options/VampireStageSelector";
-import { CursorTooltip, useSupportsHover } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_VAMPIRE_STAGE,
@@ -12,7 +11,6 @@ import {
   getVampireRacialBonus,
   getWerewolfForm,
   getWerewolfRacialBonus,
-  isSupernaturalOptionBlocked,
   isVampireStageId,
   SUPERNATURAL_CLAIMED_CHOICE,
   VAMPIRE_OPTION_ID,
@@ -25,90 +23,30 @@ interface SupernaturalOptionControlProps extends CharacterOptionControlProps {
 
 function CurseToggleRow({
   checked,
-  showBlockedHint,
-  blockedHint,
   onChange,
   className,
   labelText,
 }: {
   checked: boolean;
-  showBlockedHint: boolean;
-  blockedHint?: string;
   onChange: ChangeEventHandler<HTMLInputElement>;
   className?: string;
   labelText: ReactNode;
 }) {
-  const supportsHover = useSupportsHover();
-  const [touchOpen, setTouchOpen] = useState(false);
-  const [touchAnchor, setTouchAnchor] = useState<{ x: number; y: number } | null>(null);
-  const rowRef = useRef<HTMLDivElement>(null);
-
-  const rowClassName = cn(
-    "flex items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
-    className,
-    showBlockedHint ? "cursor-not-allowed" : "cursor-pointer",
-  );
-
-  const rowContent = (
-    <>
+  return (
+    <label
+      className={cn(
+        "flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2.5 transition-colors",
+        className,
+      )}
+    >
       <input
         type="checkbox"
         checked={checked}
-        disabled={showBlockedHint}
         onChange={onChange}
-        className={cn(
-          "h-4 w-4 shrink-0 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50 disabled:cursor-not-allowed",
-          showBlockedHint && "pointer-events-none",
-        )}
+        className="h-4 w-4 shrink-0 rounded border-[var(--color-border)] text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50"
       />
       <span className="text-sm font-medium text-[var(--color-foreground)]">{labelText}</span>
-    </>
-  );
-
-  if (!showBlockedHint || !blockedHint) {
-    return <label className={rowClassName}>{rowContent}</label>;
-  }
-
-  const hintContent = <span className="text-xs leading-relaxed">{blockedHint}</span>;
-
-  if (!supportsHover) {
-    return (
-      <CursorTooltip
-        open={touchOpen}
-        onOpenChange={setTouchOpen}
-        touchAnchor={touchAnchor}
-        dismissOnPointerDownOutside
-        dismissOutsideRefs={[rowRef]}
-        content={hintContent}
-        contentClassName="max-w-xs"
-        className={cn(rowClassName, "touch-manipulation")}
-      >
-        <div
-          ref={rowRef}
-          role="group"
-          aria-label={blockedHint}
-          className="flex w-full items-center gap-3"
-          onClick={(event) => {
-            setTouchAnchor({ x: event.clientX, y: event.clientY });
-            setTouchOpen((open) => !open);
-          }}
-        >
-          {rowContent}
-        </div>
-      </CursorTooltip>
-    );
-  }
-
-  return (
-    <CursorTooltip
-      content={hintContent}
-      contentClassName="max-w-xs"
-      className={rowClassName}
-    >
-      <div className="flex w-full items-center gap-3" aria-label={blockedHint}>
-        {rowContent}
-      </div>
-    </CursorTooltip>
+    </label>
   );
 }
 
@@ -126,9 +64,7 @@ export function SupernaturalOptionControl({
 
   const isVampire = optionId === VAMPIRE_OPTION_ID;
   const checked = selectedChoiceId !== option.defaultChoice;
-  const blocked = isSupernaturalOptionBlocked(gameData.game, build, optionId);
   const description = option.descriptionLabel ? labels[option.descriptionLabel] : undefined;
-  const blockedHint = labels.supernaturalBlockedHint;
   const vampireStage = isVampire ? getActiveVampireStage(gameData.game, build) : undefined;
   const form = isVampire ? vampireStage : getWerewolfForm(gameData.game);
   const racialBonus = isVampire
@@ -143,7 +79,6 @@ export function SupernaturalOptionControl({
   const claimedChoice =
     option.choices.find((choice) => choice.id !== option.defaultChoice)?.id ??
     SUPERNATURAL_CLAIMED_CHOICE;
-  const showBlockedHint = blocked && !checked;
   const inactiveLabel =
     labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
     "Inactive";
@@ -165,7 +100,6 @@ export function SupernaturalOptionControl({
         checked
           ? "border-[var(--color-accent)]/40 bg-[var(--color-accent)]/[0.06] shadow-[var(--shadow-glow)]"
           : "border-[var(--color-border)]/70 bg-[var(--color-background)]/40",
-        blocked && !checked && "opacity-60",
       )}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -217,8 +151,6 @@ export function SupernaturalOptionControl({
         <div className="space-y-3">
           <CurseToggleRow
             checked={checked}
-            showBlockedHint={showBlockedHint}
-            blockedHint={blockedHint}
             className={cn(
               checked
                 ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"
@@ -249,8 +181,6 @@ export function SupernaturalOptionControl({
       ) : (
         <CurseToggleRow
           checked={checked}
-          showBlockedHint={showBlockedHint}
-          blockedHint={blockedHint}
           className={cn(
             checked
               ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"

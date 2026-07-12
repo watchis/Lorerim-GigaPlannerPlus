@@ -9,7 +9,6 @@ import {
   getVampireRacialBonusForRace,
   getWerewolfRacialBonusForRace,
   hasSupernaturalCurse,
-  isSupernaturalOptionBlocked,
   isTraitBlockedBySupernatural,
   isVampireActive,
   isVampireStageOnlyChange,
@@ -171,7 +170,7 @@ describe("supernatural", () => {
     expect(getActiveSupernaturalSkillId(createTestBuildState())).toBeNull();
   });
 
-  it("selecting werewolf clears vampire perks and blocks the vampire option", () => {
+  it("selecting werewolf while vampire is active switches curses and clears vampire perks", () => {
     const withVampirePerk = createTestBuildState({
       characterOptionChoices: { [VAMPIRE_OPTION_ID]: "stage-2" },
       selectedPerkIds: ["vampire-hemomancer", "werewolf-lycanthropic-speed"],
@@ -189,9 +188,28 @@ describe("supernatural", () => {
     expect(isVampireActive(state)).toBe(false);
     expect(state.selectedPerkIds).toEqual(["werewolf-lycanthropic-speed"]);
     expect(state.traitIds).toEqual(["angler"]);
-    expect(isSupernaturalOptionBlocked(game, state, VAMPIRE_OPTION_ID)).toBe(true);
     expect(isTraitBlockedBySupernatural(game, state, "silent-dovah")).toBe(true);
     expect(canSelectTrait(game, state, "silent-dovah")).toBe(false);
+  });
+
+  it("selecting vampire while werewolf is active switches curses and clears werewolf perks", () => {
+    const withWerewolfPerk = createTestBuildState({
+      characterOptionChoices: { [WEREWOLF_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+      selectedPerkIds: ["werewolf-animal-vigor", "vampire-hemomancer"],
+    });
+
+    const state = applySupernaturalOptionChange(
+      game,
+      withWerewolfPerk,
+      VAMPIRE_OPTION_ID,
+      "stage-1",
+    );
+
+    expect(isVampireActive(state)).toBe(true);
+    expect(isWerewolfActive(state)).toBe(false);
+    expect(state.selectedPerkIds).toEqual(["vampire-hemomancer"]);
+    expect(state.characterOptionChoices[VAMPIRE_OPTION_ID]).toBe("stage-1");
+    expect(state.characterOptionChoices[WEREWOLF_OPTION_ID]).toBe("none");
   });
 
   it("disabling a curse strips that tree's perks", () => {

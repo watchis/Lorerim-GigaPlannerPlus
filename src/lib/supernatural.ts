@@ -145,21 +145,6 @@ export function getOtherSupernaturalOptionId(optionId: string): string | null {
   return null;
 }
 
-export function isSupernaturalOptionBlocked(
-  game: GameData,
-  state: BuildState,
-  optionId: string,
-): boolean {
-  const otherOptionId = getOtherSupernaturalOptionId(optionId);
-  if (!otherOptionId) return false;
-
-  const otherOption = game.characterOptions.find((entry) => entry.id === otherOptionId);
-  if (!otherOption) return false;
-
-  const otherChoice = getSelectedCharacterOptionChoice(otherOption, state.characterOptionChoices);
-  return otherChoice.id !== otherOption.defaultChoice;
-}
-
 export function isTraitBlockedBySupernatural(
   game: GameData,
   state: BuildState,
