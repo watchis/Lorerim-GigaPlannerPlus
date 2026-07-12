@@ -1,4 +1,6 @@
 /** Frozen v2 index tables for legacy share links only — not used for encode. */
+import { LEGACY_OGHMA_CHOICE_MAP } from "@/lib/oghmaLegacyChoices";
+
 export interface LegacyCharacterOptionCodec {
   options: readonly string[];
   choices: readonly (readonly string[])[];
@@ -31,6 +33,13 @@ export function getLegacyCharacterOptionCodec(
 
 export type CharacterOptionCoEntry = [number, number] | [string, string];
 
+function resolveImportedChoiceId(optionId: string, choiceId: string): string {
+  if (optionId === "oghma-infinium" && LEGACY_OGHMA_CHOICE_MAP[choiceId]) {
+    return LEGACY_OGHMA_CHOICE_MAP[choiceId];
+  }
+  return choiceId;
+}
+
 export function decodeCharacterOptionChoices(
   entries: CharacterOptionCoEntry[] | undefined,
   modpackVersion: string,
@@ -45,7 +54,7 @@ export function decodeCharacterOptionChoices(
 
     if (typeof optionRef === "string" && typeof choiceRef === "string") {
       if (optionRef && choiceRef) {
-        choices[optionRef] = choiceRef;
+        choices[optionRef] = resolveImportedChoiceId(optionRef, choiceRef);
       }
       continue;
     }
@@ -58,7 +67,7 @@ export function decodeCharacterOptionChoices(
     const choiceId = legacyCodec.choices[optionRef]?.[choiceRef];
     if (!optionId || !choiceId) continue;
 
-    choices[optionId] = choiceId;
+    choices[optionId] = resolveImportedChoiceId(optionId, choiceId);
   }
 
   return choices;

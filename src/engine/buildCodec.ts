@@ -302,6 +302,7 @@ function buildStateFromCompactPayload(
 function buildStateFromIdPayload(
   payload: CompactBuildPayloadV3,
   game: GameData,
+  modpackVersion: string = game.manifest.version,
 ): BuildState {
   const attrs = payload.a ?? [0, 0, 0];
   const skillLevels = Object.fromEntries(payload.l ?? []);
@@ -316,7 +317,7 @@ function buildStateFromIdPayload(
     skillTrainingRanges[skillId] = ranges;
   }
 
-  const characterOptionChoices = decodeCharacterOptionChoices(payload.co, game.manifest.version);
+  const characterOptionChoices = decodeCharacterOptionChoices(payload.co, modpackVersion);
 
   return payloadToBuildState({
     raceId: payload.r ?? "none",
@@ -453,6 +454,7 @@ function sharedPackageFromPayload(
 function sharedPackageFromPayloadV3(
   payload: CompactBuildV3,
   game: GameData,
+  modpackVersion: string,
 ): SharedBuildPackage | undefined {
   const hasMetadata =
     payload.bn !== undefined ||
@@ -471,7 +473,7 @@ function sharedPackageFromPayloadV3(
       const [name, compact, notes] = milestone;
       return {
         name,
-        build: buildStateFromIdPayload(compact, game),
+        build: buildStateFromIdPayload(compact, game, modpackVersion),
         notes: notes ?? "",
       };
     }),
@@ -489,10 +491,11 @@ function decodeBuildV3(code: string, game: GameData): DecodedBuildPackage {
   }
 
   const sourceModpackVersion = payload.mv.trim();
+  const modpackVersion = sourceModpackVersion || game.manifest.version;
 
   return {
-    build: buildStateFromIdPayload(payload, game),
-    shared: sharedPackageFromPayloadV3(payload, game),
+    build: buildStateFromIdPayload(payload, game, modpackVersion),
+    shared: sharedPackageFromPayloadV3(payload, game, modpackVersion),
     sourceModpackVersion: sourceModpackVersion || undefined,
   };
 }
