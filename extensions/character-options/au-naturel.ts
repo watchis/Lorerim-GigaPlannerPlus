@@ -10,11 +10,6 @@ import {
 
 const ATTRIBUTE_STATS: (keyof Attributes)[] = ["health", "magicka", "stamina"];
 
-function formatSignedTotal(value: number): string {
-  if (value > 0) return `+${value}`;
-  return String(value);
-}
-
 export default defineCharacterOption({
   id: "au-naturel",
   getModifications({ choice, state }) {
@@ -44,14 +39,13 @@ export default defineCharacterOption({
 
     const perLevel = getAuNaturelPerLevelAttributeBonus(gearPieces, state.playerLevel);
     const penalty = getAuNaturelGearPenalty(gearPieces);
-    const total = perLevel - penalty;
     const lines = [];
 
-    const netTemplate = labels.auNaturelNetBonus;
-    if (netTemplate && total !== 0) {
+    const perLevelTemplate = labels.auNaturelPerLevelBonus;
+    if (perLevelTemplate && perLevel > 0) {
       lines.push({
-        key: `${option.id}-net`,
-        text: netTemplate.replace("{signedTotal}", formatSignedTotal(total)),
+        key: `${option.id}-per-level`,
+        text: perLevelTemplate.replace("{count}", String(perLevel)),
       });
     }
 
@@ -60,16 +54,6 @@ export default defineCharacterOption({
       lines.push({
         key: `${option.id}-penalty`,
         text: penaltyTemplate.replace("{count}", String(penalty)),
-      });
-    }
-
-    const perLevelTemplate = labels.auNaturelPerLevelBonus;
-    if (perLevelTemplate && perLevel > 0) {
-      lines.push({
-        key: `${option.id}-per-level`,
-        text: perLevelTemplate
-          .replace("{count}", String(perLevel))
-          .replace("{emptySlots}", String(4 - gearPieces)),
       });
     }
 

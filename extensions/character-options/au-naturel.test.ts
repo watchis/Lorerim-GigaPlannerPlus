@@ -98,4 +98,43 @@ describe("au-naturel extension", () => {
     expect(naked.attributes.health - onePiece.attributes.health).toBe(60);
     expect(onePiece.attributes.health - fullyClothed.attributes.health).toBe(180);
   });
+
+  describe("getSummaryLines", () => {
+    const labels = {
+      auNaturelPerLevelBonus: "+{count} to each attribute",
+      auNaturelGearPenalty: "−{count} to each attribute from gear",
+    };
+
+    function summaryForGear(gearId: string) {
+      const choice = option.choices.find((entry) => entry.id === gearId)!;
+      return auNaturelExtension.getSummaryLines!({
+        game,
+        state: createTestBuildState({
+          traitIds: ["au-naturel"],
+          playerLevel: 10,
+          characterOptionChoices: { "au-naturel-gear": gearId },
+        }),
+        option,
+        choice,
+        labels,
+      }).map((line) => line.text);
+    }
+
+    it("shows independent per-level and gear penalty chips", () => {
+      expect(summaryForGear("0")).toEqual(["+40 to each attribute"]);
+      expect(summaryForGear("1")).toEqual([
+        "+30 to each attribute",
+        "−40 to each attribute from gear",
+      ]);
+      expect(summaryForGear("2")).toEqual([
+        "+20 to each attribute",
+        "−80 to each attribute from gear",
+      ]);
+      expect(summaryForGear("3")).toEqual([
+        "+10 to each attribute",
+        "−120 to each attribute from gear",
+      ]);
+      expect(summaryForGear("4")).toEqual(["−160 to each attribute from gear"]);
+    });
+  });
 });
