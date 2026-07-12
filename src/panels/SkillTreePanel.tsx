@@ -371,9 +371,9 @@ export function SkillTreePanel() {
                 subtitle={skillTreeSubtitle}
               />
             </div>
-            {(supportsSkillProgression || isSupernaturalTree) && (
+            {(supportsSkillProgression || isDestinyTree) && (
               <div className="flex shrink-0 items-center gap-0.5">
-                {!isTrainingMode && (
+                {supportsSkillProgression && !isTrainingMode && (
                   <PerkBadgeVisibilityDropdown labels={labels} />
                 )}
                 <Button
@@ -477,6 +477,17 @@ export function SkillTreePanel() {
                 </span>
               </div>
             )}
+          </div>
+        )}
+
+        {isSupernaturalTree && (
+          <div className="flex w-full shrink-0 items-center border-b border-[var(--color-border)]/50 px-3 py-1.5">
+            <ResetPerksButton
+              className="ml-auto h-7 shrink-0 px-3 text-[10px]"
+              onClick={() => resetSkillPerks(activeTree.skillId)}
+            >
+              {labels.resetSkill}
+            </ResetPerksButton>
           </div>
         )}
 
@@ -625,8 +636,11 @@ export function SkillTreePanel() {
             </ResetPerksButton>
           )}
 
-          {isSupernaturalTree && (
-            <ResetPerksButton onClick={() => resetSkillPerks(activeTree.skillId)}>
+          {(isDestinyTree || isSupernaturalTree) && (
+            <ResetPerksButton
+              className="ml-auto shrink-0"
+              onClick={() => resetSkillPerks(activeTree.skillId)}
+            >
               {labels.resetSkill}
             </ResetPerksButton>
           )}
