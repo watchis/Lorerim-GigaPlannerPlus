@@ -19,5 +19,6 @@
   "enchanting": "enchanting.json",
   "destiny": "destiny.json",
   "vampire": "vampire.json",
-  "werewolf": "werewolf.json"
+  "werewolf": "werewolf.json",
+  "lich": "lich.json"
 }

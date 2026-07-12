@@ -21,23 +21,30 @@ describe("buildCodecRegistry", () => {
   it("indexes supernatural character option choices for codec round-trip", () => {
     const vampireIndex = lookupIndex(registry.characterOptionIndex!, "vampire", "character option");
     const werewolfIndex = lookupIndex(registry.characterOptionIndex!, "werewolf", "character option");
+    const lichIndex = lookupIndex(registry.characterOptionIndex!, "lich", "character option");
     expect(vampireIndex).toBeTypeOf("number");
     expect(werewolfIndex).toBeTypeOf("number");
+    expect(lichIndex).toBeTypeOf("number");
 
-    const vampireChoices = registry.characterOptionChoices[vampireIndex!];
-    const werewolfChoices = registry.characterOptionChoices[werewolfIndex!];
+    const vampireChoices = registry.characterOptionChoices![vampireIndex!];
+    const werewolfChoices = registry.characterOptionChoices![werewolfIndex!];
+    const lichChoices = registry.characterOptionChoices![lichIndex!];
 
     expect(vampireChoices).toEqual(["none", "stage-1", "stage-2", "stage-3", "stage-4"]);
     expect(werewolfChoices).toEqual(["none", "claimed"]);
+    expect(lichChoices).toEqual(["none", "claimed"]);
   });
 
   it("indexes supernatural perk trees from manifest skills", () => {
     expect(registry.skills).toContain("vampire");
     expect(registry.skills).toContain("werewolf");
+    expect(registry.skills).toContain("lich");
     expect(registry.perks).toContain("vampire-scion");
     expect(registry.perks).toContain("vampire-hemomancer");
     expect(registry.perks).toContain("werewolf-animal-vigor");
     expect(registry.perks).toContain("werewolf-bestial-strength");
+    expect(registry.perks).toContain("lich-magicka-weave");
+    expect(registry.perks).toContain("lich-spirit-of-midnight");
   });
 
   it("looks up ids by index and back", () => {

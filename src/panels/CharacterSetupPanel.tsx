@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import {
   getVampireRacialBonus,
   getWerewolfRacialBonus,
+  hasSupernaturalCurse,
+  isLichActive,
   isVampireActive,
   isWerewolfActive,
 } from "@/lib/supernatural";
@@ -250,11 +252,20 @@ export function CharacterSetupPanel() {
   const buildForSupernatural = build as BuildState;
   const vampireActive = isVampireActive(buildForSupernatural);
   const werewolfActive = isWerewolfActive(buildForSupernatural);
+  const lichActive = isLichActive(buildForSupernatural);
+  const curseActive = hasSupernaturalCurse(buildForSupernatural);
   const activeCurseRacialBonus = vampireActive
     ? getVampireRacialBonus(game, buildForSupernatural)
     : werewolfActive
       ? getWerewolfRacialBonus(game, buildForSupernatural)
       : undefined;
+  const activeCurseLabel = vampireActive
+    ? (labels.vampireTree ?? "Vampire")
+    : werewolfActive
+      ? (labels.werewolfTree ?? "Werewolf")
+      : lichActive
+        ? (labels.lichTree ?? "Lich")
+        : null;
 
   const selectedTraitItems = build.traitIds.map((id) => ({
     id,
@@ -298,9 +309,7 @@ export function CharacterSetupPanel() {
             "h-8 w-8 shrink-0 text-[var(--color-muted)]",
             characterOptionsOpen &&
               "bg-[var(--color-accent)]/10 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/15 hover:text-[var(--color-accent)]",
-            !characterOptionsOpen && vampireActive &&
-              "text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]",
-            !characterOptionsOpen && werewolfActive &&
+            !characterOptionsOpen && curseActive &&
               "text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]",
           )}
           onClick={toggleCharacterOptions}
@@ -311,6 +320,8 @@ export function CharacterSetupPanel() {
             <Moon className="h-4 w-4" aria-hidden />
           ) : werewolfActive ? (
             <SkillIcon skillId="werewolf" className="h-4 w-4" />
+          ) : lichActive ? (
+            <SkillIcon skillId="lich" className="h-4 w-4" />
           ) : (
             <Settings className="h-4 w-4" />
           )}
@@ -377,13 +388,24 @@ export function CharacterSetupPanel() {
         {(vampireActive || werewolfActive) && (
           <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.04] px-2.5 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
-              {vampireActive ? (labels.vampireTree ?? "Vampire") : (labels.werewolfTree ?? "Werewolf")}
+              {activeCurseLabel}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
               {activeCurseRacialBonus
                 ? `${labels.supernaturalRaceAbility ?? "Racial ability"}: ${activeCurseRacialBonus.name}`
                 : (labels.selectRaceForRacialAbility ??
                   "Select a race to see your racial curse ability.")}
+            </p>
+          </div>
+        )}
+        {lichActive && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.04] px-2.5 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+              {activeCurseLabel}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
+              {labels.supernaturalLichActive ??
+                "Lichdom curse active — undead abilities apply."}
             </p>
           </div>
         )}

@@ -16,9 +16,11 @@ import {
 import { cn } from "@/lib/utils";
 import {
   getActiveVampireStage,
+  getLichForm,
   getVampireRacialBonus,
   getWerewolfForm,
   getWerewolfRacialBonus,
+  isLichActive,
   isVampireActive,
   isWerewolfActive,
 } from "@/lib/supernatural";
@@ -122,8 +124,10 @@ export function CharacterSetupInfoPanel() {
     .filter((trait): trait is NonNullable<typeof trait> => trait !== undefined);
   const vampireActive = isVampireActive(build);
   const werewolfActive = isWerewolfActive(build);
+  const lichActive = isLichActive(build);
   const vampireForm = vampireActive ? getActiveVampireStage(game, build) : undefined;
   const werewolfForm = werewolfActive ? getWerewolfForm(game) : undefined;
+  const lichForm = lichActive ? getLichForm(game) : undefined;
   const vampireRacialBonus = vampireActive ? getVampireRacialBonus(game, build) : undefined;
   const werewolfRacialBonus = werewolfActive ? getWerewolfRacialBonus(game, build) : undefined;
 
@@ -219,6 +223,12 @@ export function CharacterSetupInfoPanel() {
                   racialBonus={werewolfRacialBonus}
                   labels={detailLabels}
                 />
+              </InfoSection>
+            )}
+
+            {lichActive && lichForm && (
+              <InfoSection title={labels.lichTree ?? "Lich"}>
+                <SupernaturalDetailContent form={lichForm} labels={detailLabels} />
               </InfoSection>
             )}
 

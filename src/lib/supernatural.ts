@@ -3,6 +3,7 @@ import type { BuildState } from "@/engine/buildEngine";
 
 export const VAMPIRE_OPTION_ID = "vampire";
 export const WEREWOLF_OPTION_ID = "werewolf";
+export const LICH_OPTION_ID = "lich";
 export const SUPERNATURAL_CLAIMED_CHOICE = "claimed";
 
 export const VAMPIRE_STAGE_IDS = ["stage-1", "stage-2", "stage-3", "stage-4"] as const;
@@ -11,19 +12,41 @@ export const DEFAULT_VAMPIRE_STAGE: VampireStageId = "stage-1";
 
 export const VAMPIRE_SKILL_ID = "vampire";
 export const WEREWOLF_SKILL_ID = "werewolf";
+export const LICH_SKILL_ID = "lich";
+
+export const SUPERNATURAL_OPTION_IDS = [
+  VAMPIRE_OPTION_ID,
+  WEREWOLF_OPTION_ID,
+  LICH_OPTION_ID,
+] as const;
+
+export type SupernaturalOptionId = (typeof SUPERNATURAL_OPTION_IDS)[number];
+
+const OPTION_TO_SKILL_ID: Record<SupernaturalOptionId, string> = {
+  [VAMPIRE_OPTION_ID]: VAMPIRE_SKILL_ID,
+  [WEREWOLF_OPTION_ID]: WEREWOLF_SKILL_ID,
+  [LICH_OPTION_ID]: LICH_SKILL_ID,
+};
 
 export function isSupernaturalPerkTreeSkillId(skillId: string): boolean {
-  return skillId === VAMPIRE_SKILL_ID || skillId === WEREWOLF_SKILL_ID;
+  return (
+    skillId === VAMPIRE_SKILL_ID ||
+    skillId === WEREWOLF_SKILL_ID ||
+    skillId === LICH_SKILL_ID
+  );
 }
-
-export const SUPERNATURAL_OPTION_IDS = [VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID] as const;
 
 export function isVampireStageId(choiceId: string): choiceId is VampireStageId {
   return VAMPIRE_STAGE_IDS.includes(choiceId as VampireStageId);
 }
 
-export function isSupernaturalOptionId(optionId: string): boolean {
-  return SUPERNATURAL_OPTION_IDS.includes(optionId as (typeof SUPERNATURAL_OPTION_IDS)[number]);
+export function isSupernaturalOptionId(optionId: string): optionId is SupernaturalOptionId {
+  return SUPERNATURAL_OPTION_IDS.includes(optionId as SupernaturalOptionId);
+}
+
+export function getSupernaturalSkillId(optionId: string): string | null {
+  if (!isSupernaturalOptionId(optionId)) return null;
+  return OPTION_TO_SKILL_ID[optionId];
 }
 
 /** Vampire hunger stage change while the curse is already active (no perk/trait/floor churn). */
@@ -51,13 +74,18 @@ export function isWerewolfActive(state: BuildState): boolean {
   return state.characterOptionChoices[WEREWOLF_OPTION_ID] === SUPERNATURAL_CLAIMED_CHOICE;
 }
 
+export function isLichActive(state: BuildState): boolean {
+  return state.characterOptionChoices[LICH_OPTION_ID] === SUPERNATURAL_CLAIMED_CHOICE;
+}
+
 export function hasSupernaturalCurse(state: BuildState): boolean {
-  return isVampireActive(state) || isWerewolfActive(state);
+  return isVampireActive(state) || isWerewolfActive(state) || isLichActive(state);
 }
 
 export function getActiveSupernaturalSkillId(state: BuildState): string | null {
   if (isVampireActive(state)) return VAMPIRE_SKILL_ID;
   if (isWerewolfActive(state)) return WEREWOLF_SKILL_ID;
+  if (isLichActive(state)) return LICH_SKILL_ID;
   return null;
 }
 
@@ -108,6 +136,10 @@ export function getWerewolfForm(game: GameData): SupernaturalForm | undefined {
   return game.supernatural.lycanthropy.forms.find((entry) => entry.id === "werewolf");
 }
 
+export function getLichForm(game: GameData): SupernaturalForm | undefined {
+  return game.supernatural.lichdom.forms.find((entry) => entry.id === "lich");
+}
+
 export function getVampireRacialBonusForRace(
   game: GameData,
   raceId: string,
@@ -122,6 +154,14 @@ export function getWerewolfRacialBonusForRace(
 ): SupernaturalRacialBonus | undefined {
   if (!raceId || raceId === "none") return undefined;
   return game.supernatural.lycanthropy.racialBonuses[raceId];
+}
+
+export function getLichRacialBonusForRace(
+  game: GameData,
+  raceId: string,
+): SupernaturalRacialBonus | undefined {
+  if (!raceId || raceId === "none") return undefined;
+  return game.supernatural.lichdom.racialBonuses[raceId];
 }
 
 export function getVampireRacialBonus(
@@ -142,10 +182,18 @@ export function getWerewolfRacialBonus(
   return getWerewolfRacialBonusForRace(game, raceId);
 }
 
-export function getOtherSupernaturalOptionId(optionId: string): string | null {
-  if (optionId === VAMPIRE_OPTION_ID) return WEREWOLF_OPTION_ID;
-  if (optionId === WEREWOLF_OPTION_ID) return VAMPIRE_OPTION_ID;
-  return null;
+export function getLichRacialBonus(
+  game: GameData,
+  state: BuildState,
+): SupernaturalRacialBonus | undefined {
+  const raceId = resolveRaceId(state);
+  if (!raceId || !isLichActive(state)) return undefined;
+  return getLichRacialBonusForRace(game, raceId);
+}
+
+export function getOtherSupernaturalOptionIds(optionId: string): SupernaturalOptionId[] {
+  if (!isSupernaturalOptionId(optionId)) return [];
+  return SUPERNATURAL_OPTION_IDS.filter((id) => id !== optionId);
 }
 
 export function isTraitBlockedBySupernatural(
@@ -172,6 +220,12 @@ export function stripPerksForSkillTree(
   };
 }
 
+function isOptionClaimed(state: BuildState, optionId: SupernaturalOptionId): boolean {
+  if (optionId === VAMPIRE_OPTION_ID) return isVampireActive(state);
+  if (optionId === WEREWOLF_OPTION_ID) return isWerewolfActive(state);
+  return isLichActive(state);
+}
+
 export function normalizeSupernaturalState(game: GameData, build: BuildState): BuildState {
   let next = { ...build };
 
@@ -186,18 +240,22 @@ export function normalizeSupernaturalState(game: GameData, build: BuildState): B
     };
   }
 
-  const vampireActive = isVampireActive(next);
-  const werewolfActive = isWerewolfActive(next);
+  const activeOptionId = SUPERNATURAL_OPTION_IDS.find((optionId) =>
+    isOptionClaimed(next, optionId),
+  );
 
-  if (vampireActive && werewolfActive) {
-    next = {
-      ...next,
-      characterOptionChoices: {
-        ...next.characterOptionChoices,
-        [WEREWOLF_OPTION_ID]: "none",
-      },
-    };
-    next = stripPerksForSkillTree(game, next, WEREWOLF_SKILL_ID);
+  if (activeOptionId) {
+    for (const otherOptionId of getOtherSupernaturalOptionIds(activeOptionId)) {
+      if (!isOptionClaimed(next, otherOptionId)) continue;
+      next = {
+        ...next,
+        characterOptionChoices: {
+          ...next.characterOptionChoices,
+          [otherOptionId]: "none",
+        },
+      };
+      next = stripPerksForSkillTree(game, next, OPTION_TO_SKILL_ID[otherOptionId]);
+    }
   }
 
   const traitIds = next.traitIds.filter(
@@ -224,7 +282,7 @@ export function applySupernaturalOptionChange(
   if (!option) return build;
 
   const claimed = choiceId !== option.defaultChoice;
-  const otherOptionId = getOtherSupernaturalOptionId(optionId);
+  const otherOptionIds = getOtherSupernaturalOptionIds(optionId);
 
   let next: BuildState = {
     ...build,
@@ -235,21 +293,21 @@ export function applySupernaturalOptionChange(
   };
 
   if (!claimed) {
-    const skillId = optionId === VAMPIRE_OPTION_ID ? VAMPIRE_SKILL_ID : WEREWOLF_SKILL_ID;
-    next = stripPerksForSkillTree(game, next, skillId);
+    next = stripPerksForSkillTree(game, next, OPTION_TO_SKILL_ID[optionId]);
   }
 
-  if (claimed && otherOptionId) {
+  if (claimed) {
+    const clearedChoices = { ...next.characterOptionChoices };
+    for (const otherOptionId of otherOptionIds) {
+      clearedChoices[otherOptionId] = "none";
+    }
     next = {
       ...next,
-      characterOptionChoices: {
-        ...next.characterOptionChoices,
-        [otherOptionId]: "none",
-      },
+      characterOptionChoices: clearedChoices,
     };
-    const otherSkillId =
-      otherOptionId === VAMPIRE_OPTION_ID ? VAMPIRE_SKILL_ID : WEREWOLF_SKILL_ID;
-    next = stripPerksForSkillTree(game, next, otherSkillId);
+    for (const otherOptionId of otherOptionIds) {
+      next = stripPerksForSkillTree(game, next, OPTION_TO_SKILL_ID[otherOptionId]);
+    }
   }
 
   return normalizeSupernaturalState(game, next);

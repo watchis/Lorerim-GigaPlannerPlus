@@ -7,13 +7,17 @@ import { VampireStageSelector } from "@/components/character-options/VampireStag
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_VAMPIRE_STAGE,
+  getLichForm,
+  getLichRacialBonusForRace,
   getVampireRacialBonusForRace,
   getVampireStage,
   getWerewolfForm,
   getWerewolfRacialBonusForRace,
   isVampireStageId,
+  LICH_OPTION_ID,
   SUPERNATURAL_CLAIMED_CHOICE,
   VAMPIRE_OPTION_ID,
+  WEREWOLF_OPTION_ID,
 } from "@/lib/supernatural";
 import { useBuildStore } from "@/store/buildStore";
 
@@ -64,22 +68,30 @@ export function SupernaturalOptionControl({
   if (!game) return null;
 
   const isVampire = optionId === VAMPIRE_OPTION_ID;
+  const isWerewolf = optionId === WEREWOLF_OPTION_ID;
+  const isLich = optionId === LICH_OPTION_ID;
   const checked = displayChoiceId !== option.defaultChoice;
   const description = option.descriptionLabel ? labels[option.descriptionLabel] : undefined;
   const vampireStage =
     isVampire && isVampireStageId(displayChoiceId)
       ? getVampireStage(game, displayChoiceId)
       : undefined;
-  const form = isVampire ? vampireStage : checked ? getWerewolfForm(game) : undefined;
+  const form = isVampire
+    ? vampireStage
+    : checked
+      ? isLich
+        ? getLichForm(game)
+        : getWerewolfForm(game)
+      : undefined;
   const resolvedRaceId = raceId && raceId !== "none" ? raceId : null;
   const racialBonus = resolvedRaceId
-    ? isVampire
-      ? checked
+    ? checked
+      ? isVampire
         ? getVampireRacialBonusForRace(game, resolvedRaceId)
-        : undefined
-      : checked
-        ? getWerewolfRacialBonusForRace(game, resolvedRaceId)
-        : undefined
+        : isWerewolf
+          ? getWerewolfRacialBonusForRace(game, resolvedRaceId)
+          : getLichRacialBonusForRace(game, resolvedRaceId)
+      : undefined
     : undefined;
   const detailLabels = {
     bonuses: labels.bonuses ?? "Bonuses",
@@ -94,8 +106,10 @@ export function SupernaturalOptionControl({
     "Inactive";
   const activeLabel = isVampire
     ? (labels.supernaturalVampire ?? "Vampire")
-    : (labels[option.choices.find((choice) => choice.id === claimedChoice)?.label ?? "claimed"] ??
-      "Active");
+    : isLich
+      ? (labels.supernaturalLich ?? "Lich")
+      : (labels[option.choices.find((choice) => choice.id === claimedChoice)?.label ?? "claimed"] ??
+        "Active");
 
   const selectChoice = (choiceId: string) => {
     setDisplayChoiceId(choiceId);
@@ -124,7 +138,7 @@ export function SupernaturalOptionControl({
             {isVampire ? (
               <Moon className="h-4 w-4" aria-hidden />
             ) : (
-              <SkillIcon skillId="werewolf" className="h-4 w-4" />
+              <SkillIcon skillId={isLich ? "lich" : "werewolf"} className="h-4 w-4" />
             )}
           </span>
           <div className="min-w-0 space-y-1">
@@ -210,7 +224,7 @@ export function SupernaturalOptionControl({
             labels={detailLabels}
             hideHeader
           />
-          {!resolvedRaceId && (
+          {!resolvedRaceId && Boolean(racialBonus || isVampire || isWerewolf) && (
             <p className="text-xs leading-relaxed text-[var(--color-muted)]">
               {labels.selectRaceForRacialAbility ??
                 "Select a race in Character Setup to see your racial curse ability."}

@@ -11,7 +11,8 @@
     "destiny",
     "traits",
     "vampire",
-    "werewolf"
+    "werewolf",
+    "lich"
   ],
   "skills": [
     "smithing",
@@ -35,6 +36,7 @@
     "destiny",
     "traits",
     "vampire",
-    "werewolf"
+    "werewolf",
+    "lich"
   ]
 }

@@ -10,10 +10,13 @@ import {
   getVampireRacialBonusForRace,
   getWerewolfRacialBonusForRace,
   hasSupernaturalCurse,
+  isLichActive,
   isTraitBlockedBySupernatural,
   isVampireActive,
   isVampireStageOnlyChange,
   isWerewolfActive,
+  LICH_OPTION_ID,
+  LICH_SKILL_ID,
   migrateLegacySupernaturalBuild,
   normalizeSupernaturalState,
   stripPerksForSkillTree,
@@ -174,7 +177,51 @@ describe("supernatural", () => {
   it("identifies supernatural perk tree skill ids", () => {
     expect(isSupernaturalPerkTreeSkillId(VAMPIRE_SKILL_ID)).toBe(true);
     expect(isSupernaturalPerkTreeSkillId(WEREWOLF_SKILL_ID)).toBe(true);
+    expect(isSupernaturalPerkTreeSkillId(LICH_SKILL_ID)).toBe(true);
     expect(isSupernaturalPerkTreeSkillId("alchemy")).toBe(false);
+  });
+
+  it("activates lich and applies undead curse effects", () => {
+    const state = applySupernaturalOptionChange(
+      game,
+      createTestBuildState(),
+      LICH_OPTION_ID,
+      SUPERNATURAL_CLAIMED_CHOICE,
+    );
+
+    expect(isLichActive(state)).toBe(true);
+    expect(isVampireActive(state)).toBe(false);
+    expect(isWerewolfActive(state)).toBe(false);
+    expect(getActiveSupernaturalSkillId(state)).toBe(LICH_SKILL_ID);
+
+    const collected = collectBuildChanges(game, state);
+    const magickaEffects = collected.sourcedEffects.filter(
+      (entry) => entry.effect.type === "attribute" && entry.effect.stat === "magicka",
+    );
+    expect(magickaEffects).toHaveLength(1);
+    expect(magickaEffects[0]?.effect.value).toBe(50);
+    expect(collected.sourcedEffects.some((entry) => entry.labelKey === "lichOption")).toBe(true);
+  });
+
+  it("selecting lich while vampire is active switches curses and clears vampire perks", () => {
+    const withVampirePerk = createTestBuildState({
+      characterOptionChoices: { [VAMPIRE_OPTION_ID]: "stage-2" },
+      selectedPerkIds: ["vampire-hemomancer", "lich-magicka-weave"],
+      traitIds: ["silent-dovah", "angler"],
+    });
+
+    const state = applySupernaturalOptionChange(
+      game,
+      withVampirePerk,
+      LICH_OPTION_ID,
+      SUPERNATURAL_CLAIMED_CHOICE,
+    );
+
+    expect(isLichActive(state)).toBe(true);
+    expect(isVampireActive(state)).toBe(false);
+    expect(isWerewolfActive(state)).toBe(false);
+    expect(state.selectedPerkIds).toEqual(["lich-magicka-weave"]);
+    expect(state.traitIds).toEqual(["angler"]);
   });
 
   it("selecting werewolf while vampire is active switches curses and clears vampire perks", () => {

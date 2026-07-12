@@ -19,7 +19,7 @@ import { OghmaSkillsPickerPanel } from "@/components/character-options/OghmaSkil
 import type { CharacterOption } from "@/data/schemas";
 import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
 import { getSupernaturalThemeVariant } from "@/lib/supernaturalTheme";
-import { VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID } from "@/lib/supernatural";
+import { isSupernaturalOptionId } from "@/lib/supernatural";
 import {
   getCharacterOptionSummaryLines,
   getSelectedCharacterOptionChoice,
@@ -303,11 +303,11 @@ export function CharacterOptionsPanel() {
   const { game } = gameData;
   const { characterOptions } = game;
   const supernaturalVariant = getSupernaturalThemeVariant(build);
-  const supernaturalOptions = characterOptions.filter(
-    (option) => option.id === VAMPIRE_OPTION_ID || option.id === WEREWOLF_OPTION_ID,
+  const supernaturalOptions = characterOptions.filter((option) =>
+    isSupernaturalOptionId(option.id),
   );
   const playthroughOptions = characterOptions.filter(
-    (option) => option.id !== VAMPIRE_OPTION_ID && option.id !== WEREWOLF_OPTION_ID,
+    (option) => !isSupernaturalOptionId(option.id),
   );
 
   const activeRewardLines = useMemo(
@@ -337,7 +337,9 @@ export function CharacterOptionsPanel() {
       ? (labels.supernaturalVampireActive ?? "Vampiric theme active")
       : supernaturalVariant === "werewolf"
         ? (labels.supernaturalWerewolfActive ?? "Lycanthropic theme active")
-        : undefined;
+        : supernaturalVariant === "lich"
+          ? (labels.supernaturalLichActive ?? "Lichdom theme active")
+          : undefined;
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -368,7 +370,9 @@ export function CharacterOptionsPanel() {
                   ? (labels.supernaturalVampire ?? "Vampire")
                   : supernaturalVariant === "werewolf"
                     ? (labels.supernaturalWerewolf ?? "Werewolf")
-                    : undefined
+                    : supernaturalVariant === "lich"
+                      ? (labels.supernaturalLich ?? "Lich")
+                      : undefined
               }
             >
               {supernaturalOptions.map((option) => {

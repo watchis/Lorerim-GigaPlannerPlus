@@ -58,6 +58,18 @@
       ]
     },
     {
+      "id": "lich",
+      "titleLabel": "lichOption",
+      "descriptionLabel": "lichOptionDescription",
+      "defaultChoice": "none",
+      "extension": "supernatural-lich",
+      "controlType": "toggle",
+      "choices": [
+        { "id": "none", "label": "supernaturalNone" },
+        { "id": "claimed", "label": "supernaturalLich" }
+      ]
+    },
+    {
       "id": "au-naturel-gear",
       "titleLabel": "auNaturelGear",
       "descriptionLabel": "auNaturelGearDescription",
