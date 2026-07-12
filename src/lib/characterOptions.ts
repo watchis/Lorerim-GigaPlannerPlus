@@ -7,11 +7,7 @@ import type { CharacterOptionSummaryLine } from "@/extension-api";
 import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
 import type { BuildState } from "@/engine/buildEngine";
 
-const LEGACY_OGHMA_CHOICE_MAP: Record<string, string> = {
-  health: "warrior",
-  magicka: "mage",
-  stamina: "thief",
-};
+import { LEGACY_OGHMA_CHOICE_MAP } from "@/lib/oghmaLegacyChoices";
 
 export function getSelectedCharacterOptionChoice(
   option: CharacterOption,
@@ -75,8 +71,6 @@ export function getCharacterOptionSummaryLines(
   _attributeLabels: Record<string, string>,
   state: BuildState,
 ): CharacterOptionSummaryLine[] {
-  if (choice.id === option.defaultChoice) return [];
-
   if (option.extension) {
     const extension = getCharacterOptionExtension(option.extension);
     if (extension?.getSummaryLines) {
@@ -89,6 +83,8 @@ export function getCharacterOptionSummaryLines(
       });
     }
   }
+
+  if (choice.id === option.defaultChoice) return [];
 
   const lines: CharacterOptionSummaryLine[] = [];
   if (choice.effects) {

@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OghmaInfiniumControl } from "@/components/character-options/OghmaInfiniumControl";
+import { AuNaturelGearControl } from "@/components/character-options/AuNaturelGearControl";
 import { OghmaSkillsPickerPanel } from "@/components/character-options/OghmaSkillsPickerPanel";
 import type { CharacterOption } from "@/data/schemas";
 import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
@@ -280,9 +281,13 @@ export function CharacterOptionsPanel() {
   const { game } = gameData;
   const { characterOptions } = game;
 
-  const activeRewardLines = characterOptions.flatMap((option) => {
+  const activeRewardLines = characterOptions
+    .filter(
+      (option) => !option.requiresTraitId || build.traitIds.includes(option.requiresTraitId),
+    )
+    .flatMap((option) => {
     const choice = getSelectedCharacterOptionChoice(option, build.characterOptionChoices);
-    if (choice.id === option.defaultChoice) return [];
+    if (!option.extension && choice.id === option.defaultChoice) return [];
     return getCharacterOptionSummaryLines(
       game,
       option,
@@ -310,7 +315,12 @@ export function CharacterOptionsPanel() {
               lines={activeRewardLines}
               title={labels.activeRewards ?? "Active rewards"}
             />
-            {characterOptions.map((option) => {
+            {characterOptions
+              .filter(
+                (option) =>
+                  !option.requiresTraitId || build.traitIds.includes(option.requiresTraitId),
+              )
+              .map((option) => {
               const selectedChoiceId =
                 build.characterOptionChoices[option.id] ?? option.defaultChoice;
               const onSelect = (choiceId: string) =>
@@ -321,7 +331,9 @@ export function CharacterOptionsPanel() {
               const Control =
                 option.extension === "oghma-infinium"
                   ? OghmaInfiniumControl
-                  : extension?.Control;
+                  : option.extension === "au-naturel"
+                    ? AuNaturelGearControl
+                    : extension?.Control;
 
               if (Control) {
                 return (

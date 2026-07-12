@@ -642,22 +642,5 @@
     "destiny-49",
     "destiny-50",
     "destiny-51"
-  ],
-  "characterOptions": [
-    "oghma-infinium",
-    "alduin-bonus-trait"
-  ],
-  "characterOptionChoices": [
-    [
-      "none",
-      "claimed",
-      "warrior",
-      "mage",
-      "thief"
-    ],
-    [
-      "none",
-      "claimed"
-    ]
   ]
 }

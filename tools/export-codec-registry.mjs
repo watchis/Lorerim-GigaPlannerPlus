@@ -39,10 +39,6 @@ function exportFromGitRevision(revision) {
     traits: read("traits.json").traits.map((entry) => entry.id),
     skills: read("skills.json").skills.map((entry) => entry.id),
     perks,
-    characterOptions: read("character-options.json").options.map((entry) => entry.id),
-    characterOptionChoices: read("character-options.json").options.map((entry) =>
-      entry.choices.map((choice) => choice.id),
-    ),
   };
 }
 
