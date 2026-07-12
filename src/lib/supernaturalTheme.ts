@@ -15,9 +15,10 @@ interface SupernaturalThemeOverrides {
 }
 
 /**
- * Curse theme palettes follow a simple hierarchy: background → surface → elevated,
- * with one saturated accent family per variant. Neutrals carry layout; accent hue
- * carries identity and interactive emphasis.
+ * Curse theme palettes use a 60-30-10 split: desaturated tinted neutrals carry
+ * layout (60%), muted secondary hues add depth (30%), and a single accent family
+ * drives interactive emphasis (10%). Elevation steps increase lightness ~4–6% per
+ * layer; accents stay below full saturation for comfortable long-session use.
  */
 export const SUPERNATURAL_THEME_OVERRIDES: Record<
   SupernaturalThemeVariant,
@@ -25,46 +26,49 @@ export const SUPERNATURAL_THEME_OVERRIDES: Record<
 > = {
   vampire: {
     colors: {
-      background: "#111113",
-      surface: "#1a1a1e",
-      surfaceElevated: "#242428",
-      border: "#333338",
-      foreground: "#f4f4f5",
-      muted: "#a1a1aa",
-      accent: "#b84848",
-      accentMuted: "#8f3838",
-      health: "#b84058",
-      perkAvailable: "#71717a",
-      perkSelected: "#c85c5c",
-      perkPartial: "#a86a6a",
-      perkLocked: "#18181b",
-      perkPrereq: "#52525b",
+      background: "#121115",
+      surface: "#1c1b20",
+      surfaceElevated: "#26252b",
+      border: "#333238",
+      foreground: "#f2f0f4",
+      muted: "#9a969f",
+      accent: "#d4566a",
+      accentMuted: "#964052",
+      health: "#ca4e62",
+      magicka: "#3d4560",
+      perkAvailable: "#75717c",
+      perkSelected: "#dc6680",
+      perkPartial: "#aa7888",
+      perkLocked: "#141318",
+      perkPrereq: "#56525e",
     },
     shadows: {
-      glow: "0 0 20px rgba(184, 72, 72, 0.1)",
-      panel: "0 4px 24px rgba(0, 0, 0, 0.35)",
+      glow: "0 0 24px rgba(212, 86, 106, 0.12)",
+      panel: "0 4px 24px rgba(0, 0, 0, 0.4)",
     },
   },
   werewolf: {
     colors: {
-      background: "#0f0e0d",
-      surface: "#171615",
-      surfaceElevated: "#1f1e1b",
-      border: "#2a2825",
-      foreground: "#dfd6ca",
-      muted: "#867b70",
-      accent: "#b85814",
-      accentMuted: "#7c4212",
-      stamina: "#8f5a24",
-      perkAvailable: "#6e655c",
-      perkSelected: "#c4682a",
-      perkPartial: "#a87240",
-      perkLocked: "#100f0e",
-      perkPrereq: "#524c46",
+      background: "#100e0c",
+      surface: "#181613",
+      surfaceElevated: "#201e1a",
+      border: "#2b2824",
+      foreground: "#ebe3d6",
+      muted: "#877b6e",
+      accent: "#c88438",
+      accentMuted: "#8a5824",
+      health: "#9a4840",
+      magicka: "#453d36",
+      stamina: "#a87230",
+      perkAvailable: "#756b60",
+      perkSelected: "#d89448",
+      perkPartial: "#b08858",
+      perkLocked: "#0e0c0a",
+      perkPrereq: "#524a42",
     },
     shadows: {
-      glow: "0 0 20px rgba(184, 88, 20, 0.09)",
-      panel: "0 4px 24px rgba(0, 0, 0, 0.36)",
+      glow: "0 0 24px rgba(200, 132, 56, 0.11)",
+      panel: "0 4px 24px rgba(0, 0, 0, 0.38)",
     },
   },
 };
