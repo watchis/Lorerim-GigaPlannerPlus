@@ -14,53 +14,53 @@ interface SupernaturalThemeOverrides {
   shadows?: Partial<Record<string, string>>;
 }
 
-/** Skyrim-inspired palettes: Volkihar blood-moon crimson (vampire), wild hunt amber-forest (werewolf). */
+/** Skyrim-inspired palettes: cold steel-gray with crimson accents (vampire), warm beige with amber/rust text (werewolf). */
 export const SUPERNATURAL_THEME_OVERRIDES: Record<
   SupernaturalThemeVariant,
   SupernaturalThemeOverrides
 > = {
   vampire: {
     colors: {
-      background: "#181520",
-      surface: "#221e2c",
-      surfaceElevated: "#2c2838",
-      border: "#3b3548",
-      foreground: "#ebe6ef",
-      muted: "#aea3b5",
+      background: "#1b1e24",
+      surface: "#242830",
+      surfaceElevated: "#2d333c",
+      border: "#3c4450",
+      foreground: "#e6eaef",
+      muted: "#9099a6",
       accent: "#b81c3a",
       accentMuted: "#8a2440",
       health: "#a02040",
-      perkAvailable: "#726880",
+      perkAvailable: "#6e7888",
       perkSelected: "#d42a4a",
-      perkPartial: "#b890c8",
-      perkLocked: "#2e2a38",
-      perkPrereq: "#5c5468",
+      perkPartial: "#8fa3b8",
+      perkLocked: "#2a3038",
+      perkPrereq: "#56606e",
     },
     shadows: {
       glow: "0 0 24px rgba(184, 28, 58, 0.14)",
-      panel: "0 4px 24px rgba(40, 8, 24, 0.28)",
+      panel: "0 4px 24px rgba(24, 28, 36, 0.28)",
     },
   },
   werewolf: {
     colors: {
-      background: "#18160f",
-      surface: "#221f18",
-      surfaceElevated: "#2c2820",
-      border: "#3b362c",
-      foreground: "#eceae6",
-      muted: "#a59d90",
-      accent: "#c9922e",
-      accentMuted: "#8a6820",
-      stamina: "#6b5a38",
-      perkAvailable: "#7a7366",
-      perkSelected: "#c9922e",
-      perkPartial: "#b89850",
-      perkLocked: "#2e2b24",
-      perkPrereq: "#5c5648",
+      background: "#25221d",
+      surface: "#2f2b26",
+      surfaceElevated: "#3a3530",
+      border: "#48433c",
+      foreground: "#e8c9a8",
+      muted: "#b89572",
+      accent: "#c97a2e",
+      accentMuted: "#9a5c22",
+      stamina: "#8a6a3a",
+      perkAvailable: "#8a7d6a",
+      perkSelected: "#c97a2e",
+      perkPartial: "#d4a05a",
+      perkLocked: "#35302a",
+      perkPrereq: "#6e6458",
     },
     shadows: {
-      glow: "0 0 24px rgba(201, 146, 46, 0.14)",
-      panel: "0 4px 24px rgba(24, 18, 10, 0.28)",
+      glow: "0 0 24px rgba(201, 122, 46, 0.14)",
+      panel: "0 4px 24px rgba(36, 28, 20, 0.28)",
     },
   },
 };

@@ -100,4 +100,23 @@ describe("supernaturalTheme", () => {
       expect(surfaceLuminance).toBeGreaterThanOrEqual(relativeLuminance(baseTheme.colors.surface) * 0.9);
     }
   });
+
+  it("uses steel-gray vampire surfaces and warm amber/rust werewolf foreground", () => {
+    const vampire = applySupernaturalThemeVariant(baseTheme, "vampire");
+    const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
+
+    expect(vampire.colors.background).toBe("#1b1e24");
+    expect(vampire.colors.muted).toBe("#9099a6");
+
+    expect(werewolf.colors.background).toBe("#25221d");
+    expect(werewolf.colors.foreground).toBe("#e8c9a8");
+    expect(werewolf.colors.muted).toBe("#b89572");
+    expect(werewolf.colors.accent).toBe("#c97a2e");
+
+    const vampireRgb = parseColor(vampire.colors.foreground)!;
+    const werewolfRgb = parseColor(werewolf.colors.foreground)!;
+    expect(werewolfRgb.r).toBeGreaterThan(werewolfRgb.b);
+    expect(vampireRgb.b).toBeGreaterThan(werewolfRgb.b);
+    expect(werewolfRgb.r - werewolfRgb.b).toBeGreaterThan(vampireRgb.r - vampireRgb.b);
+  });
 });
