@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from "re
 import type { Labels, Theme } from "@/data/schemas";
 import type { SupernaturalThemeVariant } from "@/lib/supernaturalTheme";
 import {
+  readCurrentThemeColors,
   runThemeColorTransition,
   toThemeCssVarName,
 } from "@/theme/themeColorTransition";
@@ -51,31 +52,6 @@ export function applyThemeToRoot(
   }
 }
 
-function applyThemeChrome(
-  root: HTMLElement,
-  theme: Theme,
-  supernaturalVariant: SupernaturalThemeVariant | null,
-): void {
-  root.dataset.theme = theme.mode;
-
-  if (supernaturalVariant) {
-    root.dataset.supernaturalTheme = supernaturalVariant;
-  } else {
-    delete root.dataset.supernaturalTheme;
-  }
-
-  root.style.setProperty("--font-heading", theme.fonts.heading);
-  root.style.setProperty("--font-body", theme.fonts.body);
-
-  for (const [key, value] of Object.entries(theme.radius)) {
-    root.style.setProperty(`--radius-${key}`, value);
-  }
-
-  for (const [key, value] of Object.entries(theme.shadows)) {
-    root.style.setProperty(`--shadow-${key}`, value);
-  }
-}
-
 function prefersReducedThemeMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -87,7 +63,6 @@ export function ThemeProvider({
   children,
 }: ThemeProviderProps) {
   const hasAppliedTheme = useRef(false);
-  const appliedColorsRef = useRef<Record<string, string>>({});
   const activeTransitionRef = useRef<{ cancel: () => Record<string, string> } | null>(null);
 
   useEffect(() => {
@@ -100,38 +75,35 @@ export function ThemeProvider({
   useEffect(() => {
     const root = document.documentElement;
     const toColors = { ...theme.colors };
+    const colorKeys = Object.keys(toColors);
 
     if (!hasAppliedTheme.current) {
       applyThemeToRoot(root, theme, supernaturalVariant);
-      appliedColorsRef.current = toColors;
       hasAppliedTheme.current = true;
       scheduleThemeTransitionsReady(root);
       return;
     }
 
     if (activeTransitionRef.current) {
-      appliedColorsRef.current = activeTransitionRef.current.cancel();
+      activeTransitionRef.current.cancel();
       activeTransitionRef.current = null;
     }
 
-    const fromColors = { ...appliedColorsRef.current };
     const canAnimate =
       !prefersReducedThemeMotion() && root.classList.contains("theme-transitions-ready");
 
-    applyThemeChrome(root, theme, supernaturalVariant);
-
     if (!canAnimate) {
       applyThemeToRoot(root, theme, supernaturalVariant);
-      appliedColorsRef.current = toColors;
       return;
     }
 
+    const fromColors = readCurrentThemeColors(colorKeys);
     const transition = runThemeColorTransition(root, fromColors, toColors);
     activeTransitionRef.current = transition;
 
     void transition.finished.then(() => {
       if (activeTransitionRef.current !== transition) return;
-      appliedColorsRef.current = toColors;
+      applyThemeToRoot(root, theme, supernaturalVariant);
       activeTransitionRef.current = null;
     });
   }, [theme, supernaturalVariant]);

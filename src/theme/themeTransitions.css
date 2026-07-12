@@ -1,11 +1,1 @@
-@property --theme-mix {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 1;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  html.theme-transitions-ready {
-    transition: --theme-mix 2s ease-in-out;
-  }
-}
+/* Theme color animation is driven in JS (themeColorTransition.ts + colorInterpolation.ts). */
