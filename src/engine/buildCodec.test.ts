@@ -62,7 +62,7 @@ describe("buildCodec", () => {
     expect(decoded.characterOptionChoices).toEqual({
       "oghma-infinium": "claimed",
       "alduin-bonus-trait": "claimed",
-      "au-naturel-gear": "4",
+      "au-naturel-gear": "0",
     });
     expect(decoded.oghmaSkillIds).toEqual([
       "one-handed",

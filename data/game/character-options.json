@@ -19,7 +19,7 @@
       "id": "au-naturel-gear",
       "titleLabel": "auNaturelGear",
       "descriptionLabel": "auNaturelGearDescription",
-      "defaultChoice": "4",
+      "defaultChoice": "0",
       "extension": "au-naturel",
       "requiresTraitId": "au-naturel",
       "controlType": "buttons",

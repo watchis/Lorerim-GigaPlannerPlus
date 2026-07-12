@@ -47,7 +47,7 @@ describe("au-naturel extension", () => {
     ]);
   });
 
-  it("grants no per-level bonus when fully clothed", () => {
+  it("applies -160 when fully clothed", () => {
     const choice = option.choices.find((entry) => entry.id === "4")!;
     const mods = auNaturelExtension.getModifications({
       game,
@@ -60,16 +60,22 @@ describe("au-naturel extension", () => {
       choice,
       labels: {},
     });
-    expect(mods).toEqual([]);
+
+    expect(mods).toHaveLength(1);
+    expect(mods[0]?.effects).toEqual([
+      { type: "attribute", stat: "health", value: -160 },
+      { type: "attribute", stat: "magicka", value: -160 },
+      { type: "attribute", stat: "stamina", value: -160 },
+    ]);
   });
 
-  it("applies per-level bonuses through computeBuild", () => {
-    const fullyClothed = computeBuild(
+  it("combines per-level bonus and gear penalty through computeBuild", () => {
+    const naked = computeBuild(
       game,
       createTestBuildState({
         traitIds: ["au-naturel"],
         playerLevel: 20,
-        characterOptionChoices: { "au-naturel-gear": "4" },
+        characterOptionChoices: { "au-naturel-gear": "0" },
       }),
     );
     const onePiece = computeBuild(
@@ -80,10 +86,16 @@ describe("au-naturel extension", () => {
         characterOptionChoices: { "au-naturel-gear": "1" },
       }),
     );
+    const fullyClothed = computeBuild(
+      game,
+      createTestBuildState({
+        traitIds: ["au-naturel"],
+        playerLevel: 20,
+        characterOptionChoices: { "au-naturel-gear": "4" },
+      }),
+    );
 
-    const bonusDelta = onePiece.attributes.health - fullyClothed.attributes.health;
-    expect(bonusDelta).toBe(60);
-    expect(onePiece.attributes.magicka - fullyClothed.attributes.magicka).toBe(60);
-    expect(onePiece.attributes.stamina - fullyClothed.attributes.stamina).toBe(60);
+    expect(naked.attributes.health - onePiece.attributes.health).toBe(60);
+    expect(onePiece.attributes.health - fullyClothed.attributes.health).toBe(180);
   });
 });

@@ -75,8 +75,6 @@ export function getCharacterOptionSummaryLines(
   _attributeLabels: Record<string, string>,
   state: BuildState,
 ): CharacterOptionSummaryLine[] {
-  if (choice.id === option.defaultChoice) return [];
-
   if (option.extension) {
     const extension = getCharacterOptionExtension(option.extension);
     if (extension?.getSummaryLines) {
@@ -89,6 +87,8 @@ export function getCharacterOptionSummaryLines(
       });
     }
   }
+
+  if (choice.id === option.defaultChoice) return [];
 
   const lines: CharacterOptionSummaryLine[] = [];
   if (choice.effects) {
