@@ -192,7 +192,7 @@ export function PlannerSwipePanels({ layout }: PlannerSwipePanelsProps) {
                       isCharacterOverviewActive
                         ? "border-[var(--color-accent)] text-[var(--color-accent)] shadow-[0_0_0_4px_var(--color-surface),0_6px_20px_rgba(0,0,0,0.4)]"
                         : isCenterPaneSubView
-                          ? "border-[var(--color-perk-partial)] text-[var(--color-perk-partial)] shadow-[0_0_0_4px_var(--color-surface),0_0_12px_rgba(78,179,245,0.4)] ring-2 ring-[var(--color-perk-partial)]/35"
+                          ? "border-[var(--color-perk-partial)] text-[var(--color-perk-partial)] shadow-[0_0_0_4px_var(--color-surface),0_0_12px_color-mix(in_srgb,var(--color-perk-partial)_40%,transparent)] ring-2 ring-[var(--color-perk-partial)]/35"
                           : "border-[var(--color-border)] text-[var(--color-muted)] shadow-[0_0_0_4px_var(--color-surface),0_6px_20px_rgba(0,0,0,0.4)]",
                     )}
                   >

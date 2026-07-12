@@ -307,7 +307,7 @@ export function PerkNode({
       "border-[var(--color-error)] bg-[var(--color-error)]/30 text-[var(--color-foreground)] shadow-[var(--shadow-error-glow)] ring-[3px] ring-[var(--color-error)]/90 ring-offset-2 ring-offset-[var(--color-background)] animate-pulse",
     !isConflict &&
       isPartialRank &&
-      "border-[var(--color-perk-partial)] bg-[var(--color-perk-partial)]/30 text-[var(--color-perk-partial)] shadow-[0_0_12px_rgba(78,179,245,0.4)]",
+      "border-[var(--color-perk-partial)] bg-[var(--color-perk-partial)]/30 text-[var(--color-perk-partial)] shadow-[0_0_12px_color-mix(in_srgb,var(--color-perk-partial)_40%,transparent)]",
     !isConflict &&
       isSelected &&
       !isPartialRank &&

@@ -128,7 +128,7 @@ describe("supernaturalTheme", () => {
     expect(accent.r).toBeLessThan(brightRed.r);
     expect(partial.b).toBeGreaterThan(partial.r);
     expect(partial.b).toBeGreaterThan(partial.g);
-    expect(colorChroma(vampire.colors.perkPartial)).toBeGreaterThan(0.15);
+    expect(colorChroma(vampire.colors.perkPartial)).toBeGreaterThan(0.25);
     expect(background.r).toBeCloseTo(background.g, 1);
     expect(background.g).toBeCloseTo(background.b, 1);
   });
@@ -156,5 +156,16 @@ describe("supernaturalTheme", () => {
     expect(relativeLuminance(werewolf.colors.surface)).toBeGreaterThan(
       relativeLuminance("#131211"),
     );
+  });
+
+  it("uses a cool cyan complement for werewolf partial nodes", () => {
+    const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
+    const partial = parseColor(werewolf.colors.perkPartial)!;
+    const selected = parseColor(werewolf.colors.perkSelected)!;
+
+    expect(partial.b).toBeGreaterThan(partial.r);
+    expect(partial.g).toBeGreaterThan(partial.r);
+    expect(selected.r).toBeGreaterThan(selected.b);
+    expect(colorChroma(werewolf.colors.perkPartial)).toBeGreaterThan(0.2);
   });
 });
