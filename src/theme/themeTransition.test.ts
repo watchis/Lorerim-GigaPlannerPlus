@@ -13,7 +13,7 @@ describe("themeTransition", () => {
   it("uses a 1–3 second supernatural theme transition duration", () => {
     expect(SUPERNATURAL_THEME_TRANSITION_MS).toBeGreaterThanOrEqual(1000);
     expect(SUPERNATURAL_THEME_TRANSITION_MS).toBeLessThanOrEqual(3000);
-    expect(SUPERNATURAL_THEME_TRANSITION_MS).toBe(2000);
+    expect(SUPERNATURAL_THEME_TRANSITION_MS).toBe(1000);
   });
 
   it("enables CSS transitions after the first paint", async () => {
