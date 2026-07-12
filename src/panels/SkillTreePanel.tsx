@@ -373,9 +373,9 @@ export function SkillTreePanel() {
             </div>
             {(supportsSkillProgression || isDestinyTree) && (
               <div className="flex shrink-0 items-center gap-0.5">
-                {supportsSkillProgression && !isTrainingMode && (
+                {(supportsSkillProgression && !isTrainingMode) || isDestinyTree ? (
                   <PerkBadgeVisibilityDropdown labels={labels} />
-                )}
+                ) : null}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -649,9 +649,7 @@ export function SkillTreePanel() {
         {!isTrainingMode && !stackedLayout && (
           <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
             <PerkLegend labels={labels} hasProblem={hasTreeProblem} />
-            {!isDestinyTree && (
-              <PerkBadgeVisibilityDropdown labels={labels} className="h-7 w-7" iconClassName="h-3.5 w-3.5" />
-            )}
+            <PerkBadgeVisibilityDropdown labels={labels} className="h-7 w-7" iconClassName="h-3.5 w-3.5" />
           </div>
         )}
       </div>
