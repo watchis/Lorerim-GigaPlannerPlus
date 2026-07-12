@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createBuildCodecRegistry,
+  createBuildCodecRegistryForVersion,
   lookupId,
   lookupIdSafe,
   lookupIndex,
@@ -9,7 +10,7 @@ import { getTestGameData } from "@/test/helpers";
 
 describe("buildCodecRegistry", () => {
   const game = getTestGameData();
-  const registry = createBuildCodecRegistry(game);
+  const registry = createBuildCodecRegistryForVersion(game, game.manifest.version);
 
   it("indexes races, skills, and perks", () => {
     expect(registry.races).toContain("nord");
@@ -18,8 +19,8 @@ describe("buildCodecRegistry", () => {
   });
 
   it("indexes supernatural character option choices for codec round-trip", () => {
-    const vampireIndex = lookupIndex(registry.characterOptionIndex, "vampire", "character option");
-    const werewolfIndex = lookupIndex(registry.characterOptionIndex, "werewolf", "character option");
+    const vampireIndex = lookupIndex(registry.characterOptionIndex!, "vampire", "character option");
+    const werewolfIndex = lookupIndex(registry.characterOptionIndex!, "werewolf", "character option");
     expect(vampireIndex).toBeTypeOf("number");
     expect(werewolfIndex).toBeTypeOf("number");
 

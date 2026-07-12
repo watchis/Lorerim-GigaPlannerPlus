@@ -27,6 +27,10 @@
     {
       "optionId": "werewolf",
       "extension": "supernatural-werewolf"
+    },
+    {
+      "optionId": "au-naturel-gear",
+      "extension": "au-naturel"
     }
   ]
 }

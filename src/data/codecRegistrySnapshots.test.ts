@@ -27,7 +27,13 @@ describe("codec registry snapshots", () => {
     expect(snapshot?.skills).toContain("vampire");
     expect(snapshot?.skills).toContain("werewolf");
     expect(snapshot?.characterOptions).toEqual(
-      expect.arrayContaining(["vampire", "werewolf", "oghma-infinium", "alduin-bonus-trait"]),
+      expect.arrayContaining([
+        "vampire",
+        "werewolf",
+        "oghma-infinium",
+        "alduin-bonus-trait",
+        "au-naturel-gear",
+      ]),
     );
     expect(snapshot?.characterOptionChoices).toEqual(
       expect.arrayContaining([

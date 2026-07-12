@@ -8,8 +8,8 @@ export interface CodecRegistrySnapshot {
   traits: string[];
   skills: string[];
   perks: string[];
-  characterOptions: string[];
-  characterOptionChoices: string[][];
+  characterOptions?: string[];
+  characterOptionChoices?: string[][];
 }
 
 const snapshotModules = import.meta.glob("../../data/codec-registries/*.json", {

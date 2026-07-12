@@ -158,6 +158,7 @@ describe("buildCodec", () => {
       "alduin-bonus-trait": "claimed",
       vampire: "none",
       werewolf: "none",
+      "au-naturel-gear": "0",
     });
     expect(decoded.oghmaSkillIds).toEqual([
       "one-handed",
@@ -167,6 +168,82 @@ describe("buildCodec", () => {
       "smithing",
       "enchanting",
     ]);
+  });
+
+  it("round-trips Au Naturel gear choices through v3 share codes", () => {
+    for (const gearChoice of ["0", "1", "2", "3", "4"] as const) {
+      const state = createTestBuildState({
+        traitIds: ["au-naturel"],
+        playerLevel: 10,
+        characterOptionChoices: { "au-naturel-gear": gearChoice },
+      });
+
+      const decoded = decodeBuild(encodeBuild(state, game), game);
+
+      expect(decoded.traitIds).toContain("au-naturel");
+      expect(decoded.characterOptionChoices["au-naturel-gear"]).toBe(gearChoice);
+    }
+  });
+
+  it("round-trips Au Naturel gear in saved build variants", () => {
+    const defaultBuild = createTestBuildState({
+      traitIds: ["au-naturel"],
+      playerLevel: 10,
+      characterOptionChoices: { "au-naturel-gear": "0" },
+    });
+    const milestoneBuild = createTestBuildState({
+      traitIds: ["au-naturel"],
+      playerLevel: 25,
+      characterOptionChoices: { "au-naturel-gear": "3" },
+    });
+    const entry = createSavedBuild("Au Naturel", defaultBuild, [
+      createMilestone("Level 25", milestoneBuild),
+    ]);
+
+    const decoded = decodeBuildPackage(encodeSavedBuild(entry, game), game);
+
+    expect(decoded.build.characterOptionChoices["au-naturel-gear"]).toBe("0");
+    expect(decoded.shared?.milestones[0]?.build.characterOptionChoices["au-naturel-gear"]).toBe(
+      "3",
+    );
+  });
+
+  it("keeps legacy v2 Alduin option indices stable via frozen tables", () => {
+    const payload = {
+      v: 2 as const,
+      mv: "5.0.3.6",
+      co: [[1, 1]] as [number, number][],
+    };
+    const compressed = gzipSync(new TextEncoder().encode(JSON.stringify(payload)));
+    const code = `2.${toBase64Url(compressed)}`;
+
+    const decoded = decodeBuildPackage(code, game);
+
+    expect(decoded.build.characterOptionChoices["alduin-bonus-trait"]).toBe("claimed");
+    expect(decoded.build.characterOptionChoices["au-naturel-gear"]).toBe("0");
+  });
+
+  it("round-trips id-based character options in v2 payloads", () => {
+    const payload = {
+      v: 2 as const,
+      mv: game.manifest.version,
+      co: [
+        ["au-naturel-gear", "2"],
+        ["alduin-bonus-trait", "claimed"],
+      ] as [string, string][],
+    };
+    const compressed = gzipSync(new TextEncoder().encode(JSON.stringify(payload)));
+    const code = `2.${toBase64Url(compressed)}`;
+
+    const decoded = decodeBuildPackage(code, game);
+
+    expect(decoded.build.characterOptionChoices).toEqual({
+      "au-naturel-gear": "2",
+      "alduin-bonus-trait": "claimed",
+      "oghma-infinium": "none",
+      vampire: "none",
+      werewolf: "none",
+    });
   });
 
   it("round-trips Oghma skill selections", () => {

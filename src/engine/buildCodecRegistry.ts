@@ -11,15 +11,15 @@ export interface BuildCodecRegistry {
   traits: readonly string[];
   skills: readonly string[];
   perks: readonly string[];
-  characterOptions: readonly string[];
-  characterOptionChoices: readonly (readonly string[])[];
+  characterOptions?: readonly string[];
+  characterOptionChoices?: readonly (readonly string[])[];
   raceIndex: ReadonlyMap<string, number>;
   birthsignIndex: ReadonlyMap<string, number>;
   deityIndex: ReadonlyMap<string, number>;
   traitIndex: ReadonlyMap<string, number>;
   skillIndex: ReadonlyMap<string, number>;
   perkIndex: ReadonlyMap<string, number>;
-  characterOptionIndex: ReadonlyMap<string, number>;
+  characterOptionIndex?: ReadonlyMap<string, number>;
 }
 
 function indexById(ids: string[]): ReadonlyMap<string, number> {
@@ -48,8 +48,8 @@ function createRegistryFromLists(
     traits: readonly string[];
     skills: readonly string[];
     perks: readonly string[];
-    characterOptions: readonly string[];
-    characterOptionChoices: readonly (readonly string[])[];
+    characterOptions?: readonly string[];
+    characterOptionChoices?: readonly (readonly string[])[];
   },
 ): BuildCodecRegistry {
   return {
@@ -69,7 +69,9 @@ function createRegistryFromLists(
     traitIndex: indexById([...lists.traits]),
     skillIndex: indexById([...lists.skills]),
     perkIndex: indexById([...lists.perks]),
-    characterOptionIndex: indexById([...lists.characterOptions]),
+    characterOptionIndex: lists.characterOptions
+      ? indexById([...lists.characterOptions])
+      : undefined,
   };
 }
 
@@ -98,10 +100,6 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
   const traits = game.traits.map((trait) => trait.id);
   const skills = game.skills.map((skill) => skill.id);
   const perks = collectPerkIds(game);
-  const characterOptions = game.characterOptions.map((option) => option.id);
-  const characterOptionChoices = game.characterOptions.map((option) =>
-    option.choices.map((choice) => choice.id),
-  );
 
   return createRegistryFromLists(game, {
     version: game.manifest.version,
@@ -111,8 +109,6 @@ export function createBuildCodecRegistry(game: GameData): BuildCodecRegistry {
     traits,
     skills,
     perks,
-    characterOptions,
-    characterOptionChoices,
   });
 }
 
@@ -142,42 +138,4 @@ export function lookupId(list: readonly string[], index: number | undefined, lab
 export function lookupIdSafe(list: readonly string[], index: number | undefined): string | null {
   if (index === undefined) return null;
   return list[index] ?? null;
-}
-
-export function lookupCharacterOptionChoiceIndex(
-  registry: BuildCodecRegistry,
-  optionId: string,
-  choiceId: string,
-): number {
-  const optionIndex = lookupIndex(registry.characterOptionIndex, optionId, "character option");
-  const choices = registry.characterOptionChoices[optionIndex!];
-  const choiceIndex = choices.indexOf(choiceId);
-  if (choiceIndex === -1) {
-    throw new Error(`Unknown character option choice: ${optionId}/${choiceId}`);
-  }
-  return choiceIndex;
-}
-
-export function lookupCharacterOptionChoiceId(
-  registry: BuildCodecRegistry,
-  optionIndex: number,
-  choiceIndex: number,
-): string {
-  const optionId = lookupId(registry.characterOptions, optionIndex, "character option");
-  const choices = registry.characterOptionChoices[optionIndex];
-  const choiceId = choices?.[choiceIndex];
-  if (!optionId || choiceId === undefined) {
-    throw new Error(`Invalid character option choice index: ${optionIndex}/${choiceIndex}`);
-  }
-  return choiceId;
-}
-
-export function lookupCharacterOptionChoiceIdSafe(
-  registry: BuildCodecRegistry,
-  optionIndex: number,
-  choiceIndex: number,
-): string | null {
-  const optionId = lookupIdSafe(registry.characterOptions, optionIndex);
-  if (!optionId) return null;
-  return registry.characterOptionChoices[optionIndex]?.[choiceIndex] ?? null;
 }

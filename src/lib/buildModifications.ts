@@ -100,7 +100,6 @@ function collectCharacterOptionModifications(
 
   for (const option of game.characterOptions) {
     const choice = getSelectedCharacterOptionChoice(option, state.characterOptionChoices);
-    if (choice.id === option.defaultChoice) continue;
 
     if (option.extension) {
       const extension = getCharacterOptionExtension(option.extension);
@@ -116,6 +115,8 @@ function collectCharacterOptionModifications(
       modifications.push(...extension.getModifications(ctx));
       continue;
     }
+
+    if (choice.id === option.defaultChoice) continue;
 
     if (choice.effects?.length) {
       modifications.push({

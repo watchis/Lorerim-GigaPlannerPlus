@@ -1,4 +1,5 @@
 import type { GameData } from "@/data/schemas";
+import { LEGACY_OGHMA_CHOICE_MAP } from "@/lib/oghmaLegacyChoices";
 import type { BuildState } from "@/engine/buildEngine";
 
 export const OGHMA_INFINIUM_OPTION_ID = "oghma-infinium";
@@ -51,7 +52,10 @@ export function getOghmaFloorBonus(game: GameData, state: BuildState, skillId: s
 }
 
 export function migrateOghmaInfiniumBuild(_game: GameData, build: BuildState): BuildState {
-  const choice = build.characterOptionChoices[OGHMA_INFINIUM_OPTION_ID];
+  let choice = build.characterOptionChoices[OGHMA_INFINIUM_OPTION_ID];
+  if (choice && LEGACY_OGHMA_CHOICE_MAP[choice]) {
+    choice = LEGACY_OGHMA_CHOICE_MAP[choice];
+  }
   if (!choice || choice === "none" || choice === OGHMA_INFINIUM_CLAIMED_CHOICE) {
     return { ...build, oghmaSkillIds: build.oghmaSkillIds ?? [] };
   }

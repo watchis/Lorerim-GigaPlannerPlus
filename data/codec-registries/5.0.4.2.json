@@ -700,7 +700,8 @@
     "oghma-infinium",
     "alduin-bonus-trait",
     "vampire",
-    "werewolf"
+    "werewolf",
+    "au-naturel-gear"
   ],
   "characterOptionChoices": [
     [
@@ -724,6 +725,13 @@
     [
       "none",
       "claimed"
+    ],
+    [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
     ]
   ]
 }

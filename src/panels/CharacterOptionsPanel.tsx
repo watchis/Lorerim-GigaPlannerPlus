@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OghmaInfiniumControl } from "@/components/character-options/OghmaInfiniumControl";
+import { AuNaturelGearControl } from "@/components/character-options/AuNaturelGearControl";
 import { SupernaturalOptionControl } from "@/components/character-options/SupernaturalOptionControl";
 import { SupernaturalOptionsSection } from "@/components/character-options/SupernaturalOptionsSection";
 import { OghmaSkillsPickerPanel } from "@/components/character-options/OghmaSkillsPickerPanel";
@@ -311,18 +312,23 @@ export function CharacterOptionsPanel() {
 
   const activeRewardLines = useMemo(
     () =>
-      characterOptions.flatMap((option) => {
-        const choice = getSelectedCharacterOptionChoice(option, characterOptionChoices);
-        if (choice.id === option.defaultChoice) return [];
-        return getCharacterOptionSummaryLines(
-          game,
-          option,
-          choice,
-          labels,
-          attributeLabels,
-          build,
-        );
-      }),
+      characterOptions
+        .filter(
+          (option) =>
+            !option.requiresTraitId || build.traitIds.includes(option.requiresTraitId),
+        )
+        .flatMap((option) => {
+          const choice = getSelectedCharacterOptionChoice(option, characterOptionChoices);
+          if (!option.extension && choice.id === option.defaultChoice) return [];
+          return getCharacterOptionSummaryLines(
+            game,
+            option,
+            choice,
+            labels,
+            attributeLabels,
+            build,
+          );
+        }),
     [attributeLabels, build, characterOptionChoices, characterOptions, game, labels],
   );
 
@@ -388,7 +394,12 @@ export function CharacterOptionsPanel() {
               <PlaythroughOptionsSection
                 title={labels.playthroughSectionTitle ?? "Playthrough rewards"}
               >
-                {playthroughOptions.map((option) => {
+                {playthroughOptions
+                  .filter(
+                    (option) =>
+                      !option.requiresTraitId || build.traitIds.includes(option.requiresTraitId),
+                  )
+                  .map((option) => {
                   const selectedChoiceId =
                     characterOptionChoices[option.id] ?? option.defaultChoice;
                   const onSelect = (choiceId: string) =>
@@ -400,7 +411,9 @@ export function CharacterOptionsPanel() {
                   const Control =
                     option.extension === "oghma-infinium"
                       ? OghmaInfiniumControl
-                      : extension?.Control;
+                      : option.extension === "au-naturel"
+                        ? AuNaturelGearControl
+                        : extension?.Control;
 
                   if (Control) {
                     return (
