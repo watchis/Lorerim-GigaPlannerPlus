@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { isSupernaturalPerkTreeSkillId } from "@/lib/supernatural";
 import { STACKED_LAYOUT_MAX_WIDTH } from "@/layout/plannerLayout";
 
 export type SetupPicker =
@@ -188,9 +189,20 @@ export const useUiStore = create<UiStore>((set, get) => ({
       setupPicker: null,
       characterOptionsOpen: false,
       variantsManagerOpen: false,
+      ...(isSupernaturalPerkTreeSkillId(skillId) ? { skillWorkspaceMode: "perks" as const } : {}),
     });
   },
-  setSkillWorkspaceMode: (mode) => set({ skillWorkspaceMode: mode }),
+  setSkillWorkspaceMode: (mode) => {
+    const activeSkillTreeId = get().activeSkillTreeId;
+    if (
+      mode === "training" &&
+      activeSkillTreeId &&
+      isSupernaturalPerkTreeSkillId(activeSkillTreeId)
+    ) {
+      return;
+    }
+    set({ skillWorkspaceMode: mode });
+  },
   setPerkBadgeVisibility: (visibility) => set({ perkBadgeVisibility: visibility }),
   togglePerkBadgeVisibility: (key) =>
     set((state) => ({

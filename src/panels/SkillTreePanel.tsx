@@ -1,5 +1,5 @@
 import { AlertCircle, Minus, Plus, RotateCcw } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useEffect, type ReactNode } from "react";
 import { PerkBadgeVisibilityDropdown } from "@/components/PerkBadgeVisibilityDropdown";
 import { WorkspacePanelHeader } from "@/components/WorkspacePanelHeader";
 import { ResetPerksButton } from "@/components/ResetPerksButton";
@@ -41,6 +41,7 @@ import { usePlannerStackedLayout } from "@/layout/plannerLayout";
 import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
 import { SkillLevelBonusIndicator } from "@/components/SkillLevelBonusIndicator";
 import { getSkillLevelBonusLines } from "@/lib/skillLevelBonuses";
+import { isSupernaturalPerkTreeSkillId } from "@/lib/supernatural";
 
 function formatLabel(template: string, values: Record<string, string | number>): string {
   return Object.entries(values).reduce(
@@ -215,6 +216,14 @@ export function SkillTreePanel() {
     [activeTree, perkSearchTokens],
   );
   const isDestinyTree = activeTree.skillId === "destiny";
+  const isSupernaturalTree = isSupernaturalPerkTreeSkillId(activeTree.skillId);
+  const supportsTraining = !isDestinyTree && !isSupernaturalTree;
+
+  useEffect(() => {
+    if (isSupernaturalTree && skillWorkspaceMode === "training") {
+      setSkillWorkspaceMode("perks");
+    }
+  }, [isSupernaturalTree, skillWorkspaceMode, setSkillWorkspaceMode]);
 
   const skillReqConflictsOnTree = getSelectedPerksBelowSkillRequirement(
     gameData.game,
@@ -233,7 +242,7 @@ export function SkillTreePanel() {
   const trainingFloor = isDestinyTree
     ? 0
     : getSkillLevelFromTraining(gameData.game, build, activeTree.skillId);
-  const isTrainingMode = !isDestinyTree && skillWorkspaceMode === "training";
+  const isTrainingMode = supportsTraining && skillWorkspaceMode === "training";
   const skillBonusLines = !isDestinyTree
     ? getSkillLevelBonusLines(gameData.game, build, activeTree.skillId, labels)
     : [];
@@ -385,24 +394,26 @@ export function SkillTreePanel() {
         <div className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border)]/50 px-3 py-1.5">
           {!isDestinyTree ? (
             <>
-              <div className="inline-flex shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
-                <Button
-                  variant={isTrainingMode ? "ghost" : "default"}
-                  size="sm"
-                  className="h-7 px-2.5 text-[10px] font-medium"
-                  onClick={() => setSkillWorkspaceMode("perks")}
-                >
-                  {labels.perksMode}
-                </Button>
-                <Button
-                  variant={isTrainingMode ? "default" : "ghost"}
-                  size="sm"
-                  className="h-7 px-2.5 text-[10px] font-medium"
-                  onClick={() => setSkillWorkspaceMode("training")}
-                >
-                  {labels.trainingMode}
-                </Button>
-              </div>
+              {supportsTraining && (
+                <div className="inline-flex shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
+                  <Button
+                    variant={isTrainingMode ? "ghost" : "default"}
+                    size="sm"
+                    className="h-7 px-2.5 text-[10px] font-medium"
+                    onClick={() => setSkillWorkspaceMode("perks")}
+                  >
+                    {labels.perksMode}
+                  </Button>
+                  <Button
+                    variant={isTrainingMode ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 px-2.5 text-[10px] font-medium"
+                    onClick={() => setSkillWorkspaceMode("training")}
+                  >
+                    {labels.trainingMode}
+                  </Button>
+                </div>
+              )}
               <div className="ml-auto flex items-center gap-1.5">
                 <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
                   {labels.skillLevel}
@@ -514,45 +525,29 @@ export function SkillTreePanel() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           {!isDestinyTree && (
-            <div className="inline-flex rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
-              <Button
-                variant={isTrainingMode ? "ghost" : "default"}
-                size="sm"
-                className="h-7 px-3 text-xs"
-                onClick={() => setSkillWorkspaceMode("perks")}
-              >
-                {labels.perksMode}
-              </Button>
-              <Button
-                variant={isTrainingMode ? "default" : "ghost"}
-                size="sm"
-                className="h-7 px-3 text-xs"
-                onClick={() => setSkillWorkspaceMode("training")}
-              >
-                {labels.trainingMode}
-              </Button>
-            </div>
-          )}
+            <div className="flex flex-wrap items-center gap-3">
+              {supportsTraining && (
+                <div className="inline-flex rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
+                  <Button
+                    variant={isTrainingMode ? "ghost" : "default"}
+                    size="sm"
+                    className="h-7 px-3 text-xs"
+                    onClick={() => setSkillWorkspaceMode("perks")}
+                  >
+                    {labels.perksMode}
+                  </Button>
+                  <Button
+                    variant={isTrainingMode ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 px-3 text-xs"
+                    onClick={() => setSkillWorkspaceMode("training")}
+                  >
+                    {labels.trainingMode}
+                  </Button>
+                </div>
+              )}
 
-          {isDestinyTree ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
-                {labels.destinyPoints ?? "Destiny points"}
-              </span>
-              <span
-                className={cn(
-                  "text-xs tabular-nums",
-                  destinyOverBudget
-                    ? "font-medium text-[var(--color-error)]"
-                    : "text-[var(--color-muted)]",
-                )}
-              >
-                {computeDestinyPerkPointsSpent(gameData.game, build)}/
-                {getEarnedDestinyPerkPoints(gameData.game, build)}
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
                 {labels.skillLevel}
               </span>
@@ -593,22 +588,42 @@ export function SkillTreePanel() {
               <span className="text-xs text-[var(--color-muted)]">
                 {labels.skillLevelMin}: <span className="tabular-nums">{floor}</span>
               </span>
+              </div>
+
+              {supportsTraining && isTrainingMode && (
+                <ResetPerksButton
+                  className="h-7 shrink-0 px-3 text-xs"
+                  onClick={() => resetSkillTraining(activeTree.skillId)}
+                >
+                  {labels.resetTraining}
+                </ResetPerksButton>
+              )}
+
+              {(!isTrainingMode || isSupernaturalTree) && (
+                <ResetPerksButton onClick={() => resetSkillPerks(activeTree.skillId)}>
+                  {labels.resetSkill}
+                </ResetPerksButton>
+              )}
             </div>
           )}
 
-          {!isDestinyTree && isTrainingMode && (
-            <ResetPerksButton
-              className="h-7 shrink-0 px-3 text-xs"
-              onClick={() => resetSkillTraining(activeTree.skillId)}
-            >
-              {labels.resetTraining}
-            </ResetPerksButton>
-          )}
-
-          {!isDestinyTree && !isTrainingMode && (
-            <ResetPerksButton onClick={() => resetSkillPerks(activeTree.skillId)}>
-              {labels.resetSkill}
-            </ResetPerksButton>
+          {isDestinyTree && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                {labels.destinyPoints ?? "Destiny points"}
+              </span>
+              <span
+                className={cn(
+                  "text-xs tabular-nums",
+                  destinyOverBudget
+                    ? "font-medium text-[var(--color-error)]"
+                    : "text-[var(--color-muted)]",
+                )}
+              >
+                {computeDestinyPerkPointsSpent(gameData.game, build)}/
+                {getEarnedDestinyPerkPoints(gameData.game, build)}
+              </span>
+            </div>
           )}
         </div>
 

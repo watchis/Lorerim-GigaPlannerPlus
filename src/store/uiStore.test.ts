@@ -35,4 +35,17 @@ describe("uiStore", () => {
       perkName: true,
     });
   });
+
+  it("forces perks mode when opening supernatural perk trees", () => {
+    useUiStore.setState({ skillWorkspaceMode: "training" });
+    useUiStore.getState().openSkillTree("vampire");
+    expect(useUiStore.getState().skillWorkspaceMode).toBe("perks");
+    expect(useUiStore.getState().activeSkillTreeId).toBe("vampire");
+  });
+
+  it("ignores training mode for supernatural perk trees", () => {
+    useUiStore.setState({ activeSkillTreeId: "werewolf", skillWorkspaceMode: "perks" });
+    useUiStore.getState().setSkillWorkspaceMode("training");
+    expect(useUiStore.getState().skillWorkspaceMode).toBe("perks");
+  });
 });

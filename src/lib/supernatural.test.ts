@@ -5,6 +5,7 @@ import {
   applySupernaturalOptionChange,
   getActiveSupernaturalSkillId,
   getVampireStageRewardLabel,
+  isSupernaturalPerkTreeSkillId,
   getVampireRacialBonus,
   getVampireRacialBonusForRace,
   getWerewolfRacialBonusForRace,
@@ -168,6 +169,12 @@ describe("supernatural", () => {
       ),
     ).toBe("vampire");
     expect(getActiveSupernaturalSkillId(createTestBuildState())).toBeNull();
+  });
+
+  it("identifies supernatural perk tree skill ids", () => {
+    expect(isSupernaturalPerkTreeSkillId(VAMPIRE_SKILL_ID)).toBe(true);
+    expect(isSupernaturalPerkTreeSkillId(WEREWOLF_SKILL_ID)).toBe(true);
+    expect(isSupernaturalPerkTreeSkillId("alchemy")).toBe(false);
   });
 
   it("selecting werewolf while vampire is active switches curses and clears vampire perks", () => {

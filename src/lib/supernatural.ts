@@ -13,6 +13,10 @@ export const DEFAULT_VAMPIRE_STAGE: VampireStageId = "stage-1";
 export const VAMPIRE_SKILL_ID = "vampire";
 export const WEREWOLF_SKILL_ID = "werewolf";
 
+export function isSupernaturalPerkTreeSkillId(skillId: string): boolean {
+  return skillId === VAMPIRE_SKILL_ID || skillId === WEREWOLF_SKILL_ID;
+}
+
 export const SUPERNATURAL_OPTION_IDS = [VAMPIRE_OPTION_ID, WEREWOLF_OPTION_ID] as const;
 
 export function isVampireStageId(choiceId: string): choiceId is VampireStageId {
