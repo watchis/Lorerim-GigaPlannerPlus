@@ -2,8 +2,8 @@
   "skillId": "vampire",
   "skillName": "Vampire",
   "grid": {
-    "width": 24,
-    "height": 12
+    "width": 15,
+    "height": 13
   },
   "perks": [
     {
@@ -11,8 +11,8 @@
       "name": "Scion",
       "skillReq": 0,
       "position": {
-        "x": 14,
-        "y": 10
+        "x": 8,
+        "y": 12
       },
       "prerequisites": [],
       "prerequisitesAny": [],
@@ -24,8 +24,8 @@
       "name": "Unearthly Will",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 8
+        "x": 4,
+        "y": 10
       },
       "prerequisites": [
         "vampire-scion"
@@ -39,8 +39,8 @@
       "name": "Night Cloak",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 8
+        "x": 6,
+        "y": 10
       },
       "prerequisites": [
         "vampire-scion"
@@ -54,8 +54,8 @@
       "name": "Energy Vampire",
       "skillReq": 0,
       "position": {
-        "x": 14,
-        "y": 8
+        "x": 8,
+        "y": 10
       },
       "prerequisites": [
         "vampire-scion"
@@ -69,8 +69,8 @@
       "name": "Shapechanger",
       "skillReq": 0,
       "position": {
-        "x": 16,
-        "y": 8
+        "x": 10,
+        "y": 10
       },
       "prerequisites": [
         "vampire-scion"
@@ -84,8 +84,8 @@
       "name": "Vampiric Grip",
       "skillReq": 0,
       "position": {
-        "x": 18,
-        "y": 8
+        "x": 12,
+        "y": 10
       },
       "prerequisites": [
         "vampire-scion"
@@ -99,8 +99,8 @@
       "name": "Fountain of Blood",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 6
+        "x": 6,
+        "y": 8
       },
       "prerequisites": [
         "vampire-night-cloak"
@@ -114,8 +114,8 @@
       "name": "Slasher",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 5
+        "x": 6,
+        "y": 6
       },
       "prerequisites": [
         "vampire-fountain-of-blood"
@@ -129,8 +129,8 @@
       "name": "Hemomancer",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 6
+        "x": 4,
+        "y": 8
       },
       "prerequisites": [
         "vampire-unearthly-will"
@@ -144,8 +144,8 @@
       "name": "Blood Storm",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 5
+        "x": 4,
+        "y": 6
       },
       "prerequisites": [
         "vampire-hemomancer"
@@ -159,8 +159,8 @@
       "name": "Auspex",
       "skillReq": 0,
       "position": {
-        "x": 14,
-        "y": 6
+        "x": 8,
+        "y": 8
       },
       "prerequisites": [
         "vampire-energy-vampire"
@@ -174,8 +174,8 @@
       "name": "Court's Chef",
       "skillReq": 0,
       "position": {
-        "x": 16,
-        "y": 6
+        "x": 10,
+        "y": 8
       },
       "prerequisites": [
         "vampire-shapechanger"
@@ -189,8 +189,8 @@
       "name": "Wings of the Strix",
       "skillReq": 0,
       "position": {
-        "x": 16,
-        "y": 5
+        "x": 10,
+        "y": 6
       },
       "prerequisites": [
         "vampire-courts-chef"
@@ -204,8 +204,8 @@
       "name": "Maelstrom",
       "skillReq": 0,
       "position": {
-        "x": 18,
-        "y": 6
+        "x": 12,
+        "y": 8
       },
       "prerequisites": [
         "vampire-vampiric-grip"
@@ -219,8 +219,8 @@
       "name": "Gutwrench",
       "skillReq": 0,
       "position": {
-        "x": 20,
-        "y": 8
+        "x": 14,
+        "y": 10
       },
       "prerequisites": [
         "vampire-vampiric-grip"
@@ -234,7 +234,7 @@
       "name": "Mist Form",
       "skillReq": 0,
       "position": {
-        "x": 10,
+        "x": 4,
         "y": 4
       },
       "prerequisites": [
@@ -249,8 +249,8 @@
       "name": "Supernatural Reflexes",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 4
+        "x": 5,
+        "y": 1
       },
       "prerequisites": [
         "vampire-mist-form"
@@ -264,8 +264,8 @@
       "name": "Tremor",
       "skillReq": 0,
       "position": {
-        "x": 14,
-        "y": 4
+        "x": 7,
+        "y": 3
       },
       "prerequisites": [
         "vampire-mist-form"
@@ -279,8 +279,8 @@
       "name": "Vampiric Seed",
       "skillReq": 0,
       "position": {
-        "x": 8,
-        "y": 4
+        "x": 2,
+        "y": 6
       },
       "prerequisites": [
         "vampire-hemomancer"
@@ -294,8 +294,8 @@
       "name": "Vampiric Orb",
       "skillReq": 0,
       "position": {
-        "x": 8,
-        "y": 3
+        "x": 2,
+        "y": 4
       },
       "prerequisites": [
         "vampire-vampiric-seed"
@@ -309,7 +309,7 @@
       "name": "Vampiric Cloak",
       "skillReq": 0,
       "position": {
-        "x": 8,
+        "x": 2,
         "y": 2
       },
       "prerequisites": [
@@ -324,8 +324,8 @@
       "name": "Blood From a Stone",
       "skillReq": 0,
       "position": {
-        "x": 6,
-        "y": 2
+        "x": 0,
+        "y": 4
       },
       "prerequisites": [
         "vampire-hemomancer"
@@ -339,8 +339,8 @@
       "name": "Starving Artist",
       "skillReq": 0,
       "position": {
-        "x": 6,
-        "y": 1
+        "x": 0,
+        "y": 2
       },
       "prerequisites": [
         "vampire-blood-from-a-stone"
@@ -354,7 +354,7 @@
       "name": "Make Them Beautiful",
       "skillReq": 0,
       "position": {
-        "x": 6,
+        "x": 0,
         "y": 0
       },
       "prerequisites": [

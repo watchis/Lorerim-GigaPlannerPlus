@@ -2,8 +2,8 @@
   "skillId": "werewolf",
   "skillName": "Werewolf",
   "grid": {
-    "width": 26,
-    "height": 10
+    "width": 25,
+    "height": 18
   },
   "perks": [
     {
@@ -12,7 +12,7 @@
       "skillReq": 0,
       "position": {
         "x": 12,
-        "y": 8
+        "y": 17
       },
       "prerequisites": [],
       "prerequisitesAny": [],
@@ -24,8 +24,8 @@
       "name": "Bestial Strength",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 7
+        "x": 10,
+        "y": 14
       },
       "prerequisites": [
         "werewolf-bestial-strength"
@@ -39,8 +39,8 @@
       "name": "Bestial Strength",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 6
+        "x": 10,
+        "y": 10
       },
       "prerequisites": [
         "werewolf-bestial-strength-r2"
@@ -55,7 +55,7 @@
       "skillReq": 0,
       "position": {
         "x": 12,
-        "y": 5
+        "y": 6
       },
       "prerequisites": [
         "werewolf-bestial-strength-r3"
@@ -69,8 +69,8 @@
       "name": "Animal Vigor",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 6
+        "x": 7,
+        "y": 14
       },
       "prerequisites": [
         "werewolf-bestial-strength"
@@ -84,8 +84,8 @@
       "name": "Gorging",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 5
+        "x": 7,
+        "y": 10
       },
       "prerequisites": [
         "werewolf-animal-vigor"
@@ -99,8 +99,8 @@
       "name": "Savage Feeding",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 4
+        "x": 7,
+        "y": 6
       },
       "prerequisites": [
         "werewolf-gorging"
@@ -114,7 +114,7 @@
       "name": "Rampage",
       "skillReq": 0,
       "position": {
-        "x": 14,
+        "x": 12,
         "y": 4
       },
       "prerequisites": [
@@ -129,8 +129,8 @@
       "name": "Feral Instincts",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 4
+        "x": 15,
+        "y": 6
       },
       "prerequisites": [
         "werewolf-bestial-strength-r4"
@@ -144,8 +144,8 @@
       "name": "Infinite Duress",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 3
+        "x": 12,
+        "y": 0
       },
       "prerequisites": [
         "werewolf-rampage"
@@ -159,8 +159,8 @@
       "name": "Supernatural Strength",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 3
+        "x": 16,
+        "y": 2
       },
       "prerequisites": [
         "werewolf-rampage"
@@ -174,8 +174,8 @@
       "name": "Roadkill",
       "skillReq": 0,
       "position": {
-        "x": 14,
-        "y": 3
+        "x": 8,
+        "y": 2
       },
       "prerequisites": [
         "werewolf-rampage"
@@ -189,7 +189,7 @@
       "name": "Swipe",
       "skillReq": 0,
       "position": {
-        "x": 16,
+        "x": 19,
         "y": 4
       },
       "prerequisites": [
@@ -204,8 +204,8 @@
       "name": "Improved Bloodthirst",
       "skillReq": 0,
       "position": {
-        "x": 8,
-        "y": 5
+        "x": 4,
+        "y": 14
       },
       "prerequisites": [
         "werewolf-bestial-strength"
@@ -219,8 +219,8 @@
       "name": "Improved Bloodthirst",
       "skillReq": 0,
       "position": {
-        "x": 8,
-        "y": 4
+        "x": 4,
+        "y": 10
       },
       "prerequisites": [
         "werewolf-improved-bloodthirst"
@@ -234,8 +234,8 @@
       "name": "Lycanthropic Speed",
       "skillReq": 0,
       "position": {
-        "x": 6,
-        "y": 8
+        "x": 3,
+        "y": 17
       },
       "prerequisites": [],
       "prerequisitesAny": [],
@@ -254,8 +254,8 @@
       "name": "Lycanthropic Regeneration",
       "skillReq": 0,
       "position": {
-        "x": 4,
-        "y": 8
+        "x": 0,
+        "y": 17
       },
       "prerequisites": [],
       "prerequisitesAny": [],
@@ -280,8 +280,8 @@
       "name": "Lycanthropic Regeneration",
       "skillReq": 0,
       "position": {
-        "x": 4,
-        "y": 7
+        "x": 0,
+        "y": 14
       },
       "prerequisites": [
         "werewolf-lycanthropic-regeneration"
@@ -309,7 +309,7 @@
       "skillReq": 0,
       "position": {
         "x": 14,
-        "y": 6
+        "y": 14
       },
       "prerequisites": [
         "werewolf-bestial-strength"
@@ -324,7 +324,7 @@
       "skillReq": 0,
       "position": {
         "x": 14,
-        "y": 5
+        "y": 10
       },
       "prerequisites": [
         "werewolf-totem-of-terror"
@@ -339,7 +339,7 @@
       "skillReq": 0,
       "position": {
         "x": 16,
-        "y": 6
+        "y": 14
       },
       "prerequisites": [
         "werewolf-bestial-strength"
@@ -354,7 +354,7 @@
       "skillReq": 0,
       "position": {
         "x": 16,
-        "y": 5
+        "y": 10
       },
       "prerequisites": [
         "werewolf-totem-of-the-hunt"
@@ -369,7 +369,7 @@
       "skillReq": 0,
       "position": {
         "x": 18,
-        "y": 6
+        "y": 14
       },
       "prerequisites": [
         "werewolf-bestial-strength"
@@ -384,7 +384,7 @@
       "skillReq": 0,
       "position": {
         "x": 18,
-        "y": 5
+        "y": 10
       },
       "prerequisites": [
         "werewolf-totem-of-ice-brothers"
@@ -398,8 +398,8 @@
       "name": "Bury the Beast",
       "skillReq": 0,
       "position": {
-        "x": 20,
-        "y": 8
+        "x": 21,
+        "y": 17
       },
       "prerequisites": [],
       "prerequisitesAny": [],
@@ -411,8 +411,8 @@
       "name": "Wolf Among Men",
       "skillReq": 0,
       "position": {
-        "x": 22,
-        "y": 8
+        "x": 24,
+        "y": 17
       },
       "prerequisites": [],
       "prerequisitesAny": [],
@@ -424,8 +424,8 @@
       "name": "Spread the Beastblood",
       "skillReq": 0,
       "position": {
-        "x": 20,
-        "y": 7
+        "x": 21,
+        "y": 14
       },
       "prerequisites": [],
       "prerequisitesAny": [],
