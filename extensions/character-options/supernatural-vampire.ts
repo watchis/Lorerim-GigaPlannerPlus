@@ -2,6 +2,7 @@ import { defineCharacterOption } from "@/extension-api";
 import {
   getActiveVampireStage,
   getVampireRacialBonus,
+  getVampireStageRewardLabel,
 } from "@/lib/supernatural";
 
 export default defineCharacterOption({
@@ -28,15 +29,16 @@ export default defineCharacterOption({
 
     return modifications;
   },
-  getSummaryLines({ choice, option, game, state }) {
+  getSummaryLines({ choice, option, game, state, labels }) {
     if (choice.id === option.defaultChoice) return [];
 
     const lines: { key: string; text: string }[] = [];
+    const stageRewardLabel = getVampireStageRewardLabel(choice.id, labels);
     const stage = getActiveVampireStage(game, state);
-    if (stage) {
+    if (stage && stageRewardLabel) {
       lines.push({
         key: `${option.id}-stage`,
-        text: stage.name,
+        text: stageRewardLabel,
       });
     }
 

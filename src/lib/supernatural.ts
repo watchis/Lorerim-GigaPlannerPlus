@@ -65,6 +65,29 @@ export function getActiveVampireStage(
   return getVampireStage(game, stageId);
 }
 
+const VAMPIRE_STAGE_REWARD_LABEL_KEYS: Record<VampireStageId, string> = {
+  "stage-1": "vampireStage1Reward",
+  "stage-2": "vampireStage2Reward",
+  "stage-3": "vampireStage3Reward",
+  "stage-4": "vampireStage4Reward",
+};
+
+const VAMPIRE_STAGE_REWARD_FALLBACKS: Record<VampireStageId, string> = {
+  "stage-1": "Fed Vampire",
+  "stage-2": "Hungry Vampire",
+  "stage-3": "Starving Vampire",
+  "stage-4": "Blood Starved Vampire",
+};
+
+export function getVampireStageRewardLabel(
+  stageId: string,
+  labels?: Record<string, string>,
+): string | undefined {
+  if (!isVampireStageId(stageId)) return undefined;
+  const labelKey = VAMPIRE_STAGE_REWARD_LABEL_KEYS[stageId];
+  return labels?.[labelKey] ?? VAMPIRE_STAGE_REWARD_FALLBACKS[stageId];
+}
+
 export function getWerewolfForm(game: GameData): SupernaturalForm | undefined {
   return game.supernatural.lycanthropy.forms.find((entry) => entry.id === "werewolf");
 }

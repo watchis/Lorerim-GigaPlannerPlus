@@ -4,6 +4,7 @@ import { getCharacterOptionSummaryLines } from "@/lib/characterOptions";
 import {
   applySupernaturalOptionChange,
   getActiveSupernaturalSkillId,
+  getVampireStageRewardLabel,
   getVampireRacialBonus,
   getVampireRacialBonusForRace,
   getWerewolfRacialBonusForRace,
@@ -81,6 +82,14 @@ describe("supernatural", () => {
     expect(getVampireRacialBonusForRace(game, "none")).toBeUndefined();
   });
 
+  it("formats vampire stage reward labels for active rewards", () => {
+    expect(getVampireStageRewardLabel("stage-1")).toBe("Fed Vampire");
+    expect(getVampireStageRewardLabel("stage-2")).toBe("Hungry Vampire");
+    expect(getVampireStageRewardLabel("stage-3")).toBe("Starving Vampire");
+    expect(getVampireStageRewardLabel("stage-4")).toBe("Blood Starved Vampire");
+    expect(getVampireStageRewardLabel("none")).toBeUndefined();
+  });
+
   it("includes the racial vampire ability for the selected race", () => {
     const state = applySupernaturalOptionChange(
       game,
@@ -104,7 +113,7 @@ describe("supernatural", () => {
     );
 
     expect(summaryLines).toEqual([
-      { key: "vampire-stage", text: "Stage 2" },
+      { key: "vampire-stage", text: "Hungry Vampire" },
       { key: "vampire-racial", text: "Preserved Blood" },
     ]);
   });
