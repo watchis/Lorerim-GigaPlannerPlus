@@ -14,11 +14,9 @@ import {
   getOrderedPerkTrees,
   computeDestinyPerkPointsSpent,
   getEarnedDestinyPerkPoints,
-  getBuildPlayerLevelWarnings,
   getMaxAllowedSkillLevel,
   getMaxSkillLevel,
   getRemainingDestinyPerkPoints,
-  getSelectedPerksBelowSkillRequirement,
   getEffectiveSkillFloor,
   getSkillLevelFromTraining,
   getStoredSkillLevel,
@@ -225,10 +223,9 @@ export function SkillTreePanel() {
     }
   }, [isSupernaturalTree, skillWorkspaceMode, setSkillWorkspaceMode]);
 
-  const skillReqConflictsOnTree = getSelectedPerksBelowSkillRequirement(
-    gameData.game,
-    build,
-  ).filter((perk) => perk.skillId === activeTree.skillId);
+  const skillReqConflictsOnTree = computed.skillReqConflicts.filter(
+    (perk) => perk.skillId === activeTree.skillId,
+  );
   const hasSkillReqConflict = supportsSkillProgression && skillReqConflictsOnTree.length > 0;
 
   const floor = supportsSkillProgression
@@ -239,7 +236,8 @@ export function SkillTreePanel() {
     ? getMaxAllowedSkillLevel(gameData.game, build)
     : 0;
   const level = supportsSkillProgression
-    ? getStoredSkillLevel(gameData.game, build, activeTree.skillId)
+    ? (computed.skillLevels[activeTree.skillId] ??
+      getStoredSkillLevel(gameData.game, build, activeTree.skillId))
     : 0;
   const trainingFloor = supportsSkillProgression
     ? getSkillLevelFromTraining(gameData.game, build, activeTree.skillId)
@@ -249,7 +247,7 @@ export function SkillTreePanel() {
     ? getSkillLevelBonusLines(gameData.game, build, activeTree.skillId, labels)
     : [];
   const { perks: overLevelPerks, skillIncreases, destinyPerksOverBudget } =
-    getBuildPlayerLevelWarnings(gameData.game, build);
+    computed.playerLevelWarnings;
   const skillIncreaseConflict = skillIncreases.find(
     (skill) => skill.skillId === activeTree.skillId,
   );

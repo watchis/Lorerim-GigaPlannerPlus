@@ -15,11 +15,9 @@ import {
   useSupportsHover,
 } from "@/components/ui/tooltip";
 import {
-  getBuildPlayerLevelWarnings,
   ensurePlayerLevelForBuild,
   getMinimumPlayerLevelForBuild,
   getRemainingDestinyPerkPoints,
-  getSelectedPerksBelowSkillRequirement,
   getSkillLevelForPerkChecks,
   type BuildPlayerLevelWarnings,
 } from "@/engine/buildEngine";
@@ -804,8 +802,8 @@ function LevelBarContent({
   const destinyOverBy = destinyOverBudget
     ? Math.abs(getRemainingDestinyPerkPoints(game, build))
     : 0;
-  const warnings = getBuildPlayerLevelWarnings(game, build);
-  const skillReqConflicts = getSelectedPerksBelowSkillRequirement(game, build);
+  const warnings = computed.playerLevelWarnings;
+  const skillReqConflicts = computed.skillReqConflicts;
 
   const perkOverBudgetMessage = perkOverBudget
     ? formatLabel(barLabels.perkOverBudgetAlert, {

@@ -34,6 +34,7 @@ import {
   layoutSchema,
   labelsSchema,
   type AppData,
+  type Perk,
   type PerkTree,
 } from "./schemas";
 import {
@@ -97,6 +98,8 @@ export function loadAppData(): AppData {
   );
 
   const perkTrees: Record<string, PerkTree> = {};
+  const perkById: Record<string, Perk> = {};
+  const perkSkillIdByPerkId: Record<string, string> = {};
   for (const [skillId, filename] of Object.entries(perkIndex)) {
     const raw = perkTreeFiles[filename];
     if (!raw) {
@@ -112,6 +115,10 @@ export function loadAppData(): AppData {
         return enrichPerk(withLevel);
       }),
     };
+    for (const perk of perkTrees[skillId]!.perks) {
+      perkById[perk.id] = perk;
+      perkSkillIdByPerkId[perk.id] = skillId;
+    }
   }
 
   const theme = parse(themeSchema, themeJson, "theme.json");
@@ -131,6 +138,8 @@ export function loadAppData(): AppData {
       traits,
       skills,
       perkTrees,
+      perkById,
+      perkSkillIdByPerkId,
     },
     ui: { theme, layout, labels },
   };

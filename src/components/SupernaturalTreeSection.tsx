@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { TreeMiniPreview } from "@/components/TreeMiniPreview";
 import { SkillIcon } from "@/components/SkillIcon";
-import { getBuildPlayerLevelWarnings } from "@/engine/buildEngine";
 import { useDeferredRender } from "@/hooks/useDeferredRender";
 import { cn } from "@/lib/utils";
 import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
@@ -22,7 +21,7 @@ export function SupernaturalTreeSection({
   isActive,
 }: SupernaturalTreeSectionProps) {
   const gameData = useBuildStore((s) => s.gameData);
-  const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
   const openSkillTree = useUiStore((s) => s.openSkillTree);
@@ -40,13 +39,13 @@ export function SupernaturalTreeSection({
     }
   }, [isActive, skillTreeOpen, activeSkillTreeId, skillId]);
 
-  if (!gameData || !isActive) return null;
+  if (!gameData || !isActive || !computed) return null;
 
   const tree = gameData.game.perkTrees[skillId];
   if (!tree) return null;
 
   const isTreeActive = skillTreeOpen && activeSkillTreeId === skillId;
-  const { perks: overLevelPerks } = getBuildPlayerLevelWarnings(gameData.game, build);
+  const { perks: overLevelPerks } = computed.playerLevelWarnings;
   const conflictPerkIds = overLevelPerks
     .filter((perk) => perk.skillId === skillId)
     .map((perk) => perk.id);

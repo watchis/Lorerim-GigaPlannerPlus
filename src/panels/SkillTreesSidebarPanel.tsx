@@ -7,10 +7,7 @@ import { cn } from "@/lib/utils";
 import { getSkillGridColumnCount, useContainerSize } from "@/lib/useContainerSize";
 import { PickerSearchInput } from "@/components/PickerSearchInput";
 import {
-  getBuildPlayerLevelWarnings,
   getOrderedPerkTrees,
-  getSelectedPerksBelowSkillRequirement,
-  getStoredSkillLevel,
   isAllocatableSkill,
   isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
@@ -64,14 +61,8 @@ export function SkillTreesSidebarPanel() {
         : [],
     [allTrees, gameData],
   );
-  const playerWarnings = useMemo(
-    () => (gameData ? getBuildPlayerLevelWarnings(gameData.game, build) : null),
-    [gameData, build],
-  );
-  const skillReqConflicts = useMemo(
-    () => (gameData ? getSelectedPerksBelowSkillRequirement(gameData.game, build) : []),
-    [gameData, build],
-  );
+  const playerWarnings = computed?.playerLevelWarnings ?? null;
+  const skillReqConflicts = computed?.skillReqConflicts ?? [];
   const skillIncreaseConflictIds = useMemo(
     () => new Set(playerWarnings?.skillIncreases.map((skill) => skill.skillId) ?? []),
     [playerWarnings],

@@ -531,6 +531,10 @@ export interface GameData {
   traits: Trait[];
   skills: Skill[];
   perkTrees: Record<string, PerkTree>;
+  /** O(1) perk lookup — built at load time from perkTrees. */
+  perkById: Readonly<Record<string, Perk>>;
+  /** O(1) skill id for a perk — built at load time from perkTrees. */
+  perkSkillIdByPerkId: Readonly<Record<string, string>>;
 }
 
 export interface UiData {

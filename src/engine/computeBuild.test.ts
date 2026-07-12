@@ -16,5 +16,7 @@ describe("computeBuild", () => {
     const computed = computeBuild(game, build);
 
     expect(computed.conditionalBonuses).toEqual([]);
+    expect(computed.playerLevelWarnings).toBeDefined();
+    expect(computed.skillReqConflicts).toBeDefined();
   });
 });

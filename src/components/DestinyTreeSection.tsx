@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { TreeMiniPreview } from "@/components/TreeMiniPreview";
 import { SkillIcon } from "@/components/SkillIcon";
-import { getBuildPlayerLevelWarnings } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
 import { getPerkSearchPositionKeysForTree, getPerkSearchTokens } from "@/lib/perkSearch";
 import { useGoToSwipePane } from "@/layout/PlannerSwipePanels";
@@ -15,7 +14,7 @@ const DESTINY_SKILL_ID = "destiny";
 export function DestinyTreeSection() {
   const setupLabels = usePanelLabels("character-setup");
   const gameData = useBuildStore((s) => s.gameData);
-  const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
   const activeSkillTreeId = useUiStore((s) => s.activeSkillTreeId);
   const skillTreeOpen = useUiStore(isSkillTreeOpenInMiddlePane);
   const openSkillTree = useUiStore((s) => s.openSkillTree);
@@ -23,16 +22,17 @@ export function DestinyTreeSection() {
   const stackedLayout = usePlannerStackedLayout();
   const goToSwipePane = useGoToSwipePane();
 
-  if (!gameData) return null;
+  const tree = gameData?.game.perkTrees[DESTINY_SKILL_ID];
+  const perkSearchTokens = useMemo(() => getPerkSearchTokens(perkSearchQuery), [perkSearchQuery]);
+  const perkSearchPositionKeys = useMemo(
+    () => (tree ? getPerkSearchPositionKeysForTree(tree, perkSearchTokens) : undefined),
+    [tree, perkSearchTokens],
+  );
 
-  const tree = gameData.game.perkTrees[DESTINY_SKILL_ID];
-  if (!tree) return null;
+  if (!gameData || !tree || !computed) return null;
 
   const isActive = skillTreeOpen && activeSkillTreeId === DESTINY_SKILL_ID;
-  const { perks: overLevelPerks, destinyPerksOverBudget } = getBuildPlayerLevelWarnings(
-    gameData.game,
-    build,
-  );
+  const { perks: overLevelPerks, destinyPerksOverBudget } = computed.playerLevelWarnings;
   const conflictPerkIds = [
     ...overLevelPerks
       .filter((perk) => perk.skillId === DESTINY_SKILL_ID)
@@ -41,11 +41,6 @@ export function DestinyTreeSection() {
   ];
   const hasPerkLevelConflict = conflictPerkIds.length > 0;
   const hasProblem = hasPerkLevelConflict;
-  const perkSearchTokens = useMemo(() => getPerkSearchTokens(perkSearchQuery), [perkSearchQuery]);
-  const perkSearchPositionKeys = useMemo(
-    () => getPerkSearchPositionKeysForTree(tree, perkSearchTokens),
-    [tree, perkSearchTokens],
-  );
 
   return (
     <div className="border-t border-[var(--color-border)]/70 pt-3">

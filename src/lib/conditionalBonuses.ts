@@ -11,11 +11,7 @@ export interface ConditionalBonusEntry {
 }
 
 function getPerkById(game: GameData, perkId: string): Perk | undefined {
-  for (const tree of Object.values(game.perkTrees)) {
-    const perk = tree.perks.find((entry) => entry.id === perkId);
-    if (perk) return perk;
-  }
-  return undefined;
+  return game.perkById[perkId];
 }
 
 export function collectConditionalBonuses(

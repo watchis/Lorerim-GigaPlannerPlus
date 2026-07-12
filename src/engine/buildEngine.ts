@@ -165,6 +165,8 @@ export interface ComputedBuild {
   perkPointsRemaining: number;
   perkPointsPerLevel: number;
   plannerNotesByPerkId: Record<string, string[]>;
+  playerLevelWarnings: BuildPlayerLevelWarnings;
+  skillReqConflicts: SkillReqConflictPerk[];
 }
 
 function emptyAttributes(): Attributes {
@@ -1291,6 +1293,8 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
   const perkPointsPerLevel = getPerkPointsPerLevel(game);
   const perkPointsSpent = computePerkPointsSpent(game, state);
   const perkPointsRemaining = getEarnedPerkPoints(game, state) - perkPointsSpent;
+  const playerLevelWarnings = getBuildPlayerLevelWarnings(game, state);
+  const skillReqConflicts = getSelectedPerksBelowSkillRequirement(game, state);
 
   return {
     attributes,
@@ -1312,6 +1316,8 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
     perkPointsRemaining,
     perkPointsPerLevel,
     plannerNotesByPerkId,
+    playerLevelWarnings,
+    skillReqConflicts,
   };
 }
 
@@ -1322,20 +1328,11 @@ export function getOrderedPerkTrees(game: GameData): PerkTree[] {
 }
 
 export function getPerkById(game: GameData, perkId: string): Perk | undefined {
-  for (const tree of Object.values(game.perkTrees)) {
-    const perk = tree.perks.find((p) => p.id === perkId);
-    if (perk) return perk;
-  }
-  return undefined;
+  return game.perkById[perkId];
 }
 
 export function getPerkSkillId(game: GameData, perkId: string): string | undefined {
-  for (const [skillId, tree] of Object.entries(game.perkTrees)) {
-    if (tree.perks.some((perk) => perk.id === perkId)) {
-      return skillId;
-    }
-  }
-  return undefined;
+  return game.perkSkillIdByPerkId[perkId];
 }
 
 function getPerkTreeForPerk(game: GameData, perkId: string): PerkTree | undefined {

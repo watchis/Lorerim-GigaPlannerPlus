@@ -213,22 +213,15 @@ function commitBuild(
   set: (partial: Partial<BuildStore>) => void,
   get: () => BuildStore,
   nextBuild: BuildState,
-  options?: CommitBuildOptions,
+  _options?: CommitBuildOptions,
 ): void {
   const { gameData } = get();
   if (!gameData) return;
 
   const modpackVersion = gameData.game.manifest.version;
   const token = ++deferredCommitToken;
-  const computed = recompute(gameData, nextBuild);
 
-  const applyCommit = () => set({ build: nextBuild, computed });
-
-  if (options?.deferDerived) {
-    startTransition(applyCommit);
-  } else {
-    startTransition(applyCommit);
-  }
+  startTransition(() => set({ build: nextBuild }));
 
   scheduleAfterPaint(() => {
     if (token !== deferredCommitToken) return;
@@ -236,6 +229,7 @@ function commitBuild(
     if (current.build !== nextBuild) return;
 
     set({
+      computed: recompute(gameData, nextBuild),
       savedBuilds: syncActiveSavedBuild(
         current.savedBuilds,
         current.activeBuildId,
