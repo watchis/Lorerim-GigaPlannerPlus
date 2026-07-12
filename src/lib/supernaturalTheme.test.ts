@@ -88,8 +88,17 @@ describe("supernaturalTheme", () => {
     const themed = applySupernaturalThemeVariant(baseTheme, "werewolf");
 
     expect(themed.colors.accent).toBe(SUPERNATURAL_THEME_OVERRIDES.werewolf.colors.accent);
-    expect(themed.colors.stamina).toBe(SUPERNATURAL_THEME_OVERRIDES.werewolf.colors.stamina);
     expect(themed.shadows.glow).toBe(SUPERNATURAL_THEME_OVERRIDES.werewolf.shadows?.glow);
+  });
+
+  it("keeps health, magicka, and stamina colors from the base theme", () => {
+    for (const variant of ["vampire", "werewolf"] as const) {
+      const themed = applySupernaturalThemeVariant(baseTheme, variant);
+
+      expect(themed.colors.health).toBe(baseTheme.colors.health);
+      expect(themed.colors.magicka).toBe(baseTheme.colors.magicka);
+      expect(themed.colors.stamina).toBe(baseTheme.colors.stamina);
+    }
   });
 
   it("returns the base theme when variant is null", () => {
