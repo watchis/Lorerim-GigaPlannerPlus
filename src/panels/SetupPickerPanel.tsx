@@ -18,11 +18,11 @@ import {
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
 import {
-  getVampireRacialBonus,
-  getWerewolfRacialBonus,
-  hasSupernaturalCurse,
+  getVampireRacialBonusForRace,
+  getWerewolfRacialBonusForRace,
   isTraitBlockedBySupernatural,
   isVampireActive,
+  isWerewolfActive,
 } from "@/lib/supernatural";
 import { SingleSelectPickerView, type SingleSelectOption } from "@/panels/SingleSelectPickerView";
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
@@ -127,7 +127,7 @@ export function SetupPickerPanel() {
 
   const { game } = gameData;
   const vampireActive = isVampireActive(build);
-  const werewolfActive = hasSupernaturalCurse(build) && !vampireActive;
+  const werewolfActive = isWerewolfActive(build);
   const activeCurseLabel = vampireActive
     ? (labels.vampireTree ?? "Vampire")
     : werewolfActive
@@ -187,8 +187,8 @@ export function SetupPickerPanel() {
                 racialBonusLabel={detailLabels.racialBonus}
                 racialBonus={
                   vampireActive
-                    ? getVampireRacialBonus(game, build)
-                    : getWerewolfRacialBonus(game, build)
+                    ? getVampireRacialBonusForRace(game, race.id)
+                    : getWerewolfRacialBonusForRace(game, race.id)
                 }
                 selectRaceHint={
                   labels.selectRaceForRacialAbility ??

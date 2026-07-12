@@ -69,13 +69,29 @@ export function getWerewolfForm(game: GameData): SupernaturalForm | undefined {
   return game.supernatural.lycanthropy.forms.find((entry) => entry.id === "werewolf");
 }
 
+export function getVampireRacialBonusForRace(
+  game: GameData,
+  raceId: string,
+): SupernaturalRacialBonus | undefined {
+  if (!raceId || raceId === "none") return undefined;
+  return game.supernatural.vampirism.racialBonuses[raceId];
+}
+
+export function getWerewolfRacialBonusForRace(
+  game: GameData,
+  raceId: string,
+): SupernaturalRacialBonus | undefined {
+  if (!raceId || raceId === "none") return undefined;
+  return game.supernatural.lycanthropy.racialBonuses[raceId];
+}
+
 export function getVampireRacialBonus(
   game: GameData,
   state: BuildState,
 ): SupernaturalRacialBonus | undefined {
   const raceId = resolveRaceId(state);
   if (!raceId || !isVampireActive(state)) return undefined;
-  return game.supernatural.vampirism.racialBonuses[raceId];
+  return getVampireRacialBonusForRace(game, raceId);
 }
 
 export function getWerewolfRacialBonus(
@@ -84,7 +100,7 @@ export function getWerewolfRacialBonus(
 ): SupernaturalRacialBonus | undefined {
   const raceId = resolveRaceId(state);
   if (!raceId || !isWerewolfActive(state)) return undefined;
-  return game.supernatural.lycanthropy.racialBonuses[raceId];
+  return getWerewolfRacialBonusForRace(game, raceId);
 }
 
 export function getOtherSupernaturalOptionId(optionId: string): string | null {

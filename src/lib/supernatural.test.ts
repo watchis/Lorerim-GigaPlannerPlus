@@ -5,6 +5,8 @@ import {
   applySupernaturalOptionChange,
   getActiveSupernaturalSkillId,
   getVampireRacialBonus,
+  getVampireRacialBonusForRace,
+  getWerewolfRacialBonusForRace,
   hasSupernaturalCurse,
   isSupernaturalOptionBlocked,
   isTraitBlockedBySupernatural,
@@ -68,6 +70,15 @@ describe("supernatural", () => {
 
     expect(stage1Health?.effect.value).toBe(50);
     expect(stage4Health?.effect.value).toBe(100);
+  });
+
+  it("looks up racial curse abilities by race id for picker preview", () => {
+    const nordBonus = getVampireRacialBonusForRace(game, "nord");
+    const bretonBonus = getVampireRacialBonusForRace(game, "breton");
+
+    expect(nordBonus?.name).toBe("Preserved Blood");
+    expect(bretonBonus?.name).toBe("Dolmen Haunt");
+    expect(getVampireRacialBonusForRace(game, "none")).toBeUndefined();
   });
 
   it("includes the racial vampire ability for the selected race", () => {
