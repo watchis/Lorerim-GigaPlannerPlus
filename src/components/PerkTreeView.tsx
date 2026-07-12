@@ -48,8 +48,9 @@ import {
   zoomTreeViewAtPoint,
 } from "@/lib/perkTreeViewLayout";
 import { useBuildStore } from "@/store/buildStore";
-import { useShallow } from "zustand/react/shallow";
+import { useTreeSelectedPerkIds } from "@/hooks/useTreePerkSelection";
 import { useUiStore } from "@/store/uiStore";
+import { useShallow } from "zustand/react/shallow";
 import { usePerkBadgePlacements } from "@/hooks/usePerkBadgePlacements";
 import { DEFAULT_PERK_BADGE_PLACEMENT } from "@/lib/perkBadgeLayout";
 
@@ -113,7 +114,7 @@ function PerkTreeView({
   className,
 }: PerkTreeViewProps) {
   const gameData = useBuildStore((s) => s.gameData);
-  const selectedPerkIds = useBuildStore(useShallow((s) => s.build.selectedPerkIds));
+  const selectedPerkIds = useTreeSelectedPerkIds(tree);
   const playerLevel = useBuildStore((s) => s.build.playerLevel);
   const buildForDestiny = useBuildStore(
     useShallow((s) =>

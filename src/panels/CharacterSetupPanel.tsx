@@ -7,7 +7,6 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getTraitLimit } from "@/engine/buildEngine";
 import {
   getVampireRacialBonus,
   getWerewolfRacialBonus,
@@ -17,6 +16,8 @@ import {
 import { useUiStore, type SetupPicker } from "@/store/uiStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
+import { useShallow } from "zustand/react/shallow";
+import type { BuildState } from "@/engine/buildEngine";
 import {
   usePlannerLayoutScale,
   usePlannerSideWidths,
@@ -193,7 +194,18 @@ function SetupPickerRow({
 export function CharacterSetupPanel() {
   const labels = usePanelLabels("character-setup");
   const gameData = useBuildStore((s) => s.gameData);
-  const build = useBuildStore((s) => s.build);
+  const computed = useBuildStore((s) => s.computed);
+  const build = useBuildStore(
+    useShallow((s) => ({
+      raceId: s.build.raceId,
+      birthsignId: s.build.birthsignId,
+      deityId: s.build.deityId,
+      traitIds: s.build.traitIds,
+      majorSkillIds: s.build.majorSkillIds,
+      minorSkillIds: s.build.minorSkillIds,
+      characterOptionChoices: s.build.characterOptionChoices,
+    })),
+  );
   const setRace = useBuildStore((s) => s.setRace);
   const setBirthsign = useBuildStore((s) => s.setBirthsign);
   const setDeity = useBuildStore((s) => s.setDeity);
@@ -219,7 +231,7 @@ export function CharacterSetupPanel() {
   const { game } = gameData;
   const majorRemaining = game.manifest.limits.majorSkills - build.majorSkillIds.length;
   const minorRemaining = game.manifest.limits.minorSkills - build.minorSkillIds.length;
-  const traitsRemaining = getTraitLimit(game, build) - build.traitIds.length;
+  const traitsRemaining = (computed?.traitLimit ?? game.manifest.limits.traits) - build.traitIds.length;
   const noneLabel = labels.noneSelected ?? "None selected";
 
   const selectedRaceName =
@@ -235,12 +247,13 @@ export function CharacterSetupPanel() {
     build.deityId && build.deityId !== "none"
       ? (game.deities.find((b) => b.id === build.deityId)?.name ?? build.deityId)
       : null;
-  const vampireActive = isVampireActive(build);
-  const werewolfActive = isWerewolfActive(build);
+  const buildForSupernatural = build as BuildState;
+  const vampireActive = isVampireActive(buildForSupernatural);
+  const werewolfActive = isWerewolfActive(buildForSupernatural);
   const activeCurseRacialBonus = vampireActive
-    ? getVampireRacialBonus(game, build)
+    ? getVampireRacialBonus(game, buildForSupernatural)
     : werewolfActive
-      ? getWerewolfRacialBonus(game, build)
+      ? getWerewolfRacialBonus(game, buildForSupernatural)
       : undefined;
 
   const selectedTraitItems = build.traitIds.map((id) => ({

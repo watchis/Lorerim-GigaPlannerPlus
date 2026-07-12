@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { computeBuild, reconcileBuild } from "@/engine/buildEngine";
+import * as buildModifications from "@/lib/buildModifications";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 
 describe("computeBuild", () => {
@@ -18,5 +19,19 @@ describe("computeBuild", () => {
     expect(computed.conditionalBonuses).toEqual([]);
     expect(computed.playerLevelWarnings).toBeDefined();
     expect(computed.skillReqConflicts).toBeDefined();
+    expect(computed.minimumPlayerLevel).toBeGreaterThan(0);
+    expect(computed.traitLimit).toBeGreaterThan(0);
+    expect(typeof computed.destinyPerkPointsRemaining).toBe("number");
+  });
+
+  it("collects build modifications once per computeBuild pass", () => {
+    const game = getTestGameData();
+    const build = reconcileBuild(game, createTestBuildState({ raceId: "breton", playerLevel: 101 }));
+    const collectSpy = vi.spyOn(buildModifications, "collectBuildChanges");
+
+    computeBuild(game, build);
+
+    expect(collectSpy).toHaveBeenCalledTimes(1);
+    collectSpy.mockRestore();
   });
 });

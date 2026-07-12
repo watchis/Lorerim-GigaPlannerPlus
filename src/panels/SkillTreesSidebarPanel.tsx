@@ -9,7 +9,6 @@ import { PickerSearchInput } from "@/components/PickerSearchInput";
 import {
   getOrderedPerkTrees,
   isAllocatableSkill,
-  isSkillOverPlayerLevelCap,
 } from "@/engine/buildEngine";
 import { useBuildStore } from "@/store/buildStore";
 import { isSkillTreeOpenInMiddlePane, useUiStore } from "@/store/uiStore";
@@ -65,6 +64,10 @@ export function SkillTreesSidebarPanel() {
   const skillReqConflicts = computed?.skillReqConflicts ?? [];
   const skillIncreaseConflictIds = useMemo(
     () => new Set(playerWarnings?.skillIncreases.map((skill) => skill.skillId) ?? []),
+    [playerWarnings],
+  );
+  const skillsOverCapIds = useMemo(
+    () => new Set(playerWarnings?.skills.map((skill) => skill.skillId) ?? []),
     [playerWarnings],
   );
   const conflictPerkIdsBySkillId = useMemo(() => {
@@ -183,7 +186,7 @@ export function SkillTreesSidebarPanel() {
             const hasPerkLevelConflict = conflictPerkIds.length > 0;
             const hasSkillIncreaseConflict = skillIncreaseConflictIds.has(tree.skillId);
             const hasProblem =
-              isSkillOverPlayerLevelCap(gameData.game, build, tree.skillId) ||
+              skillsOverCapIds.has(tree.skillId) ||
               hasPerkLevelConflict ||
               hasSkillIncreaseConflict;
 
