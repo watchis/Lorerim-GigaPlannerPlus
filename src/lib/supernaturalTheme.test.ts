@@ -19,6 +19,14 @@ function relativeLuminance(hex: string): number {
   return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
 }
 
+function colorChroma(hex: string): number {
+  const rgb = parseColor(hex);
+  if (!rgb) return 0;
+  const max = Math.max(rgb.r, rgb.g, rgb.b);
+  const min = Math.min(rgb.r, rgb.g, rgb.b);
+  return max - min;
+}
+
 describe("supernaturalTheme", () => {
   it("returns vampire variant when vampire option is active", () => {
     const state = createTestBuildState({
@@ -67,7 +75,7 @@ describe("supernaturalTheme", () => {
     expect(getSupernaturalThemeVariant(state)).toBe("vampire");
   });
 
-  it("applies Skyrim-inspired vampire palette overrides", () => {
+  it("applies vampire palette overrides", () => {
     const themed = applySupernaturalThemeVariant(baseTheme, "vampire");
 
     expect(themed.colors.accent).toBe(SUPERNATURAL_THEME_OVERRIDES.vampire.colors.accent);
@@ -76,7 +84,7 @@ describe("supernaturalTheme", () => {
     expect(themed.fonts.heading).toBe(baseTheme.fonts.heading);
   });
 
-  it("applies Skyrim-inspired werewolf palette overrides", () => {
+  it("applies werewolf palette overrides", () => {
     const themed = applySupernaturalThemeVariant(baseTheme, "werewolf");
 
     expect(themed.colors.accent).toBe(SUPERNATURAL_THEME_OVERRIDES.werewolf.colors.accent);
@@ -88,35 +96,53 @@ describe("supernaturalTheme", () => {
     expect(applySupernaturalThemeVariant(baseTheme, null)).toEqual(baseTheme);
   });
 
-  it("uses curse backgrounds near base-theme brightness for readability", () => {
+  it("keeps readable surface elevation for both curse themes", () => {
     const baseBackgroundLuminance = relativeLuminance(baseTheme.colors.background);
+    const baseSurfaceLuminance = relativeLuminance(baseTheme.colors.surface);
 
     for (const variant of ["vampire", "werewolf"] as const) {
       const themed = applySupernaturalThemeVariant(baseTheme, variant);
-      const backgroundLuminance = relativeLuminance(themed.colors.background);
-      const surfaceLuminance = relativeLuminance(themed.colors.surface);
 
-      expect(backgroundLuminance).toBeGreaterThanOrEqual(baseBackgroundLuminance * 0.9);
-      expect(surfaceLuminance).toBeGreaterThanOrEqual(relativeLuminance(baseTheme.colors.surface) * 0.9);
+      expect(relativeLuminance(themed.colors.background)).toBeGreaterThanOrEqual(
+        baseBackgroundLuminance * 0.85,
+      );
+      expect(relativeLuminance(themed.colors.surface)).toBeGreaterThan(
+        relativeLuminance(themed.colors.background),
+      );
+      expect(relativeLuminance(themed.colors.surfaceElevated)).toBeGreaterThan(
+        relativeLuminance(themed.colors.surface),
+      );
+      expect(relativeLuminance(themed.colors.surface)).toBeGreaterThanOrEqual(
+        baseSurfaceLuminance * 0.85,
+      );
     }
   });
 
-  it("uses steel-gray vampire surfaces and warm amber/rust werewolf foreground", () => {
+  it("uses neutral gray/black with red accents for vampire", () => {
     const vampire = applySupernaturalThemeVariant(baseTheme, "vampire");
+    const accent = parseColor(vampire.colors.accent)!;
+    const background = parseColor(vampire.colors.background)!;
+
+    expect(colorChroma(vampire.colors.background)).toBeLessThan(0.04);
+    expect(colorChroma(vampire.colors.surface)).toBeLessThan(0.04);
+    expect(accent.r).toBeGreaterThan(accent.g);
+    expect(accent.r).toBeGreaterThan(accent.b);
+    expect(background.r).toBeCloseTo(background.g, 1);
+    expect(background.g).toBeCloseTo(background.b, 1);
+  });
+
+  it("uses beige-to-rust spectrum for werewolf", () => {
     const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
+    const background = parseColor(werewolf.colors.background)!;
+    const foreground = parseColor(werewolf.colors.foreground)!;
+    const accent = parseColor(werewolf.colors.accent)!;
 
-    expect(vampire.colors.background).toBe("#1b1e24");
-    expect(vampire.colors.muted).toBe("#9099a6");
-
-    expect(werewolf.colors.background).toBe("#25221d");
-    expect(werewolf.colors.foreground).toBe("#e8c9a8");
-    expect(werewolf.colors.muted).toBe("#b89572");
-    expect(werewolf.colors.accent).toBe("#c97a2e");
-
-    const vampireRgb = parseColor(vampire.colors.foreground)!;
-    const werewolfRgb = parseColor(werewolf.colors.foreground)!;
-    expect(werewolfRgb.r).toBeGreaterThan(werewolfRgb.b);
-    expect(vampireRgb.b).toBeGreaterThan(werewolfRgb.b);
-    expect(werewolfRgb.r - werewolfRgb.b).toBeGreaterThan(vampireRgb.r - vampireRgb.b);
+    expect(background.r).toBeGreaterThan(background.b);
+    expect(foreground.r).toBeGreaterThan(foreground.b);
+    expect(accent.r).toBeGreaterThan(accent.b);
+    expect(accent.g).toBeGreaterThan(accent.b);
+    expect(relativeLuminance(werewolf.colors.foreground)).toBeGreaterThan(
+      relativeLuminance(werewolf.colors.background) * 2,
+    );
   });
 });
