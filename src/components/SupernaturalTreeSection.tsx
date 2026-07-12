@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { PerkTreeMiniView } from "@/components/PerkTreeMiniView";
+import { TreeMiniPreview } from "@/components/TreeMiniPreview";
 import { SkillIcon } from "@/components/SkillIcon";
 import { getBuildPlayerLevelWarnings } from "@/engine/buildEngine";
 import { useDeferredRender } from "@/hooks/useDeferredRender";
@@ -95,9 +95,8 @@ export function SupernaturalTreeSection({
         </div>
         <div className="flex aspect-square min-h-0 w-full items-center justify-center overflow-hidden p-px">
           {showMiniTree ? (
-            <PerkTreeMiniView
+            <TreeMiniPreview
               tree={tree}
-              compact
               conflictPerkIds={conflictPerkIds}
               searchPerkPositionKeys={perkSearchPositionKeys}
               className="h-full w-full"

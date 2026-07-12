@@ -242,25 +242,8 @@ function commitBuild(
     return;
   }
 
-  set({
-    build: nextBuild,
-    computed: recompute(gameData, nextBuild),
-  });
-
-  scheduleAfterPaint(() => {
-    if (token !== deferredCommitToken) return;
-    const current = get();
-    if (current.build !== nextBuild) return;
-
-    set({
-      savedBuilds: syncActiveSavedBuild(
-        current.savedBuilds,
-        current.activeBuildId,
-        nextBuild,
-        modpackVersion,
-      ),
-    });
-  });
+  set({ build: nextBuild });
+  scheduleAfterPaint(applyDerived);
 }
 
 function commitMainBuild(

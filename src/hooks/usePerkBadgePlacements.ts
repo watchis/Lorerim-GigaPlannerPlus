@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 
 import {
   collectPerkBadgeLayoutNodes,
@@ -32,7 +32,7 @@ export function usePerkBadgePlacements(
     setPlacements((current) => (perkBadgePlacementsEqual(current, next) ? current : next));
   }, [containerRef]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     revisionRef.current = revision;
     runLayout();
 

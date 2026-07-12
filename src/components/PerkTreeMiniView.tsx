@@ -1,4 +1,4 @@
-import { useId, useMemo } from "react";
+import { memo, useId, useMemo } from "react";
 import type { PerkTree } from "@/data/schemas";
 import { cn } from "@/lib/utils";
 import {
@@ -13,10 +13,11 @@ import {
   getVisiblePerksForTree,
   groupPerksByPosition,
 } from "@/lib/perkTreeGrid";
-import { useBuildStore } from "@/store/buildStore";
 
-interface PerkTreeMiniViewProps {
+export interface PerkTreeMiniViewProps {
   tree: PerkTree;
+  selectedPerkIds: string[];
+  perkPointsRemaining?: number;
   className?: string;
   compact?: boolean;
   conflictPerkIds?: string[];
@@ -133,16 +134,33 @@ function CompactSearchMatchNode({
   );
 }
 
-export function PerkTreeMiniView({
+function arraysEqual(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) return false;
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) return false;
+  }
+  return true;
+}
+
+function setsEqual(left: ReadonlySet<string> | undefined, right: ReadonlySet<string> | undefined): boolean {
+  if (left === right) return true;
+  if (!left || !right || left.size !== right.size) return false;
+  for (const value of left) {
+    if (!right.has(value)) return false;
+  }
+  return true;
+}
+
+export const PerkTreeMiniView = memo(function PerkTreeMiniView({
   tree,
+  selectedPerkIds,
+  perkPointsRemaining = 0,
   className,
   compact = false,
   conflictPerkIds = [],
   searchPerkPositionKeys,
 }: PerkTreeMiniViewProps) {
   const glowFilterId = useId().replace(/:/g, "");
-  const selectedPerkIds = useBuildStore((s) => s.build.selectedPerkIds);
-  const perkPointsRemaining = useBuildStore((s) => s.computed?.perkPointsRemaining ?? 0);
   const gridBounds = useMemo(() => getPerkTreeGridBounds(tree), [tree]);
   const { width, height, origin } = gridBounds;
 
@@ -464,4 +482,14 @@ export function PerkTreeMiniView({
       </svg>
     </div>
   );
-}
+}, (previous, next) => {
+  return (
+    previous.tree === next.tree &&
+    previous.compact === next.compact &&
+    previous.className === next.className &&
+    previous.perkPointsRemaining === next.perkPointsRemaining &&
+    arraysEqual(previous.selectedPerkIds, next.selectedPerkIds) &&
+    arraysEqual(previous.conflictPerkIds ?? [], next.conflictPerkIds ?? []) &&
+    setsEqual(previous.searchPerkPositionKeys, next.searchPerkPositionKeys)
+  );
+});

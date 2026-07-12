@@ -70,6 +70,7 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const hasAppliedTheme = useRef(false);
   const activeTransitionRef = useRef<{ cancel: () => Record<string, string> } | null>(null);
+  const previousVariantRef = useRef(supernaturalVariant);
 
   useEffect(() => {
     return () => {
@@ -82,6 +83,8 @@ export function ThemeProvider({
     const root = document.documentElement;
     const toColors = { ...theme.colors };
     const colorKeys = Object.keys(toColors);
+    const variantChanged = previousVariantRef.current !== supernaturalVariant;
+    previousVariantRef.current = supernaturalVariant;
 
     applySupernaturalDataset(root, supernaturalVariant);
 
@@ -89,6 +92,11 @@ export function ThemeProvider({
       applyThemeToRoot(root, theme, supernaturalVariant);
       hasAppliedTheme.current = true;
       scheduleThemeTransitionsReady(root);
+      return;
+    }
+
+    if (!variantChanged) {
+      applyThemeToRoot(root, theme, supernaturalVariant);
       return;
     }
 
