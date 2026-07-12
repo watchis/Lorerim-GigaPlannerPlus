@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { exportCodecRegistryFromPaths } from "../export-codec-registry.mjs";
+import { exportCodecRegistryFromPaths } from "./export-codec-registry.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 test("exportCodecRegistryFromPaths captures ordered perk ids for the current game data", () => {
   const snapshot = exportCodecRegistryFromPaths({ game: join(root, "data", "game") });
