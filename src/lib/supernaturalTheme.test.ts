@@ -167,6 +167,34 @@ describe("supernaturalTheme", () => {
     );
   });
 
+  it("uses brighter unselected perk borders on vampire theme", () => {
+    const vampire = applySupernaturalThemeVariant(baseTheme, "vampire");
+    const surface = parseColor(vampire.colors.surfaceElevated)!;
+    const available = parseColor(vampire.colors.perkAvailable)!;
+    const prereq = parseColor(vampire.colors.perkPrereq)!;
+    const locked = parseColor(vampire.colors.perkLocked)!;
+    const previousAvailable = "#75717c";
+    const previousPrereq = "#56525e";
+    const previousLocked = "#141318";
+
+    expect(relativeLuminance(vampire.colors.perkAvailable)).toBeGreaterThan(
+      relativeLuminance(previousAvailable),
+    );
+    expect(relativeLuminance(vampire.colors.perkPrereq)).toBeGreaterThan(
+      relativeLuminance(previousPrereq),
+    );
+    expect(relativeLuminance(vampire.colors.perkLocked)).toBeGreaterThan(
+      relativeLuminance(previousLocked),
+    );
+
+    const borderContrast = (channel: { r: number; g: number; b: number }) =>
+      Math.max(channel.r, channel.g, channel.b) - Math.min(surface.r, surface.g, surface.b);
+
+    expect(borderContrast(available)).toBeGreaterThan(0.18);
+    expect(borderContrast(prereq)).toBeGreaterThan(0.12);
+    expect(borderContrast(locked)).toBeGreaterThan(0.08);
+  });
+
   it("uses brighter unselected perk borders on werewolf theme", () => {
     const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
     const surface = parseColor(werewolf.colors.surfaceElevated)!;
