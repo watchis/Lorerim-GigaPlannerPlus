@@ -129,22 +129,28 @@ describe("supernaturalTheme", () => {
     expect(background.g).toBeCloseTo(background.b, 1);
   });
 
-  it("uses beige-to-rust spectrum for werewolf with subdued surfaces", () => {
+  it("uses warm foreground and rust accents with neutral dark werewolf surfaces", () => {
     const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
     const background = parseColor(werewolf.colors.background)!;
     const foreground = parseColor(werewolf.colors.foreground)!;
     const accent = parseColor(werewolf.colors.accent)!;
+    const surface = parseColor(werewolf.colors.surface)!;
     const surfaceStep =
       relativeLuminance(werewolf.colors.surface) - relativeLuminance(werewolf.colors.background);
 
-    expect(background.r).toBeGreaterThan(background.b);
     expect(foreground.r).toBeGreaterThan(foreground.b);
     expect(accent.r).toBeGreaterThan(accent.b);
     expect(accent.g).toBeGreaterThan(accent.b);
-    expect(colorChroma(werewolf.colors.surface)).toBeLessThan(0.03);
-    expect(surfaceStep).toBeLessThan(0.04);
+    expect(colorChroma(werewolf.colors.surface)).toBeLessThan(0.02);
+    expect(colorChroma(werewolf.colors.background)).toBeLessThan(0.02);
+    expect(surface.r).toBeCloseTo(surface.g, 1);
+    expect(surface.g).toBeCloseTo(surface.b, 1);
+    expect(surfaceStep).toBeLessThan(0.035);
     expect(relativeLuminance(werewolf.colors.foreground)).toBeGreaterThan(
       relativeLuminance(werewolf.colors.background) * 2,
+    );
+    expect(relativeLuminance(werewolf.colors.surface)).toBeLessThan(
+      relativeLuminance(baseTheme.colors.surface) * 0.85,
     );
   });
 });
