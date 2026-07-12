@@ -177,7 +177,9 @@ describe("SkillTreePanel", () => {
     });
 
     expect(container?.textContent).not.toContain("Training");
+    expect(container?.textContent).not.toContain("Skill Level");
     expect(container?.querySelector('[data-testid="skill-training-section"]')).toBeNull();
+    expect(container?.querySelector('[data-testid="numeric-level-input"]')).toBeNull();
     expect(useUiStore.getState().skillWorkspaceMode).toBe("perks");
   });
 });

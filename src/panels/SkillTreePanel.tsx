@@ -217,7 +217,7 @@ export function SkillTreePanel() {
   );
   const isDestinyTree = activeTree.skillId === "destiny";
   const isSupernaturalTree = isSupernaturalPerkTreeSkillId(activeTree.skillId);
-  const supportsTraining = !isDestinyTree && !isSupernaturalTree;
+  const supportsSkillProgression = !isDestinyTree && !isSupernaturalTree;
 
   useEffect(() => {
     if (isSupernaturalTree && skillWorkspaceMode === "training") {
@@ -229,21 +229,23 @@ export function SkillTreePanel() {
     gameData.game,
     build,
   ).filter((perk) => perk.skillId === activeTree.skillId);
-  const hasSkillReqConflict = !isDestinyTree && skillReqConflictsOnTree.length > 0;
+  const hasSkillReqConflict = supportsSkillProgression && skillReqConflictsOnTree.length > 0;
 
-  const floor = isDestinyTree
-    ? 0
-    : getEffectiveSkillFloor(gameData.game, build, activeTree.skillId);
-  const skillLevelCap = isDestinyTree ? 0 : getMaxSkillLevel(gameData.game);
-  const maxAllowedAtLevel = isDestinyTree
-    ? 0
-    : getMaxAllowedSkillLevel(gameData.game, build);
-  const level = isDestinyTree ? 0 : getStoredSkillLevel(gameData.game, build, activeTree.skillId);
-  const trainingFloor = isDestinyTree
-    ? 0
-    : getSkillLevelFromTraining(gameData.game, build, activeTree.skillId);
-  const isTrainingMode = supportsTraining && skillWorkspaceMode === "training";
-  const skillBonusLines = !isDestinyTree
+  const floor = supportsSkillProgression
+    ? getEffectiveSkillFloor(gameData.game, build, activeTree.skillId)
+    : 0;
+  const skillLevelCap = supportsSkillProgression ? getMaxSkillLevel(gameData.game) : 0;
+  const maxAllowedAtLevel = supportsSkillProgression
+    ? getMaxAllowedSkillLevel(gameData.game, build)
+    : 0;
+  const level = supportsSkillProgression
+    ? getStoredSkillLevel(gameData.game, build, activeTree.skillId)
+    : 0;
+  const trainingFloor = supportsSkillProgression
+    ? getSkillLevelFromTraining(gameData.game, build, activeTree.skillId)
+    : 0;
+  const isTrainingMode = supportsSkillProgression && skillWorkspaceMode === "training";
+  const skillBonusLines = supportsSkillProgression
     ? getSkillLevelBonusLines(gameData.game, build, activeTree.skillId, labels)
     : [];
   const { perks: overLevelPerks, skillIncreases, destinyPerksOverBudget } =
@@ -251,10 +253,10 @@ export function SkillTreePanel() {
   const skillIncreaseConflict = skillIncreases.find(
     (skill) => skill.skillId === activeTree.skillId,
   );
-  const isOverCap = isDestinyTree
-    ? false
-    : isSkillOverPlayerLevelCap(gameData.game, build, activeTree.skillId);
-  const isOverIncreaseLimit = !isDestinyTree && skillIncreaseConflict != null;
+  const isOverCap =
+    supportsSkillProgression &&
+    isSkillOverPlayerLevelCap(gameData.game, build, activeTree.skillId);
+  const isOverIncreaseLimit = supportsSkillProgression && skillIncreaseConflict != null;
   const hasSkillLevelProblem = isOverCap || isOverIncreaseLimit;
   const playerLevelPerksOnTree = overLevelPerks.filter(
     (perk) => perk.skillId === activeTree.skillId,
@@ -315,13 +317,14 @@ export function SkillTreePanel() {
           playerLevel: build.playerLevel,
         })
     : null;
-  const overCapMessage = !isDestinyTree && isOverCap
-    ? formatLabel(labels.skillLevelOverCapSingle, {
-        skill: activeTree.skillName,
-        skillLevel: level,
-        maxAllowed: maxAllowedAtLevel,
-      })
-    : null;
+  const overCapMessage =
+    supportsSkillProgression && isOverCap
+      ? formatLabel(labels.skillLevelOverCapSingle, {
+          skill: activeTree.skillName,
+          skillLevel: level,
+          maxAllowed: maxAllowedAtLevel,
+        })
+      : null;
   const overIncreaseLimitMessage = skillIncreaseConflict
     ? formatLabel(labels.skillLevelIncreaseOverLimitSingle, {
         skill: activeTree.skillName,
@@ -368,7 +371,7 @@ export function SkillTreePanel() {
                 subtitle={skillTreeSubtitle}
               />
             </div>
-            {!isDestinyTree && (
+            {(supportsSkillProgression || isSupernaturalTree) && (
               <div className="flex shrink-0 items-center gap-0.5">
                 {!isTrainingMode && (
                   <PerkBadgeVisibilityDropdown labels={labels} />
@@ -391,10 +394,10 @@ export function SkillTreePanel() {
           </div>
         </header>
 
-        <div className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border)]/50 px-3 py-1.5">
-          {!isDestinyTree ? (
-            <>
-              {supportsTraining && (
+        {(supportsSkillProgression || isDestinyTree) && (
+          <div className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border)]/50 px-3 py-1.5">
+            {supportsSkillProgression ? (
+              <>
                 <div className="inline-flex shrink-0 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
                   <Button
                     variant={isTrainingMode ? "ghost" : "default"}
@@ -413,69 +416,69 @@ export function SkillTreePanel() {
                     {labels.trainingMode}
                   </Button>
                 </div>
-              )}
-              <div className="ml-auto flex items-center gap-1.5">
-                <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
-                  {labels.skillLevel}
+                <div className="ml-auto flex items-center gap-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                    {labels.skillLevel}
+                  </span>
+                  <div
+                    className={cn(
+                      "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
+                      hasSkillLevelProblem
+                        ? "border-[var(--color-error)]/70"
+                        : "border-[var(--color-border)]",
+                    )}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setSkillLevel(activeTree.skillId, level - 1)}
+                      disabled={level <= Math.max(floor, trainingFloor)}
+                      aria-label={`Decrease ${labels.skillLevel}`}
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </Button>
+                    <NumericLevelInput
+                      value={level}
+                      min={Math.max(floor, trainingFloor)}
+                      max={skillLevelCap}
+                      onCommit={(next) => setSkillLevel(activeTree.skillId, next)}
+                      size="compact"
+                      className={hasSkillLevelProblem ? "text-[var(--color-error)]" : undefined}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setSkillLevel(activeTree.skillId, level + 1)}
+                      disabled={level >= skillLevelCap}
+                      aria-label={`Increase ${labels.skillLevel}`}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex min-w-0 flex-1 items-center gap-2 text-[11px]">
+                <span className="font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                  {labels.destinyPoints ?? "Destiny points"}
                 </span>
-                <div
+                <span
                   className={cn(
-                    "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
-                    hasSkillLevelProblem
-                      ? "border-[var(--color-error)]/70"
-                      : "border-[var(--color-border)]",
+                    "tabular-nums",
+                    destinyOverBudget
+                      ? "font-medium text-[var(--color-error)]"
+                      : "text-[var(--color-muted)]",
                   )}
                 >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setSkillLevel(activeTree.skillId, level - 1)}
-                  disabled={level <= Math.max(floor, trainingFloor)}
-                  aria-label={`Decrease ${labels.skillLevel}`}
-                >
-                  <Minus className="h-3.5 w-3.5" />
-                </Button>
-                <NumericLevelInput
-                  value={level}
-                  min={Math.max(floor, trainingFloor)}
-                  max={skillLevelCap}
-                  onCommit={(next) => setSkillLevel(activeTree.skillId, next)}
-                  size="compact"
-                  className={hasSkillLevelProblem ? "text-[var(--color-error)]" : undefined}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setSkillLevel(activeTree.skillId, level + 1)}
-                  disabled={level >= skillLevelCap}
-                  aria-label={`Increase ${labels.skillLevel}`}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </Button>
-                </div>
+                  {computeDestinyPerkPointsSpent(gameData.game, build)}/
+                  {getEarnedDestinyPerkPoints(gameData.game, build)}
+                </span>
               </div>
-            </>
-          ) : (
-            <div className="flex min-w-0 flex-1 items-center gap-2 text-[11px]">
-              <span className="font-medium uppercase tracking-wide text-[var(--color-muted)]">
-                {labels.destinyPoints ?? "Destiny points"}
-              </span>
-              <span
-                className={cn(
-                  "tabular-nums",
-                  destinyOverBudget
-                    ? "font-medium text-[var(--color-error)]"
-                    : "text-[var(--color-muted)]",
-                )}
-              >
-                {computeDestinyPerkPointsSpent(gameData.game, build)}/
-                {getEarnedDestinyPerkPoints(gameData.game, build)}
-              </span>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-background)]/40 p-0.5">
           {isTrainingMode ? (
@@ -524,73 +527,71 @@ export function SkillTreePanel() {
         )}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {!isDestinyTree && (
+          {supportsSkillProgression && (
             <div className="flex flex-wrap items-center gap-3">
-              {supportsTraining && (
-                <div className="inline-flex rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
-                  <Button
-                    variant={isTrainingMode ? "ghost" : "default"}
-                    size="sm"
-                    className="h-7 px-3 text-xs"
-                    onClick={() => setSkillWorkspaceMode("perks")}
-                  >
-                    {labels.perksMode}
-                  </Button>
-                  <Button
-                    variant={isTrainingMode ? "default" : "ghost"}
-                    size="sm"
-                    className="h-7 px-3 text-xs"
-                    onClick={() => setSkillWorkspaceMode("training")}
-                  >
-                    {labels.trainingMode}
-                  </Button>
-                </div>
-              )}
+              <div className="inline-flex rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)]/50 p-0.5">
+                <Button
+                  variant={isTrainingMode ? "ghost" : "default"}
+                  size="sm"
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setSkillWorkspaceMode("perks")}
+                >
+                  {labels.perksMode}
+                </Button>
+                <Button
+                  variant={isTrainingMode ? "default" : "ghost"}
+                  size="sm"
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setSkillWorkspaceMode("training")}
+                >
+                  {labels.trainingMode}
+                </Button>
+              </div>
 
               <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
-                {labels.skillLevel}
-              </span>
-              <div
-                className={cn(
-                  "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
-                  hasSkillLevelProblem
-                    ? "border-[var(--color-error)]/70 ring-1 ring-[var(--color-error)]/30"
-                    : "border-[var(--color-border)]",
-                )}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setSkillLevel(activeTree.skillId, level - 1)}
-                  disabled={level <= Math.max(floor, trainingFloor)}
+                <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+                  {labels.skillLevel}
+                </span>
+                <div
+                  className={cn(
+                    "inline-flex items-center rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)]/50 p-0.5",
+                    hasSkillLevelProblem
+                      ? "border-[var(--color-error)]/70 ring-1 ring-[var(--color-error)]/30"
+                      : "border-[var(--color-border)]",
+                  )}
                 >
-                  <Minus className="h-3.5 w-3.5" />
-                </Button>
-                <NumericLevelInput
-                  value={level}
-                  min={Math.max(floor, trainingFloor)}
-                  max={skillLevelCap}
-                  onCommit={(next) => setSkillLevel(activeTree.skillId, next)}
-                  className={hasSkillLevelProblem ? "text-[var(--color-error)]" : undefined}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setSkillLevel(activeTree.skillId, level + 1)}
-                  disabled={level >= skillLevelCap}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <span className="text-xs text-[var(--color-muted)]">
-                {labels.skillLevelMin}: <span className="tabular-nums">{floor}</span>
-              </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setSkillLevel(activeTree.skillId, level - 1)}
+                    disabled={level <= Math.max(floor, trainingFloor)}
+                  >
+                    <Minus className="h-3.5 w-3.5" />
+                  </Button>
+                  <NumericLevelInput
+                    value={level}
+                    min={Math.max(floor, trainingFloor)}
+                    max={skillLevelCap}
+                    onCommit={(next) => setSkillLevel(activeTree.skillId, next)}
+                    className={hasSkillLevelProblem ? "text-[var(--color-error)]" : undefined}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setSkillLevel(activeTree.skillId, level + 1)}
+                    disabled={level >= skillLevelCap}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <span className="text-xs text-[var(--color-muted)]">
+                  {labels.skillLevelMin}: <span className="tabular-nums">{floor}</span>
+                </span>
               </div>
 
-              {supportsTraining && isTrainingMode && (
+              {isTrainingMode && (
                 <ResetPerksButton
                   className="h-7 shrink-0 px-3 text-xs"
                   onClick={() => resetSkillTraining(activeTree.skillId)}
@@ -599,12 +600,18 @@ export function SkillTreePanel() {
                 </ResetPerksButton>
               )}
 
-              {(!isTrainingMode || isSupernaturalTree) && (
+              {!isTrainingMode && (
                 <ResetPerksButton onClick={() => resetSkillPerks(activeTree.skillId)}>
                   {labels.resetSkill}
                 </ResetPerksButton>
               )}
             </div>
+          )}
+
+          {isSupernaturalTree && (
+            <ResetPerksButton onClick={() => resetSkillPerks(activeTree.skillId)}>
+              {labels.resetSkill}
+            </ResetPerksButton>
           )}
 
           {isDestinyTree && (
