@@ -645,6 +645,7 @@
   ],
   "characterOptions": [
     "oghma-infinium",
+    "au-naturel-gear",
     "alduin-bonus-trait"
   ],
   "characterOptionChoices": [
@@ -654,6 +655,13 @@
       "warrior",
       "mage",
       "thief"
+    ],
+    [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
     ],
     [
       "none",

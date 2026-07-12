@@ -280,7 +280,11 @@ export function CharacterOptionsPanel() {
   const { game } = gameData;
   const { characterOptions } = game;
 
-  const activeRewardLines = characterOptions.flatMap((option) => {
+  const activeRewardLines = characterOptions
+    .filter(
+      (option) => !option.requiresTraitId || build.traitIds.includes(option.requiresTraitId),
+    )
+    .flatMap((option) => {
     const choice = getSelectedCharacterOptionChoice(option, build.characterOptionChoices);
     if (choice.id === option.defaultChoice) return [];
     return getCharacterOptionSummaryLines(
@@ -310,7 +314,12 @@ export function CharacterOptionsPanel() {
               lines={activeRewardLines}
               title={labels.activeRewards ?? "Active rewards"}
             />
-            {characterOptions.map((option) => {
+            {characterOptions
+              .filter(
+                (option) =>
+                  !option.requiresTraitId || build.traitIds.includes(option.requiresTraitId),
+              )
+              .map((option) => {
               const selectedChoiceId =
                 build.characterOptionChoices[option.id] ?? option.defaultChoice;
               const onSelect = (choiceId: string) =>

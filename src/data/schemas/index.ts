@@ -155,6 +155,8 @@ export const characterOptionSchema = z
     descriptionLabel: z.string().optional(),
     defaultChoice: z.string(),
     extension: z.string().optional(),
+    /** When set, the option is only shown if this trait is selected on the build. */
+    requiresTraitId: z.string().optional(),
     controlType: characterOptionControlTypeSchema.optional(),
     choices: z.array(characterOptionChoiceSchema).min(1),
   })

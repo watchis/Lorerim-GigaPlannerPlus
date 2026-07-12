@@ -19,6 +19,10 @@
     {
       "optionId": "oghma-infinium",
       "extension": "oghma-infinium"
+    },
+    {
+      "optionId": "au-naturel-gear",
+      "extension": "au-naturel"
     }
   ]
 }

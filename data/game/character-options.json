@@ -16,6 +16,22 @@
       ]
     },
     {
+      "id": "au-naturel-gear",
+      "titleLabel": "auNaturelGear",
+      "descriptionLabel": "auNaturelGearDescription",
+      "defaultChoice": "4",
+      "extension": "au-naturel",
+      "requiresTraitId": "au-naturel",
+      "controlType": "buttons",
+      "choices": [
+        { "id": "0", "label": "auNaturelGear0" },
+        { "id": "1", "label": "auNaturelGear1" },
+        { "id": "2", "label": "auNaturelGear2" },
+        { "id": "3", "label": "auNaturelGear3" },
+        { "id": "4", "label": "auNaturelGear4" }
+      ]
+    },
+    {
       "id": "alduin-bonus-trait",
       "titleLabel": "alduinBonusTrait",
       "descriptionLabel": "alduinBonusTraitDescription",
