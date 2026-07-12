@@ -6,6 +6,7 @@ import {
   getTreePerkIdSet,
   treeMayShowPartialStacks,
 } from "@/lib/treePerkSelection";
+import { treeUsesGlobalPerkPointBudget } from "@/lib/perkTreeAvailability";
 import { useBuildStore } from "@/store/buildStore";
 
 /** Selected perk ids belonging to a single tree — updates only when that tree's allocation changes. */
@@ -23,7 +24,9 @@ export function useTreePerkPointsRemaining(
   selectedPerkIds: string[],
 ): number {
   const needsBudget = useMemo(
-    () => treeMayShowPartialStacks(tree, selectedPerkIds),
+    () =>
+      treeUsesGlobalPerkPointBudget(tree.skillId) &&
+      treeMayShowPartialStacks(tree, selectedPerkIds),
     [tree, selectedPerkIds],
   );
 

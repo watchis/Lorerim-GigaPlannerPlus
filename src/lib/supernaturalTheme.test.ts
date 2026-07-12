@@ -167,6 +167,34 @@ describe("supernaturalTheme", () => {
     );
   });
 
+  it("uses brighter unselected perk borders on werewolf theme", () => {
+    const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
+    const surface = parseColor(werewolf.colors.surfaceElevated)!;
+    const available = parseColor(werewolf.colors.perkAvailable)!;
+    const prereq = parseColor(werewolf.colors.perkPrereq)!;
+    const locked = parseColor(werewolf.colors.perkLocked)!;
+    const previousAvailable = "#756b60";
+    const previousPrereq = "#524a42";
+    const previousLocked = "#0e0c0a";
+
+    expect(relativeLuminance(werewolf.colors.perkAvailable)).toBeGreaterThan(
+      relativeLuminance(previousAvailable),
+    );
+    expect(relativeLuminance(werewolf.colors.perkPrereq)).toBeGreaterThan(
+      relativeLuminance(previousPrereq),
+    );
+    expect(relativeLuminance(werewolf.colors.perkLocked)).toBeGreaterThan(
+      relativeLuminance(previousLocked),
+    );
+
+    const borderContrast = (channel: { r: number; g: number; b: number }) =>
+      Math.max(channel.r, channel.g, channel.b) - Math.min(surface.r, surface.g, surface.b);
+
+    expect(borderContrast(available)).toBeGreaterThan(0.18);
+    expect(borderContrast(prereq)).toBeGreaterThan(0.12);
+    expect(borderContrast(locked)).toBeGreaterThan(0.08);
+  });
+
   it("uses a vibrant green hue for werewolf partial nodes", () => {
     const werewolf = applySupernaturalThemeVariant(baseTheme, "werewolf");
     const partial = parseColor(werewolf.colors.perkPartial)!;

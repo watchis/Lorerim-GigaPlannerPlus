@@ -11,12 +11,12 @@ import {
   arePrerequisitesMet,
   computeDestinyPerkPointsSpent,
   getEarnedDestinyPerkPoints,
-  getPerkSkillId,
 } from "@/engine/buildEngine";
 import type { PerkTree } from "@/data/schemas";
 import { PerkNode } from "@/components/PerkNode";
 import { useSupportsHover } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { meetsPerkTakeRequirements } from "@/lib/perkTreeAvailability";
 import { getPerkNodeRequirements } from "@/lib/perkRequirements";
 import {
   computePerkTreeEdgesPercentInBounds,
@@ -512,22 +512,15 @@ function PerkTreeView({
           ? { ...badgeRequirements, skillReq: null }
           : badgeRequirements;
 
-        const meetsPlayerLevelReq = (() => {
-          const playerLevelReq = getPerkNodeRequirements(takeTargetPerk).playerLevelReq;
-          return playerLevelReq == null || playerLevel >= playerLevelReq;
-        })();
-
-        const meetsPerkReq =
-          meetsPlayerLevelReq &&
-          (isDestinyTree
-            ? !takeTargetPerk.costsPerkPoint || destinyRemaining >= 1
-            : (() => {
-                const skillId = getPerkSkillId(gameData.game, takeTargetPerk.id);
-                const skillLevel = skillId ? (skillLevels[skillId] ?? 0) : 0;
-                if (skillLevel < takeTargetPerk.skillReq) return false;
-                if (!takeTargetPerk.costsPerkPoint) return true;
-                return perkPointsRemaining >= 1;
-              })());
+        const meetsPerkReq = meetsPerkTakeRequirements({
+          treeSkillId: tree.skillId,
+          takeTargetPerk,
+          game: gameData.game,
+          playerLevel,
+          skillLevels,
+          perkPointsRemaining,
+          destinyRemaining,
+        });
 
         const isAvailable = !isSelected && prereqsMet && meetsPerkReq;
         const isLocked = !isSelected && (!prereqsMet || !meetsPerkReq);
