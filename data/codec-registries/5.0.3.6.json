@@ -636,21 +636,5 @@
     "destiny-49",
     "destiny-50",
     "destiny-51"
-  ],
-  "characterOptions": [
-    "oghma-infinium",
-    "alduin-bonus-trait"
-  ],
-  "characterOptionChoices": [
-    [
-      "none",
-      "health",
-      "magicka",
-      "stamina"
-    ],
-    [
-      "none",
-      "claimed"
-    ]
   ]
 }

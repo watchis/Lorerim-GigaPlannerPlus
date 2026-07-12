@@ -33,12 +33,6 @@ export function exportCodecRegistryFromPaths({ game }) {
     traits: readJson(join(game, "traits.json")).traits.map((entry) => entry.id),
     skills: readJson(join(game, "skills.json")).skills.map((entry) => entry.id),
     perks: collectPerks(manifest, index, join(game, "perks")),
-    characterOptions: readJson(join(game, "character-options.json")).options.map(
-      (entry) => entry.id,
-    ),
-    characterOptionChoices: readJson(join(game, "character-options.json")).options.map((entry) =>
-      entry.choices.map((choice) => choice.id),
-    ),
   };
 }
 

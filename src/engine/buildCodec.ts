@@ -8,8 +8,11 @@ import {
 } from "@/engine/buildEngine";
 import { migrateLegacySkillTrainingCounts } from "@/lib/skillTraining";
 import {
+  decodeCharacterOptionChoices,
+  type CharacterOptionCoEntry,
+} from "@/engine/legacyCharacterOptionCodec";
+import {
   createBuildCodecRegistryForVersion,
-  lookupCharacterOptionChoiceIdSafe,
   lookupIdSafe,
   type BuildCodecRegistry,
 } from "@/engine/buildCodecRegistry";
@@ -53,7 +56,7 @@ type CompactBuildPayload = {
   p?: number[];
   l?: [number, number][];
   tr?: number[][];
-  co?: [number, number][];
+  co?: CharacterOptionCoEntry[];
   oi?: number[];
   d?: string;
 };
@@ -269,13 +272,10 @@ function buildStateFromCompactPayload(
     );
   }
 
-  const characterOptionChoices: Record<string, string> = {};
-  for (const [optionIndex, choiceIndex] of payload.co ?? []) {
-    const optionId = lookupIdSafe(registry.characterOptions, optionIndex);
-    const choiceId = lookupCharacterOptionChoiceIdSafe(registry, optionIndex, choiceIndex);
-    if (!optionId || !choiceId) continue;
-    characterOptionChoices[optionId] = choiceId;
-  }
+  const characterOptionChoices = decodeCharacterOptionChoices(
+    payload.co,
+    registry.modpackVersion,
+  );
 
   return payloadToBuildState({
     raceId: lookupIdSafe(registry.races, payload.r) ?? "none",
@@ -316,11 +316,7 @@ function buildStateFromIdPayload(
     skillTrainingRanges[skillId] = ranges;
   }
 
-  const characterOptionChoices: Record<string, string> = {};
-  for (const [optionId, choiceId] of payload.co ?? []) {
-    if (!optionId || !choiceId) continue;
-    characterOptionChoices[optionId] = choiceId;
-  }
+  const characterOptionChoices = decodeCharacterOptionChoices(payload.co, game.manifest.version);
 
   return payloadToBuildState({
     raceId: payload.r ?? "none",

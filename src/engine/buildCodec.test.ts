@@ -6,7 +6,7 @@ import {
   encodeBuild,
   encodeSavedBuild,
 } from "@/engine/buildCodec";
-import { createBuildCodecRegistry, lookupCharacterOptionChoiceIndex, lookupIndex } from "@/engine/buildCodecRegistry";
+import { createBuildCodecRegistry, lookupIndex } from "@/engine/buildCodecRegistry";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 import { createMilestone, createSavedBuild } from "@/store/savedBuilds";
 
@@ -112,31 +112,11 @@ describe("buildCodec", () => {
     );
   });
 
-  it("keeps legacy v2 Alduin option indices stable after adding au-naturel-gear", () => {
-    const registry = createBuildCodecRegistry(game);
-    const alduinOptionIndex = lookupIndex(
-      registry.characterOptionIndex,
-      "alduin-bonus-trait",
-      "character option",
-    );
-    const claimedChoiceIndex = lookupCharacterOptionChoiceIndex(
-      registry,
-      "alduin-bonus-trait",
-      "claimed",
-    );
-    const auNaturelOptionIndex = lookupIndex(
-      registry.characterOptionIndex,
-      "au-naturel-gear",
-      "character option",
-    );
-
-    expect(alduinOptionIndex).toBe(1);
-    expect(auNaturelOptionIndex).toBe(2);
-
+  it("keeps legacy v2 Alduin option indices stable via frozen tables", () => {
     const payload = {
       v: 2 as const,
-      mv: game.manifest.version,
-      co: [[alduinOptionIndex!, claimedChoiceIndex]],
+      mv: "5.0.3.6",
+      co: [[1, 1]] as [number, number][],
     };
     const compressed = gzipSync(new TextEncoder().encode(JSON.stringify(payload)));
     const code = `2.${toBase64Url(compressed)}`;
@@ -145,6 +125,27 @@ describe("buildCodec", () => {
 
     expect(decoded.build.characterOptionChoices["alduin-bonus-trait"]).toBe("claimed");
     expect(decoded.build.characterOptionChoices["au-naturel-gear"]).toBe("0");
+  });
+
+  it("round-trips id-based character options in v2 payloads", () => {
+    const payload = {
+      v: 2 as const,
+      mv: game.manifest.version,
+      co: [
+        ["au-naturel-gear", "2"],
+        ["alduin-bonus-trait", "claimed"],
+      ] as [string, string][],
+    };
+    const compressed = gzipSync(new TextEncoder().encode(JSON.stringify(payload)));
+    const code = `2.${toBase64Url(compressed)}`;
+
+    const decoded = decodeBuildPackage(code, game);
+
+    expect(decoded.build.characterOptionChoices).toEqual({
+      "au-naturel-gear": "2",
+      "alduin-bonus-trait": "claimed",
+      "oghma-infinium": "none",
+    });
   });
 
   it("round-trips Oghma skill selections", () => {
