@@ -4,7 +4,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const importRoot = dirname(fileURLToPath(import.meta.url));
-const testDirs = [join(importRoot, "lib"), join(importRoot, "lib", "effects"), join(importRoot, "importers")];
+const testDirs = [
+  join(importRoot, "lib"),
+  join(importRoot, "lib", "effects"),
+  join(importRoot, "lib", "gear"),
+  join(importRoot, "importers"),
+];
 
 const testFiles = [];
 for (const dir of testDirs) {

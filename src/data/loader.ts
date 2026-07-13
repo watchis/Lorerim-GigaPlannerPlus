@@ -11,6 +11,10 @@ import traitsJson from "../../data/game/traits.json";
 import skillsJson from "../../data/game/skills.json";
 import perkIndexJson from "../../data/game/perks/index.json";
 import perkPlayerLevelReqsJson from "../../data/game/perk-player-level-reqs.json";
+import itemsIndexJson from "../../data/game/items/index.json";
+import itemsWeaponsJson from "../../data/game/items/weapons.json";
+import itemsArmorJson from "../../data/game/items/armor.json";
+import itemsEnchantmentsJson from "../../data/game/items/enchantments.json";
 import themeJson from "../../data/ui/theme.json";
 import layoutJson from "../../data/ui/layout.json";
 import labelsJson from "../../data/ui/labels.json";
@@ -30,6 +34,10 @@ import {
   perkIndexSchema,
   perkPlayerLevelReqsSchema,
   perkTreeSchema,
+  itemsIndexSchema,
+  itemsWeaponsSchema,
+  itemsArmorSchema,
+  itemsEnchantmentsSchema,
   themeSchema,
   layoutSchema,
   labelsSchema,
@@ -37,6 +45,7 @@ import {
   type Perk,
   type PerkTree,
 } from "./schemas";
+import { buildItemsCatalog } from "@/lib/gearLibrary";
 import {
   enrichBirthsign,
   enrichDeity,
@@ -124,6 +133,15 @@ export function loadAppData(): AppData {
   const theme = parse(themeSchema, themeJson, "theme.json");
   const layout = parse(layoutSchema, layoutJson, "layout.json");
   const labels = parse(labelsSchema, labelsJson, "labels.json");
+  const itemsIndex = parse(itemsIndexSchema, itemsIndexJson, "items/index.json");
+  const { weapons } = parse(itemsWeaponsSchema, itemsWeaponsJson, "items/weapons.json");
+  const { armor } = parse(itemsArmorSchema, itemsArmorJson, "items/armor.json");
+  const { enchantments } = parse(
+    itemsEnchantmentsSchema,
+    itemsEnchantmentsJson,
+    "items/enchantments.json",
+  );
+  const items = buildItemsCatalog({ index: itemsIndex, weapons, armor, enchantments });
 
   const appData: AppData = {
     game: {
@@ -140,6 +158,7 @@ export function loadAppData(): AppData {
       perkTrees,
       perkById,
       perkSkillIdByPerkId,
+      items,
     },
     ui: { theme, layout, labels },
   };

@@ -7,8 +7,27 @@
   "nav": {
     "home": "Home",
     "planner": "Planner",
+    "library": "Library",
     "builds": "My Builds",
     "reportBug": "Report a bug"
+  },
+  "library": {
+    "title": "Gear Library",
+    "subtitle": "Browse weapons, armor, and enchantments. Selections save with your build and share codes.",
+    "openPlanner": "Open planner",
+    "searchPlaceholder": "Search by name or editor id…",
+    "staticOnly": "Static only",
+    "detailTitle": "Details",
+    "browseHint": "Select a row for details and actions",
+    "equippedHint": "Current build loadout",
+    "wishlistHint": "Saved wishlist entries for this build",
+    "tabs": {
+      "weapons": "Weapons",
+      "armor": "Armor",
+      "enchantments": "Enchantments",
+      "equipped": "Equipped",
+      "wishlist": "Wishlist"
+    }
   },
   "landing": {
     "howItWorksTitle": "How it works",

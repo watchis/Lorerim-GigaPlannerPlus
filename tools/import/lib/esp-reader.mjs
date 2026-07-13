@@ -21,7 +21,17 @@ import {
   readSpellMagnitudesForFormIds,
 } from "./spell-magnitude.mjs";
 
-const IMPORT_RECORD_TYPES = ["PERK", "SPEL", "RACE", "MESG", "QUST"];
+const IMPORT_RECORD_TYPES = [
+  "PERK",
+  "SPEL",
+  "RACE",
+  "MESG",
+  "QUST",
+  "WEAP",
+  "ARMO",
+  "ENCH",
+  "KYWD",
+];
 const LORERIM_RACE_PLUGIN_PATTERN = /LoreRim - NPCs and Races/i;
 export const WINTERSUN_FAITH_PLUGIN_PATTERN = /Wintersun|Tribunal Integration/i;
 const DEFAULT_PLUGIN_CONCURRENCY =
@@ -30,7 +40,21 @@ const DEFAULT_PLUGIN_CONCURRENCY =
     : 8;
 
 function getSubrecord(record, type) {
-  return record.subRecords?.find((sub) => sub.type === type)?.value;
+  const value = record.subRecords?.find((sub) => sub.type === type)?.value;
+  if (typeof value === "string") return value;
+  if (Buffer.isBuffer(value)) {
+    const text = value.toString("utf8").replace(/\0/g, "").trim();
+    // Localized string ids are 4-byte payloads, not readable names.
+    if (value.length <= 4 && !/[\p{L}\p{N}]/u.test(text)) return "";
+    return text;
+  }
+  if (Array.isArray(value) && value.every((entry) => typeof entry === "number")) {
+    const buf = Buffer.from(value);
+    const text = buf.toString("utf8").replace(/\0/g, "").trim();
+    if (buf.length <= 4 && !/[\p{L}\p{N}]/u.test(text)) return "";
+    return text;
+  }
+  return value;
 }
 
 function readDataBuffer(record) {
@@ -52,6 +76,18 @@ function readDnam(record) {
 }
 
 import { readMgefEffectDataFromRecord } from "./effects/mgef-data.mjs";
+import { parseWeaponAnimType, parseWeaponData } from "./gear/weapon-data.mjs";
+import {
+  parseArmorData,
+  parseArmorRating,
+  parseBodySlots,
+} from "./gear/armor-data.mjs";
+import {
+  readEnchantFormId,
+  readKeywordFormIds,
+  readRawSubrecordPayload,
+  readSubrecordRaw,
+} from "./gear/record-fields.mjs";
 
 function buildPerkMeta(buffer, edid, ownerPluginLower, masters) {
   const meta = parsePerkRecordMetadata(buffer, edid);
@@ -69,6 +105,57 @@ function buildPerkMeta(buffer, edid, ownerPluginLower, masters) {
   };
 }
 
+function parseGearFields(record, buffer) {
+  const type = record.recordType;
+  if (type !== "WEAP" && type !== "ARMO" && type !== "ENCH") return {};
+
+  const dataPayload =
+    readSubrecordRaw(record, "DATA") ?? readRawSubrecordPayload(buffer, "DATA");
+  const dnamPayload =
+    readSubrecordRaw(record, "DNAM") ?? readRawSubrecordPayload(buffer, "DNAM");
+  const bod2Payload =
+    readSubrecordRaw(record, "BOD2") ??
+    readRawSubrecordPayload(buffer, "BOD2") ??
+    readSubrecordRaw(record, "BODT") ??
+    readRawSubrecordPayload(buffer, "BODT");
+  const kwdaPayload =
+    readSubrecordRaw(record, "KWDA") ?? readRawSubrecordPayload(buffer, "KWDA");
+  const eitmPayload =
+    readSubrecordRaw(record, "EITM") ?? readRawSubrecordPayload(buffer, "EITM");
+
+  const keywordFormIds = readKeywordFormIds(kwdaPayload);
+  const enchantFormId = readEnchantFormId(eitmPayload);
+
+  if (type === "WEAP") {
+    const stats = parseWeaponData(dataPayload);
+    return {
+      ...stats,
+      weaponType: parseWeaponAnimType(dnamPayload),
+      keywordFormIds,
+      enchantFormId,
+    };
+  }
+
+  if (type === "ARMO") {
+    const stats = parseArmorData(dataPayload);
+    const body = parseBodySlots(bod2Payload);
+    return {
+      ...stats,
+      armorRating: parseArmorRating(dnamPayload),
+      armorType: body.armorType,
+      equipmentSlots: body.equipmentSlots,
+      bodyFlags: body.flags,
+      keywordFormIds,
+      enchantFormId,
+    };
+  }
+
+  return {
+    keywordFormIds,
+    effectEntries: readSpellEffectEntries(buffer),
+  };
+}
+
 function parseRecord(buffer, ownerPluginLower, masters) {
   const record = tesData.getRecord(buffer);
   if (record.compressed) return null;
@@ -78,6 +165,7 @@ function parseRecord(buffer, ownerPluginLower, masters) {
 
   const effectDescription = record.recordType === "MGEF" ? readDnam(record) : "";
   const formId = record.formId ?? readRecordFormId(buffer);
+  const gearFields = parseGearFields(record, buffer);
 
   return {
     type: record.recordType,
@@ -89,12 +177,16 @@ function parseRecord(buffer, ownerPluginLower, masters) {
     formIdentity:
       formId != null ? resolveFormIdentity(ownerPluginLower, masters, formId) : undefined,
     mgefArchetype: record.recordType === "MGEF" ? readMgefEffectDataFromRecord(record) : undefined,
-    effectEntries: record.recordType === "SPEL" ? readSpellEffectEntries(buffer) : undefined,
+    effectEntries:
+      record.recordType === "SPEL" || record.recordType === "ENCH"
+        ? (gearFields.effectEntries ?? readSpellEffectEntries(buffer))
+        : undefined,
     perkMeta:
       record.recordType === "PERK"
         ? buildPerkMeta(buffer, edid, ownerPluginLower, masters)
         : undefined,
     data: record.recordType === "RACE" ? readDataBuffer(record) : undefined,
+    ...gearFields,
   };
 }
 
@@ -115,13 +207,24 @@ function readRecordFormId(buffer) {
 }
 
 function mergeCollectedRecord(existing, incoming) {
-  if (existing.type !== "RACE" || incoming.type !== "RACE") {
-    return incoming;
+  if (existing.type === "RACE" && incoming.type === "RACE") {
+    const existingScore = raceDataSkillScore(existing.data);
+    const incomingScore = raceDataSkillScore(incoming.data);
+    return incomingScore >= existingScore ? incoming : existing;
   }
 
-  const existingScore = raceDataSkillScore(existing.data);
-  const incomingScore = raceDataSkillScore(incoming.data);
-  return incomingScore >= existingScore ? incoming : existing;
+  // Prefer a readable FULL name when an override only patches stats.
+  const existingName = String(existing.name ?? "").trim();
+  const incomingName = String(incoming.name ?? "").trim();
+  if (
+    incomingName.length <= 2 &&
+    existingName.length > incomingName.length &&
+    /[\p{L}\p{N}]/u.test(existingName)
+  ) {
+    return { ...incoming, name: existing.name };
+  }
+
+  return incoming;
 }
 
 /**
@@ -349,7 +452,7 @@ export function collectBoonFromSpellBuffer(buffer, edid, pluginName, lookupArg =
   };
 }
 
-function wantedTypesForPlugin(pluginName) {
+function wantedTypesForPlugin(_pluginName) {
   return new Set([...IMPORT_RECORD_TYPES, "AVIF", "FLST", "MGEF"]);
 }
 
@@ -476,12 +579,19 @@ function mergePluginPayload(
   mastersByPath.set(path, masters);
 
   for (const record of records) {
-    const key =
-      record.type === "MGEF" && record.formIdentity
-        ? `${record.type}:${record.formIdentity}`
-        : `${record.type}:${record.edid}`;
+    const useFormIdentity =
+      record.formIdentity &&
+      (record.type === "MGEF" ||
+        record.type === "WEAP" ||
+        record.type === "ARMO" ||
+        record.type === "ENCH" ||
+        record.type === "KYWD");
+    const key = useFormIdentity
+      ? `${record.type}:${record.formIdentity}`
+      : `${record.type}:${record.edid}`;
     const next = { ...record, plugin: pluginName };
     const bucket = mergedByType[record.type];
+    if (!bucket) continue;
     const existing = bucket.get(key);
     bucket.set(key, existing ? mergeCollectedRecord(existing, next) : next);
   }
@@ -585,6 +695,10 @@ function createEmptyMergeBuckets() {
     MESG: new Map(),
     QUST: new Map(),
     MGEF: new Map(),
+    WEAP: new Map(),
+    ARMO: new Map(),
+    ENCH: new Map(),
+    KYWD: new Map(),
   };
 }
 
@@ -636,7 +750,10 @@ export async function collectImportPluginData(plugins, progress = null, options 
   scan?.finish(
     `${formatCount(mergedByType.PERK.size)} PERK, ` +
       `${formatCount(avifTrees.size)} AVIF trees, ` +
-      `${formatCount(mergedByType.SPEL.size)} SPEL`,
+      `${formatCount(mergedByType.SPEL.size)} SPEL, ` +
+      `${formatCount(mergedByType.WEAP.size)} WEAP, ` +
+      `${formatCount(mergedByType.ARMO.size)} ARMO, ` +
+      `${formatCount(mergedByType.ENCH.size)} ENCH`,
   );
 
   return {
@@ -647,6 +764,10 @@ export async function collectImportPluginData(plugins, progress = null, options 
     mesgRecords: [...mergedByType.MESG.values()],
     questRecords: [...mergedByType.QUST.values()],
     mgefRecords: [...mergedByType.MGEF.values()],
+    weaponRecords: [...mergedByType.WEAP.values()],
+    armorRecords: [...mergedByType.ARMO.values()],
+    enchantRecords: [...mergedByType.ENCH.values()],
+    keywordRecords: [...mergedByType.KYWD.values()],
     wintersunMgefRecords: filterFaithMgefRecords([...mergedByType.MGEF.values()]),
     wintersunMesgRecords: [...mergedByType.MESG.values()].filter((record) =>
       wintersunPluginNames.has(record.plugin),

@@ -11,6 +11,10 @@ export const MECHANICS_RECORD_TYPES = new Set([
   "AVIF",
   "FLST",
   "MGEF",
+  "WEAP",
+  "ARMO",
+  "ENCH",
+  "KYWD",
 ]);
 
 /**

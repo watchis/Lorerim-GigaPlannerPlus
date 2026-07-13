@@ -1,0 +1,41 @@
+{
+  "categories": [
+    "weapons",
+    "armor",
+    "enchantments"
+  ],
+  "counts": {
+    "weapons": 13599,
+    "armor": 10146,
+    "enchantments": 2425,
+    "staticWeapons": 12252,
+    "staticArmor": 4496
+  },
+  "slots": [
+    "head",
+    "body",
+    "hands",
+    "feet",
+    "amulet",
+    "ring",
+    "weaponMain",
+    "weaponOff"
+  ],
+  "weaponTypes": [
+    "bow",
+    "crossbow",
+    "handToHand",
+    "oneHandAxe",
+    "oneHandDagger",
+    "oneHandMace",
+    "oneHandSword",
+    "staff",
+    "twoHandAxe",
+    "twoHandSword"
+  ],
+  "armorTypes": [
+    "clothing",
+    "heavy",
+    "light"
+  ]
+}

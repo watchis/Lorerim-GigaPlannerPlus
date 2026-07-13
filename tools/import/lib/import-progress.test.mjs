@@ -44,6 +44,28 @@ assert.equal(formatCount(3500), "3,500");
   assert.ok(!lines.some((line) => line.includes("pluginsFromXEditOutput")));
 }
 
+{
+  const lines = formatImportSummary(
+    {
+      installDir: "D:/Lorerim",
+      profile: "Default",
+      pluginsInLoadOrder: 3500,
+      pluginsSkippedNonMechanics: 2000,
+      pluginsScanned: 1300,
+      perkRecords: 3321,
+      weapons: 13599,
+      armor: 10165,
+      enchantments: 2446,
+      staticItems: 18222,
+    },
+    { elapsed: "2m" },
+  );
+
+  assert.ok(lines.some((line) => line === "Weapons: 13,599"));
+  assert.ok(lines.some((line) => line === "Static gear: 18,222"));
+  assert.ok(!lines.some((line) => line.startsWith("Perk trees:")));
+}
+
 function createCaptureStream({ isTTY = false, columns = 100 } = {}) {
   let output = "";
   const stream = new Writable({

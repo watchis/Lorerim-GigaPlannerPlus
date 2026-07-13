@@ -1,4 +1,22 @@
-import type { GameData, Mechanics, Perk, PerkTree, Race, SkillLevelBaseline } from "@/data/schemas";
+import type {
+  EquipmentSlotId,
+  GameData,
+  Mechanics,
+  Perk,
+  PerkTree,
+  Race,
+  SkillLevelBaseline,
+} from "@/data/schemas";
+import {
+  emptyEquipment,
+  emptyWishlist,
+  equipmentStatesEqual,
+  sanitizeEquipment,
+  sanitizeWishlist,
+  wishlistStatesEqual,
+  type EquipmentSelection,
+  type WishlistEntry,
+} from "@/lib/gearLibrary";
 import {
   normalizeCharacterOptionChoices,
 } from "@/lib/characterOptions";
@@ -76,6 +94,8 @@ export interface BuildState {
   skillTrainingRanges: Record<string, number[]>;
   playerLevel: number;
   description: string;
+  equipment: Partial<Record<EquipmentSlotId, EquipmentSelection>>;
+  wishlist: WishlistEntry[];
 }
 
 export interface BuildReconcileOptions {
@@ -938,6 +958,8 @@ export function sanitizeImportedBuildReferences(game: GameData, build: BuildStat
     selectedPerkIds: build.selectedPerkIds.filter((perkId) => getPerkById(game, perkId) !== undefined),
     skillLevels,
     skillTrainingRanges,
+    equipment: sanitizeEquipment(game, build.equipment),
+    wishlist: sanitizeWishlist(game, build.wishlist),
   };
 }
 
@@ -2062,6 +2084,8 @@ export function migrateBuildState(
   const withOghma: BuildState = {
     ...build,
     oghmaSkillIds: build.oghmaSkillIds ?? [],
+    equipment: build.equipment ?? emptyEquipment(),
+    wishlist: build.wishlist ?? emptyWishlist(),
   };
   const withSupernatural = migrateLegacySupernaturalBuild(withOghma);
 
@@ -2070,6 +2094,8 @@ export function migrateBuildState(
     return {
       ...rest,
       oghmaSkillIds: build.oghmaSkillIds ?? [],
+      equipment: rest.equipment ?? emptyEquipment(),
+      wishlist: rest.wishlist ?? emptyWishlist(),
       deityId: blessingId ?? "none",
     };
   }
@@ -2139,7 +2165,9 @@ export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
     numberRecordEqual(a.skillLevels, b.skillLevels) &&
     trainingRangesEqual(a.skillTrainingRanges, b.skillTrainingRanges) &&
     a.playerLevel === b.playerLevel &&
-    a.description === b.description
+    a.description === b.description &&
+    equipmentStatesEqual(a.equipment, b.equipment) &&
+    wishlistStatesEqual(a.wishlist, b.wishlist)
   );
 }
 
@@ -2159,5 +2187,7 @@ export function createInitialBuildState(): BuildState {
     skillTrainingRanges: {},
     playerLevel: 1,
     description: "",
+    equipment: emptyEquipment(),
+    wishlist: emptyWishlist(),
   };
 }

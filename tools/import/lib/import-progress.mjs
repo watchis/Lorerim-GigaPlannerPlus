@@ -10,7 +10,7 @@ export function formatDuration(ms) {
 }
 
 export function formatCount(value) {
-  return value.toLocaleString("en-US");
+  return Number(value ?? 0).toLocaleString("en-US");
 }
 
 function truncateEnd(text, maxLen) {
@@ -66,9 +66,14 @@ export function formatImportSummary(summary, { elapsed, dryRun = false } = {}) {
   lines.push(
     `Plugins scanned: ${formatCount(summary.pluginsScanned)}`,
     `Perk records: ${formatCount(summary.perkRecords)}`,
-    `Perk trees: ${formatCount(summary.perkTrees)}`,
-    `Imported perks: ${formatCount(summary.importedPerks)}`,
   );
+
+  if (summary.perkTrees != null) {
+    lines.push(`Perk trees: ${formatCount(summary.perkTrees)}`);
+  }
+  if (summary.importedPerks != null) {
+    lines.push(`Imported perks: ${formatCount(summary.importedPerks)}`);
+  }
 
   if (summary.addedPerks > 0) {
     lines.push(`New perks: ${formatCount(summary.addedPerks)}`);
@@ -77,14 +82,32 @@ export function formatImportSummary(summary, { elapsed, dryRun = false } = {}) {
     lines.push(`Removed perks: ${formatCount(summary.removedPerks)}`);
   }
 
-  lines.push(
-    `AVIF skills: ${formatCount(summary.avifSkills)}`,
-    `AVIF-displayed perks: ${formatCount(summary.avifPerks)}`,
-    `Traits: ${formatCount(summary.traits)}`,
-    `Races: ${formatCount(summary.races)}`,
-    `Birthsigns: ${formatCount(summary.birthsigns)}`,
-    `Deities: ${formatCount(summary.deities)}`,
-  );
+  if (summary.avifSkills != null) {
+    lines.push(`AVIF skills: ${formatCount(summary.avifSkills)}`);
+  }
+  if (summary.avifPerks != null) {
+    lines.push(`AVIF-displayed perks: ${formatCount(summary.avifPerks)}`);
+  }
+  if (summary.traits != null) {
+    lines.push(`Traits: ${formatCount(summary.traits)}`);
+  }
+  if (summary.races != null) {
+    lines.push(`Races: ${formatCount(summary.races)}`);
+  }
+  if (summary.birthsigns != null) {
+    lines.push(`Birthsigns: ${formatCount(summary.birthsigns)}`);
+  }
+  if (summary.deities != null) {
+    lines.push(`Deities: ${formatCount(summary.deities)}`);
+  }
+  if (summary.weapons != null) {
+    lines.push(
+      `Weapons: ${formatCount(summary.weapons)}`,
+      `Armor: ${formatCount(summary.armor)}`,
+      `Enchantments: ${formatCount(summary.enchantments)}`,
+      `Static gear: ${formatCount(summary.staticItems)}`,
+    );
+  }
 
   if (summary.modpackVersion) {
     lines.push(`Modpack version: ${summary.modpackVersion}`);

@@ -12,6 +12,7 @@ export const IMPORT_DOMAINS = [
   "birthsigns",
   "deities",
   "supernatural",
+  "gear",
   "manifest",
 ];
 

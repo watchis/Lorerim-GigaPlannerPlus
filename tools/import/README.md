@@ -139,6 +139,16 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 
 - `data/game/mechanics.json`
 
+### Gear catalog
+
+- `data/game/items/index.json`, `weapons.json`, `armor.json`, `enchantments.json` — from `WEAP` / `ARMO` / `ENCH` / `KYWD` (domain `gear`)
+
+```bash
+npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --only gear --rescan-plugins
+```
+
+`--rescan-plugins` is required the first time after enabling gear record types so the non-mechanics skip cache is rebuilt.
+
 ### Imported with perks
 
 - `data/game/perk-player-level-reqs.json` — player level gates from `PERK` `GetLevel` conditions (one entry per rank id)
@@ -200,7 +210,7 @@ tools/import/
     import-orchestrator.mjs # runDomainImports
     run-import.mjs         # prepareImportContext, executeDomainImports
     effects/               # SPEL→MGEF effect extraction (traits, races, birthsigns)
-    gear/README.md         # planned gear/enchantment import (phase 3)
+    gear/README.md         # WEAP/ARMO/ENCH gear catalog import
     append-missing-perks.mjs # supplemental perk nodes + metadata application
     avif-perk-tree.mjs     # AVIF perk tree parser (player-visible layout)
     avif-perk-membership.mjs # AVIF membership index + planner diff helpers

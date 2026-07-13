@@ -417,8 +417,29 @@ export const labelsSchema = z.object({
     home: z.string(),
     planner: z.string(),
     builds: z.string(),
+    library: z.string(),
     reportBug: z.string(),
   }),
+  library: z
+    .object({
+      title: z.string(),
+      subtitle: z.string(),
+      openPlanner: z.string(),
+      searchPlaceholder: z.string(),
+      staticOnly: z.string(),
+      detailTitle: z.string(),
+      browseHint: z.string(),
+      equippedHint: z.string(),
+      wishlistHint: z.string(),
+      tabs: z.object({
+        weapons: z.string(),
+        armor: z.string(),
+        enchantments: z.string(),
+        equipped: z.string(),
+        wishlist: z.string(),
+      }),
+    })
+    .optional(),
   landing: z.object({
     howItWorksTitle: z.string(),
     steps: z.array(
@@ -499,6 +520,88 @@ export const labelsSchema = z.object({
   errors: z.record(z.string(), z.string()),
 });
 
+export const equipmentSlotIdSchema = z.enum([
+  "head",
+  "body",
+  "hands",
+  "feet",
+  "amulet",
+  "ringLeft",
+  "ringRight",
+  "weaponMain",
+  "weaponOff",
+]);
+
+export const gearWeaponSchema = z.object({
+  id: z.string(),
+  edid: z.string(),
+  name: z.string(),
+  kind: z.literal("weapon"),
+  weaponType: z.string(),
+  slot: z.string(),
+  value: z.number(),
+  weight: z.number(),
+  damage: z.number(),
+  enchantId: z.string().nullable(),
+  keywordIds: z.array(z.string()),
+  description: z.string().default(""),
+  static: z.boolean(),
+  plugin: z.string().default(""),
+});
+
+export const gearArmorSchema = z.object({
+  id: z.string(),
+  edid: z.string(),
+  name: z.string(),
+  kind: z.literal("armor"),
+  armorType: z.string(),
+  slot: z.string(),
+  equipmentSlots: z.array(z.string()),
+  value: z.number(),
+  weight: z.number(),
+  armorRating: z.number(),
+  enchantId: z.string().nullable(),
+  keywordIds: z.array(z.string()),
+  description: z.string().default(""),
+  static: z.boolean(),
+  plugin: z.string().default(""),
+});
+
+export const gearEnchantmentSchema = z.object({
+  id: z.string(),
+  edid: z.string(),
+  name: z.string(),
+  description: z.string().default(""),
+  effects: z.array(effectSchema).default([]),
+  plugin: z.string().default(""),
+});
+
+export const itemsIndexSchema = z.object({
+  categories: z.array(z.string()),
+  counts: z.object({
+    weapons: z.number().int().nonnegative(),
+    armor: z.number().int().nonnegative(),
+    enchantments: z.number().int().nonnegative(),
+    staticWeapons: z.number().int().nonnegative(),
+    staticArmor: z.number().int().nonnegative(),
+  }),
+  slots: z.array(z.string()),
+  weaponTypes: z.array(z.string()),
+  armorTypes: z.array(z.string()),
+});
+
+export const itemsWeaponsSchema = z.object({
+  weapons: z.array(gearWeaponSchema),
+});
+
+export const itemsArmorSchema = z.object({
+  armor: z.array(gearArmorSchema),
+});
+
+export const itemsEnchantmentsSchema = z.object({
+  enchantments: z.array(gearEnchantmentSchema),
+});
+
 export type AttributeStat = z.infer<typeof attributeStatSchema>;
 export type SkillLevelBaseline = z.infer<typeof skillLevelBaselineSchema>;
 export type SkillFloorSource = z.infer<typeof skillFloorSourceSchema>;
@@ -517,6 +620,21 @@ export type SupernaturalRacialBonus = z.infer<typeof supernaturalRacialBonusSche
 export type SupernaturalData = z.infer<typeof supernaturalSchema>;
 export type Deity = z.infer<typeof deitySchema>;
 export type Trait = z.infer<typeof traitSchema>;
+export type EquipmentSlotId = z.infer<typeof equipmentSlotIdSchema>;
+export type GearWeapon = z.infer<typeof gearWeaponSchema>;
+export type GearArmor = z.infer<typeof gearArmorSchema>;
+export type GearEnchantment = z.infer<typeof gearEnchantmentSchema>;
+export type GearItem = GearWeapon | GearArmor;
+export type ItemsIndex = z.infer<typeof itemsIndexSchema>;
+
+export interface ItemsCatalog {
+  index: ItemsIndex;
+  weapons: GearWeapon[];
+  armor: GearArmor[];
+  enchantments: GearEnchantment[];
+  itemById: Readonly<Record<string, GearItem>>;
+  enchantmentById: Readonly<Record<string, GearEnchantment>>;
+}
 export type Skill = z.infer<typeof skillSchema>;
 export type Perk = z.infer<typeof perkSchema>;
 export type PerkAllocation = z.infer<typeof perkAllocationSchema>;
@@ -541,6 +659,7 @@ export interface GameData {
   perkById: Readonly<Record<string, Perk>>;
   /** O(1) skill id for a perk — built at load time from perkTrees. */
   perkSkillIdByPerkId: Readonly<Record<string, string>>;
+  items: ItemsCatalog;
 }
 
 export interface UiData {

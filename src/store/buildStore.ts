@@ -65,6 +65,9 @@ import {
   applySupernaturalOptionChange,
   isSupernaturalOptionId,
 } from "@/lib/supernatural";
+import { sanitizeEquipment, sanitizeWishlist } from "@/lib/gearLibrary";
+import type { EquipmentSlotId } from "@/data/schemas";
+import type { EquipmentSelection, WishlistEntry } from "@/lib/gearLibrary";
 import { createDebouncedJSONStorage } from "@/store/debouncedPersistStorage";
 import { scheduleAfterPaint } from "@/store/scheduleAfterPaint";
 
@@ -155,6 +158,8 @@ interface BuildStore {
   resetSkillTraining: (skillId: string) => void;
   resetAllPerks: () => void;
   setDescription: (description: string) => void;
+  setEquipmentSlot: (slot: EquipmentSlotId, selection: EquipmentSelection | null) => void;
+  toggleWishlistEntry: (entry: WishlistEntry) => void;
   loadBuild: (build: BuildState) => void;
   loadSharedBuild: (decoded: DecodedBuildPackage) => void;
   importSharedBuild: (decoded: DecodedBuildPackage) => void;
@@ -624,6 +629,35 @@ export const useBuildStore = create<BuildStore>()(
         setDescription: (description) => {
           const { build } = get();
           commitBuild(set, get, { ...build, description });
+        },
+
+        setEquipmentSlot: (slot, selection) => {
+          const { build, gameData } = get();
+          if (!gameData) return;
+          const equipment = { ...(build.equipment ?? {}) };
+          if (!selection) {
+            delete equipment[slot];
+          } else {
+            equipment[slot] = selection;
+          }
+          commitBuild(set, get, {
+            ...build,
+            equipment: sanitizeEquipment(gameData.game, equipment),
+          });
+        },
+
+        toggleWishlistEntry: (entry) => {
+          const { build, gameData } = get();
+          if (!gameData) return;
+          const current = build.wishlist ?? [];
+          const exists = current.some((item) => item.kind === entry.kind && item.id === entry.id);
+          const wishlist = exists
+            ? current.filter((item) => !(item.kind === entry.kind && item.id === entry.id))
+            : [...current, entry];
+          commitBuild(set, get, {
+            ...build,
+            wishlist: sanitizeWishlist(gameData.game, wishlist),
+          });
         },
 
         loadBuild: (build) => {

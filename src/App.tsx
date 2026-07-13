@@ -8,6 +8,7 @@ import { LoadingScreen } from "@/components/layout/LoadingScreen";
 import { LandingPage } from "@/pages/LandingPage";
 import { PlannerPage } from "@/pages/PlannerPage";
 import { BuildsPage } from "@/pages/BuildsPage";
+import { LibraryPage } from "@/pages/LibraryPage";
 import { useBuildStore } from "@/store/buildStore";
 import { BuildThemeBridge } from "@/theme/BuildThemeBridge";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,6 +35,7 @@ function AppRoutes() {
             <Route index element={<LandingOrRedirect />} />
             <Route path="planner" element={<PlannerPage />} />
             <Route path="builds" element={<BuildsPage />} />
+            <Route path="library" element={<LibraryPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

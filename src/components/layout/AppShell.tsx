@@ -60,6 +60,7 @@ export function AppShell() {
   const navItems = [
     { to: "/", end: true, label: labels.nav.home },
     { to: "/planner", label: labels.nav.planner },
+    { to: "/library", label: labels.nav.library },
     { to: "/builds", label: labels.nav.builds },
   ] as const;
 

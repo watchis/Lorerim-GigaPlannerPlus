@@ -1,30 +1,27 @@
-# Gear and enchantment import (planned — phase 3)
+# Gear and enchantment import
 
-Future domain importer for player equipment, enchantments, and related crafting data.
+Domain importer for player equipment and enchantments.
 
-## Planned record types
+## Record types
 
 | Record | Use |
 |--------|-----|
-| `WEAP` | Weapons — base stats, keywords |
-| `ARMO` | Armor — armor rating, slot, keywords |
-| `ENCH` | Enchantments — linked MGEF effects |
-| `COBJ` | Crafting recipes (optional) |
+| `WEAP` | Weapons — damage, weight, value, anim type, keywords, `EITM` |
+| `ARMO` | Armor — rating, slot flags, armor type, keywords, `EITM` |
+| `ENCH` | Enchantments — linked MGEF effects via EFID/EFIT |
+| `KYWD` | Keyword editor IDs for filters / static hints |
 
-## Planned output
+## Output
 
-- `data/game/items.json` or per-category files (TBD)
-- Reuses `lib/effects/` for enchantment → planner `Effect[]` mapping
+- `data/game/items/index.json`
+- `data/game/items/weapons.json`
+- `data/game/items/armor.json`
+- `data/game/items/enchantments.json`
 
-## ImportContext extension
+## Run
 
-```js
-scan: {
-  weaponRecords: [],
-  armorRecords: [],
-  enchantRecords: [],
-  mgefIndex: Map,
-}
+```bash
+npm run import:lorerim -- --install "D:\Wabbajack\Modlists\Lorerim" --only gear --rescan-plugins
 ```
 
-Extend [`esp-reader.mjs`](../esp-reader.mjs) `IMPORT_RECORD_TYPES` when this phase begins.
+`--rescan-plugins` is required after first enabling gear types so the non-mechanics skip cache is rebuilt.

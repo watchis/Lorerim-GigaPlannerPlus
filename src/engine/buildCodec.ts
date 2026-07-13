@@ -87,6 +87,8 @@ type CompactBuildPayloadV3 = {
   tr?: [string, number, number][];
   co?: [string, string][];
   oi?: string[];
+  eq?: [string, string, string | null][];
+  wl?: [string, string][];
   d?: string;
 };
 
@@ -221,6 +223,22 @@ function compactPayloadFromBuildIds(
     payload.oi = [...state.oghmaSkillIds];
   }
 
+  const equipmentEntries: [string, string, string | null][] = [];
+  for (const [slot, selection] of Object.entries(state.equipment ?? {})) {
+    if (!selection?.itemId) continue;
+    equipmentEntries.push([slot, selection.itemId, selection.enchantId ?? null]);
+  }
+  if (equipmentEntries.length > 0) {
+    payload.eq = equipmentEntries.sort((left, right) => left[0].localeCompare(right[0]));
+  }
+
+  if ((state.wishlist ?? []).length > 0) {
+    payload.wl = state.wishlist.map((entry) => [
+      entry.kind === "enchant" ? "e" : "i",
+      entry.id,
+    ]);
+  }
+
   if (state.description.trim()) {
     payload.d = state.description;
   }
@@ -323,6 +341,26 @@ function buildStateFromIdPayload(
 
   const characterOptionChoices = decodeCharacterOptionChoices(payload.co, modpackVersion);
 
+  const equipment: BuildState["equipment"] = {};
+  for (const entry of payload.eq ?? []) {
+    const [slot, itemId, enchantId] = entry;
+    if (!slot || !itemId) continue;
+    equipment[slot as keyof BuildState["equipment"]] = {
+      itemId,
+      enchantId: enchantId ?? null,
+    };
+  }
+
+  const wishlist: BuildState["wishlist"] = [];
+  for (const entry of payload.wl ?? []) {
+    const [kindCode, id] = entry;
+    if (!id) continue;
+    wishlist.push({
+      kind: kindCode === "e" ? "enchant" : "item",
+      id,
+    });
+  }
+
   return payloadToBuildState({
     raceId: payload.r ?? "none",
     birthsignId: payload.s ?? null,
@@ -340,6 +378,8 @@ function buildStateFromIdPayload(
     skillLevels,
     skillTrainingRanges,
     characterOptionChoices,
+    equipment,
+    wishlist,
     playerLevel: payload.lv ?? game.mechanics.leveling.baseLevel,
     description: payload.d ?? "",
   }, game);
@@ -539,6 +579,8 @@ function payloadToBuildState(partial: {
   selectedPerkIds: string[];
   skillLevels: BuildState["skillLevels"];
   skillTrainingRanges?: BuildState["skillTrainingRanges"];
+  equipment?: BuildState["equipment"];
+  wishlist?: BuildState["wishlist"];
   playerLevel?: number;
   description: string;
 }, game?: GameData): BuildState {
@@ -555,6 +597,8 @@ function payloadToBuildState(partial: {
     selectedPerkIds: partial.selectedPerkIds,
     skillLevels: partial.skillLevels,
     skillTrainingRanges: partial.skillTrainingRanges ?? {},
+    equipment: partial.equipment ?? {},
+    wishlist: partial.wishlist ?? [],
     playerLevel: partial.playerLevel ?? game?.mechanics.leveling.baseLevel ?? 1,
     description: partial.description,
   };

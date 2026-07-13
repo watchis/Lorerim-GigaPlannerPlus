@@ -10,6 +10,7 @@ import { createBuildCodecRegistry, lookupIndex } from "@/engine/buildCodecRegist
 import { reconcileImportedBuild } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 import { createMilestone, createSavedBuild } from "@/store/savedBuilds";
+import { buildItemsCatalog } from "@/lib/gearLibrary";
 
 function toBase64Url(bytes: Uint8Array): string {
   let binary = "";
@@ -356,6 +357,99 @@ describe("buildCodec", () => {
     expect(decoded.shared?.activeVariantIndex).toBe(1);
     expect(decoded.build.playerLevel).toBe(10);
     expect(decoded.build.selectedPerkIds).toEqual(["block-improved-blocking"]);
+  });
+
+  it("round-trips equipment slots and wishlist through v3 codec", () => {
+    const gameWithItems = {
+      ...game,
+      items: buildItemsCatalog({
+        index: {
+          categories: ["weapons", "armor", "enchantments"],
+          counts: {
+            weapons: 1,
+            armor: 1,
+            enchantments: 1,
+            staticWeapons: 0,
+            staticArmor: 1,
+          },
+          slots: ["body", "weaponMain"],
+          weaponTypes: ["oneHandSword"],
+          armorTypes: ["heavy"],
+        },
+        weapons: [
+          {
+            id: "iron-sword",
+            edid: "IronSword",
+            name: "Iron Sword",
+            kind: "weapon",
+            weaponType: "oneHandSword",
+            slot: "weaponMain",
+            value: 25,
+            weight: 9,
+            damage: 7,
+            enchantId: null,
+            keywordIds: [],
+            description: "",
+            static: false,
+            plugin: "Skyrim.esm",
+          },
+        ],
+        armor: [
+          {
+            id: "iron-cuirass",
+            edid: "ArmorIronCuirass",
+            name: "Iron Armor",
+            kind: "armor",
+            armorType: "heavy",
+            slot: "body",
+            equipmentSlots: ["body"],
+            value: 125,
+            weight: 30,
+            armorRating: 25,
+            enchantId: "fortify-health",
+            keywordIds: [],
+            description: "",
+            static: true,
+            plugin: "Skyrim.esm",
+          },
+        ],
+        enchantments: [
+          {
+            id: "fortify-health",
+            edid: "EnchArmorFortifyHealth",
+            name: "Fortify Health",
+            description: "",
+            effects: [],
+            plugin: "Skyrim.esm",
+          },
+        ],
+      }),
+    };
+
+    const state = createTestBuildState({
+      equipment: {
+        body: { itemId: "iron-cuirass", enchantId: "fortify-health" },
+        weaponMain: { itemId: "iron-sword", enchantId: null },
+      },
+      wishlist: [
+        { kind: "item", id: "iron-sword" },
+        { kind: "enchant", id: "fortify-health" },
+      ],
+    });
+
+    const decoded = decodeBuild(encodeBuild(state, gameWithItems), gameWithItems);
+    expect(decoded.equipment.body).toEqual({
+      itemId: "iron-cuirass",
+      enchantId: "fortify-health",
+    });
+    expect(decoded.equipment.weaponMain).toEqual({
+      itemId: "iron-sword",
+      enchantId: null,
+    });
+    expect(decoded.wishlist).toEqual([
+      { kind: "item", id: "iron-sword" },
+      { kind: "enchant", id: "fortify-health" },
+    ]);
   });
 
   it("ignores out-of-range compact indices during decode", () => {

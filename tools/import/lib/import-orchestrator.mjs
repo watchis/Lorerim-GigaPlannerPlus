@@ -5,6 +5,7 @@ import { importRaces } from "../importers/races.mjs";
 import { importBirthsigns } from "../importers/birthsigns.mjs";
 import { importDeities } from "../importers/deities.mjs";
 import { importSupernatural } from "../importers/supernatural.mjs";
+import { importGear } from "../importers/gear.mjs";
 import { importManifest } from "../importers/manifest.mjs";
 
 const DOMAIN_IMPORTERS = {
@@ -14,6 +15,7 @@ const DOMAIN_IMPORTERS = {
   birthsigns: importBirthsigns,
   deities: importDeities,
   supernatural: importSupernatural,
+  gear: importGear,
   manifest: importManifest,
 };
 
@@ -100,6 +102,16 @@ export function reportDomainSummaries(domainResults, progress) {
         progress.step(
           `Supernatural — ${result.summary.vampirismForms} vampirism forms, ` +
             `${result.summary.lycanthropyForms} lycanthropy forms`,
+        );
+        break;
+      case "gear":
+        progress.step(
+          `Gear — ${result.summary.weapons} weapons, ` +
+            `${result.summary.armor} armor, ` +
+            `${result.summary.enchantments} enchantments` +
+            (result.summary.staticItems
+              ? ` (${result.summary.staticItems} static)`
+              : ""),
         );
         break;
       case "manifest": {

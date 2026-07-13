@@ -20,6 +20,7 @@
     "import:birthsigns": "node tools/import/import-birthsigns.mjs",
     "import:deities": "node tools/import/import-deities.mjs",
     "import:supernatural": "node tools/import/import-supernatural.mjs",
+    "import:gear": "node tools/import/import-lorerim.mjs --only gear",
     "export:codec-registry": "node tools/export-codec-registry.mjs",
     "regen:effects": "node tools/import/lib/regenerate-option-effects.mjs",
     "regen:extension-stub": "node tools/regen-extension-stub.mjs"
