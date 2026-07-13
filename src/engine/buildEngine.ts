@@ -44,6 +44,7 @@ import {
 } from "@/lib/oghmaInfinium";
 import {
   isTraitBlockedBySupernatural,
+  LICH_SKILL_ID,
   migrateLegacySupernaturalBuild,
   normalizeSupernaturalState,
 } from "@/lib/supernatural";
@@ -1407,7 +1408,9 @@ export function computeBuild(game: GameData, state: BuildState): ComputedBuild {
 export function getOrderedPerkTrees(game: GameData): PerkTree[] {
   return game.manifest.skills
     .map((skillId) => game.perkTrees[skillId])
-    .filter((tree): tree is PerkTree => tree !== undefined);
+    .filter((tree): tree is PerkTree => tree !== undefined)
+    // Lich has no custom perk tree (phylactery souls); keep an empty placeholder for catalog/codec.
+    .filter((tree) => tree.skillId !== LICH_SKILL_ID || tree.perks.length > 0);
 }
 
 export function getPerkById(game: GameData, perkId: string): Perk | undefined {

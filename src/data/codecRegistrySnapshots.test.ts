@@ -41,12 +41,14 @@ describe("codec registry snapshots", () => {
       expect.arrayContaining([
         ["none", "stage-1", "stage-2", "stage-3", "stage-4"],
         ["none", "claimed"],
+        expect.arrayContaining(["none", "0", "25", "50"]),
       ]),
     );
     expect(snapshot?.perks).toContain("vampire-scion");
     expect(snapshot?.perks).toContain("werewolf-animal-vigor");
-    expect(snapshot?.perks).toContain("lich-magicka-weave");
-    expect(snapshot?.perks.length).toBe(523);
+    expect(snapshot?.perks).toContain("werewolf-night-eye");
+    expect(snapshot?.perks).not.toContain("lich-magicka-weave");
+    expect(snapshot?.perks.length).toBe(513);
 
     const registry = createBuildCodecRegistryForVersion(game, game.manifest.version);
     expect(registry.perks).toEqual(snapshot?.perks);

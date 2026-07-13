@@ -42,6 +42,8 @@ const snapshot = exportCodecRegistryFromPaths({ game: gameDir });
 assert.equal(snapshot.version, "9.9.9.9");
 assert.deepEqual(snapshot.skills, ["block"]);
 assert.deepEqual(snapshot.perks, ["block-improved-blocking"]);
+assert.deepEqual(snapshot.characterOptions, ["oghma-infinium"]);
+assert.deepEqual(snapshot.characterOptionChoices, [["none", "claimed"]]);
 
 const written = writeCodecRegistrySnapshot({ snapshot, repoRoot });
 const index = JSON.parse(

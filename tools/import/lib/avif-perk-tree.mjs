@@ -1,6 +1,7 @@
 import * as tesData from "@fcrick/tes-data";
 import { open } from "node:fs/promises";
 import { SKILL_IDS, SKILL_NAMES } from "./skill-constants.mjs";
+import { SUPERNATURAL_AVIF_FULL_NAME_TO_SKILL } from "./supernatural-perk-skills.mjs";
 import { formatCount } from "./import-progress.mjs";
 import { cleanName } from "./transform-utils.mjs";
 import { scanSubrecords } from "./perk-record-parser.mjs";
@@ -23,8 +24,11 @@ function readU32(data) {
   return buffer.length >= 4 ? buffer.readUInt32LE(0) : 0;
 }
 
-function skillIdFromAvif(edid, fullName) {
+export function skillIdFromAvif(edid, fullName) {
   const normalizedFull = cleanName(fullName).toLowerCase();
+  const supernaturalSkill = SUPERNATURAL_AVIF_FULL_NAME_TO_SKILL.get(normalizedFull);
+  if (supernaturalSkill) return supernaturalSkill;
+
   const fullIndex = SKILL_NAMES.findIndex(
     (name) => name.toLowerCase() === normalizedFull,
   );

@@ -81,16 +81,16 @@ describe("buildCodec", () => {
 
     const lichBuild = createTestBuildState({
       raceId: "breton",
-      characterOptionChoices: { vampire: "none", werewolf: "none", lich: "claimed" },
-      selectedPerkIds: ["lich-magicka-weave", "lich-supreme-weave"],
+      characterOptionChoices: { vampire: "none", werewolf: "none", lich: "25" },
+      selectedPerkIds: ["vampire-scion"],
     });
 
     const decodedLich = decodeBuild(encodeBuild(lichBuild, game), game);
 
-    expect(decodedLich.characterOptionChoices.lich).toBe("claimed");
+    expect(decodedLich.characterOptionChoices.lich).toBe("25");
     expect(decodedLich.characterOptionChoices.vampire).toBe("none");
     expect(decodedLich.characterOptionChoices.werewolf).toBe("none");
-    expect(decodedLich.selectedPerkIds).toEqual(["lich-magicka-weave", "lich-supreme-weave"]);
+    expect(decodedLich.selectedPerkIds).toEqual(["vampire-scion"]);
   });
 
   it("round-trips supernatural choices in saved build variants", () => {

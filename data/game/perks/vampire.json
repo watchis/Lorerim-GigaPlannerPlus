@@ -2,8 +2,8 @@
   "skillId": "vampire",
   "skillName": "Vampire",
   "grid": {
-    "width": 15,
-    "height": 13
+    "width": 25,
+    "height": 28
   },
   "perks": [
     {
@@ -11,358 +11,362 @@
       "name": "Scion",
       "skillReq": 0,
       "position": {
-        "x": 8,
-        "y": 12
+        "x": 12,
+        "y": 27
       },
       "prerequisites": [],
-      "prerequisitesAny": [],
-      "description": "As a Vampire Lord, gain a 50 point bonus to all attributes (Health, Magicka, Stamina).",
-      "effects": []
-    },
-    {
-      "id": "vampire-unearthly-will",
-      "name": "Unearthly Will",
-      "skillReq": 0,
-      "position": {
-        "x": 4,
-        "y": 10
-      },
-      "prerequisites": [
-        "vampire-scion"
-      ],
-      "prerequisitesAny": [],
-      "description": "As a Vampire Lord, all spells and powers cost 25% less to cast.",
-      "effects": []
-    },
-    {
-      "id": "vampire-night-cloak",
-      "name": "Night Cloak",
-      "skillReq": 0,
-      "position": {
-        "x": 6,
-        "y": 10
-      },
-      "prerequisites": [
-        "vampire-scion"
-      ],
-      "prerequisitesAny": [],
-      "description": "As a Vampire Lord, a cloud of bats absorbs 5 Health per second from each nearby living enemy in combat.",
-      "effects": []
-    },
-    {
-      "id": "vampire-energy-vampire",
-      "name": "Energy Vampire",
-      "skillReq": 0,
-      "position": {
-        "x": 8,
-        "y": 10
-      },
-      "prerequisites": [
-        "vampire-scion"
-      ],
-      "prerequisitesAny": [],
-      "description": "As a Vampire Lord, your attacks also absorb Magicka and your damaging spells also absorb Stamina.",
-      "effects": []
-    },
-    {
-      "id": "vampire-shapechanger",
-      "name": "Shapechanger",
-      "skillReq": 0,
-      "position": {
-        "x": 10,
-        "y": 10
-      },
-      "prerequisites": [
-        "vampire-scion"
-      ],
-      "prerequisitesAny": [],
-      "description": "As a Vampire Lord, your attacks weaken targets to your damaging spells and your damaging spells weaken targets to your attacks, increasing damage by 25% for 10 seconds.",
-      "effects": []
-    },
-    {
-      "id": "vampire-vampiric-grip",
-      "name": "Vampiric Grip",
-      "skillReq": 0,
-      "position": {
-        "x": 12,
-        "y": 10
-      },
-      "prerequisites": [
-        "vampire-scion"
-      ],
-      "prerequisitesAny": [],
-      "description": "Blood Magic: Pulls a living target to you from a distance, absorbing Health and Stamina at close range.",
-      "effects": []
-    },
-    {
-      "id": "vampire-fountain-of-blood",
-      "name": "Fountain of Blood",
-      "skillReq": 0,
-      "position": {
-        "x": 6,
-        "y": 8
-      },
-      "prerequisites": [
-        "vampire-night-cloak"
-      ],
-      "prerequisitesAny": [],
-      "description": "Draining a person or killing a person with a power attack bite restores three times as much Health and also restores Magicka and Stamina.",
-      "effects": []
-    },
-    {
-      "id": "vampire-slasher",
-      "name": "Slasher",
-      "skillReq": 0,
-      "position": {
-        "x": 6,
-        "y": 6
-      },
-      "prerequisites": [
-        "vampire-fountain-of-blood"
-      ],
-      "prerequisitesAny": [],
-      "description": "As a Vampire Lord, your power attacks are 25% stronger and hit all targets in front of you.",
-      "effects": []
-    },
-    {
-      "id": "vampire-hemomancer",
-      "name": "Hemomancer",
-      "skillReq": 0,
-      "position": {
-        "x": 4,
-        "y": 8
-      },
-      "prerequisites": [
-        "vampire-unearthly-will"
-      ],
-      "prerequisitesAny": [],
-      "description": "Vampiric blood spells deal 0.4% more damage per level of Destruction.",
-      "effects": []
-    },
-    {
-      "id": "vampire-blood-storm",
-      "name": "Blood Storm",
-      "skillReq": 0,
-      "position": {
-        "x": 4,
-        "y": 6
-      },
-      "prerequisites": [
-        "vampire-hemomancer"
-      ],
-      "prerequisitesAny": [],
-      "description": "As a Vampire Lord, upgrades your Raze spell to Blood Storm, which deals 15% more damage and can be held down for rapid fire.",
-      "effects": []
-    },
-    {
-      "id": "vampire-auspex",
-      "name": "Auspex",
-      "skillReq": 0,
-      "position": {
-        "x": 8,
-        "y": 8
-      },
-      "prerequisites": [
-        "vampire-energy-vampire"
-      ],
-      "prerequisitesAny": [],
-      "description": "Your Vampiric senses warn you when enemies approach within 150 feet, briefly revealing them.",
-      "effects": []
+      "description": "The power of undeath grants you a greater resistance to wounds, a stronger mind and much more endurance.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "vampire-courts-chef",
       "name": "Court's Chef",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 8
+        "x": 4,
+        "y": 27
       },
       "prerequisites": [
-        "vampire-shapechanger"
+        "vampire-scion"
       ],
-      "prerequisitesAny": [],
-      "description": "Able to create a variety of beneficial Potions from Human Flesh or Human Hearts at a cooking pot.",
-      "effects": []
+      "description": "Making Blood Potions out of Human Flesh, Human Hearts, Lich Hearts and Cursed Daedric Hearts at a cooking pot is twice as efficient.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "vampire-wings-of-the-strix",
       "name": "Wings of the Strix",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 6
+        "x": 20,
+        "y": 27
       },
       "prerequisites": [
-        "vampire-courts-chef"
+        "vampire-scion"
       ],
-      "prerequisitesAny": [],
       "description": "As a Vampire Lord, sprinting in caster stance allows you to glide, greatly reducing fall speed.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
-      "id": "vampire-maelstrom",
-      "name": "Maelstrom",
+      "id": "vampire-hemomancer",
+      "name": "Hemomancer",
+      "skillReq": 0,
+      "position": {
+        "x": 10,
+        "y": 17
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
+      "description": "Vampiric blood spells deal 0.2% more damage per level of Destruction.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-unearthly-will",
+      "name": "Unearthly Will",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 12
+      },
+      "prerequisites": [
+        "vampire-hemomancer",
+        "vampire-fountain-of-blood"
+      ],
+      "description": "As a Vampire Lord, all spells and powers are 20% stronger.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-blood-storm",
+      "name": "Blood Storm",
+      "skillReq": 0,
+      "position": {
+        "x": 8,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-unearthly-will"
+      ],
+      "description": "As a Vampire Lord, upgrades your Raze spell to Blood Storm, which deals 10% more damage and can be held down for rapid fire.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-energy-vampire",
+      "name": "Energy Vampire",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 4
+      },
+      "prerequisites": [
+        "vampire-blood-storm",
+        "vampire-slasher"
+      ],
+      "description": "As a Vampire Lord, your attacks also absorb Magicka and your damaging spells also absorb Stamina.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-shapechanger",
+      "name": "Shapechanger",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 0
+      },
+      "prerequisites": [
+        "vampire-energy-vampire"
+      ],
+      "description": "As a Vampire Lord, your attacks weaken targets to your damaging spells and your damaging spells weaken targets to your attacks, increasing damage by 10% for 10 seconds.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-slasher",
+      "name": "Slasher",
+      "skillReq": 0,
+      "position": {
+        "x": 16,
+        "y": 8
+      },
+      "prerequisites": [
+        "vampire-unearthly-will"
+      ],
+      "description": "As a Vampire Lord, your power attacks are 10% stronger and hit all targets in front of you.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-veil-of-the-night",
+      "name": "Veil of the Night",
       "skillReq": 0,
       "position": {
         "x": 12,
         "y": 8
       },
       "prerequisites": [
-        "vampire-vampiric-grip"
-      ],
-      "prerequisitesAny": [],
-      "description": "Blood Magic: Vortex pulls targets within range to the center, briefly weakening them to magic.",
-      "effects": []
-    },
-    {
-      "id": "vampire-gutwrench",
-      "name": "Gutwrench",
-      "skillReq": 0,
-      "position": {
-        "x": 14,
-        "y": 10
-      },
-      "prerequisites": [
-        "vampire-vampiric-grip"
-      ],
-      "prerequisitesAny": [],
-      "description": "Blood Magic: Absorb Health from nearby living targets, tearing them apart when maintained for long enough.",
-      "effects": []
-    },
-    {
-      "id": "vampire-mist-form",
-      "name": "Mist Form",
-      "skillReq": 0,
-      "position": {
-        "x": 4,
-        "y": 4
-      },
-      "prerequisites": [
         "vampire-unearthly-will"
       ],
-      "prerequisitesAny": [],
-      "description": "Night Power: Turn into invisible and invulnerable mist, regenerating Health, Magicka and Stamina.",
-      "effects": []
-    },
-    {
-      "id": "vampire-supernatural-reflexes",
-      "name": "Supernatural Reflexes",
-      "skillReq": 0,
-      "position": {
-        "x": 5,
-        "y": 1
-      },
-      "prerequisites": [
-        "vampire-mist-form"
-      ],
-      "prerequisitesAny": [],
-      "description": "Night Power: Slow time as you move and attack faster and your power attacks knock targets down.",
-      "effects": []
-    },
-    {
-      "id": "vampire-tremor",
-      "name": "Tremor",
-      "skillReq": 0,
-      "position": {
-        "x": 7,
-        "y": 3
-      },
-      "prerequisites": [
-        "vampire-mist-form"
-      ],
-      "prerequisitesAny": [],
-      "description": "Night Power: Shake the earth, staggering nearby targets and throwing them into the air.",
-      "effects": []
-    },
-    {
-      "id": "vampire-vampiric-seed",
-      "name": "Vampiric Seed",
-      "skillReq": 0,
-      "position": {
-        "x": 2,
-        "y": 6
-      },
-      "prerequisites": [
-        "vampire-hemomancer"
-      ],
-      "prerequisitesAny": [],
-      "description": "Mortal Hemomancy: Bone shards pierce a living target, absorbing Health and dealing magic damage.",
-      "effects": []
-    },
-    {
-      "id": "vampire-vampiric-orb",
-      "name": "Vampiric Orb",
-      "skillReq": 0,
-      "position": {
-        "x": 2,
-        "y": 4
-      },
-      "prerequisites": [
-        "vampire-vampiric-seed"
-      ],
-      "prerequisitesAny": [],
-      "description": "Mortal Hemomancy: Impales living targets in the area, absorbing Health and dealing magic damage.",
-      "effects": []
-    },
-    {
-      "id": "vampire-vampiric-cloak",
-      "name": "Vampiric Cloak",
-      "skillReq": 0,
-      "position": {
-        "x": 2,
-        "y": 2
-      },
-      "prerequisites": [
-        "vampire-vampiric-orb"
-      ],
-      "prerequisitesAny": [],
-      "description": "Mortal Hemomancy: Bats attack living targets. Absorbs Health and deals magic damage.",
-      "effects": []
+      "description": "As a Vampire Lord, a cloud of bats absorbs 4 Health per second from each nearby living enemy in combat.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "vampire-blood-from-a-stone",
-      "name": "Blood From a Stone",
+      "name": "Blood from a Stone",
       "skillReq": 0,
       "position": {
-        "x": 0,
-        "y": 4
+        "x": 6,
+        "y": 17
       },
       "prerequisites": [
-        "vampire-hemomancer"
+        "vampire-hemomancer",
+        "vampire-vampiric-seed"
       ],
-      "prerequisitesAny": [],
       "description": "Vampiric blood spells can now damage nonliving targets.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "vampire-starving-artist",
       "name": "Starving Artist",
       "skillReq": 0,
       "position": {
-        "x": 0,
-        "y": 2
+        "x": 4,
+        "y": 12
       },
       "prerequisites": [
         "vampire-blood-from-a-stone"
       ],
-      "prerequisitesAny": [],
       "description": "Vampiric blood spells absorb Stamina equal to 50% of damage dealt.",
-      "effects": []
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "vampire-make-them-beautiful",
       "name": "Make Them Beautiful",
       "skillReq": 0,
       "position": {
-        "x": 0,
-        "y": 0
+        "x": 4,
+        "y": 2
       },
       "prerequisites": [
         "vampire-starving-artist"
       ],
-      "prerequisitesAny": [],
-      "description": "Vampiric blood spells tear apart targets below 25% Health, killing them instantly.",
-      "effects": []
+      "description": "Vampiric blood spells tear apart targets below 20% Health, killing them instantly.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-fountain-of-blood",
+      "name": "Fountain of Blood",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 17
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
+      "description": "Draining a person or killing a person with a power attack bite restores three times as much Health and also restores Magicka and Stamina.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-gutwrench",
+      "name": "Gutwrench",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 17
+      },
+      "prerequisites": [
+        "vampire-fountain-of-blood",
+        "vampire-mist-form"
+      ],
+      "description": "Blood Magic: Absorb Health from nearby living targets, tearing them apart when maintained for long enough.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-vampiric-grip",
+      "name": "Vampiric Grip",
+      "skillReq": 0,
+      "position": {
+        "x": 20,
+        "y": 12
+      },
+      "prerequisites": [
+        "vampire-gutwrench"
+      ],
+      "description": "Blood Magic: Pulls a living target to you from a distance, absorbing Health and Stamina at close range.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-maelstrom",
+      "name": "Maelstrom",
+      "skillReq": 0,
+      "position": {
+        "x": 20,
+        "y": 2
+      },
+      "prerequisites": [
+        "vampire-vampiric-grip"
+      ],
+      "description": "Blood Magic: Vortex pulls targets within range to the center, briefly weakening them to magic.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-vampiric-seed",
+      "name": "Vampiric Seed",
+      "skillReq": 0,
+      "position": {
+        "x": 4,
+        "y": 21
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
+      "description": "Mortal Hemomancy: Bone shards pierce a living target, absorbing Health and dealing magic damage.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-vampiric-orb",
+      "name": "Vampiric Orb",
+      "skillReq": 0,
+      "position": {
+        "x": 0,
+        "y": 21
+      },
+      "prerequisites": [
+        "vampire-vampiric-seed"
+      ],
+      "description": "Mortal Hemomancy: Impales living targets in the area, absorbing Health and dealing magic damage.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-vampiric-cloak",
+      "name": "Vampiric Cloak",
+      "skillReq": 0,
+      "position": {
+        "x": 0,
+        "y": 12
+      },
+      "prerequisites": [
+        "vampire-vampiric-orb"
+      ],
+      "description": "Mortal Hemomancy: Bats attack living targets. Absorbs Health and deals magic damage.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-mist-form",
+      "name": "Mist Form",
+      "skillReq": 0,
+      "position": {
+        "x": 20,
+        "y": 21
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
+      "description": "Night Power: Turn into invisible and invulnerable mist, regenerating Health, Magicka and Stamina.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-supernatural-reflexes",
+      "name": "Supernatural Reflexes",
+      "skillReq": 0,
+      "position": {
+        "x": 24,
+        "y": 21
+      },
+      "prerequisites": [
+        "vampire-mist-form"
+      ],
+      "description": "Night Power: Slow time as you move and attack faster and your power attacks knock targets down.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-tremor",
+      "name": "Tremor",
+      "skillReq": 0,
+      "position": {
+        "x": 24,
+        "y": 12
+      },
+      "prerequisites": [
+        "vampire-supernatural-reflexes"
+      ],
+      "description": "Night Power: Shake the earth, staggering nearby targets and throwing them into the air.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "vampire-auspex",
+      "name": "Auspex",
+      "skillReq": 0,
+      "position": {
+        "x": 12,
+        "y": 21
+      },
+      "prerequisites": [
+        "vampire-scion"
+      ],
+      "description": "Your Vampiric senses warn you when enemies approach within 150 feet, briefly revealing them.",
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

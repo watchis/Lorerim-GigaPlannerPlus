@@ -177,7 +177,7 @@ describe("supernatural", () => {
   it("identifies supernatural perk tree skill ids", () => {
     expect(isSupernaturalPerkTreeSkillId(VAMPIRE_SKILL_ID)).toBe(true);
     expect(isSupernaturalPerkTreeSkillId(WEREWOLF_SKILL_ID)).toBe(true);
-    expect(isSupernaturalPerkTreeSkillId(LICH_SKILL_ID)).toBe(true);
+    expect(isSupernaturalPerkTreeSkillId(LICH_SKILL_ID)).toBe(false);
     expect(isSupernaturalPerkTreeSkillId("alchemy")).toBe(false);
   });
 
@@ -186,27 +186,27 @@ describe("supernatural", () => {
       game,
       createTestBuildState(),
       LICH_OPTION_ID,
-      SUPERNATURAL_CLAIMED_CHOICE,
+      "0",
     );
 
     expect(isLichActive(state)).toBe(true);
     expect(isVampireActive(state)).toBe(false);
     expect(isWerewolfActive(state)).toBe(false);
-    expect(getActiveSupernaturalSkillId(state)).toBe(LICH_SKILL_ID);
+    expect(getActiveSupernaturalSkillId(state)).toBeNull();
+    expect(state.characterOptionChoices[LICH_OPTION_ID]).toBe("0");
 
     const collected = collectBuildChanges(game, state);
     const magickaEffects = collected.sourcedEffects.filter(
       (entry) => entry.effect.type === "attribute" && entry.effect.stat === "magicka",
     );
-    expect(magickaEffects).toHaveLength(1);
-    expect(magickaEffects[0]?.effect.value).toBe(50);
+    expect(magickaEffects).toHaveLength(0);
     expect(collected.sourcedEffects.some((entry) => entry.labelKey === "lichOption")).toBe(true);
   });
 
   it("selecting lich while vampire is active switches curses and clears vampire perks", () => {
     const withVampirePerk = createTestBuildState({
       characterOptionChoices: { [VAMPIRE_OPTION_ID]: "stage-2" },
-      selectedPerkIds: ["vampire-hemomancer", "lich-magicka-weave"],
+      selectedPerkIds: ["vampire-hemomancer"],
       traitIds: ["silent-dovah", "angler"],
     });
 
@@ -214,14 +214,76 @@ describe("supernatural", () => {
       game,
       withVampirePerk,
       LICH_OPTION_ID,
-      SUPERNATURAL_CLAIMED_CHOICE,
+      "15",
     );
 
     expect(isLichActive(state)).toBe(true);
     expect(isVampireActive(state)).toBe(false);
     expect(isWerewolfActive(state)).toBe(false);
-    expect(state.selectedPerkIds).toEqual(["lich-magicka-weave"]);
+    expect(state.characterOptionChoices[LICH_OPTION_ID]).toBe("15");
+    expect(state.selectedPerkIds).toEqual([]);
     expect(state.traitIds).toEqual(["angler"]);
+  });
+
+  it("migrates legacy claimed lich choice to 0 souls", () => {
+    const state = normalizeSupernaturalState(
+      game,
+      createTestBuildState({
+        characterOptionChoices: { [LICH_OPTION_ID]: SUPERNATURAL_CLAIMED_CHOICE },
+        selectedPerkIds: ["vampire-hemomancer"],
+      }),
+    );
+
+    expect(state.characterOptionChoices[LICH_OPTION_ID]).toBe("0");
+    expect(isLichActive(state)).toBe(true);
+  });
+
+  it("applies phylactery per-soul and threshold effects", () => {
+    const state = applySupernaturalOptionChange(
+      game,
+      createTestBuildState(),
+      LICH_OPTION_ID,
+      "15",
+    );
+
+    const collected = collectBuildChanges(game, state);
+    const armor = collected.sourcedEffects.find(
+      (entry) =>
+        entry.effect.type === "derivedStat" &&
+        entry.effect.stat === "armorRating" &&
+        entry.source === "Phylactery souls",
+    );
+    const soulMagicka = collected.sourcedEffects.find(
+      (entry) =>
+        entry.effect.type === "attribute" &&
+        entry.effect.stat === "magicka" &&
+        entry.source === "Phylactery souls",
+    );
+    const absorb = collected.sourcedEffects.find(
+      (entry) =>
+        entry.effect.type === "derivedStat" &&
+        entry.effect.stat === "magicAbsorb" &&
+        entry.source === "Phylactery souls",
+    );
+    const fireResist = collected.sourcedEffects.find(
+      (entry) =>
+        entry.effect.type === "derivedStat" &&
+        entry.effect.stat === "fireResist" &&
+        entry.source === "Phylactery thresholds",
+    );
+
+    expect(armor?.effect).toMatchObject({ type: "derivedStat", value: 30 });
+    expect(soulMagicka?.effect).toMatchObject({ type: "attribute", value: 60 });
+    expect(absorb?.effect).toMatchObject({ type: "derivedStat", value: 7.5, isPercent: true });
+    expect(fireResist?.effect).toMatchObject({ type: "derivedStat", value: 50, isPercent: true });
+
+    const floodBase = collected.sourcedEffects.find(
+      (entry) =>
+        entry.effect.type === "attribute" &&
+        entry.effect.stat === "magicka" &&
+        entry.source === "Phylactery thresholds",
+    );
+    expect(floodBase?.effect).toMatchObject({ type: "attribute", value: 50 });
   });
 
   it("selecting werewolf while vampire is active switches curses and clears vampire perks", () => {

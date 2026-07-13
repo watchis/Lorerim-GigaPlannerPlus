@@ -3,8 +3,19 @@ import { useOptimistic, type ChangeEventHandler, type ReactNode } from "react";
 import type { CharacterOptionControlProps } from "@/extension-api";
 import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
+import { LichPhylacterySoulSelector } from "@/components/character-options/LichPhylacterySoulSelector";
 import { VampireStageSelector } from "@/components/character-options/VampireStageSelector";
 import { cn } from "@/lib/utils";
+import {
+  DEFAULT_LICH_SOULS,
+  formatLichPerSoulSummary,
+  formatLichPhylacteryNextUnlockSubtitle,
+  getLichPhylactery,
+  getUnlockedLichThresholds,
+  isLichSoulChoiceId,
+  lichSoulChoiceId,
+  parseLichSoulCount,
+} from "@/lib/lichPhylactery";
 import {
   DEFAULT_VAMPIRE_STAGE,
   getLichForm,
@@ -20,6 +31,10 @@ import {
   WEREWOLF_OPTION_ID,
 } from "@/lib/supernatural";
 import { useBuildStore } from "@/store/buildStore";
+import {
+  DetailBulletList,
+  DetailSection,
+} from "@/components/option-details/DetailSection";
 
 interface SupernaturalOptionControlProps extends CharacterOptionControlProps {
   optionId: string;
@@ -96,11 +111,26 @@ export function SupernaturalOptionControl({
   const detailLabels = {
     bonuses: labels.bonuses ?? "Bonuses",
     racialBonus: labels.racialBonus ?? "Racial ability",
-    detriments: labels.detriments ?? "Detriments",
+    detriments: labels.detriments ?? "Other Effects",
   };
   const claimedChoice =
     option.choices.find((choice) => choice.id !== option.defaultChoice)?.id ??
     SUPERNATURAL_CLAIMED_CHOICE;
+  const phylactery = isLich ? getLichPhylactery(game) : undefined;
+  const lichSouls =
+    isLich && phylactery
+      ? (parseLichSoulCount(displayChoiceId, phylactery.maxSouls) ?? DEFAULT_LICH_SOULS)
+      : DEFAULT_LICH_SOULS;
+  const unlockedThresholds =
+    phylactery && checked ? getUnlockedLichThresholds(phylactery, lichSouls) : [];
+  const nextUnlock =
+    phylactery && checked
+      ? formatLichPhylacteryNextUnlockSubtitle(
+          phylactery,
+          lichSouls,
+          labels.lichPhylacteryNext ?? "Next unlock at {count} souls: {name}",
+        )
+      : null;
   const inactiveLabel =
     labels[option.choices.find((choice) => choice.id === option.defaultChoice)?.label ?? "none"] ??
     "Inactive";
@@ -201,6 +231,36 @@ export function SupernaturalOptionControl({
             />
           )}
         </div>
+      ) : isLich && phylactery ? (
+        <div className="space-y-3">
+          <CurseToggleRow
+            checked={checked}
+            className={cn(
+              checked
+                ? "border-[var(--color-accent)]/45 bg-[var(--color-accent)]/10"
+                : "border-[var(--color-border)]/70 bg-[var(--color-surface-elevated)]/25 hover:border-[var(--color-accent-muted)]/40 hover:bg-[var(--color-surface-elevated)]/40",
+            )}
+            onChange={(event) =>
+              selectChoice(
+                event.target.checked
+                  ? isLichSoulChoiceId(displayChoiceId, phylactery.maxSouls)
+                    ? displayChoiceId
+                    : lichSoulChoiceId(DEFAULT_LICH_SOULS)
+                  : option.defaultChoice,
+              )
+            }
+            labelText={checked ? activeLabel : inactiveLabel}
+          />
+
+          {checked && (
+            <LichPhylacterySoulSelector
+              souls={lichSouls}
+              maxSouls={phylactery.maxSouls}
+              label={labels.lichPhylacterySoulsLabel ?? "Phylactery souls"}
+              onChange={(souls) => selectChoice(lichSoulChoiceId(souls))}
+            />
+          )}
+        </div>
       ) : (
         <CurseToggleRow
           checked={checked}
@@ -224,6 +284,41 @@ export function SupernaturalOptionControl({
             labels={detailLabels}
             hideHeader
           />
+
+          {isLich && phylactery && (
+            <>
+              {lichSouls > 0 && (
+                <DetailSection title={labels.lichPhylacteryPerSoul ?? "Per-soul bonuses"}>
+                  <DetailBulletList items={formatLichPerSoulSummary(phylactery, lichSouls)} />
+                </DetailSection>
+              )}
+
+              {unlockedThresholds.length > 0 && (
+                <DetailSection title={labels.lichPhylacteryUnlocked ?? "Unlocked thresholds"}>
+                  <div className="space-y-2">
+                    {unlockedThresholds.map((threshold) => (
+                      <div
+                        key={threshold.souls}
+                        className="rounded-[var(--radius-md)] border border-[var(--color-border)]/50 bg-[var(--color-surface-elevated)]/35 px-3 py-2"
+                      >
+                        <p className="text-xs font-semibold text-[var(--color-accent)]">
+                          {threshold.souls} — {threshold.name}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
+                          {threshold.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </DetailSection>
+              )}
+
+              {nextUnlock && (
+                <p className="text-xs leading-relaxed text-[var(--color-muted)]">{nextUnlock}</p>
+              )}
+            </>
+          )}
+
           {!resolvedRaceId && Boolean(racialBonus || isVampire || isWerewolf) && (
             <p className="text-xs leading-relaxed text-[var(--color-muted)]">
               {labels.selectRaceForRacialAbility ??

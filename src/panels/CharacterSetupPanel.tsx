@@ -405,7 +405,7 @@ export function CharacterSetupPanel() {
             </p>
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
               {labels.supernaturalLichActive ??
-                "Lichdom curse active — undead abilities apply."}
+                "Lichdom curse active — deposit souls into your phylactery for stacking bonuses."}
             </p>
           </div>
         )}

@@ -15,7 +15,7 @@
       {
         "id": "stage-1",
         "name": "Stage 1",
-        "description": "Early vampirism \u2014 modest attribute bonuses with growing weaknesses to fire and sunlight.",
+        "description": "Early vampirism — modest attribute bonuses with growing weaknesses to fire and sunlight.",
         "bonus": "Health, magicka, and stamina increase by 50. Frost resistance +25%. Sneak +15%. Melee damage +5%. Fire resistance -75%.",
         "effects": [
           {
@@ -59,7 +59,7 @@
           }
         ],
         "bonusDetails": [
-          "Take 2\u00d7 damage from silver and holy weapons.",
+          "Take 2× damage from silver and holy weapons.",
           "Deity shrine and follower effects reduced by 75%.",
           "Normal healing spells and potions do not affect vampires.",
           "Cannot take the Silent Dovah trait."
@@ -68,7 +68,7 @@
       {
         "id": "stage-2",
         "name": "Stage 2",
-        "description": "Hungry vampire \u2014 stronger bonuses and waterbreathing, with harsher fire weakness.",
+        "description": "Hungry vampire — stronger bonuses and waterbreathing, with harsher fire weakness.",
         "bonus": "Health, magicka, and stamina increase by 75. Waterbreathing. Frost resistance +40%. Sneak +20%. Melee damage +10%. Fire resistance -85%.",
         "effects": [
           {
@@ -116,7 +116,7 @@
           }
         ],
         "bonusDetails": [
-          "Take 2\u00d7 damage from silver and holy weapons.",
+          "Take 2× damage from silver and holy weapons.",
           "Deity shrine and follower effects reduced by 65%.",
           "Normal healing spells and potions do not affect vampires.",
           "Cannot take the Silent Dovah trait."
@@ -125,7 +125,7 @@
       {
         "id": "stage-3",
         "name": "Stage 3",
-        "description": "Starving vampire \u2014 powerful resistances and combat bonuses with severe fire vulnerability.",
+        "description": "Starving vampire — powerful resistances and combat bonuses with severe fire vulnerability.",
         "bonus": "Health, magicka, and stamina increase by 100. Poison and disease resistance +100%. Frost resistance +60%. Sneak +25%. Melee damage +15%. Fire resistance -100%.",
         "effects": [
           {
@@ -185,7 +185,7 @@
           }
         ],
         "bonusDetails": [
-          "Take 2\u00d7 damage from silver and holy weapons.",
+          "Take 2× damage from silver and holy weapons.",
           "Deity shrine and follower effects reduced by 55%.",
           "Normal healing spells and potions do not affect vampires.",
           "Aedric Presence debuff when inside temples.",
@@ -195,7 +195,7 @@
       {
         "id": "stage-4",
         "name": "Stage 4",
-        "description": "Fully realized vampire \u2014 peak power with devastating fire weakness.",
+        "description": "Fully realized vampire — peak power with devastating fire weakness.",
         "bonus": "Health and stamina +100, magicka +125. Movement speed +10%. Armor rating +100. Unarmed damage +30. Frost resistance +50%. Sneak +30%. Melee damage +20%. Fire resistance -150%.",
         "effects": [
           {
@@ -271,7 +271,7 @@
           }
         ],
         "bonusDetails": [
-          "Take 2\u00d7 damage from silver and holy weapons.",
+          "Take 2× damage from silver and holy weapons.",
           "Deity shrine and follower effects reduced by 45%.",
           "Normal healing spells and potions do not affect vampires.",
           "Aedric Presence debuff when inside temples.",
@@ -345,8 +345,8 @@
       {
         "id": "werewolf",
         "name": "Werewolf",
-        "description": "Curse of the werewolf \u2014 enhanced physical power, disease immunity, and beast-form perks with silver vulnerability.",
-        "bonus": "Health +50. Stamina +50. Carry weight +25. Disease resistance +1000%. Unarmed damage +15. Stamina regeneration +25%. Strong Stomach (raw and bestial food safe). Poison resistance -50%.",
+        "description": "Curse of the werewolf — enhanced physical power, disease immunity, and beast-form perks with silver vulnerability.",
+        "bonus": "Your beast blood bestows upon you an immunity to diseases.",
         "effects": [
           {
             "type": "attribute",
@@ -401,7 +401,7 @@
         ],
         "bonusDetails": [
           "Immune to all diseases (1000% disease resistance).",
-          "Take 2\u00d7 damage from silver and holy weapons.",
+          "Take 2× damage from silver and holy weapons.",
           "Cannot take the Silent Dovah trait.",
           "Lycanthropic Speed: movement speed +10% in and out of beast form.",
           "Lycanthropic Regen: regenerate health and stamina in and out of beast form.",
@@ -475,14 +475,9 @@
       {
         "id": "lich",
         "name": "Lich",
-        "description": "Curse of lichdom \u2014 undead immortality and magicka mastery with fire weakness and lost mortal healing.",
-        "bonus": "Magicka +50. Frost resistance +50%. Disease resistance +1000%. Poison resistance +1000%. Waterbreathing. Fire resistance -100%. Potion effectiveness -50%.",
+        "description": "Curse of lichdom — undead immortality and magicka mastery with fire weakness and lost mortal healing. Deposit up to 50 souls into your phylactery for stacking power.",
+        "bonus": "As a lich, health does not regenerate passively and conventional healing spells do not work on you. Healing potions and consumed food have no effect, while other potions have 50% reduced efficacy and duration.",
         "effects": [
-          {
-            "type": "attribute",
-            "stat": "magicka",
-            "value": 50
-          },
           {
             "type": "derivedStat",
             "stat": "frostResist",
@@ -525,14 +520,176 @@
         "bonusDetails": [
           "Immune to disease and poison.",
           "No passive health regeneration.",
-          "Conventional healing spells and potions do not heal you \u2014 use Necrotic Rejuvenation and other undead healing.",
-          "Take 2\u00d7 damage from silver and holy weapons.",
-          "Improved Physical Form: 15% resistance to non-silver melee and 33% resistance to arrows.",
+          "Conventional healing spells and potions do not heal you — use Necrotic Rejuvenation and other undead healing.",
+          "Take 2× damage from silver and holy weapons.",
+          "Improved Physical Form: 15% resistance to non-silver melee and 33% resistance to arrows (upgrades at 10 souls).",
           "Resurrect at your phylactery when you die.",
           "Cannot take the Silent Dovah trait."
         ]
       }
     ],
-    "racialBonuses": {}
+    "racialBonuses": {},
+    "phylactery": {
+      "maxSouls": 50,
+      "perSoul": {
+        "armorRating": 2,
+        "magicka": 4,
+        "magicAbsorb": 0.5,
+        "magicAbsorbInForm": 0.5,
+        "spellDurationInForm": 0.5
+      },
+      "thresholds": [
+        {
+          "souls": 1,
+          "name": "Magicka Flood",
+          "description": "Gain 50 magicka. For each soul fed to your phylactery, gain an additional 4 magicka. Spells in lich form last 0.5% longer for each soul fed.",
+          "effects": [
+            {
+              "type": "attribute",
+              "stat": "magicka",
+              "value": 50
+            }
+          ],
+          "bonusDetails": [
+            "Base +50 magicka from Magicka Flood.",
+            "+4 magicka per soul in the phylactery.",
+            "+0.5% spell duration in lich form per soul."
+          ]
+        },
+        {
+          "souls": 2,
+          "name": "Lich Barrier",
+          "description": "For each soul fed to your phylactery, gain 2 armor rating and 0.5% spell absorption, with an additional 0.5% in lich form.",
+          "effects": [],
+          "bonusDetails": [
+            "+2 armor rating per soul.",
+            "+0.5% spell absorption per soul.",
+            "+0.5% spell absorption in lich form per soul."
+          ]
+        },
+        {
+          "souls": 3,
+          "name": "Bane of Life",
+          "description": "As your necromantic abilities grow, you learn to manipulate the energy of living souls into raw magicka. You may now cast Bane of Life.",
+          "effects": []
+        },
+        {
+          "souls": 5,
+          "name": "Necromantic Affinity",
+          "description": "Your affinity for necromancy grows. Necrotic Rejuvenation, Bane of Life, and Death Grip are 50 percent more effective.",
+          "effects": [],
+          "bonusDetails": [
+            "Necrotic Rejuvenation, Bane of Life, and Death Grip are 50% more effective."
+          ]
+        },
+        {
+          "souls": 8,
+          "name": "Phylactery Conduit",
+          "description": "Use your staff as a conduit for the potent magic that surges through your phylactery. In lich form, while wielding a staff, all spells last 10 percent longer, while magicka regenerates 1 percent faster for each soul in your phylactery.",
+          "effects": [],
+          "bonusDetails": [
+            "In lich form while wielding a staff: spells last 10% longer.",
+            "In lich form while wielding a staff: magicka regenerates 1% faster per soul in your phylactery."
+          ]
+        },
+        {
+          "souls": 10,
+          "name": "Improved Physical Form",
+          "description": "You learn to construct a stronger physical form for yourself, gaining higher resistance to ordinary weapons. You are now 25 percent resistant to non-silver melee weapons and 50 percent resistant to ranged weapons.",
+          "effects": [],
+          "bonusDetails": [
+            "25% resistance to non-silver melee weapons.",
+            "50% resistance to ranged weapons."
+          ]
+        },
+        {
+          "souls": 12,
+          "name": "Mighty Lich Form",
+          "description": "Your lich form is mightier than ever. Augmented by the souls stored in your phylactery, it is faster, stronger, and more durable than before.",
+          "effects": []
+        },
+        {
+          "souls": 15,
+          "name": "Tempered Form",
+          "description": "Even the the innate disadvantages of unlife can be overcome with the right magic. You construct a physical form that is 50 percent less weak to fire than before.",
+          "effects": [
+            {
+              "type": "derivedStat",
+              "stat": "fireResist",
+              "value": 50,
+              "isPercent": true
+            }
+          ],
+          "bonusDetails": [
+            "Fire weakness reduced by half (base -100% fire resistance becomes -50%)."
+          ]
+        },
+        {
+          "souls": 18,
+          "name": "Apocryphal Clarity",
+          "description": "Untethered from the mortal shell, you see behind the veil of the world and perceive the nature of reality with newfound clarity. Gazing into strange Apocrypha, you learn esoteric secrets buried within its labyrinthine libraries. The unknowable becomes known. Experience gain from Transcendence is 5 percent faster, and reading skill books grants you an extra skill point.",
+          "effects": [],
+          "bonusDetails": [
+            "Transcendence experience gain is 5% faster.",
+            "Reading skill books grants an extra skill point."
+          ]
+        },
+        {
+          "souls": 20,
+          "name": "Mind Flay",
+          "description": "You learn to temporarily disrupt the minds of living beings, preventing them from accessing magic. You may now cast Mind Flay.",
+          "effects": []
+        },
+        {
+          "souls": 22,
+          "name": "Enslave Mind",
+          "description": "You learn to dominate the wills of living targets, temporarily putting them under your control. You may now cast Enslave Mind.",
+          "effects": []
+        },
+        {
+          "souls": 25,
+          "name": "Veil of Deceit",
+          "description": "As the stench of death grows on you, you shroud yourself in an unbreaking magical aura, permanently concealing the true nature of your ghastly appearance. All eyes are deceived by the illusion - your lich form is no longer hated and feared, and will not be attacked on sight.",
+          "effects": [],
+          "bonusDetails": [
+            "Lich form is no longer attacked on sight."
+          ]
+        },
+        {
+          "souls": 30,
+          "name": "Enslave Undead",
+          "description": "While the light of human experience dims, your affinity towards the unliving strengthens. Your arcane might overpowers the wills of all undead creatures. You may now cast Enslave Undead.",
+          "effects": []
+        },
+        {
+          "souls": 35,
+          "name": "Mannimarco's Favor",
+          "description": "An unholy presence creeps on you, a sense of being seen by the leering eyes of a god that should not be. The King Of Worm watches over you. When Mannimarco's Moon passes over Nirn, offer at his altar a filled black soul gem to create a scroll of Mannimarco's Will. Cast the scroll to raise your summon limit by 1 for 2 hours. Scrolls may stack up to 12 times.",
+          "effects": [],
+          "bonusDetails": [
+            "Offer a filled black soul gem at Mannimarco's altar during Mannimarco's Moon to create a scroll of Mannimarco's Will.",
+            "Scroll raises summon limit by 1 for 2 hours; stacks up to 12 times."
+          ]
+        },
+        {
+          "souls": 40,
+          "name": "Mass Reanimate",
+          "description": "Reanimating a corpse is an arduous task - for a mortal. As a lich, the dark practice is second nature. Your boundless magicka and profane knowledge allows you to raise armies of the dead at will. You may now cast Mass Reanimate, resurrecting all dead targets in the area to fight for you.",
+          "effects": []
+        },
+        {
+          "souls": 45,
+          "name": "Call Dracolich",
+          "description": "You may call forth a dracolich from Oblivion to fight for you.",
+          "effects": []
+        },
+        {
+          "souls": 50,
+          "name": "Devour Soul",
+          "description": "You have become a master over life and death, and the forces that demarcate the two. The souls of living beings can be torn out at a lift of a finger. You may now cast Devour Soul.",
+          "effects": []
+        }
+      ]
+    }
   }
 }

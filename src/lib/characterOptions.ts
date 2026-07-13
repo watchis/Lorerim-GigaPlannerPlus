@@ -8,6 +8,7 @@ import { getCharacterOptionExtension } from "@/extensions/loadExtensions";
 import type { BuildState } from "@/engine/buildEngine";
 
 import { LEGACY_OGHMA_CHOICE_MAP } from "@/lib/oghmaLegacyChoices";
+import { LICH_OPTION_ID, SUPERNATURAL_CLAIMED_CHOICE } from "@/lib/supernatural";
 
 export function getSelectedCharacterOptionChoice(
   option: CharacterOption,
@@ -43,6 +44,10 @@ export function normalizeCharacterOptionChoices(
 
     if (selected && LEGACY_OGHMA_CHOICE_MAP[selected]) {
       selected = LEGACY_OGHMA_CHOICE_MAP[selected];
+    }
+
+    if (option.id === LICH_OPTION_ID && selected === SUPERNATURAL_CLAIMED_CHOICE) {
+      selected = "0";
     }
 
     if (

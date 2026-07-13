@@ -22,6 +22,18 @@ function collectPerks(manifest, index, perksRoot) {
   return perks;
 }
 
+function collectCharacterOptions(game) {
+  const path = join(game, "character-options.json");
+  if (!existsSync(path)) return {};
+  const options = readJson(path).options ?? [];
+  return {
+    characterOptions: options.map((option) => option.id),
+    characterOptionChoices: options.map((option) =>
+      (option.choices ?? []).map((choice) => choice.id),
+    ),
+  };
+}
+
 export function exportCodecRegistryFromPaths({ game }) {
   const manifest = readJson(join(game, "manifest.json"));
   const index = readJson(join(game, "perks", "index.json"));
@@ -33,6 +45,7 @@ export function exportCodecRegistryFromPaths({ game }) {
     traits: readJson(join(game, "traits.json")).traits.map((entry) => entry.id),
     skills: readJson(join(game, "skills.json")).skills.map((entry) => entry.id),
     perks: collectPerks(manifest, index, join(game, "perks")),
+    ...collectCharacterOptions(game),
   };
 }
 
@@ -74,5 +87,16 @@ export function shouldExportCodecRegistry({ previousVersion, modpackVersion }) {
 
 export function exportCodecRegistry({ gameDir, repoRoot = defaultRepoRoot }) {
   const snapshot = exportCodecRegistryFromPaths({ game: gameDir });
+  // Preserve existing option order/indices when refreshing the same modpack version.
+  const existingPath = join(repoRoot, "data", "codec-registries", `${snapshot.version}.json`);
+  if (existsSync(existingPath)) {
+    const existing = readJson(existingPath);
+    if (Array.isArray(existing.characterOptions)) {
+      snapshot.characterOptions = existing.characterOptions;
+    }
+    if (Array.isArray(existing.characterOptionChoices)) {
+      snapshot.characterOptionChoices = existing.characterOptionChoices;
+    }
+  }
   return writeCodecRegistrySnapshot({ snapshot, repoRoot });
 }

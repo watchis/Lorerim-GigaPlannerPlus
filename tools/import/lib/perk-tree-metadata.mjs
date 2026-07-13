@@ -1,6 +1,7 @@
 import { canonicalPerkName } from "./perk-import-filter.mjs";
 import { finalizeAvifPerkTrees, buildIdentityToPerkName } from "./avif-perk-tree.mjs";
 import { classifyPerkTreeSkill } from "./perk-skill-classifier.mjs";
+import { isSupernaturalPerkSkill } from "./supernatural-perk-skills.mjs";
 import { cleanName } from "./transform-utils.mjs";
 
 export function perkMetadataKey(skillId, perkName) {
@@ -63,16 +64,18 @@ export function buildPerkMetadataIndex(perkRecords, avifTrees, membership = null
         position: null,
       };
 
-      const avifPrerequisiteNames = existing.hasPerkRecordPrerequisites
-        ? []
-        : (section.prerequisiteNames ?? []);
+      // Curse trees: AVIF menu links are authoritative (Growl GetIsID often keeps vanilla parents).
+      const avifPrerequisiteNames = section.prerequisiteNames ?? [];
+      const prerequisiteNames = isSupernaturalPerkSkill(skillId)
+        ? uniqueNames(avifPrerequisiteNames)
+        : uniqueNames([
+            ...existing.prerequisiteNames,
+            ...(existing.hasPerkRecordPrerequisites ? [] : avifPrerequisiteNames),
+          ]);
 
       byKey.set(key, {
         skillReq: existing.skillReq,
-        prerequisiteNames: uniqueNames([
-          ...existing.prerequisiteNames,
-          ...avifPrerequisiteNames,
-        ]),
+        prerequisiteNames,
         hasPerkRecordPrerequisites: existing.hasPerkRecordPrerequisites,
         position:
           section.x != null && section.y != null
@@ -209,7 +212,9 @@ export function applyPerkMetadata(perk, tree, metadataIndex) {
   let prerequisitesAny = perk.prerequisitesAny ?? [];
 
   if (needsPrerequisites) {
-    if (prerequisiteNames.length > 1) {
+    // Growl/Sacrilege AVIF multi-parent links are AND (e.g. Rampage).
+    // Ordinary skill trees keep the historical OR mapping for multi-name metadata.
+    if (prerequisiteNames.length > 1 && !isSupernaturalPerkSkill(tree.skillId)) {
       prerequisites = [];
       prerequisitesAny = resolvedPrerequisites;
     } else {

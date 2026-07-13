@@ -98,8 +98,12 @@ export function reportDomainSummaries(domainResults, progress) {
         break;
       case "supernatural":
         progress.step(
-          `Supernatural — ${result.summary.vampirismForms} vampirism forms, ` +
-            `${result.summary.lycanthropyForms} lycanthropy forms`,
+          `Supernatural — ${result.summary.vampirismStages} vampirism stages, ` +
+            `${result.summary.lycanthropyForms} lycanthropy forms, ` +
+            `lich ${result.summary.lichMode}` +
+            (result.summary.phylacteryThresholds
+              ? ` (${result.summary.phylacteryThresholds} phylactery thresholds)`
+              : ""),
         );
         break;
       case "manifest": {
