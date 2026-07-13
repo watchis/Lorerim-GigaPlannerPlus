@@ -65,11 +65,12 @@ Standalone domain scripts re-scan plugins (same skip cache as the parent). Use `
 |-------------|----------------|
 | Requiem `REQ_*`, LoreRim `Feat_Perk_*` / `LoreRimTrapper_*` / `BOOB_*`, Ordinator `ORD_*`, and Wayfarer `FURY_Perk_*` / `BBWayfarer*` records | `data/game/perks/*.json` (text updates; layout preserved; stale perks removed) |
 | Subclasses of Skyrim `DAR_Perk*` + `CustomSkill.destiny.config.txt` | `data/game/perks/destiny.json` (layout preserved from previous JSON; config used for membership/links) |
+| Growl / Sacrilege AVIF menus (`Werebeast` / `Werewolf`, `Vampire Lord`) | `data/game/perks/werewolf.json`, `vampire.json` |
 | Biggie Traits `Traits_AbilityList` (FLST + FLM patches) trait ability spells | `data/game/traits.json` |
 | Playable races | `data/game/races.json` |
 | Big Tweaks `REQ_Ability_Birthsign_*` + `doom*MSG` | `data/game/birthsigns.json` |
 | Wintersun altar deity MGEF descriptions + worship tenets | `data/game/deities.json` |
-| Requiem `REQ_Vampire_*` / `REQ_Werewolf_*` ability spells | `data/game/supernatural.json` (lichdom section is planner-authored and preserved) |
+| Requiem `REQ_Vampire_*` / `REQ_Werewolf_*` ability spells; Classical Lichdom `NecroPhyMsg*` + curse SPEL when present | `data/game/supernatural.json` (phylactery rates/thresholds refresh from install; Magicka Weave installs clear thresholds) |
 
 ### CLI options
 
@@ -116,7 +117,9 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA`, parsed race `effects` in `race-effects.json` | race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
 | Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
-| Vampirism stage bonuses (`REQ_Vampire_Stage1`–`Stage4`), werewolf human-form bonuses (`REQ_Werewolf_HumanForm`), racial curse abilities | Hand-tuned stage names/descriptions, `bonusDetails`, and racial bonus text in `supernatural.json`; entire `lichdom` section |
+| Vampirism stage bonuses (`REQ_Vampire_StageN`, including newly added stages), werewolf human-form bonuses (`REQ_Werewolf_HumanForm`), racial curse abilities | Hand-tuned stage/form names & narrative `description`, stage `bonusDetails`, and hand-tuned `effects` (plugin `bonus` text refreshes); racial bonus **names** (plugin description text refreshes) |
+| Classical Lichdom phylactery (`NecroPhyMsg*`, UndeathFixes) — `perSoul` rates + threshold list | Lich form narrative `description` / `effects` / `bonusDetails`; threshold `effects` & `bonusDetails` (e.g. Tempered Form fire resist) |
+| Prelude Magicka Weave AVIF (`Magicka Weave` / `Lich`) → `perks/lich.json` | Phylactery thresholds cleared when that mode is detected |
 | `manifest.json` → `version` (from installed Wabbajack list) | `manifest.json` limits, skills, and other fields |
 
 When `effects` is empty, the importer parses the `bonus` text with rule-based patterns in `lib/parse-bonus-effects.mjs` (percent modifiers, attribute flat bonuses, common weapon/resist phrases). Conditional or narrative-only bonuses may stay empty until rules are extended.
@@ -135,6 +138,14 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 
 **Destiny** is rebuilt each import from `DAR_Perk*` records and the Subclasses of Skyrim Custom Skills config (`mods/Subclasses of Skyrim/NetScriptFramework/Plugins/CustomSkill.destiny.config.txt`) for node positions and prerequisite links. Config links are imported as `prerequisitesAny` (OR). Destiny perks spend **destiny points** (`costsPerkPoint` defaults to true).
 
+**Werewolf / Vampire** curse perk trees are imported from the winning AVIF whose FULL name is `Werebeast`/`Werewolf` or `Vampire Lord` (Dawnguard reuses unused actor-value AVIFs; Growl - Nighteye / Sacrilege typically win). Multi-parent links are AND (`prerequisites`). Saved planner ids/effects are preserved; prerequisites always refresh from the plugin graph.
+
+**Lich** mode is detected from the install:
+
+- **Classical Lichdom / phylactery** (`UndeathFixes.esp` and/or `NecroPhyMsg*` MESG) — empty `perks/lich.json` placeholder; `supernatural.json` phylactery `maxSouls` / `perSoul` rates and thresholds refresh from messages + Classical script defaults (Magicka Flood base +50 with +4 magicka/soul, Barrier +2 armor / 0.5% absorb). Magicka Flood / Lich Barrier copy uses script-accurate rates when MESG text is stale.
+- **Prelude Magicka Weave** (`PreludeToPurgatory.esp` or AVIF FULL `Magicka Weave` / `Lich`) — import `perks/lich.json` like other supernatural trees; phylactery thresholds are cleared.
+- **Neither** — preserve the existing planner `lichdom` section.
+
 ### Not imported yet
 
 - `data/game/mechanics.json`
@@ -151,7 +162,7 @@ After metadata enrichment, **unanchored perks are removed** from each tree: node
 - `data/game/extension-bindings.json` — registry linking perks/options to extension plugins (applied during import; not generated from plugins)
 - `data/ui/*`
 
-`supernatural.json` is **imported** from plugins but hand-tuned descriptions and racial bonus copy are preserved from the existing file (same merge pattern as races).
+`supernatural.json` is **imported** from plugins with selective preservation (stage narrative descriptions / `bonusDetails`, lich form effects, phylactery threshold numeric effects). Racial curse bonus **descriptions** refresh from plugin text so modpack patches stick; hand-tuned racial **names** are kept.
 
 ### Extension plugins
 
@@ -207,6 +218,8 @@ tools/import/
     deity-eligibility.mjs  # Wintersun deity follow rules from plugins + guide
     deity-faith-from-plugins.mjs # Wintersun MGEF + worship MESG faith effect extraction
     destiny-config.mjs     # Subclasses of Skyrim destiny tree layout parser
+    supernatural-perk-skills.mjs # Werewolf/Vampire/Lich AVIF skill ids and FULL-name map
+    lich-framework.mjs           # Classical phylactery vs Magicka Weave detection + MESG thresholds
     esp-reader.mjs         # Skyrim plugin record parser (single-pass batch scan)
     formid.mjs             # TES4 master list + plugin-local form ID → global identity
     giga-planner-layout.mjs # GigaPlanner-inspired perk positioning during import

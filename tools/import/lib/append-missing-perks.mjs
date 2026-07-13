@@ -8,7 +8,11 @@ import {
   isSupplementalTreePerk,
   removeDanglingPrerequisites,
 } from "./perk-import-filter.mjs";
-import { classifyPerkTreeSkill, isAllocatablePerkSkill } from "./perk-skill-classifier.mjs";
+import {
+  classifyPerkTreeSkill,
+  isAllocatablePerkSkill,
+  isImportableAvifPerkSkill,
+} from "./perk-skill-classifier.mjs";
 import { cleanDescription, cleanName, slugify } from "./transform-utils.mjs";
 import {
   loadExtensionBindings,
@@ -393,7 +397,7 @@ function appendFromAvifSections(
   extensionBindings,
 ) {
   for (const [skillId, avifTree] of membership.finalizedAvif) {
-    if (!isAllocatablePerkSkill(skillId)) continue;
+    if (!isImportableAvifPerkSkill(skillId)) continue;
 
     const filename = `${skillId}.json`;
     const tree = trees[filename];
@@ -570,6 +574,7 @@ export function appendMissingPerkNodes(
     tree.perks = removeDanglingPrerequisites(tree.perks);
     normalizeStackPrerequisites(tree);
     applyGigaPlannerTreeLayout(tree);
+    tree.grid = resizeGridToFit(tree.perks, tree.grid ?? { width: 25, height: 25 });
     repositionOutOfGridPerks(tree);
     tree.grid = resizeGridToFit(tree.perks, tree.grid ?? { width: 25, height: 25 });
     const skillIndex = SKILL_IDS.indexOf(tree.skillId);

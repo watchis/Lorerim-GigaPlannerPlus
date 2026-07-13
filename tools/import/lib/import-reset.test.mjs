@@ -18,7 +18,10 @@ import {
 } from "./import-reset.mjs";
 
 const { trees, indexEntries } = createEmptyPerkTrees();
-assert.equal(Object.keys(trees).length, 19);
+assert.equal(Object.keys(trees).length, 22);
+assert.equal(indexEntries.werewolf, "werewolf.json");
+assert.equal(indexEntries.vampire, "vampire.json");
+assert.equal(indexEntries.lich, "lich.json");
 assert.equal(indexEntries.destruction, "destruction.json");
 assert.deepEqual(trees["destruction.json"].perks, []);
 

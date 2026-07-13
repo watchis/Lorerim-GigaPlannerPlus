@@ -1,4 +1,5 @@
 import { SKILL_IDS } from "./skill-constants.mjs";
+import { isSupernaturalPerkSkill } from "./supernatural-perk-skills.mjs";
 
 const SKILL_SEGMENT_TO_ID = new Map([
   ["Smithing", "smithing"],
@@ -131,4 +132,9 @@ export function classifyPerkTreeSkill(record) {
 
 export function isAllocatablePerkSkill(skillId) {
   return ALLOCATABLE_SKILL_IDS.has(skillId);
+}
+
+/** Skill-point trees plus supernatural AVIF trees (werewolf / vampire). */
+export function isImportableAvifPerkSkill(skillId) {
+  return isAllocatablePerkSkill(skillId) || isSupernaturalPerkSkill(skillId);
 }

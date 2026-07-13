@@ -273,6 +273,26 @@ export const supernaturalFormSchema = z.object({
   effects: z.array(effectSchema),
 });
 
+export const lichPhylacteryThresholdSchema = z.object({
+  souls: z.number().int().nonnegative(),
+  name: z.string(),
+  description: z.string(),
+  effects: z.array(effectSchema).default([]),
+  bonusDetails: z.array(z.string()).optional(),
+});
+
+export const lichPhylacterySchema = z.object({
+  maxSouls: z.number().int().positive(),
+  perSoul: z.object({
+    armorRating: z.number(),
+    magicka: z.number(),
+    magicAbsorb: z.number(),
+    magicAbsorbInForm: z.number(),
+    spellDurationInForm: z.number(),
+  }),
+  thresholds: z.array(lichPhylacteryThresholdSchema),
+});
+
 export const supernaturalSchema = z.object({
   incompatibleTraitIds: z.array(z.string()),
   vampirism: z.object({
@@ -286,6 +306,7 @@ export const supernaturalSchema = z.object({
   lichdom: z.object({
     forms: z.array(supernaturalFormSchema).min(1),
     racialBonuses: z.record(z.string(), supernaturalRacialBonusSchema),
+    phylactery: lichPhylacterySchema,
   }),
 });
 
@@ -514,6 +535,8 @@ export type Race = z.infer<typeof raceSchema>;
 export type Birthsign = z.infer<typeof birthsignSchema>;
 export type SupernaturalForm = z.infer<typeof supernaturalFormSchema>;
 export type SupernaturalRacialBonus = z.infer<typeof supernaturalRacialBonusSchema>;
+export type LichPhylacteryThreshold = z.infer<typeof lichPhylacteryThresholdSchema>;
+export type LichPhylactery = z.infer<typeof lichPhylacterySchema>;
 export type SupernaturalData = z.infer<typeof supernaturalSchema>;
 export type Deity = z.infer<typeof deitySchema>;
 export type Trait = z.infer<typeof traitSchema>;

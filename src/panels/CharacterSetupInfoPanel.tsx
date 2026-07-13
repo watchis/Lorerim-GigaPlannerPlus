@@ -2,6 +2,10 @@ import type { ReactNode } from "react";
 import { DeityDetailContent } from "@/components/option-details/DeityDetailContent";
 import { RaceDetailContent } from "@/components/option-details/RaceDetailContent";
 import { BirthsignDetailContent } from "@/components/option-details/BirthsignDetailContent";
+import {
+  DetailBulletList,
+  DetailSection,
+} from "@/components/option-details/DetailSection";
 import { SupernaturalDetailContent } from "@/components/option-details/SupernaturalDetailContent";
 import { TraitDetailContent } from "@/components/option-details/TraitDetailContent";
 import { SkillIcon } from "@/components/SkillIcon";
@@ -14,6 +18,12 @@ import {
   getRemainingAttributePoints,
 } from "@/engine/buildEngine";
 import { cn } from "@/lib/utils";
+import {
+  formatLichPerSoulSummary,
+  getLichPhylactery,
+  getLichSoulCount,
+  getUnlockedLichThresholds,
+} from "@/lib/lichPhylactery";
 import {
   getActiveVampireStage,
   getLichForm,
@@ -104,7 +114,7 @@ export function CharacterSetupInfoPanel() {
     carryWeight: labels.carryWeight,
     unarmedDamage: labels.unarmedDamage,
     racialBonus: labels.racialBonus ?? "Racial ability",
-    detriments: labels.detriments ?? "Detriments",
+    detriments: labels.detriments ?? "Other Effects",
   };
 
   const selectedRace =
@@ -130,6 +140,14 @@ export function CharacterSetupInfoPanel() {
   const lichForm = lichActive ? getLichForm(game) : undefined;
   const vampireRacialBonus = vampireActive ? getVampireRacialBonus(game, build) : undefined;
   const werewolfRacialBonus = werewolfActive ? getWerewolfRacialBonus(game, build) : undefined;
+  const lichPhylactery = lichActive ? getLichPhylactery(game) : undefined;
+  const lichSouls = lichActive ? getLichSoulCount(game, build) : 0;
+  const lichUnlockedThresholds = lichPhylactery
+    ? getUnlockedLichThresholds(lichPhylactery, lichSouls)
+    : [];
+  const lichPerSoulSummary = lichPhylactery
+    ? formatLichPerSoulSummary(lichPhylactery, lichSouls)
+    : [];
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -226,9 +244,37 @@ export function CharacterSetupInfoPanel() {
               </InfoSection>
             )}
 
-            {lichActive && lichForm && (
+            {lichActive && lichForm && lichPhylactery && (
               <InfoSection title={labels.lichTree ?? "Lich"}>
                 <SupernaturalDetailContent form={lichForm} labels={detailLabels} />
+                <div className="mt-4 space-y-3">
+                  <p className="text-sm font-medium text-[var(--color-foreground)]">
+                    {(labels.lichSoulsSummary ?? "{count} / {max} phylactery souls")
+                      .replace("{count}", String(lichSouls))
+                      .replace("{max}", String(lichPhylactery.maxSouls))}
+                  </p>
+                  {lichPerSoulSummary.length > 0 && (
+                    <DetailSection title={labels.lichPhylacteryPerSoul ?? "Per-soul bonuses"}>
+                      <DetailBulletList items={lichPerSoulSummary} />
+                    </DetailSection>
+                  )}
+                  {lichUnlockedThresholds.length > 0 && (
+                    <DetailSection title={labels.lichPhylacteryUnlocked ?? "Unlocked"}>
+                      <div className="space-y-2">
+                        {lichUnlockedThresholds.map((threshold) => (
+                          <div key={threshold.souls}>
+                            <p className="text-sm font-medium text-[var(--color-foreground)]">
+                              {threshold.souls} — {threshold.name}
+                            </p>
+                            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
+                              {threshold.description}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </DetailSection>
+                  )}
+                </div>
               </InfoSection>
             )}
 

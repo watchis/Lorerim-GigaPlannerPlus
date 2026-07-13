@@ -3,9 +3,16 @@ import { join } from "node:path";
 import { canonicalPerkName, removeDanglingPrerequisites } from "./perk-import-filter.mjs";
 import { repositionOutOfGridPerks, resizeGridToFit } from "./append-missing-perks.mjs";
 import { SKILL_IDS, SKILL_NAMES } from "./skill-constants.mjs";
+import {
+  isSupernaturalPerkSkill,
+  getSupernaturalPerkSkillIds,
+  getSupernaturalPlaceholderSkillIds,
+  SUPERNATURAL_PERK_SKILL_NAMES,
+  SUPERNATURAL_PLACEHOLDER_SKILL_NAMES,
+} from "./supernatural-perk-skills.mjs";
 import { loadJsonIfExists } from "./transform-utils.mjs";
 
-export function createEmptyPerkTrees() {
+export function createEmptyPerkTrees(membership = null) {
   const trees = {};
   const indexEntries = {};
 
@@ -15,6 +22,28 @@ export function createEmptyPerkTrees() {
     trees[filename] = {
       skillId,
       skillName: SKILL_NAMES[skillIndex],
+      grid: { width: 1, height: 1 },
+      perks: [],
+    };
+    indexEntries[skillId] = filename;
+  }
+
+  for (const skillId of getSupernaturalPerkSkillIds(membership)) {
+    const filename = `${skillId}.json`;
+    trees[filename] = {
+      skillId,
+      skillName: SUPERNATURAL_PERK_SKILL_NAMES[skillId],
+      grid: { width: 1, height: 1 },
+      perks: [],
+    };
+    indexEntries[skillId] = filename;
+  }
+
+  for (const skillId of getSupernaturalPlaceholderSkillIds(membership)) {
+    const filename = `${skillId}.json`;
+    trees[filename] = {
+      skillId,
+      skillName: SUPERNATURAL_PLACEHOLDER_SKILL_NAMES[skillId] ?? SUPERNATURAL_PERK_SKILL_NAMES[skillId],
       grid: { width: 1, height: 1 },
       perks: [],
     };
@@ -299,7 +328,8 @@ export function applyPerkGraphSnapshots(trees, snapshots) {
         if (saved.allocation) {
           perk.allocation = { ...saved.allocation };
         }
-      } else if (saved.effects?.length) {
+      } else if (saved.effects?.length && !isSupernaturalPerkSkill(tree.skillId)) {
+        // Curse trees re-parse effects from imported DESC text each run.
         perk.effects = saved.effects;
       }
       // Extension-bound perks take allocation from extension-bindings.json when present.
@@ -312,6 +342,9 @@ export function applyPerkGraphSnapshots(trees, snapshots) {
       const key = perkGraphKey(perk);
       const saved = snapshot.byGraphKey.get(key);
       if (!saved) continue;
+
+      // Supernatural trees import prerequisites from AVIF; keep ids/effects only.
+      if (isSupernaturalPerkSkill(tree.skillId)) continue;
 
       perk.prerequisites = remapPrerequisiteIds(
         saved.prerequisites,

@@ -1,5 +1,6 @@
 import type { GameData, SupernaturalForm, SupernaturalRacialBonus } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
+import { parseLichSoulCount } from "@/lib/lichPhylactery";
 
 export const VAMPIRE_OPTION_ID = "vampire";
 export const WEREWOLF_OPTION_ID = "werewolf";
@@ -29,11 +30,7 @@ const OPTION_TO_SKILL_ID: Record<SupernaturalOptionId, string> = {
 };
 
 export function isSupernaturalPerkTreeSkillId(skillId: string): boolean {
-  return (
-    skillId === VAMPIRE_SKILL_ID ||
-    skillId === WEREWOLF_SKILL_ID ||
-    skillId === LICH_SKILL_ID
-  );
+  return skillId === VAMPIRE_SKILL_ID || skillId === WEREWOLF_SKILL_ID;
 }
 
 export function isVampireStageId(choiceId: string): choiceId is VampireStageId {
@@ -74,8 +71,14 @@ export function isWerewolfActive(state: BuildState): boolean {
   return state.characterOptionChoices[WEREWOLF_OPTION_ID] === SUPERNATURAL_CLAIMED_CHOICE;
 }
 
+export function isLichChoiceActive(choiceId: string): boolean {
+  if (choiceId === "none") return false;
+  if (choiceId === SUPERNATURAL_CLAIMED_CHOICE) return true;
+  return parseLichSoulCount(choiceId, 50) !== null;
+}
+
 export function isLichActive(state: BuildState): boolean {
-  return state.characterOptionChoices[LICH_OPTION_ID] === SUPERNATURAL_CLAIMED_CHOICE;
+  return isLichChoiceActive(state.characterOptionChoices[LICH_OPTION_ID] ?? "none");
 }
 
 export function hasSupernaturalCurse(state: BuildState): boolean {
@@ -85,7 +88,6 @@ export function hasSupernaturalCurse(state: BuildState): boolean {
 export function getActiveSupernaturalSkillId(state: BuildState): string | null {
   if (isVampireActive(state)) return VAMPIRE_SKILL_ID;
   if (isWerewolfActive(state)) return WEREWOLF_SKILL_ID;
-  if (isLichActive(state)) return LICH_SKILL_ID;
   return null;
 }
 
@@ -238,6 +240,21 @@ export function normalizeSupernaturalState(game: GameData, build: BuildState): B
         [VAMPIRE_OPTION_ID]: "stage-4",
       },
     };
+  }
+
+  const lichChoice = next.characterOptionChoices[LICH_OPTION_ID];
+  if (lichChoice === SUPERNATURAL_CLAIMED_CHOICE) {
+    next = {
+      ...next,
+      characterOptionChoices: {
+        ...next.characterOptionChoices,
+        [LICH_OPTION_ID]: "0",
+      },
+    };
+  }
+
+  if (isLichActive(next)) {
+    next = stripPerksForSkillTree(game, next, LICH_SKILL_ID);
   }
 
   const activeOptionId = SUPERNATURAL_OPTION_IDS.find((optionId) =>

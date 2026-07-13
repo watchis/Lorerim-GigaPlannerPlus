@@ -1,6 +1,7 @@
 import type { Theme } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
 import {
+  isLichChoiceActive,
   isVampireStageId,
   LICH_OPTION_ID,
   SUPERNATURAL_CLAIMED_CHOICE,
@@ -106,7 +107,7 @@ export function getSupernaturalThemeVariantFromChoices(
   const lichChoice = characterOptionChoices[LICH_OPTION_ID] ?? "none";
   if (isVampireStageId(vampireChoice)) return "vampire";
   if (werewolfChoice === SUPERNATURAL_CLAIMED_CHOICE) return "werewolf";
-  if (lichChoice === SUPERNATURAL_CLAIMED_CHOICE) return "lich";
+  if (isLichChoiceActive(lichChoice)) return "lich";
   return null;
 }
 

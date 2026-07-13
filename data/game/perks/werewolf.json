@@ -2,8 +2,8 @@
   "skillId": "werewolf",
   "skillName": "Werewolf",
   "grid": {
-    "width": 25,
-    "height": 18
+    "width": 29,
+    "height": 19
   },
   "perks": [
     {
@@ -11,426 +11,414 @@
       "name": "Bestial Strength",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 17
+        "x": 14,
+        "y": 18
       },
       "prerequisites": [],
-      "prerequisitesAny": [],
-      "description": "Deal 20% more attack damage in beast form.",
-      "effects": []
+      "description": "You can feel how your muscles become stronger when changing into your werewolf form. Then, they grant you a slight damage bonus.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "werewolf-bestial-strength-r2",
       "name": "Bestial Strength",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 14
+        "x": 14,
+        "y": 18
       },
-      "prerequisites": [
-        "werewolf-bestial-strength"
-      ],
-      "prerequisitesAny": [],
-      "description": "Deal 30% more attack damage in beast form.",
-      "effects": []
+      "prerequisites": [],
+      "description": "You can feel how your muscles become even stronger when being a werewolf, granting you a moderate damage bonus.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "werewolf-bestial-strength-r3",
       "name": "Bestial Strength",
       "skillReq": 0,
       "position": {
-        "x": 10,
-        "y": 10
+        "x": 14,
+        "y": 18
       },
-      "prerequisites": [
-        "werewolf-bestial-strength-r2"
-      ],
-      "prerequisitesAny": [],
-      "description": "Deal 40% more attack damage in beast form.",
-      "effects": []
+      "prerequisites": [],
+      "description": "Your muscles are almost as hard as steel in your werewolf form, granting you a significant damage bonus.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "werewolf-bestial-strength-r4",
       "name": "Bestial Strength",
       "skillReq": 0,
       "position": {
-        "x": 12,
-        "y": 6
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength-r3"
-      ],
-      "prerequisitesAny": [],
-      "description": "Deal 50% more attack damage in beast form.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-animal-vigor",
-      "name": "Animal Vigor",
-      "skillReq": 0,
-      "position": {
-        "x": 7,
-        "y": 14
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength"
-      ],
-      "prerequisitesAny": [],
-      "description": "Additional 50 point bonus to Health and Stamina in beast form.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-gorging",
-      "name": "Gorging",
-      "skillReq": 0,
-      "position": {
-        "x": 7,
-        "y": 10
-      },
-      "prerequisites": [
-        "werewolf-animal-vigor"
-      ],
-      "prerequisitesAny": [],
-      "description": "Feeding heals 100 points more.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-savage-feeding",
-      "name": "Savage Feeding",
-      "skillReq": 0,
-      "position": {
-        "x": 7,
-        "y": 6
-      },
-      "prerequisites": [
-        "werewolf-gorging"
-      ],
-      "prerequisitesAny": [],
-      "description": "Able to feed off the undead in beast form, and loot their corpses.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-rampage",
-      "name": "Rampage",
-      "skillReq": 0,
-      "position": {
-        "x": 12,
-        "y": 4
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength-r4"
-      ],
-      "prerequisitesAny": [],
-      "description": "Beast form lasts 50% longer and feeding extends the duration 50% more.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-feral-instincts",
-      "name": "Feral Instincts",
-      "skillReq": 0,
-      "position": {
-        "x": 15,
-        "y": 6
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength-r4"
-      ],
-      "prerequisitesAny": [],
-      "description": "Power attacks in beast form cost 25% less Stamina and do 25% more damage.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-infinite-duress",
-      "name": "Infinite Duress",
-      "skillReq": 0,
-      "position": {
-        "x": 12,
-        "y": 0
-      },
-      "prerequisites": [
-        "werewolf-rampage"
-      ],
-      "prerequisitesAny": [],
-      "description": "Frenzy attacks (one-handed standing power attacks) in beast form stun targets for the duration.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-supernatural-strength",
-      "name": "Supernatural Strength",
-      "skillReq": 0,
-      "position": {
-        "x": 16,
-        "y": 2
-      },
-      "prerequisites": [
-        "werewolf-rampage"
-      ],
-      "prerequisitesAny": [],
-      "description": "Back hand attacks (two-handed standing power attacks) in beast form disarm targets.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-roadkill",
-      "name": "Roadkill",
-      "skillReq": 0,
-      "position": {
-        "x": 8,
-        "y": 2
-      },
-      "prerequisites": [
-        "werewolf-rampage"
-      ],
-      "prerequisitesAny": [],
-      "description": "Leap attacks (two-handed sprinting power attacks) in beast form do a critical strike equal to half your current Stamina and throw targets.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-swipe",
-      "name": "Swipe",
-      "skillReq": 0,
-      "position": {
-        "x": 19,
-        "y": 4
-      },
-      "prerequisites": [
-        "werewolf-feral-instincts"
-      ],
-      "prerequisitesAny": [],
-      "description": "Power attacks in beast form can hit multiple targets in front of you.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-improved-bloodthirst",
-      "name": "Improved Bloodthirst",
-      "skillReq": 0,
-      "position": {
-        "x": 4,
-        "y": 14
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength"
-      ],
-      "prerequisitesAny": [],
-      "description": "Beast form attacks do an additional 5 points of bleed damage, healing you for the same amount.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-improved-bloodthirst-r2",
-      "name": "Improved Bloodthirst",
-      "skillReq": 0,
-      "position": {
-        "x": 4,
-        "y": 10
-      },
-      "prerequisites": [
-        "werewolf-improved-bloodthirst"
-      ],
-      "prerequisitesAny": [],
-      "description": "Beast form attacks do an additional 10 points of bleed damage, healing you for the same amount.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-lycanthropic-speed",
-      "name": "Lycanthropic Speed",
-      "skillReq": 0,
-      "position": {
-        "x": 3,
-        "y": 17
+        "x": 14,
+        "y": 18
       },
       "prerequisites": [],
-      "prerequisitesAny": [],
-      "description": "Movement speed is increased by 10%, both in and out of beast form.",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "moveSpeed",
-          "value": 10,
-          "isPercent": true
-        }
-      ]
-    },
-    {
-      "id": "werewolf-lycanthropic-regeneration",
-      "name": "Lycanthropic Regeneration",
-      "skillReq": 0,
-      "position": {
-        "x": 0,
-        "y": 17
-      },
-      "prerequisites": [],
-      "prerequisitesAny": [],
-      "description": "Regenerate an additional 1% of your maximum Health and Stamina per second, both in and out of beast form.",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "healthRegen",
-          "value": 1,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "staminaRegen",
-          "value": 1,
-          "isPercent": true
-        }
-      ]
-    },
-    {
-      "id": "werewolf-lycanthropic-regeneration-r2",
-      "name": "Lycanthropic Regeneration",
-      "skillReq": 0,
-      "position": {
-        "x": 0,
-        "y": 14
-      },
-      "prerequisites": [
-        "werewolf-lycanthropic-regeneration"
-      ],
-      "prerequisitesAny": [],
-      "description": "Regenerate an additional 2% of your maximum Health and Stamina per second, both in and out of beast form.",
-      "effects": [
-        {
-          "type": "derivedStat",
-          "stat": "healthRegen",
-          "value": 2,
-          "isPercent": true
-        },
-        {
-          "type": "derivedStat",
-          "stat": "staminaRegen",
-          "value": 2,
-          "isPercent": true
-        }
-      ]
-    },
-    {
-      "id": "werewolf-totem-of-terror",
-      "name": "Totem of Terror",
-      "skillReq": 0,
-      "position": {
-        "x": 14,
-        "y": 14
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength"
-      ],
-      "prerequisitesAny": [],
-      "description": "Werebeast Howl of Terror affects even dragons, forcing them to land for 30 seconds.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-totem-of-terror-r2",
-      "name": "Totem of Terror",
-      "skillReq": 0,
-      "position": {
-        "x": 14,
-        "y": 10
-      },
-      "prerequisites": [
-        "werewolf-totem-of-terror"
-      ],
-      "prerequisitesAny": [],
-      "description": "Werebeast Howl of Terror affects even dragons, forcing them to land for 60 seconds.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-totem-of-the-hunt",
-      "name": "Totem of the Hunt",
-      "skillReq": 0,
-      "position": {
-        "x": 16,
-        "y": 14
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength"
-      ],
-      "prerequisitesAny": [],
-      "description": "Werebeast Howl of the Hunt shatters locks up to Adept level at close range.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-totem-of-the-hunt-r2",
-      "name": "Totem of the Hunt",
-      "skillReq": 0,
-      "position": {
-        "x": 16,
-        "y": 10
-      },
-      "prerequisites": [
-        "werewolf-totem-of-the-hunt"
-      ],
-      "prerequisitesAny": [],
-      "description": "Werebeast Howl of the Hunt shatters locks up to Expert level at close range.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-totem-of-ice-brothers",
-      "name": "Totem of Ice Brothers",
-      "skillReq": 0,
-      "position": {
-        "x": 18,
-        "y": 14
-      },
-      "prerequisites": [
-        "werewolf-bestial-strength"
-      ],
-      "prerequisitesAny": [],
-      "description": "Werebeast Howl of Brotherhood calls Ice Wolves instead.",
-      "effects": []
-    },
-    {
-      "id": "werewolf-totem-of-ice-brothers-r2",
-      "name": "Totem of Ice Brothers",
-      "skillReq": 0,
-      "position": {
-        "x": 18,
-        "y": 10
-      },
-      "prerequisites": [
-        "werewolf-totem-of-ice-brothers"
-      ],
-      "prerequisitesAny": [],
-      "description": "Werebeast Howl of Brotherhood calls Snow Bears, Werewolves, or Werebears instead.",
-      "effects": []
+      "description": "There remains not much that is not torn to pieces by your brute strength in werewolf form.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "werewolf-bury-the-beast",
       "name": "Bury the Beast",
       "skillReq": 0,
       "position": {
-        "x": 21,
-        "y": 17
+        "x": 2,
+        "y": 15
       },
-      "prerequisites": [],
-      "prerequisitesAny": [],
-      "description": "No longer forced to transform at night.",
-      "effects": []
+      "prerequisites": [
+        "werewolf-bestial-strength"
+      ],
+      "description": "You are able to control your inner beast, therefore you are no longer forced to transform at night.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "werewolf-wolf-among-men",
       "name": "Wolf Among Men",
       "skillReq": 0,
       "position": {
-        "x": 24,
-        "y": 17
+        "x": 2,
+        "y": 9
       },
-      "prerequisites": [],
-      "prerequisitesAny": [],
-      "description": "The frequency of Silver Hand Elite werebeast hunters is reduced by 80%.",
-      "effects": []
+      "prerequisites": [
+        "werewolf-bury-the-beast"
+      ],
+      "description": "You learned how to blend in perfectly. Silver Hand Elite werewolf hunters are less likely to hunt you.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-animal-vigor",
+      "name": "Animal Vigor",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 12
+      },
+      "prerequisites": [
+        "werewolf-bestial-strength"
+      ],
+      "description": "Your werewolf form grants you even more physical strength and increases both your endurance and your resistance to wounds.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-roadkill",
+      "name": "Roadkill",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 8
+      },
+      "prerequisites": [
+        "werewolf-animal-vigor"
+      ],
+      "description": "Leap attacks (two-handed sprinting power attacks) in beast form do a critical strike equal to your Stamina and throw targets.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-rampage",
+      "name": "Rampage",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 4
+      },
+      "prerequisites": [
+        "werewolf-roadkill",
+        "werewolf-supernatural-strength",
+        "werewolf-infinite-duress"
+      ],
+      "description": "Beast form lasts 50% longer and feeding extends the duration 50% more.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-totem-of-terror",
+      "name": "Totem of Terror",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 0
+      },
+      "prerequisites": [
+        "werewolf-rampage"
+      ],
+      "description": "Your Werewolf Howl of Terror strikes fear into even more terrible foes.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-totem-of-terror-r2",
+      "name": "Totem of Terror",
+      "skillReq": 0,
+      "position": {
+        "x": 18,
+        "y": 0
+      },
+      "prerequisites": [
+        "werewolf-rampage"
+      ],
+      "description": "Your Werebeast Howl of Terror is even more terrifying, increasing the duration by 100%.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-totem-of-the-hunt",
+      "name": "Totem of the Hunt",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 0
+      },
+      "prerequisites": [
+        "werewolf-rampage"
+      ],
+      "description": "Your Werebeast Howl of the Hunt shatters locks up to Adept level at close range.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-totem-of-the-hunt-r2",
+      "name": "Totem of the Hunt",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 0
+      },
+      "prerequisites": [
+        "werewolf-rampage"
+      ],
+      "description": "Your Werebeast Howl of the Hunt shatters locks up to Expert level at close range.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-totem-of-ice-brothers",
+      "name": "Totem of Ice Brothers",
+      "skillReq": 0,
+      "position": {
+        "x": 10,
+        "y": 0
+      },
+      "prerequisites": [
+        "werewolf-rampage"
+      ],
+      "description": "Your Werewolf Totem of Brotherhood Howl is now able to call Ice Wolves to your aid.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-totem-of-ice-brothers-r2",
+      "name": "Totem of Ice Brothers",
+      "skillReq": 0,
+      "position": {
+        "x": 10,
+        "y": 0
+      },
+      "prerequisites": [
+        "werewolf-rampage"
+      ],
+      "description": "Your Totem of Brotherhood Howl can now call your werewolf brethren to your aid.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-supernatural-strength",
+      "name": "Supernatural Strength",
+      "skillReq": 0,
+      "position": {
+        "x": 14,
+        "y": 8
+      },
+      "prerequisites": [
+        "werewolf-animal-vigor"
+      ],
+      "description": "Back hand attacks (two-handed standing power attacks) in beast form disarm targets.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-infinite-duress",
+      "name": "Infinite Duress",
+      "skillReq": 0,
+      "position": {
+        "x": 10,
+        "y": 8
+      },
+      "prerequisites": [
+        "werewolf-animal-vigor"
+      ],
+      "description": "Frenzy attacks (one-handed standing power attacks) in beast form stun targets for the duration.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-feral-instincts",
+      "name": "Feral Instincts",
+      "skillReq": 0,
+      "position": {
+        "x": 22,
+        "y": 12
+      },
+      "prerequisites": [
+        "werewolf-bestial-strength"
+      ],
+      "description": "Power attacks in beast form cost 15% less Stamina and do 15% more damage.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-improved-bloodthirst",
+      "name": "Improved Bloodthirst",
+      "skillReq": 0,
+      "position": {
+        "x": 22,
+        "y": 4
+      },
+      "prerequisites": [
+        "werewolf-feral-instincts"
+      ],
+      "description": "Beast form attacks now cause 10 points of bleed damage, healing you for the same amount.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-improved-bloodthirst-r2",
+      "name": "Improved Bloodthirst",
+      "skillReq": 0,
+      "position": {
+        "x": 22,
+        "y": 4
+      },
+      "prerequisites": [
+        "werewolf-feral-instincts"
+      ],
+      "description": "Beast form attacks do an additional 20 points of bleed damage, healing you for the same amount.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-swipe",
+      "name": "Swipe",
+      "skillReq": 0,
+      "position": {
+        "x": 28,
+        "y": 4
+      },
+      "prerequisites": [
+        "werewolf-improved-bloodthirst"
+      ],
+      "description": "Power attacks in beast form can hit multiple targets in front of you.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-lycanthropic-speed",
+      "name": "Lycanthropic Speed",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 12
+      },
+      "prerequisites": [
+        "werewolf-bestial-strength"
+      ],
+      "description": "Movement speed is increased by 15%, both in and out of beast form.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-lycanthropic-regen",
+      "name": "Lycanthropic Regen",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
+      "prerequisites": [
+        "werewolf-lycanthropic-speed"
+      ],
+      "description": "Regenerate 1 health and 0.5% of your Stamina per second, both in and out of beast form.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-lycanthropic-regen-r2",
+      "name": "Lycanthropic Regen",
+      "skillReq": 0,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
+      "prerequisites": [
+        "werewolf-lycanthropic-speed"
+      ],
+      "description": "Regenerate 2 health and 1% of your Stamina per second, both in and out of beast form.",
+      "effects": [],
+      "prerequisitesAny": []
     },
     {
       "id": "werewolf-spread-the-beastblood",
       "name": "Spread the Beastblood",
       "skillReq": 0,
       "position": {
-        "x": 21,
+        "x": 0,
+        "y": 4
+      },
+      "prerequisites": [
+        "werewolf-lycanthropic-regen"
+      ],
+      "description": "Give your follower the beastblood by trading Werebeast Blood with them. No effect on vampires.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-gorging",
+      "name": "Gorging",
+      "skillReq": 0,
+      "position": {
+        "x": 26,
+        "y": 15
+      },
+      "prerequisites": [
+        "werewolf-bestial-strength"
+      ],
+      "description": "The Flesh and blood of the fallen are a welcome feast to you, as they now heal even more of your injuries.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-savage-feeding",
+      "name": "Savage Feeding",
+      "skillReq": 0,
+      "position": {
+        "x": 26,
+        "y": 9
+      },
+      "prerequisites": [
+        "werewolf-gorging"
+      ],
+      "description": "Your stomach has become otherwordly sturdy and now allows you to even feast upon the flesh of more savage things.",
+      "effects": [],
+      "prerequisitesAny": []
+    },
+    {
+      "id": "werewolf-night-eye",
+      "name": "Night Eye",
+      "skillReq": 0,
+      "position": {
+        "x": 16,
         "y": 14
       },
-      "prerequisites": [],
-      "prerequisitesAny": [],
-      "description": "Give your follower the beastblood by trading Werebeast Blood with them. No effect on vampires.",
-      "effects": []
+      "prerequisites": [
+        "werewolf-bestial-strength"
+      ],
+      "description": "Your eyes have adapted while in beastform, you can now see better in the dark.",
+      "effects": [],
+      "prerequisitesAny": []
     }
   ]
 }

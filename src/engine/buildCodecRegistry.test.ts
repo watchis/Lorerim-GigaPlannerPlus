@@ -32,7 +32,10 @@ describe("buildCodecRegistry", () => {
 
     expect(vampireChoices).toEqual(["none", "stage-1", "stage-2", "stage-3", "stage-4"]);
     expect(werewolfChoices).toEqual(["none", "claimed"]);
-    expect(lichChoices).toEqual(["none", "claimed"]);
+    expect(lichChoices[0]).toBe("none");
+    expect(lichChoices).toHaveLength(52);
+    expect(lichChoices[1]).toBe("0");
+    expect(lichChoices[51]).toBe("50");
   });
 
   it("indexes supernatural perk trees from manifest skills", () => {
@@ -43,8 +46,8 @@ describe("buildCodecRegistry", () => {
     expect(registry.perks).toContain("vampire-hemomancer");
     expect(registry.perks).toContain("werewolf-animal-vigor");
     expect(registry.perks).toContain("werewolf-bestial-strength");
-    expect(registry.perks).toContain("lich-magicka-weave");
-    expect(registry.perks).toContain("lich-spirit-of-midnight");
+    expect(registry.perks).not.toContain("lich-magicka-weave");
+    expect(registry.perks).not.toContain("lich-spirit-of-midnight");
   });
 
   it("looks up ids by index and back", () => {

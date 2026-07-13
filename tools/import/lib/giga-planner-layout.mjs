@@ -148,6 +148,10 @@ export function applyGigaPlannerTreeLayout(tree) {
   if (!tree?.perks?.length || tree.skillId === "destiny" || tree.skillId === "traits") {
     return { matched: 0, inferred: 0 };
   }
+  // Growl / Sacrilege AVIF coordinates are authoritative for curse trees.
+  if (tree.skillId === "vampire" || tree.skillId === "werewolf") {
+    return { matched: 0, inferred: 0 };
+  }
 
   const grid = { ...GIGA_LAYOUT_GRID };
 

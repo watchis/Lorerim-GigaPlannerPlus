@@ -1,8 +1,9 @@
+import { LichPhylacterySection } from "@/components/LichPhylacterySection";
 import { SupernaturalTreeSection } from "@/components/SupernaturalTreeSection";
 import {
   getActiveSupernaturalSkillId,
   hasSupernaturalCurse,
-  LICH_SKILL_ID,
+  isLichActive,
   VAMPIRE_SKILL_ID,
   WEREWOLF_SKILL_ID,
 } from "@/lib/supernatural";
@@ -12,8 +13,12 @@ import { useBuildStore } from "@/store/buildStore";
 export function ActiveSupernaturalTreeSection() {
   const labels = usePanelLabels("character-setup");
   const build = useBuildStore((s) => s.build);
-  const skillId = getActiveSupernaturalSkillId(build);
 
+  if (isLichActive(build)) {
+    return <LichPhylacterySection />;
+  }
+
+  const skillId = getActiveSupernaturalSkillId(build);
   if (!skillId) return null;
 
   const label =
@@ -21,9 +26,7 @@ export function ActiveSupernaturalTreeSection() {
       ? (labels.vampireTree ?? "Vampire")
       : skillId === WEREWOLF_SKILL_ID
         ? (labels.werewolfTree ?? "Werewolf")
-        : skillId === LICH_SKILL_ID
-          ? (labels.lichTree ?? "Lich")
-          : skillId;
+        : skillId;
 
   return (
     <SupernaturalTreeSection

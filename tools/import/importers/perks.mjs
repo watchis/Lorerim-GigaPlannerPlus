@@ -29,6 +29,7 @@ import {
   validateExtensionBindings,
 } from "../lib/extension-bindings.mjs";
 import { pruneAllPerkTrees } from "../lib/prune-orphan-perks.mjs";
+import { getSupernaturalPerkSkillIds } from "../lib/supernatural-perk-skills.mjs";
 
 const DESTINY_SKILL_ID = "destiny";
 const DESTINY_COORD_SCALE = 2;
@@ -241,8 +242,18 @@ export function transformPerkRecords(
   const layoutOverrides = loadPerkLayoutOverrides(perksDir);
   const graphSnapshots = loadPerkGraphSnapshots(perksDir);
   const existingLevelReqsByGraphKey = loadPerkPlayerLevelReqsByGraphKey(perksDir);
-  const { trees, indexEntries } = createEmptyPerkTrees();
+  const { trees, indexEntries } = createEmptyPerkTrees(membership);
   const { treePerkRecords } = buildPerkLookups(perkRecords, membership);
+
+  // Keep planner-authored supernatural trees when the install has no AVIF for them.
+  for (const skillId of getSupernaturalPerkSkillIds(membership)) {
+    const filename = `${skillId}.json`;
+    if (membership?.hasAvifForSkill(skillId)) continue;
+    const existing = loadExistingPerkTree(perksDir, filename);
+    if (existing?.perks?.length) {
+      trees[filename] = existing;
+    }
+  }
 
   const existingDestiny =
     loadExistingPerkTree(perksDir, "destiny.json") ?? {

@@ -8,11 +8,26 @@
       "extension": "oghma-infinium",
       "controlType": "toggle",
       "choices": [
-        { "id": "none", "label": "oghmaNone" },
-        { "id": "claimed", "label": "oghmaClaimed" },
-        { "id": "warrior", "label": "oghmaWarrior" },
-        { "id": "mage", "label": "oghmaMage" },
-        { "id": "thief", "label": "oghmaThief" }
+        {
+          "id": "none",
+          "label": "oghmaNone"
+        },
+        {
+          "id": "claimed",
+          "label": "oghmaClaimed"
+        },
+        {
+          "id": "warrior",
+          "label": "oghmaWarrior"
+        },
+        {
+          "id": "mage",
+          "label": "oghmaMage"
+        },
+        {
+          "id": "thief",
+          "label": "oghmaThief"
+        }
       ]
     },
     {
@@ -22,11 +37,19 @@
       "defaultChoice": "none",
       "controlType": "toggle",
       "choices": [
-        { "id": "none", "label": "alduinBonusTraitNone" },
+        {
+          "id": "none",
+          "label": "alduinBonusTraitNone"
+        },
         {
           "id": "claimed",
           "label": "alduinBonusTraitClaimed",
-          "effects": [{ "type": "traitSlot", "value": 1 }]
+          "effects": [
+            {
+              "type": "traitSlot",
+              "value": 1
+            }
+          ]
         }
       ]
     },
@@ -38,11 +61,26 @@
       "extension": "supernatural-vampire",
       "controlType": "select",
       "choices": [
-        { "id": "none", "label": "supernaturalNone" },
-        { "id": "stage-1", "label": "vampireStage1" },
-        { "id": "stage-2", "label": "vampireStage2" },
-        { "id": "stage-3", "label": "vampireStage3" },
-        { "id": "stage-4", "label": "vampireStage4" }
+        {
+          "id": "none",
+          "label": "supernaturalNone"
+        },
+        {
+          "id": "stage-1",
+          "label": "vampireStage1"
+        },
+        {
+          "id": "stage-2",
+          "label": "vampireStage2"
+        },
+        {
+          "id": "stage-3",
+          "label": "vampireStage3"
+        },
+        {
+          "id": "stage-4",
+          "label": "vampireStage4"
+        }
       ]
     },
     {
@@ -53,8 +91,14 @@
       "extension": "supernatural-werewolf",
       "controlType": "toggle",
       "choices": [
-        { "id": "none", "label": "supernaturalNone" },
-        { "id": "claimed", "label": "supernaturalWerewolf" }
+        {
+          "id": "none",
+          "label": "supernaturalNone"
+        },
+        {
+          "id": "claimed",
+          "label": "supernaturalWerewolf"
+        }
       ]
     },
     {
@@ -63,10 +107,216 @@
       "descriptionLabel": "lichOptionDescription",
       "defaultChoice": "none",
       "extension": "supernatural-lich",
-      "controlType": "toggle",
+      "controlType": "select",
       "choices": [
-        { "id": "none", "label": "supernaturalNone" },
-        { "id": "claimed", "label": "supernaturalLich" }
+        {
+          "id": "none",
+          "label": "supernaturalNone"
+        },
+        {
+          "id": "0",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "1",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "2",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "3",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "4",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "5",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "6",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "7",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "8",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "9",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "10",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "11",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "12",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "13",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "14",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "15",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "16",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "17",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "18",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "19",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "20",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "21",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "22",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "23",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "24",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "25",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "26",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "27",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "28",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "29",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "30",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "31",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "32",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "33",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "34",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "35",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "36",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "37",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "38",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "39",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "40",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "41",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "42",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "43",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "44",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "45",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "46",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "47",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "48",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "49",
+          "label": "lichSoulsChoice"
+        },
+        {
+          "id": "50",
+          "label": "lichSoulsChoice"
+        }
       ]
     },
     {
@@ -78,11 +328,26 @@
       "requiresTraitId": "au-naturel",
       "controlType": "buttons",
       "choices": [
-        { "id": "0", "label": "auNaturelGear0" },
-        { "id": "1", "label": "auNaturelGear1" },
-        { "id": "2", "label": "auNaturelGear2" },
-        { "id": "3", "label": "auNaturelGear3" },
-        { "id": "4", "label": "auNaturelGear4" }
+        {
+          "id": "0",
+          "label": "auNaturelGear0"
+        },
+        {
+          "id": "1",
+          "label": "auNaturelGear1"
+        },
+        {
+          "id": "2",
+          "label": "auNaturelGear2"
+        },
+        {
+          "id": "3",
+          "label": "auNaturelGear3"
+        },
+        {
+          "id": "4",
+          "label": "auNaturelGear4"
+        }
       ]
     }
   ]
