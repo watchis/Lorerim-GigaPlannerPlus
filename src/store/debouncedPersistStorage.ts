@@ -96,9 +96,14 @@ export function createDebouncedJSONStorage<S>(
 
   const debounced: DebouncedJSONPersistStorage<S> = {
     getItem: (name) => {
-      const raw = getStorage().getItem(name);
-      if (!raw) return null;
-      return JSON.parse(raw) as StorageValue<S>;
+      try {
+        const raw = getStorage().getItem(name);
+        if (!raw) return null;
+        return JSON.parse(raw) as StorageValue<S>;
+      } catch (error) {
+        console.error(`Failed to parse persisted state for "${name}"; starting fresh`, error);
+        return null;
+      }
     },
     setItem: (name, value) => {
       pendingKey = name;

@@ -1,5 +1,11 @@
+import type { GameData } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
-import { areBuildStatesEqual, createInitialBuildState, migrateBuildState } from "@/engine/buildEngine";
+import {
+  areBuildStatesEqual,
+  createInitialBuildState,
+  migrateBuildState,
+  reconcileImportedBuild,
+} from "@/engine/buildEngine";
 
 export interface BuildMilestone {
   id: string;
@@ -140,18 +146,27 @@ export function acknowledgeSavedBuildEdits(entry: SavedBuild): SavedBuild {
 }
 
 export function normalizeSavedBuild(entry: SavedBuild): SavedBuild {
-  return {
-    ...entry,
-    build: migrateBuildState(entry.build),
-    defaultVariantName: entry.defaultVariantName?.trim() || DEFAULT_VARIANT_NAME,
-    defaultVariantNotes: entry.defaultVariantNotes ?? "",
-    milestones: (entry.milestones ?? []).map((milestone) => ({
-      ...milestone,
+  const milestones = (Array.isArray(entry?.milestones) ? entry.milestones : [])
+    .filter((milestone): milestone is NonNullable<typeof milestone> => !!milestone && typeof milestone === "object")
+    .map((milestone) => ({
+      id: typeof milestone.id === "string" && milestone.id ? milestone.id : createBuildId(),
+      name: typeof milestone.name === "string" && milestone.name.trim() ? milestone.name : "Milestone",
       build: migrateBuildState(milestone.build),
-    })),
-    activeMilestoneId: entry.activeMilestoneId ?? null,
-    importedAt: entry.importedAt ?? null,
-    modpackVersion: entry.modpackVersion?.trim() || entry.modpackVersion,
+      notes: typeof milestone.notes === "string" ? milestone.notes : "",
+    }));
+
+  return {
+    id: typeof entry?.id === "string" && entry.id ? entry.id : createBuildId(),
+    name:
+      typeof entry?.name === "string" && entry.name.trim() ? entry.name : defaultBuildName(1),
+    build: migrateBuildState(entry?.build),
+    defaultVariantName: entry?.defaultVariantName?.trim() || DEFAULT_VARIANT_NAME,
+    defaultVariantNotes: entry?.defaultVariantNotes ?? "",
+    milestones,
+    activeMilestoneId: entry?.activeMilestoneId ?? null,
+    importedAt: entry?.importedAt ?? null,
+    updatedAt: typeof entry?.updatedAt === "number" ? entry.updatedAt : Date.now(),
+    modpackVersion: entry?.modpackVersion?.trim() || entry?.modpackVersion,
   };
 }
 
@@ -270,9 +285,52 @@ export function promoteMilestoneToDefault(entry: SavedBuild, milestoneId: string
 }
 
 export function getActiveSavedBuildBuild(entry: SavedBuild): BuildState {
-  if (!entry.activeMilestoneId) return entry.build;
-  const milestone = entry.milestones.find((m) => m.id === entry.activeMilestoneId);
-  return milestone?.build ?? entry.build;
+  const build = entry?.build ?? createInitialBuildState();
+  if (!entry?.activeMilestoneId) return migrateBuildState(build);
+  const milestones = Array.isArray(entry.milestones) ? entry.milestones : [];
+  const milestone = milestones.find((m) => m?.id === entry.activeMilestoneId);
+  return migrateBuildState(milestone?.build ?? build);
+}
+
+/**
+ * Reconcile every variant in a saved library entry against current game data.
+ * Used on init so stale localStorage choices (removed options, legacy lich
+ * `"claimed"`, etc.) cannot crash My Builds when encoding share codes.
+ */
+export function reconcileSavedBuildEntry(game: GameData, entry: SavedBuild): SavedBuild {
+  try {
+    const normalized = normalizeSavedBuild(entry);
+    return {
+      ...normalized,
+      build: reconcileImportedBuild(game, normalized.build),
+      milestones: normalized.milestones.map((milestone) => {
+        try {
+          return {
+            ...milestone,
+            build: reconcileImportedBuild(game, milestone.build),
+          };
+        } catch (error) {
+          console.error("Failed to reconcile milestone build; resetting variant", error);
+          return {
+            ...milestone,
+            build: createInitialBuildState(),
+          };
+        }
+      }),
+    };
+  } catch (error) {
+    console.error("Failed to reconcile saved build; preserving slot with a reset build", error);
+    const fallback = createSavedBuild(
+      typeof entry?.name === "string" && entry.name.trim() ? entry.name : defaultBuildName(1),
+      createInitialBuildState(),
+    );
+    return {
+      ...fallback,
+      id: typeof entry?.id === "string" && entry.id ? entry.id : fallback.id,
+      updatedAt: typeof entry?.updatedAt === "number" ? entry.updatedAt : fallback.updatedAt,
+      modpackVersion: entry?.modpackVersion,
+    };
+  }
 }
 
 export function getActiveSavedBuild(

@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Copy, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { decodeBuildPackage, encodeSavedBuild } from "@/engine/buildCodec";
+import { decodeBuildPackage, tryEncodeSavedBuild } from "@/engine/buildCodec";
 import { usePanelLabels, useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
-import { normalizeSavedBuild, updateSavedBuildInList } from "@/store/savedBuilds";
+import { updateSavedBuildInList } from "@/store/savedBuilds";
 
 interface BuildSummaryPanelProps {
   embedded?: boolean;
@@ -27,17 +27,20 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
 
   if (!gameData) return null;
 
-  const activeEntry = updateSavedBuildInList(
-    savedBuilds,
-    activeBuildId,
-    build,
-    gameData.game.manifest.version,
-  ).find(
-    (entry) => entry.id === activeBuildId,
-  );
-  const buildCode = activeEntry
-    ? encodeSavedBuild(normalizeSavedBuild(activeEntry), gameData.game)
-    : "";
+  const activeEntry = (() => {
+    try {
+      return updateSavedBuildInList(
+        savedBuilds,
+        activeBuildId,
+        build,
+        gameData.game.manifest.version,
+      ).find((entry) => entry.id === activeBuildId);
+    } catch (error) {
+      console.error("Failed to sync active build for share code:", error);
+      return savedBuilds.find((entry) => entry.id === activeBuildId);
+    }
+  })();
+  const buildCode = activeEntry ? tryEncodeSavedBuild(activeEntry, gameData.game) : "";
 
   const handleCopy = async () => {
     try {

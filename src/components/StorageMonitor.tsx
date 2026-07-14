@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   formatStorageSize,
   getAppLocalStorageUsage,
+  getLocalStorageUsage,
   type LocalStorageUsage,
   type StorageUsageLevel,
 } from "@/lib/localStorageUsage";
@@ -11,7 +12,8 @@ import { cn } from "@/lib/utils";
 import { useBuildStore } from "@/store/buildStore";
 import { usePanelLabels } from "@/theme/ThemeProvider";
 
-function formatLabel(template: string, values: Record<string, string | number>): string {
+function formatLabel(template: string | undefined, values: Record<string, string | number>): string {
+  if (!template) return "";
   return Object.entries(values).reduce(
     (result, [key, value]) => result.replace(`{${key}}`, String(value)),
     template,
@@ -34,10 +36,20 @@ export function StorageMonitor() {
   const savedBuilds = useBuildStore((state) => state.savedBuilds);
   const activeBuildId = useBuildStore((state) => state.activeBuildId);
   const build = useBuildStore((state) => state.build);
-  const [usage, setUsage] = useState<LocalStorageUsage>(() => getAppLocalStorageUsage());
+  const [usage, setUsage] = useState<LocalStorageUsage>(() => {
+    try {
+      return getAppLocalStorageUsage();
+    } catch {
+      return getLocalStorageUsage(0);
+    }
+  });
 
   useEffect(() => {
-    setUsage(getAppLocalStorageUsage());
+    try {
+      setUsage(getAppLocalStorageUsage());
+    } catch {
+      setUsage(getLocalStorageUsage(0));
+    }
   }, [savedBuilds, activeBuildId, build]);
 
   const usageLabel = formatLabel(labels.storageUsage, {

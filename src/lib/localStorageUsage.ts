@@ -26,13 +26,17 @@ export function getLocalStorageEntryByteSize(key: string, value: string): number
 export function getLocalStorageUsageForKeys(keys: readonly string[]): number {
   if (typeof localStorage === "undefined") return 0;
 
-  let total = 0;
-  for (const key of keys) {
-    const value = localStorage.getItem(key);
-    if (value === null) continue;
-    total += getLocalStorageEntryByteSize(key, value);
+  try {
+    let total = 0;
+    for (const key of keys) {
+      const value = localStorage.getItem(key);
+      if (value === null) continue;
+      total += getLocalStorageEntryByteSize(key, value);
+    }
+    return total;
+  } catch {
+    return 0;
   }
-  return total;
 }
 
 export function getAppLocalStorageUsageBytes(): number {

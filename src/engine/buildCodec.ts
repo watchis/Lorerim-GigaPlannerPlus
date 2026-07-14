@@ -136,11 +136,19 @@ function compactPayloadFromBuildIds(
   state: BuildState,
   game: GameData,
 ): CompactBuildPayloadV3 {
-  const { health, magicka, stamina } = state.attributeBonus;
+  const health = state.attributeBonus?.health ?? 0;
+  const magicka = state.attributeBonus?.magicka ?? 0;
+  const stamina = state.attributeBonus?.stamina ?? 0;
   const raceId = state.raceId ?? "none";
+  const traitIds = state.traitIds ?? [];
+  const majorSkillIds = state.majorSkillIds ?? [];
+  const minorSkillIds = state.minorSkillIds ?? [];
+  const selectedPerkIds = state.selectedPerkIds ?? [];
+  const oghmaSkillIds = state.oghmaSkillIds ?? [];
+  const characterOptionChoices = state.characterOptionChoices ?? {};
   const payload: CompactBuildPayloadV3 = {};
 
-  if (state.playerLevel > game.mechanics.leveling.baseLevel) {
+  if ((state.playerLevel ?? game.mechanics.leveling.baseLevel) > game.mechanics.leveling.baseLevel) {
     payload.lv = state.playerLevel;
   }
 
@@ -156,30 +164,30 @@ function compactPayloadFromBuildIds(
     payload.b = state.deityId;
   }
 
-  if (state.traitIds.length > 0) {
-    payload.t = [...state.traitIds];
+  if (traitIds.length > 0) {
+    payload.t = [...traitIds];
   }
 
-  if (state.majorSkillIds.length > 0) {
-    payload.M = [...state.majorSkillIds];
+  if (majorSkillIds.length > 0) {
+    payload.M = [...majorSkillIds];
   }
 
-  if (state.minorSkillIds.length > 0) {
-    payload.m = [...state.minorSkillIds];
+  if (minorSkillIds.length > 0) {
+    payload.m = [...minorSkillIds];
   }
 
   if (health > 0 || magicka > 0 || stamina > 0) {
     payload.a = [health, magicka, stamina];
   }
 
-  if (state.selectedPerkIds.length > 0) {
-    payload.p = [...state.selectedPerkIds].sort();
+  if (selectedPerkIds.length > 0) {
+    payload.p = [...selectedPerkIds].sort();
   }
 
   const skillLevelEntries: [string, number][] = [];
   for (const skillId of game.skills.map((skill) => skill.id)) {
     const floor = getEffectiveSkillFloor(game, state, skillId);
-    const level = state.skillLevels[skillId];
+    const level = state.skillLevels?.[skillId];
     if (level !== undefined && level !== floor) {
       skillLevelEntries.push([skillId, level]);
     }
@@ -191,7 +199,7 @@ function compactPayloadFromBuildIds(
   const trainingEntries: [string, number, number][] = [];
   for (const skillId of game.skills.map((skill) => skill.id)) {
     const ranges = state.skillTrainingRanges?.[skillId];
-    if (!ranges) continue;
+    if (!Array.isArray(ranges)) continue;
 
     ranges.forEach((count, tierIndex) => {
       if (count > 0) {
@@ -205,23 +213,23 @@ function compactPayloadFromBuildIds(
 
   const characterOptionEntries: [string, string][] = [];
   for (const option of game.characterOptions) {
-    const selectedId = state.characterOptionChoices[option.id] ?? option.defaultChoice;
+    const selectedId = characterOptionChoices[option.id] ?? option.defaultChoice;
     if (selectedId === option.defaultChoice) continue;
+    // Skip unknown/legacy choice ids instead of throwing — stale localStorage libraries
+    // (and milestone variants) must still be encodable for the My Builds page.
     const validChoice = option.choices.some((choice) => choice.id === selectedId);
-    if (!validChoice) {
-      throw new Error(`Unknown character option choice: ${option.id}/${selectedId}`);
-    }
+    if (!validChoice) continue;
     characterOptionEntries.push([option.id, selectedId]);
   }
   if (characterOptionEntries.length > 0) {
     payload.co = characterOptionEntries;
   }
 
-  if (state.oghmaSkillIds.length > 0) {
-    payload.oi = [...state.oghmaSkillIds];
+  if (oghmaSkillIds.length > 0) {
+    payload.oi = [...oghmaSkillIds];
   }
 
-  if (state.description.trim()) {
+  if ((state.description ?? "").trim()) {
     payload.d = state.description;
   }
 
@@ -351,19 +359,21 @@ function encodeCompactBuildV3(payload: CompactBuildV3): string {
 }
 
 function encodeBuildV3(state: BuildState, game: GameData): string {
+  const reconciled = reconcileImportedBuild(game, migrateBuildState(state));
   return encodeCompactBuildV3({
     v: BUILD_CODEC_V3,
     mv: game.manifest.version,
-    ...compactPayloadFromBuildIds(state, game),
+    ...compactPayloadFromBuildIds(reconciled, game),
   });
 }
 
 function encodeSavedBuildV3(entry: SavedBuild, game: GameData): string {
   const normalized = normalizeSavedBuild(entry);
+  const reconciledBuild = reconcileImportedBuild(game, normalized.build);
   const payload: CompactBuildV3 = {
     v: BUILD_CODEC_V3,
     mv: game.manifest.version,
-    ...compactPayloadFromBuildIds(normalized.build, game),
+    ...compactPayloadFromBuildIds(reconciledBuild, game),
   };
 
   if (normalized.name.trim()) {
@@ -381,7 +391,10 @@ function encodeSavedBuildV3(entry: SavedBuild, game: GameData): string {
 
   if (normalized.milestones.length > 0) {
     payload.ms = normalized.milestones.map((milestone) => {
-      const compact = compactPayloadFromBuildIds(milestone.build, game);
+      const compact = compactPayloadFromBuildIds(
+        reconcileImportedBuild(game, milestone.build),
+        game,
+      );
       if (milestone.notes?.trim()) {
         return [milestone.name, compact, milestone.notes];
       }
@@ -568,6 +581,16 @@ export function encodeBuild(state: BuildState, game: GameData): string {
 
 export function encodeSavedBuild(entry: SavedBuild, game: GameData): string {
   return encodeSavedBuildV3(entry, game);
+}
+
+/** Encode for UI display; returns empty string instead of throwing on corrupt data. */
+export function tryEncodeSavedBuild(entry: SavedBuild, game: GameData): string {
+  try {
+    return encodeSavedBuild(normalizeSavedBuild(entry), game);
+  } catch (error) {
+    console.error("Failed to encode saved build share code:", error);
+    return "";
+  }
 }
 
 export function decodeBuildPackage(code: string, game: GameData): DecodedBuildPackage {

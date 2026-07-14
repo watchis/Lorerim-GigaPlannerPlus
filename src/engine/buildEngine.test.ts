@@ -30,6 +30,7 @@ import {
   tryTakePerk,
   areBuildStatesEqual,
   migrateBuildState,
+  type BuildState,
 } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 
@@ -763,5 +764,23 @@ describe("migrateBuildState", () => {
 
     const migrated = migrateBuildState(legacy);
     expect(migrated.oghmaSkillIds).toEqual([]);
+  });
+
+  it("fills missing BuildState fields instead of throwing", () => {
+    const migrated = migrateBuildState({
+      raceId: "nord",
+    } as BuildState);
+
+    expect(migrated.raceId).toBe("nord");
+    expect(migrated.traitIds).toEqual([]);
+    expect(migrated.selectedPerkIds).toEqual([]);
+    expect(migrated.attributeBonus).toEqual({ health: 0, magicka: 0, stamina: 0 });
+    expect(migrated.oghmaSkillIds).toEqual([]);
+    expect(migrated.characterOptionChoices).toEqual({});
+  });
+
+  it("returns a fresh initial build for null/undefined input", () => {
+    expect(migrateBuildState(null)).toEqual(createInitialBuildState());
+    expect(migrateBuildState(undefined)).toEqual(createInitialBuildState());
   });
 });

@@ -4,6 +4,7 @@ import { Bug, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BUG_REPORT_URL } from "@/lib/bugReport";
 import { Button } from "@/components/ui/button";
+import { RouteErrorBoundary } from "@/components/layout/RouteErrorBoundary";
 import { useThemeConfig } from "@/theme/ThemeProvider";
 import { useBuildStore } from "@/store/buildStore";
 
@@ -165,7 +166,9 @@ export function AppShell() {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col">
-        <Outlet />
+        <RouteErrorBoundary resetKey={location.pathname}>
+          <Outlet />
+        </RouteErrorBoundary>
       </main>
     </div>
   );

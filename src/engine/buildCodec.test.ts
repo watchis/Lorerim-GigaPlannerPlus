@@ -1,13 +1,14 @@
 import { gzipSync } from "fflate";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   decodeBuild,
   decodeBuildPackage,
   encodeBuild,
   encodeSavedBuild,
+  tryEncodeSavedBuild,
 } from "@/engine/buildCodec";
 import { createBuildCodecRegistry, lookupIndex } from "@/engine/buildCodecRegistry";
-import { reconcileImportedBuild } from "@/engine/buildEngine";
+import { reconcileImportedBuild, type BuildState } from "@/engine/buildEngine";
 import { createTestBuildState, getTestGameData } from "@/test/helpers";
 import { createMilestone, createSavedBuild } from "@/store/savedBuilds";
 
@@ -116,12 +117,58 @@ describe("buildCodec", () => {
     expect(decoded.shared?.milestones[0]?.build.selectedPerkIds).toEqual(["werewolf-animal-vigor"]);
   });
 
-  it("rejects unknown supernatural choice ids during encode", () => {
+  it("skips unknown supernatural choice ids during encode instead of throwing", () => {
     const state = createTestBuildState({
       characterOptionChoices: { vampire: "stage-99", werewolf: "none" },
     });
 
-    expect(() => encodeBuild(state, game)).toThrow(/Unknown character option choice/);
+    expect(() => encodeBuild(state, game)).not.toThrow();
+    const decoded = decodeBuild(encodeBuild(state, game), game);
+    expect(decoded.characterOptionChoices.vampire ?? "none").toBe("none");
+  });
+
+  it("encodes legacy lich claimed milestones without crashing", () => {
+    const defaultBuild = createTestBuildState({
+      characterOptionChoices: { vampire: "none", werewolf: "none", lich: "none" },
+    });
+    const milestoneBuild = createTestBuildState({
+      characterOptionChoices: { vampire: "none", werewolf: "none", lich: "claimed" },
+      playerLevel: 25,
+    });
+    const milestone = createMilestone("Level 25", milestoneBuild);
+    const entry = createSavedBuild("Legacy Lich", defaultBuild, [milestone]);
+    entry.activeMilestoneId = milestone.id;
+
+    expect(() => encodeSavedBuild(entry, game)).not.toThrow();
+    const decoded = decodeBuildPackage(encodeSavedBuild(entry, game), game);
+    expect(decoded.shared?.milestones[0]?.build.characterOptionChoices.lich).toBe("0");
+  });
+
+  it("encodes builds with missing optional fields without crashing", () => {
+    const state = createTestBuildState();
+    delete (state as { attributeBonus?: BuildState["attributeBonus"] }).attributeBonus;
+    delete (state as { oghmaSkillIds?: string[] }).oghmaSkillIds;
+    delete (state as { characterOptionChoices?: BuildState["characterOptionChoices"] })
+      .characterOptionChoices;
+
+    expect(() => encodeBuild(state, game)).not.toThrow();
+  });
+
+  it("tryEncodeSavedBuild returns empty string instead of throwing", () => {
+    const entry = createSavedBuild("Broken", null as unknown as BuildState);
+    // Even with a null build, migrate+reconcile should make this succeed.
+    expect(tryEncodeSavedBuild(entry, game).length).toBeGreaterThan(0);
+
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    // Force a throw inside encode by stubbing a broken game.characterOptions iteration.
+    const brokenGame = {
+      ...game,
+      get characterOptions(): never {
+        throw new Error("simulated encode failure");
+      },
+    } as typeof game;
+    expect(tryEncodeSavedBuild(createSavedBuild("X", createTestBuildState()), brokenGame)).toBe("");
+    spy.mockRestore();
   });
 
   it("normalizes conflicting supernatural curses on decode", () => {
