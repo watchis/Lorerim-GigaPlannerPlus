@@ -199,7 +199,7 @@ function compactPayloadFromBuildIds(
   const trainingEntries: [string, number, number][] = [];
   for (const skillId of game.skills.map((skill) => skill.id)) {
     const ranges = state.skillTrainingRanges?.[skillId];
-    if (!ranges) continue;
+    if (!Array.isArray(ranges)) continue;
 
     ranges.forEach((count, tierIndex) => {
       if (count > 0) {
@@ -581,6 +581,16 @@ export function encodeBuild(state: BuildState, game: GameData): string {
 
 export function encodeSavedBuild(entry: SavedBuild, game: GameData): string {
   return encodeSavedBuildV3(entry, game);
+}
+
+/** Encode for UI display; returns empty string instead of throwing on corrupt data. */
+export function tryEncodeSavedBuild(entry: SavedBuild, game: GameData): string {
+  try {
+    return encodeSavedBuild(normalizeSavedBuild(entry), game);
+  } catch (error) {
+    console.error("Failed to encode saved build share code:", error);
+    return "";
+  }
 }
 
 export function decodeBuildPackage(code: string, game: GameData): DecodedBuildPackage {

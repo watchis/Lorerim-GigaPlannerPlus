@@ -33,6 +33,7 @@ import {
   createInitialLibrary,
   createMilestone,
   createSavedBuild,
+  defaultBuildName,
   getActiveSavedBuildBuild,
   getActiveSavedBuild,
   getDefaultVariantName,
@@ -317,25 +318,55 @@ export const useBuildStore = create<BuildStore>()(
         computed: null,
 
         init: (data) => {
-          const { build } = get();
+          const { build, activeBuildId } = get();
           const baseLevel = data.game.mechanics.leveling.baseLevel;
           const currentModpackVersion = data.game.manifest.version;
+          const rawBuilds = Array.isArray(get().savedBuilds) ? get().savedBuilds : [];
+          const repairedBuilds = rawBuilds
+            .filter((entry): entry is SavedBuild => !!entry && typeof entry === "object")
+            .map((entry) => {
+              try {
+                return reconcileSavedBuildEntry(data.game, entry);
+              } catch (error) {
+                console.error("Failed to reconcile saved build during init; resetting slot", error);
+                const fallback = createSavedBuild(
+                  typeof entry.name === "string" && entry.name.trim()
+                    ? entry.name
+                    : nextBuildName([]),
+                  createInitialBuildState(),
+                );
+                return {
+                  ...fallback,
+                  id: typeof entry.id === "string" && entry.id ? entry.id : fallback.id,
+                  modpackVersion: entry.modpackVersion,
+                };
+              }
+            });
+
           const nextSavedBuilds = migrateSavedBuildsModpackVersion(
-            get().savedBuilds.map((entry) => reconcileSavedBuildEntry(data.game, entry)),
+            repairedBuilds.length > 0 ? repairedBuilds : createInitialLibrary().savedBuilds,
             currentModpackVersion,
           );
-          const activeEntry = getActiveSavedBuild(nextSavedBuilds, get().activeBuildId);
+          const resolvedActiveId =
+            nextSavedBuilds.some((entry) => entry.id === activeBuildId)
+              ? activeBuildId
+              : nextSavedBuilds[0]!.id;
+          const activeEntry = getActiveSavedBuild(nextSavedBuilds, resolvedActiveId);
           const migratedBuild = activeEntry
             ? getActiveSavedBuildBuild(activeEntry)
-            : reconcileBuild(data.game, migrateBuildState({
-                ...build,
-                playerLevel: build.playerLevel ?? baseLevel,
-                characterOptionChoices: build.characterOptionChoices ?? {},
-                oghmaSkillIds: build.oghmaSkillIds ?? [],
-              }));
+            : reconcileBuild(
+                data.game,
+                migrateBuildState({
+                  ...build,
+                  playerLevel: build?.playerLevel ?? baseLevel,
+                  characterOptionChoices: build?.characterOptionChoices ?? {},
+                  oghmaSkillIds: build?.oghmaSkillIds ?? [],
+                }),
+              );
           set({
             gameData: data,
             savedBuilds: nextSavedBuilds,
+            activeBuildId: resolvedActiveId,
             build: migratedBuild,
             computed: recompute(data, migratedBuild),
           });
@@ -1152,31 +1183,54 @@ export const useBuildStore = create<BuildStore>()(
         activeBuildId: state.activeBuildId,
       }),
       onRehydrateStorage: () => (state) => {
-        if (!state?.gameData) return;
-        state.savedBuilds = state.savedBuilds.map((entry) => {
-          const normalized = normalizeSavedBuild(entry);
-          return {
-            ...normalized,
-            build: migrateBuildState(normalized.build),
-            milestones: normalized.milestones.map((milestone) => ({
-              ...milestone,
-              build: migrateBuildState(milestone.build),
-            })),
-          };
-        });
+        if (!state) return;
+
+        // gameData is not persisted — always structure-normalize the library here.
+        // Game-aware reconcile still runs in init() once AppData is available.
+        const rawBuilds = Array.isArray(state.savedBuilds) ? state.savedBuilds : [];
+        state.savedBuilds = rawBuilds
+          .filter((entry): entry is SavedBuild => !!entry && typeof entry === "object")
+          .map((entry) => {
+            try {
+              return normalizeSavedBuild(entry);
+            } catch (error) {
+              console.error("Failed to normalize rehydrated build; resetting slot", error);
+              const fallback = createSavedBuild(
+                typeof entry.name === "string" && entry.name.trim()
+                  ? entry.name
+                  : defaultBuildName(1),
+                createInitialBuildState(),
+              );
+              return {
+                ...fallback,
+                id: typeof entry.id === "string" && entry.id ? entry.id : fallback.id,
+              };
+            }
+          });
+
+        if (state.savedBuilds.length === 0) {
+          const initial = createInitialLibrary();
+          state.savedBuilds = initial.savedBuilds;
+          state.activeBuildId = initial.activeBuildId;
+          state.build = migrateBuildState(initial.savedBuilds[0]?.build);
+          return;
+        }
+
+        if (!state.savedBuilds.some((entry) => entry.id === state.activeBuildId)) {
+          state.activeBuildId = state.savedBuilds[0]!.id;
+        }
+
+        state.build = migrateBuildState(state.build);
         if (state.build.raceId === null) {
           state.build = { ...state.build, raceId: "none" };
         }
-        const baseLevel = state.gameData.game.mechanics.leveling.baseLevel;
         if (state.build.playerLevel == null || Number.isNaN(state.build.playerLevel)) {
-          state.build = { ...state.build, playerLevel: baseLevel };
+          state.build = { ...state.build, playerLevel: 1 };
         }
         const activeEntry = getActiveSavedBuild(state.savedBuilds, state.activeBuildId);
         if (activeEntry) {
           state.build = getActiveSavedBuildBuild(activeEntry);
         }
-        state.build = reconcileBuild(state.gameData.game, migrateBuildState(state.build));
-        state.computed = recompute(state.gameData, state.build);
       },
     },
   ),

@@ -905,8 +905,8 @@ export function sanitizeImportedBuildReferences(game: GameData, build: BuildStat
     game.skills.filter((skill) => isAllocatableSkill(game, skill.id)).map((skill) => skill.id),
   );
 
-  const filterSkills = (skillIds: string[]) =>
-    skillIds.filter((skillId) => allocatableSkillIds.has(skillId));
+  const filterSkills = (skillIds: string[] | undefined) =>
+    (skillIds ?? []).filter((skillId) => allocatableSkillIds.has(skillId));
 
   const majorSkillIds = filterSkills(build.majorSkillIds).slice(0, game.manifest.limits.majorSkills);
   const minorSkillIds = filterSkills(build.minorSkillIds)
@@ -914,7 +914,7 @@ export function sanitizeImportedBuildReferences(game: GameData, build: BuildStat
     .slice(0, game.manifest.limits.minorSkills);
 
   const skillLevels: BuildState["skillLevels"] = {};
-  for (const [skillId, level] of Object.entries(build.skillLevels)) {
+  for (const [skillId, level] of Object.entries(build.skillLevels ?? {})) {
     if (allocatableSkillIds.has(skillId)) {
       skillLevels[skillId] = level;
     }
@@ -922,7 +922,7 @@ export function sanitizeImportedBuildReferences(game: GameData, build: BuildStat
 
   const skillTrainingRanges: BuildState["skillTrainingRanges"] = {};
   for (const [skillId, ranges] of Object.entries(build.skillTrainingRanges ?? {})) {
-    if (allocatableSkillIds.has(skillId)) {
+    if (allocatableSkillIds.has(skillId) && Array.isArray(ranges)) {
       skillTrainingRanges[skillId] = ranges;
     }
   }
@@ -932,11 +932,13 @@ export function sanitizeImportedBuildReferences(game: GameData, build: BuildStat
     raceId: isKnownId(game.races, build.raceId) ? build.raceId : "none",
     birthsignId: isKnownId(game.birthsigns, build.birthsignId) ? build.birthsignId : "none",
     deityId: isKnownId(game.deities, build.deityId) ? build.deityId : "none",
-    traitIds: build.traitIds.filter((traitId) => isKnownId(game.traits, traitId)),
+    traitIds: (build.traitIds ?? []).filter((traitId) => isKnownId(game.traits, traitId)),
     majorSkillIds,
     minorSkillIds,
     oghmaSkillIds: filterSkills(build.oghmaSkillIds),
-    selectedPerkIds: build.selectedPerkIds.filter((perkId) => getPerkById(game, perkId) !== undefined),
+    selectedPerkIds: (build.selectedPerkIds ?? []).filter(
+      (perkId) => getPerkById(game, perkId) !== undefined,
+    ),
     skillLevels,
     skillTrainingRanges,
   };
@@ -2060,19 +2062,56 @@ export function getRaceById(game: GameData, raceId: string | null): Race | undef
 }
 
 export function migrateBuildState(
-  build: BuildState & { blessingId?: string | null },
+  build: (BuildState & { blessingId?: string | null }) | null | undefined,
 ): BuildState {
-  const withOghma: BuildState = {
+  const defaults = createInitialBuildState();
+  if (!build || typeof build !== "object") {
+    return defaults;
+  }
+
+  const withDefaults: BuildState & { blessingId?: string | null } = {
+    ...defaults,
     ...build,
-    oghmaSkillIds: build.oghmaSkillIds ?? [],
+    raceId: build.raceId ?? defaults.raceId,
+    birthsignId: build.birthsignId ?? defaults.birthsignId,
+    deityId: build.deityId ?? defaults.deityId,
+    traitIds: Array.isArray(build.traitIds) ? build.traitIds : defaults.traitIds,
+    majorSkillIds: Array.isArray(build.majorSkillIds) ? build.majorSkillIds : defaults.majorSkillIds,
+    minorSkillIds: Array.isArray(build.minorSkillIds) ? build.minorSkillIds : defaults.minorSkillIds,
+    oghmaSkillIds: Array.isArray(build.oghmaSkillIds) ? build.oghmaSkillIds : defaults.oghmaSkillIds,
+    attributeBonus: {
+      health: build.attributeBonus?.health ?? 0,
+      magicka: build.attributeBonus?.magicka ?? 0,
+      stamina: build.attributeBonus?.stamina ?? 0,
+    },
+    characterOptionChoices:
+      build.characterOptionChoices && typeof build.characterOptionChoices === "object"
+        ? build.characterOptionChoices
+        : defaults.characterOptionChoices,
+    selectedPerkIds: Array.isArray(build.selectedPerkIds)
+      ? build.selectedPerkIds
+      : defaults.selectedPerkIds,
+    skillLevels:
+      build.skillLevels && typeof build.skillLevels === "object"
+        ? build.skillLevels
+        : defaults.skillLevels,
+    skillTrainingRanges:
+      build.skillTrainingRanges && typeof build.skillTrainingRanges === "object"
+        ? build.skillTrainingRanges
+        : defaults.skillTrainingRanges,
+    playerLevel:
+      typeof build.playerLevel === "number" && !Number.isNaN(build.playerLevel)
+        ? build.playerLevel
+        : defaults.playerLevel,
+    description: typeof build.description === "string" ? build.description : defaults.description,
   };
-  const withSupernatural = migrateLegacySupernaturalBuild(withOghma);
+
+  const withSupernatural = migrateLegacySupernaturalBuild(withDefaults);
 
   if ("blessingId" in withSupernatural && withSupernatural.blessingId !== undefined) {
     const { blessingId, ...rest } = withSupernatural as BuildState & { blessingId?: string | null };
     return {
       ...rest,
-      oghmaSkillIds: build.oghmaSkillIds ?? [],
       deityId: blessingId ?? "none",
     };
   }
@@ -2126,6 +2165,7 @@ function trainingRangesEqual(
 }
 
 export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
+  if (!a || !b) return a === b;
   const aAttrs = a.attributeBonus ?? emptyAttributes();
   const bAttrs = b.attributeBonus ?? emptyAttributes();
   return (

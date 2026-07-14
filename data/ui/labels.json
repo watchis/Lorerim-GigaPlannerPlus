@@ -396,6 +396,8 @@
       "copiedCode": "Copied!",
       "copyLink": "Copy link",
       "copiedLink": "Link copied!",
+      "shareCodeUnavailable": "Share code unavailable for this build",
+      "buildCardUnavailable": "This build couldn’t be displayed. You can still delete or recreate it.",
       "exportBackup": "Export backup",
       "exportActive": "Active build",
       "exportAll": "Full library",

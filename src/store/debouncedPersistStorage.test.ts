@@ -115,4 +115,14 @@ describe("debouncedPersistStorage", () => {
 
     stringifySpy.mockRestore();
   });
+
+  it("returns null when persisted JSON is corrupt instead of throwing", () => {
+    const backing = createStorageMock();
+    backing.setItem("test-library", "{not-json");
+    const storage = createDebouncedJSONStorage(() => backing);
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    expect(storage.getItem("test-library")).toBeNull();
+    spy.mockRestore();
+  });
 });

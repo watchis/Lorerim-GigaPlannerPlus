@@ -304,6 +304,34 @@ describe("getActiveSavedBuildBuild", () => {
 
     expect(getActiveSavedBuildBuild(entry)).toEqual(build);
   });
+
+  it("does not throw when milestones is a non-array object", () => {
+    const build = createTestBuildState();
+    const entry = {
+      ...createSavedBuild("Legacy", build),
+      activeMilestoneId: "ms-1",
+      milestones: { weird: true } as unknown as [],
+    };
+
+    expect(getActiveSavedBuildBuild(entry)).toEqual(build);
+  });
+});
+
+describe("normalizeSavedBuild", () => {
+  it("repairs entries with null builds and non-array milestones", () => {
+    const repaired = normalizeSavedBuild({
+      id: "slot-1",
+      name: "Broken",
+      build: null as unknown as ReturnType<typeof createTestBuildState>,
+      milestones: { not: "an-array" } as unknown as [],
+    } as unknown as Parameters<typeof normalizeSavedBuild>[0]);
+
+    expect(repaired.id).toBe("slot-1");
+    expect(repaired.name).toBe("Broken");
+    expect(repaired.milestones).toEqual([]);
+    expect(repaired.build.selectedPerkIds).toEqual([]);
+    expect(repaired.build.attributeBonus).toEqual({ health: 0, magicka: 0, stamina: 0 });
+  });
 });
 
 describe("reconcileSavedBuildEntry", () => {

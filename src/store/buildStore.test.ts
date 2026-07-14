@@ -500,4 +500,37 @@ describe("buildStore supernatural character options", () => {
       encodeSavedBuild(state.savedBuilds[0]!, appData.game),
     ).not.toThrow();
   });
+
+  it("init repairs a library with a corrupt slot without wiping other builds", () => {
+    const healthy = createSavedBuild(
+      "Healthy",
+      createTestBuildState({ raceId: "nord", description: "keep me" }),
+    );
+    const corrupt = {
+      id: "corrupt-1",
+      name: "Corrupt",
+      build: null,
+      milestones: { nope: true },
+    } as unknown as ReturnType<typeof createSavedBuild>;
+
+    useBuildStore.setState({
+      gameData: null,
+      build: healthy.build,
+      savedBuilds: [healthy, corrupt],
+      activeBuildId: healthy.id,
+      computed: null,
+    });
+
+    useBuildStore.getState().init(appData);
+
+    const state = useBuildStore.getState();
+    expect(state.savedBuilds).toHaveLength(2);
+    expect(state.savedBuilds.find((entry) => entry.id === healthy.id)?.build.description).toBe(
+      "keep me",
+    );
+    const repaired = state.savedBuilds.find((entry) => entry.id === "corrupt-1");
+    expect(repaired?.name).toBe("Corrupt");
+    expect(repaired?.build.selectedPerkIds).toEqual([]);
+    expect(state.activeBuildId).toBe(healthy.id);
+  });
 });

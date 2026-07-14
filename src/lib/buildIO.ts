@@ -1,6 +1,6 @@
 import type { BuildState } from "@/engine/buildEngine";
+import { DEFAULT_VARIANT_NAME, getDefaultVariantName, normalizeSavedBuild } from "@/store/savedBuilds";
 import type { BuildMilestone, SavedBuild } from "@/store/savedBuilds";
-import { DEFAULT_VARIANT_NAME, getDefaultVariantName } from "@/store/savedBuilds";
 
 const BUILD_EXPORT_FORMAT = "lorerim-build";
 const LIBRARY_EXPORT_FORMAT = "lorerim-build-library";
@@ -133,17 +133,24 @@ export function createExportedLibrary(
     format: LIBRARY_EXPORT_FORMAT,
     version: EXPORT_VERSION,
     modpackVersion,
-    savedBuilds: savedBuilds.map((entry) => ({
-      name: entry.name,
-      build: entry.build,
-      ...(getDefaultVariantName(entry) !== DEFAULT_VARIANT_NAME
-        ? { defaultVariantName: getDefaultVariantName(entry) }
-        : {}),
-      ...(entry.defaultVariantNotes?.trim() ? { defaultVariantNotes: entry.defaultVariantNotes } : {}),
-      ...(entry.milestones.length > 0 ? { milestones: serializeMilestones(entry.milestones) } : {}),
-      updatedAt: entry.updatedAt,
-      modpackVersion: entry.modpackVersion ?? modpackVersion,
-    })),
+    savedBuilds: savedBuilds.map((rawEntry) => {
+      const entry = normalizeSavedBuild(rawEntry);
+      return {
+        name: entry.name,
+        build: entry.build,
+        ...(getDefaultVariantName(entry) !== DEFAULT_VARIANT_NAME
+          ? { defaultVariantName: getDefaultVariantName(entry) }
+          : {}),
+        ...(entry.defaultVariantNotes?.trim()
+          ? { defaultVariantNotes: entry.defaultVariantNotes }
+          : {}),
+        ...(entry.milestones.length > 0
+          ? { milestones: serializeMilestones(entry.milestones) }
+          : {}),
+        updatedAt: entry.updatedAt,
+        modpackVersion: entry.modpackVersion ?? modpackVersion,
+      };
+    }),
     exportedAt: new Date().toISOString(),
   };
 }

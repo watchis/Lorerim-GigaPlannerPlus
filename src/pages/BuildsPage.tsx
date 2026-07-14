@@ -22,11 +22,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { BugReportButton } from "@/components/BugReportButton";
 import { ImportedBuildBadge } from "@/components/ImportedBuildBadge";
 import { ImportedBuildVersionWarning } from "@/components/ImportedBuildVersionWarning";
+import { SoftRenderBoundary } from "@/components/layout/SoftRenderBoundary";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import type { GameData } from "@/data/schemas";
 import {
   decodeBuildPackage,
-  encodeSavedBuild,
+  tryEncodeSavedBuild,
 } from "@/engine/buildCodec";
 import type { BuildState } from "@/engine/buildEngine";
 import {
@@ -61,7 +62,16 @@ import {
 
 type MobileBuildsTab = "builds" | "transfer";
 
-function formatUpdatedAt(timestamp: number): string {
+function formatLabel(template: string | undefined, values: Record<string, string | number>): string {
+  if (!template) return "";
+  return Object.entries(values).reduce(
+    (result, [key, value]) => result.replace(`{${key}}`, String(value)),
+    template,
+  );
+}
+
+function formatUpdatedAt(timestamp: number | undefined): string {
+  if (typeof timestamp !== "number" || Number.isNaN(timestamp)) return "";
   return new Date(timestamp).toLocaleString(undefined, {
     month: "short",
     day: "numeric",
@@ -70,27 +80,21 @@ function formatUpdatedAt(timestamp: number): string {
   });
 }
 
-function formatLabel(template: string, values: Record<string, string | number>): string {
-  return Object.entries(values).reduce(
-    (result, [key, value]) => result.replace(`{${key}}`, String(value)),
-    template,
-  );
-}
-
 async function copyText(text: string): Promise<void> {
   await navigator.clipboard.writeText(text);
 }
 
-function getBuildSummary(build: BuildState, game: GameData, labels: Record<string, string>) {
+function getBuildSummary(build: BuildState | null | undefined, game: GameData, labels: Record<string, string>) {
+  const safeBuild = build ?? ({ raceId: "none", playerLevel: game.mechanics.leveling.baseLevel } as BuildState);
   const raceName =
-    build.raceId && build.raceId !== "none"
-      ? game.races.find((race) => race.id === build.raceId)?.name
+    safeBuild.raceId && safeBuild.raceId !== "none"
+      ? game.races.find((race) => race.id === safeBuild.raceId)?.name
       : null;
 
-  const level = build.playerLevel ?? game.mechanics.leveling.baseLevel;
+  const level = safeBuild.playerLevel ?? game.mechanics.leveling.baseLevel;
 
   return {
-    raceLabel: raceName ?? labels.noRace,
+    raceLabel: raceName ?? labels.noRace ?? "No race selected",
     level,
   };
 }
@@ -210,6 +214,8 @@ function ActiveBuildCodeBlock({
   onCopyCode,
   onCopyLink,
 }: ActiveBuildCodeBlockProps) {
+  const canShare = code.trim().length > 0;
+
   return (
     <div className="space-y-2">
       <div className="min-w-0">
@@ -224,16 +230,19 @@ function ActiveBuildCodeBlock({
       <button
         type="button"
         onClick={onCopyCode}
+        disabled={!canShare}
         aria-live="polite"
         className={cn(
           "group flex w-full items-center gap-2 rounded-[var(--radius-md)] border px-3 py-2 text-left transition-colors",
-          copiedAction === "code"
+          !canShare && "cursor-not-allowed opacity-60",
+          canShare && copiedAction === "code"
             ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10"
-            : "border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60 hover:border-[var(--color-accent-muted)]",
+            : "border-[var(--color-border)] bg-[var(--color-surface-elevated)]/60",
+          canShare && "hover:border-[var(--color-accent-muted)]",
         )}
       >
         <code className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-[var(--color-accent)]">
-          {code}
+          {canShare ? code : labels.shareCodeUnavailable}
         </code>
         {copiedAction === "code" ? (
           <span className="flex shrink-0 items-center gap-1.5 text-[var(--color-accent)]">
@@ -248,6 +257,7 @@ function ActiveBuildCodeBlock({
       <Button
         variant={copiedAction === "link" ? "default" : "outline"}
         size="sm"
+        disabled={!canShare}
         className={cn(
           "w-full transition-colors",
           copiedAction === "link" && "bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/90",
@@ -721,13 +731,18 @@ export function BuildsPage() {
     return savedBuilds
       .map((entry, index) => ({ entry, index }))
       .filter(({ entry }) => {
-        const activeVariant = getActiveSavedBuildBuild(entry);
-        const summary = getBuildSummary(activeVariant, gameData.game, labels);
-        return matchesPickerSearch(buildSearchQuery, [
-          entry.name,
-          summary.raceLabel,
-          String(summary.level),
-        ]);
+        try {
+          const activeVariant = getActiveSavedBuildBuild(entry);
+          const summary = getBuildSummary(activeVariant, gameData.game, labels);
+          return matchesPickerSearch(buildSearchQuery, [
+            entry.name,
+            summary.raceLabel,
+            String(summary.level),
+          ]);
+        } catch (error) {
+          console.error("Failed to summarize saved build for search; keeping it visible", error);
+          return matchesPickerSearch(buildSearchQuery, [entry.name ?? ""]);
+        }
       });
   }, [savedBuilds, buildSearchQuery, gameData, labels]);
 
@@ -736,20 +751,20 @@ export function BuildsPage() {
   const modpackVersion = gameData.game.manifest.version;
   const activeBuild = savedBuilds.find((entry) => entry.id === activeBuildId);
   const syncedActiveBuild = activeBuild
-    ? updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion).find(
-        (entry) => entry.id === activeBuildId,
-      )
+    ? (() => {
+        try {
+          return updateSavedBuildInList(savedBuilds, activeBuildId, build, modpackVersion).find(
+            (entry) => entry.id === activeBuildId,
+          );
+        } catch (error) {
+          console.error("Failed to sync active build for share code:", error);
+          return activeBuild;
+        }
+      })()
     : null;
-  // Encode must never throw during render — stale library data previously blanked
-  // the whole SPA (no recovery without a hard refresh).
-  let activeBuildCode = "";
-  if (syncedActiveBuild) {
-    try {
-      activeBuildCode = encodeSavedBuild(normalizeSavedBuild(syncedActiveBuild), gameData.game);
-    } catch (error) {
-      console.error("Failed to encode active build share code:", error);
-    }
-  }
+  const activeBuildCode = syncedActiveBuild
+    ? tryEncodeSavedBuild(syncedActiveBuild, gameData.game)
+    : "";
   const isFilteringBuilds = buildSearchQuery.trim().length > 0;
 
   const showSuccess = (message: string, context: ImportFeedback["context"]) => {
@@ -837,23 +852,41 @@ export function BuildsPage() {
   };
 
   const handleExportLibrary = () => {
-    downloadBackupFile(LIBRARY_BACKUP_FILENAME, createExportedLibrary(savedBuilds, modpackVersion));
+    try {
+      downloadBackupFile(LIBRARY_BACKUP_FILENAME, createExportedLibrary(savedBuilds, modpackVersion));
+    } catch (error) {
+      console.error("Failed to export build library:", error);
+      setImportFeedback({
+        type: "error",
+        message: error instanceof Error ? error.message : allLabels.errors.invalidBuildCode,
+        context: "file",
+      });
+    }
   };
 
   const handleExportActive = () => {
-    const entry = activeBuild ? normalizeSavedBuild(activeBuild) : null;
-    const name = entry?.name ?? "build";
-    downloadBackupFile(
-      buildBackupFilename(name),
-      createExportedBuild(
-        name,
-        entry?.build ?? build,
-        entry?.modpackVersion ?? modpackVersion,
-        entry?.milestones ?? [],
-        entry ? getDefaultVariantName(entry) : undefined,
-        entry?.defaultVariantNotes,
-      ),
-    );
+    try {
+      const entry = activeBuild ? normalizeSavedBuild(activeBuild) : null;
+      const name = entry?.name ?? "build";
+      downloadBackupFile(
+        buildBackupFilename(name),
+        createExportedBuild(
+          name,
+          entry?.build ?? build,
+          entry?.modpackVersion ?? modpackVersion,
+          entry?.milestones ?? [],
+          entry ? getDefaultVariantName(entry) : undefined,
+          entry?.defaultVariantNotes,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to export active build:", error);
+      setImportFeedback({
+        type: "error",
+        message: error instanceof Error ? error.message : allLabels.errors.invalidBuildCode,
+        context: "file",
+      });
+    }
   };
 
   const flashActiveCopy = (action: "code" | "link") => {
@@ -862,13 +895,23 @@ export function BuildsPage() {
   };
 
   const handleCopyActiveCode = async () => {
-    await copyText(activeBuildCode);
-    flashActiveCopy("code");
+    if (!activeBuildCode) return;
+    try {
+      await copyText(activeBuildCode);
+      flashActiveCopy("code");
+    } catch (error) {
+      console.error("Failed to copy build code:", error);
+    }
   };
 
   const handleCopyActiveLink = async () => {
-    await copyText(buildShareUrl(activeBuildCode));
-    flashActiveCopy("link");
+    if (!activeBuildCode) return;
+    try {
+      await copyText(buildShareUrl(activeBuildCode));
+      flashActiveCopy("link");
+    } catch (error) {
+      console.error("Failed to copy build link:", error);
+    }
   };
 
   return (
@@ -964,24 +1007,49 @@ export function BuildsPage() {
                     key={entry.id}
                     className={cn(displayIndex > 0 && "border-t border-[var(--color-border)]/50")}
                   >
-                    <SavedBuildCard
-                      index={index}
-                      entry={entry}
-                      isActive={entry.id === activeBuildId}
-                      isDragging={draggedIndex === index}
-                      isDragOver={dragOverIndex === index && draggedIndex !== index}
-                      canReorder={savedBuilds.length > 1 && !isFilteringBuilds}
-                      canDelete={savedBuilds.length > 1}
-                      labels={labels}
-                      game={gameData.game}
-                      onSelect={() => selectSavedBuildSlot(entry.id)}
-                      onDragStart={() => setDraggedIndex(index)}
-                      onDragEnd={clearBuildDrag}
-                      onDragOverItem={() => setDragOverIndex(index)}
-                      onDropItem={(fromIndex) => handleBuildDrop(fromIndex, index)}
-                      onRename={(name) => renameSavedBuildSlot(entry.id, name)}
-                      onDelete={() => deleteSavedBuildSlot(entry.id)}
-                    />
+                    <SoftRenderBoundary
+                      fallback={
+                        <div className="flex items-center gap-2 px-3 py-3">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate text-sm font-semibold text-[var(--color-foreground)]">
+                              {entry.name || labels.unnamedBuild}
+                            </h4>
+                            <p className="mt-1 text-xs text-[var(--color-muted)]">
+                              {labels.buildCardUnavailable}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-0.5">
+                            <BuildAction
+                              label={labels.deleteBuild}
+                              onClick={() => deleteSavedBuildSlot(entry.id)}
+                              disabled={savedBuilds.length <= 1}
+                              destructive
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </BuildAction>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <SavedBuildCard
+                        index={index}
+                        entry={entry}
+                        isActive={entry.id === activeBuildId}
+                        isDragging={draggedIndex === index}
+                        isDragOver={dragOverIndex === index && draggedIndex !== index}
+                        canReorder={savedBuilds.length > 1 && !isFilteringBuilds}
+                        canDelete={savedBuilds.length > 1}
+                        labels={labels}
+                        game={gameData.game}
+                        onSelect={() => selectSavedBuildSlot(entry.id)}
+                        onDragStart={() => setDraggedIndex(index)}
+                        onDragEnd={clearBuildDrag}
+                        onDragOverItem={() => setDragOverIndex(index)}
+                        onDropItem={(fromIndex) => handleBuildDrop(fromIndex, index)}
+                        onRename={(name) => renameSavedBuildSlot(entry.id, name)}
+                        onDelete={() => deleteSavedBuildSlot(entry.id)}
+                      />
+                    </SoftRenderBoundary>
                   </div>
                 ))}
               </div>

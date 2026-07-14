@@ -1,10 +1,11 @@
 import { gzipSync } from "fflate";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   decodeBuild,
   decodeBuildPackage,
   encodeBuild,
   encodeSavedBuild,
+  tryEncodeSavedBuild,
 } from "@/engine/buildCodec";
 import { createBuildCodecRegistry, lookupIndex } from "@/engine/buildCodecRegistry";
 import { reconcileImportedBuild, type BuildState } from "@/engine/buildEngine";
@@ -151,6 +152,23 @@ describe("buildCodec", () => {
       .characterOptionChoices;
 
     expect(() => encodeBuild(state, game)).not.toThrow();
+  });
+
+  it("tryEncodeSavedBuild returns empty string instead of throwing", () => {
+    const entry = createSavedBuild("Broken", null as unknown as BuildState);
+    // Even with a null build, migrate+reconcile should make this succeed.
+    expect(tryEncodeSavedBuild(entry, game).length).toBeGreaterThan(0);
+
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    // Force a throw inside encode by stubbing a broken game.characterOptions iteration.
+    const brokenGame = {
+      ...game,
+      get characterOptions(): never {
+        throw new Error("simulated encode failure");
+      },
+    } as typeof game;
+    expect(tryEncodeSavedBuild(createSavedBuild("X", createTestBuildState()), brokenGame)).toBe("");
+    spy.mockRestore();
   });
 
   it("normalizes conflicting supernatural curses on decode", () => {

@@ -35,11 +35,17 @@ export class RouteErrorBoundary extends Component<
     }
   }
 
+  private handleRetry = (): void => {
+    this.setState({ error: null });
+  };
+
   render(): ReactNode {
     if (this.state.error) {
       return (
         <ErrorScreen
           message={`Something went wrong on this page: ${this.state.error.message}`}
+          onRetry={this.handleRetry}
+          retryLabel="Try again"
         />
       );
     }

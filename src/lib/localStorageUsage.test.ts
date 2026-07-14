@@ -85,4 +85,15 @@ describe("localStorageUsage", () => {
     expect(usage.quotaBytes).toBe(LOCAL_STORAGE_QUOTA_BYTES);
     expect(usage.level).toBe("normal");
   });
+
+  it("returns zero usage when localStorage getItem throws", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => {
+        throw new Error("blocked");
+      },
+    });
+
+    expect(getLocalStorageUsageForKeys(APP_STORAGE_KEYS)).toBe(0);
+    expect(getAppLocalStorageUsageBytes()).toBe(0);
+  });
 });
