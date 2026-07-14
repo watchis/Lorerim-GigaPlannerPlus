@@ -1,5 +1,11 @@
+import type { GameData } from "@/data/schemas";
 import type { BuildState } from "@/engine/buildEngine";
-import { areBuildStatesEqual, createInitialBuildState, migrateBuildState } from "@/engine/buildEngine";
+import {
+  areBuildStatesEqual,
+  createInitialBuildState,
+  migrateBuildState,
+  reconcileImportedBuild,
+} from "@/engine/buildEngine";
 
 export interface BuildMilestone {
   id: string;
@@ -271,8 +277,25 @@ export function promoteMilestoneToDefault(entry: SavedBuild, milestoneId: string
 
 export function getActiveSavedBuildBuild(entry: SavedBuild): BuildState {
   if (!entry.activeMilestoneId) return entry.build;
-  const milestone = entry.milestones.find((m) => m.id === entry.activeMilestoneId);
+  const milestone = (entry.milestones ?? []).find((m) => m.id === entry.activeMilestoneId);
   return milestone?.build ?? entry.build;
+}
+
+/**
+ * Reconcile every variant in a saved library entry against current game data.
+ * Used on init so stale localStorage choices (removed options, legacy lich
+ * `"claimed"`, etc.) cannot crash My Builds when encoding share codes.
+ */
+export function reconcileSavedBuildEntry(game: GameData, entry: SavedBuild): SavedBuild {
+  const normalized = normalizeSavedBuild(entry);
+  return {
+    ...normalized,
+    build: reconcileImportedBuild(game, normalized.build),
+    milestones: normalized.milestones.map((milestone) => ({
+      ...milestone,
+      build: reconcileImportedBuild(game, milestone.build),
+    })),
+  };
 }
 
 export function getActiveSavedBuild(

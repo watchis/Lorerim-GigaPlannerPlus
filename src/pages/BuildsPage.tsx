@@ -740,9 +740,16 @@ export function BuildsPage() {
         (entry) => entry.id === activeBuildId,
       )
     : null;
-  const activeBuildCode = syncedActiveBuild
-    ? encodeSavedBuild(normalizeSavedBuild(syncedActiveBuild), gameData.game)
-    : "";
+  // Encode must never throw during render — stale library data previously blanked
+  // the whole SPA (no recovery without a hard refresh).
+  let activeBuildCode = "";
+  if (syncedActiveBuild) {
+    try {
+      activeBuildCode = encodeSavedBuild(normalizeSavedBuild(syncedActiveBuild), gameData.game);
+    } catch (error) {
+      console.error("Failed to encode active build share code:", error);
+    }
+  }
   const isFilteringBuilds = buildSearchQuery.trim().length > 0;
 
   const showSuccess = (message: string, context: ImportFeedback["context"]) => {

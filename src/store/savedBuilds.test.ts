@@ -4,6 +4,7 @@ import {
   acknowledgeSavedBuildEdits,
   createMilestone,
   createSavedBuild,
+  getActiveSavedBuildBuild,
   getVariantIdAtIndex,
   getVariantIndex,
   getVariantNotes,
@@ -12,11 +13,13 @@ import {
   mergeVariantNotesFromEntry,
   migrateSavedBuildsModpackVersion,
   normalizeSavedBuild,
+  reconcileSavedBuildEntry,
   setVariantNotesOnEntry,
   touchSavedBuild,
   uniqueBuildName,
   updateSavedBuildInList,
 } from "@/store/savedBuilds";
+import { getTestGameData } from "@/test/helpers";
 
 describe("savedBuilds variant notes", () => {
   const build = createTestBuildState();
@@ -287,5 +290,46 @@ describe("migrateSavedBuildsModpackVersion", () => {
     expect(migrated.find((b) => b.name === "A")?.modpackVersion).toBe("5.0.4.2");
     expect(migrated.find((b) => b.name === "B")?.modpackVersion).toBe("5.0.4.2");
     expect(migrated.find((b) => b.name === "C")?.modpackVersion).toBe("  v1.2.3 ");
+  });
+});
+
+describe("getActiveSavedBuildBuild", () => {
+  it("does not throw when milestones are missing for a legacy entry", () => {
+    const build = createTestBuildState();
+    const entry = {
+      ...createSavedBuild("Legacy", build),
+      activeMilestoneId: "missing-milestone",
+      milestones: undefined as unknown as [],
+    };
+
+    expect(getActiveSavedBuildBuild(entry)).toEqual(build);
+  });
+});
+
+describe("reconcileSavedBuildEntry", () => {
+  it("migrates legacy lich claimed choices on every variant", () => {
+    const game = getTestGameData();
+    const milestone = createMilestone(
+      "Level 25",
+      createTestBuildState({
+        characterOptionChoices: { lich: "claimed" },
+        playerLevel: 25,
+      }),
+    );
+    const entry = {
+      ...createSavedBuild(
+        "Legacy Lich",
+        createTestBuildState({
+          characterOptionChoices: { lich: "claimed" },
+        }),
+        [milestone],
+      ),
+      activeMilestoneId: milestone.id,
+    };
+
+    const reconciled = reconcileSavedBuildEntry(game, entry);
+
+    expect(reconciled.build.characterOptionChoices.lich).toBe("0");
+    expect(reconciled.milestones[0]?.build.characterOptionChoices.lich).toBe("0");
   });
 });

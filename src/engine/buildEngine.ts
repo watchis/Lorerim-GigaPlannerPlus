@@ -2126,6 +2126,8 @@ function trainingRangesEqual(
 }
 
 export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
+  const aAttrs = a.attributeBonus ?? emptyAttributes();
+  const bAttrs = b.attributeBonus ?? emptyAttributes();
   return (
     a.raceId === b.raceId &&
     a.birthsignId === b.birthsignId &&
@@ -2134,15 +2136,15 @@ export function areBuildStatesEqual(a: BuildState, b: BuildState): boolean {
     stringArraysEqual(a.majorSkillIds, b.majorSkillIds) &&
     stringArraysEqual(a.minorSkillIds, b.minorSkillIds) &&
     stringArraysEqual(a.oghmaSkillIds, b.oghmaSkillIds) &&
-    a.attributeBonus.health === b.attributeBonus.health &&
-    a.attributeBonus.magicka === b.attributeBonus.magicka &&
-    a.attributeBonus.stamina === b.attributeBonus.stamina &&
+    aAttrs.health === bAttrs.health &&
+    aAttrs.magicka === bAttrs.magicka &&
+    aAttrs.stamina === bAttrs.stamina &&
     stringRecordEqual(a.characterOptionChoices, b.characterOptionChoices) &&
     stringArraysEqual(a.selectedPerkIds, b.selectedPerkIds) &&
     numberRecordEqual(a.skillLevels, b.skillLevels) &&
     trainingRangesEqual(a.skillTrainingRanges, b.skillTrainingRanges) &&
     a.playerLevel === b.playerLevel &&
-    a.description === b.description
+    (a.description ?? "") === (b.description ?? "")
   );
 }
 

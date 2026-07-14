@@ -461,4 +461,43 @@ describe("buildStore supernatural character options", () => {
     expect(state.build.characterOptionChoices.vampire).toBe("none");
     expect(state.build.selectedPerkIds).toEqual(["werewolf-animal-vigor"]);
   });
+
+  it("init reconciles stale lich claimed choices across library variants", () => {
+    const milestone = {
+      id: "ms-1",
+      name: "Level 25",
+      build: createTestBuildState({
+        characterOptionChoices: { lich: "claimed" },
+        playerLevel: 25,
+      }),
+    };
+    const staleEntry = {
+      ...createSavedBuild(
+        "Stale Lich",
+        createTestBuildState({
+          characterOptionChoices: { lich: "claimed" },
+        }),
+        [milestone],
+      ),
+      activeMilestoneId: milestone.id,
+    };
+
+    useBuildStore.setState({
+      gameData: null,
+      build: staleEntry.build,
+      savedBuilds: [staleEntry],
+      activeBuildId: staleEntry.id,
+      computed: null,
+    });
+
+    useBuildStore.getState().init(appData);
+
+    const state = useBuildStore.getState();
+    expect(state.build.characterOptionChoices.lich).toBe("0");
+    expect(state.savedBuilds[0]?.build.characterOptionChoices.lich).toBe("0");
+    expect(state.savedBuilds[0]?.milestones[0]?.build.characterOptionChoices.lich).toBe("0");
+    expect(() =>
+      encodeSavedBuild(state.savedBuilds[0]!, appData.game),
+    ).not.toThrow();
+  });
 });

@@ -35,9 +35,14 @@ export function BuildSummaryPanel({ embedded = false }: BuildSummaryPanelProps) 
   ).find(
     (entry) => entry.id === activeBuildId,
   );
-  const buildCode = activeEntry
-    ? encodeSavedBuild(normalizeSavedBuild(activeEntry), gameData.game)
-    : "";
+  let buildCode = "";
+  if (activeEntry) {
+    try {
+      buildCode = encodeSavedBuild(normalizeSavedBuild(activeEntry), gameData.game);
+    } catch (error) {
+      console.error("Failed to encode active build share code:", error);
+    }
+  }
 
   const handleCopy = async () => {
     try {

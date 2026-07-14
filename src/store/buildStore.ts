@@ -46,6 +46,7 @@ import {
   migrateLegacyStorage,
   nextBuildName,
   uniqueBuildName,
+  reconcileSavedBuildEntry,
   nextMilestoneName,
   nextVariantCopyName,
   normalizeSavedBuild,
@@ -320,15 +321,18 @@ export const useBuildStore = create<BuildStore>()(
           const baseLevel = data.game.mechanics.leveling.baseLevel;
           const currentModpackVersion = data.game.manifest.version;
           const nextSavedBuilds = migrateSavedBuildsModpackVersion(
-            get().savedBuilds,
+            get().savedBuilds.map((entry) => reconcileSavedBuildEntry(data.game, entry)),
             currentModpackVersion,
           );
-          const migratedBuild = reconcileBuild(data.game, migrateBuildState({
-            ...build,
-            playerLevel: build.playerLevel ?? baseLevel,
-            characterOptionChoices: build.characterOptionChoices ?? {},
-            oghmaSkillIds: build.oghmaSkillIds ?? [],
-          }));
+          const activeEntry = getActiveSavedBuild(nextSavedBuilds, get().activeBuildId);
+          const migratedBuild = activeEntry
+            ? getActiveSavedBuildBuild(activeEntry)
+            : reconcileBuild(data.game, migrateBuildState({
+                ...build,
+                playerLevel: build.playerLevel ?? baseLevel,
+                characterOptionChoices: build.characterOptionChoices ?? {},
+                oghmaSkillIds: build.oghmaSkillIds ?? [],
+              }));
           set({
             gameData: data,
             savedBuilds: nextSavedBuilds,
