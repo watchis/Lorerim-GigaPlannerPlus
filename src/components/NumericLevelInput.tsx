@@ -8,6 +8,7 @@ interface NumericLevelInputProps {
   onCommit: (value: number) => void;
   size?: "default" | "compact" | "touch";
   className?: string;
+  "aria-label"?: string;
 }
 
 function clampLevel(value: number, min: number, max: number): number {
@@ -21,6 +22,7 @@ export function NumericLevelInput({
   onCommit,
   size = "default",
   className,
+  "aria-label": ariaLabel,
 }: NumericLevelInputProps) {
   const [draft, setDraft] = useState<string | null>(null);
 
@@ -57,6 +59,7 @@ export function NumericLevelInput({
       inputMode="numeric"
       pattern="[0-9]*"
       value={displayValue}
+      aria-label={ariaLabel}
       onChange={handleChange}
       onBlur={commit}
       onKeyDown={(event) => {

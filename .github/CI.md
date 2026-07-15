@@ -11,6 +11,7 @@ CI, deployment, and dependency automation for [Lorerim GigaPlanner Plus](../READ
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | [test.yml](workflows/test.yml) | Pull requests; pushes to `main` | `npm ci`, `npm test` |
+| [functional-tests.yml](workflows/functional-tests.yml) | Pull requests; pushes to `main` | Playwright end-to-end functional tests against a production build |
 | [pages-build-check.yml](workflows/pages-build-check.yml) | Pull requests | `npm ci`, `npm run build`, verify Pages artifact (same build steps as deploy) |
 | [deploy.yml](workflows/deploy.yml) | Pushes to `main`; manual | `npm test`, build, deploy to GitHub Pages |
 | [dependencies.yml](workflows/dependencies.yml) | Weekly (Mon 09:30 UTC); manual | Outdated report, `npm audit`, `npm test` |
@@ -27,6 +28,23 @@ The test job installs dependencies with `npm ci`, then runs **`npm test`**:
 Node **22** is used in CI to match the deploy workflow.
 
 **Policy:** Every new feature, behavior change, or bug fix must include unit tests. See [`.cursor/rules/unit-testing-requirements.mdc`](../.cursor/rules/unit-testing-requirements.mdc) for coverage expectations and conventions.
+
+---
+
+## Functional tests workflow
+
+The functional test job installs dependencies, installs Chromium (with browser binary caching), then runs **`npm run test:e2e`**.
+
+That script builds the SPA, serves it with `vite preview`, and runs Playwright specs under [`e2e/`](../e2e/). Coverage focuses on user-facing flows: landing, navigation, planner setup/leveling, My Builds library actions, and share-code / URL import.
+
+On failure (and when the job is cancelled mid-run), the workflow uploads the HTML report and trace artifacts for debugging.
+
+Match locally:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
 
 ---
 
@@ -82,6 +100,7 @@ Match CI locally before opening a PR:
 ```bash
 npm ci
 npm test
+npm run test:e2e
 npm run build
 ```
 

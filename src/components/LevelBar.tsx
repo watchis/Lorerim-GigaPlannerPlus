@@ -906,6 +906,7 @@ function LevelBarContent({
                 className="h-9 w-9 md:h-7 md:w-7"
                 onClick={() => setPlayerLevel(build.playerLevel - 1)}
                 disabled={build.playerLevel <= baseLevel}
+                aria-label={`Decrease ${barLabels.playerLevel}`}
               >
                 <Minus className="h-3.5 w-3.5" />
               </Button>
@@ -914,6 +915,7 @@ function LevelBarContent({
                 min={baseLevel}
                 max={maxPlayerLevel}
                 onCommit={setPlayerLevel}
+                aria-label={barLabels.playerLevel}
                 className="w-11 sm:w-14"
               />
               <Button
@@ -922,6 +924,7 @@ function LevelBarContent({
                 className="h-9 w-9 md:h-7 md:w-7"
                 onClick={() => setPlayerLevel(build.playerLevel + 1)}
                 disabled={build.playerLevel >= maxPlayerLevel}
+                aria-label={`Increase ${barLabels.playerLevel}`}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>

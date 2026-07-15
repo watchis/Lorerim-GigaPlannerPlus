@@ -11,6 +11,8 @@
     "test": "npm run test:app && npm run test:import",
     "test:app": "vitest run",
     "test:import": "node tools/import/run-lib-tests.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "test:watch": "vitest",
     "preview": "vite preview",
     "import:lorerim": "node tools/import/import-lorerim.mjs",
@@ -48,6 +50,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@fcrick/tes-data": "^0.0.1",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.3.2",
     "@types/node": "^26.1.0",
     "@types/react": "^19.1.8",

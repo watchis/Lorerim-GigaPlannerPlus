@@ -57,15 +57,16 @@ App unit tests use [Vitest](https://vitest.dev/) and live next to the code they 
 ```bash
 npm run test:app      # src/ only
 npm run test:import   # tools/import/lib/ (Node test runner)
-npm test              # both
+npm test              # both unit suites
+npm run test:e2e      # Playwright functional tests (builds + preview server)
 npm run test:watch    # Vitest watch mode
 ```
 
 **Shared fixtures:** `src/test/helpers.ts` — `getTestAppData()`, `getTestGameData()`, `createTestBuildState()`.
 
-CI runs `npm test` on every pull request ([`.github/workflows/test.yml`](../.github/workflows/test.yml)).
+**Functional / E2E:** Playwright specs live in [`e2e/`](../e2e/) and exercise the production build through real browser flows. CI runs them on every pull request ([`.github/workflows/functional-tests.yml`](../.github/workflows/functional-tests.yml)). Unit CI remains [`.github/workflows/test.yml`](../.github/workflows/test.yml) (`npm test`).
 
-**Policy:** Every new feature, behavior change, or bug fix must include unit tests. See [`.cursor/rules/unit-testing-requirements.mdc`](../.cursor/rules/unit-testing-requirements.mdc) for coverage expectations, fixtures, and PR checklist.
+**Policy:** Every new feature, behavior change, or bug fix must include unit tests. See [`.cursor/rules/unit-testing-requirements.mdc`](../.cursor/rules/unit-testing-requirements.mdc) for coverage expectations, fixtures, and PR checklist. User-facing regressions should also be covered by an `e2e/` functional test when the change spans navigation, persistence, or import/export flows.
 
 ---
 
