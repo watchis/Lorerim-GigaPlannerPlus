@@ -1,5 +1,8 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { appUrl } from "./appUrl";
 import { getUiLabels } from "./labels";
+
+export { appUrl };
 
 const labels = getUiLabels();
 
@@ -7,12 +10,12 @@ const labels = getUiLabels();
 export async function openApp(page: Page, path = "/"): Promise<void> {
   // Hit the origin once so we can clear persisted builds without an init script
   // that would wipe storage again on later navigations/reloads.
-  await page.goto("/");
+  await page.goto(appUrl("/"));
   await page.evaluate(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
-  await page.goto(path);
+  await page.goto(appUrl(path));
   await waitForAppReady(page);
 }
 

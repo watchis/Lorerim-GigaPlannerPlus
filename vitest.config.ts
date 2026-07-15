@@ -13,6 +13,7 @@ export default defineConfig({
       "src/**/*.test.ts",
       "extensions/**/*.test.ts",
       "tools/data-editor/src/**/*.test.ts",
+      "e2e/**/*.test.ts",
     ],
     globals: false,
   },

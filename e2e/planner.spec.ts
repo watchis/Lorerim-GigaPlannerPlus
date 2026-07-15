@@ -22,8 +22,16 @@ test.describe("Planner", () => {
     await expect(
       page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
     ).toHaveValue(String(leveling.baseLevel));
-    await expect(page.getByText(labels["level-bar"].perkPointsRemaining)).toBeVisible();
-    await expect(page.getByText(String(earnedPerkPoints(leveling.baseLevel)))).toBeVisible();
+
+    // Level bar renders a hidden measurement clone of the budget row.
+    await expect(
+      page.getByText(labels["level-bar"].perkPointsRemaining).filter({ visible: true }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByText(String(earnedPerkPoints(leveling.baseLevel)), { exact: true })
+        .filter({ visible: true }),
+    ).toBeVisible();
 
     await expect(racePickerButton(page)).toContainText(
       labels.panels["character-setup"].noneSelected,
@@ -56,12 +64,16 @@ test.describe("Planner", () => {
       page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
     ).toHaveValue(String(leveling.baseLevel + 1));
     await expect(
-      page.getByText(String(earnedPerkPoints(leveling.baseLevel + 1)), { exact: true }),
+      page
+        .getByText(String(earnedPerkPoints(leveling.baseLevel + 1)), { exact: true })
+        .filter({ visible: true }),
     ).toBeVisible();
 
     await setPlayerLevel(page, targetLevel);
     await expect(
-      page.getByText(String(earnedPerkPoints(targetLevel)), { exact: true }),
+      page
+        .getByText(String(earnedPerkPoints(targetLevel)), { exact: true })
+        .filter({ visible: true }),
     ).toBeVisible();
 
     await page.getByRole("button", { name: `Decrease ${labels["level-bar"].playerLevel}` }).click();
@@ -77,12 +89,18 @@ test.describe("Planner", () => {
       })
       .click();
 
-    await expect(page.getByText(labels.panels["character-options"].title)).toBeVisible();
     await expect(
-      page.getByText(labels.panels["character-options"].supernaturalSectionTitle),
+      page.getByRole("heading", { name: labels.panels["character-options"].title }),
     ).toBeVisible();
     await expect(
-      page.getByText(labels.panels["character-options"].playthroughSectionTitle),
+      page.getByRole("heading", {
+        name: labels.panels["character-options"].supernaturalSectionTitle,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: labels.panels["character-options"].playthroughSectionTitle,
+      }),
     ).toBeVisible();
   });
 

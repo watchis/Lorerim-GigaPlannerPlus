@@ -14,7 +14,9 @@ test.describe("Landing page", () => {
     await expect(page.getByText(labels.landing.howItWorksTitle)).toBeVisible();
     await expect(page.getByText(labels.landing.featuresTitle)).toBeVisible();
     await expect(page.getByText(labels.landing.recentBuildsTitle)).toBeVisible();
-    await expect(page.getByText(labels.landing.recentBuildsEmpty)).toBeVisible();
+    // Fresh installs always seed one default library slot.
+    await expect(page.getByText(/Level \d+/).first()).toBeVisible();
+    await expect(page.getByText(labels.panels["build-library"].activeBadge)).toBeVisible();
 
     await expect(page.getByText(labels.landing.importTitle)).toBeVisible();
     await expect(
