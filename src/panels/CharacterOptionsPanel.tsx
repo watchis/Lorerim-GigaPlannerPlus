@@ -294,25 +294,12 @@ export function CharacterOptionsPanel() {
   const setCharacterOptionChoice = useBuildStore((s) => s.setCharacterOptionChoice);
   const [oghmaSkillsPickerOpen, setOghmaSkillsPickerOpen] = useState(false);
 
-  if (!gameData) return null;
-
-  if (oghmaSkillsPickerOpen) {
-    return <OghmaSkillsPickerPanel onBack={() => setOghmaSkillsPickerOpen(false)} />;
-  }
-
-  const { game } = gameData;
-  const { characterOptions } = game;
-  const supernaturalVariant = getSupernaturalThemeVariant(build);
-  const supernaturalOptions = characterOptions.filter((option) =>
-    isSupernaturalOptionId(option.id),
-  );
-  const playthroughOptions = characterOptions.filter(
-    (option) => !isSupernaturalOptionId(option.id),
-  );
-
+  const game = gameData?.game;
+  const characterOptions = game?.characterOptions ?? [];
   const activeRewardLines = useMemo(
-    () =>
-      characterOptions
+    () => {
+      if (!game) return [];
+      return characterOptions
         .filter(
           (option) =>
             !option.requiresTraitId || build.traitIds.includes(option.requiresTraitId),
@@ -328,8 +315,23 @@ export function CharacterOptionsPanel() {
             attributeLabels,
             build,
           );
-        }),
+        });
+    },
     [attributeLabels, build, characterOptionChoices, characterOptions, game, labels],
+  );
+
+  if (!gameData || !game) return null;
+
+  if (oghmaSkillsPickerOpen) {
+    return <OghmaSkillsPickerPanel onBack={() => setOghmaSkillsPickerOpen(false)} />;
+  }
+
+  const supernaturalVariant = getSupernaturalThemeVariant(build);
+  const supernaturalOptions = characterOptions.filter((option) =>
+    isSupernaturalOptionId(option.id),
+  );
+  const playthroughOptions = characterOptions.filter(
+    (option) => !isSupernaturalOptionId(option.id),
   );
 
   const curseSubtitle =

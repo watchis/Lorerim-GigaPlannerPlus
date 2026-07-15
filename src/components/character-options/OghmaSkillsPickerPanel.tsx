@@ -29,28 +29,25 @@ export function OghmaSkillsPickerPanel({ onBack }: OghmaSkillsPickerPanelProps) 
     setSkillSearchQuery("");
   }, []);
 
+  const filteredSkillOptions = useMemo(() => {
+    if (!gameData) return [];
+    const { game } = gameData;
+    return game.skills
+      .filter((skill) => isAllocatableSkill(game, skill.id))
+      .map((skill) => ({
+        id: skill.id,
+        name: skill.name,
+        isSelected: build.oghmaSkillIds.includes(skill.id),
+        isEnabled: canSelectOghmaSkill(game, build, skill.id),
+        onSelect: () => toggleOghmaSkill(skill.id),
+      }))
+      .filter((option) => matchesPickerSearch(skillSearchQuery, [option.name]));
+  }, [build, gameData, skillSearchQuery, toggleOghmaSkill]);
+
   if (!gameData) return null;
 
   const { game } = gameData;
   const remaining = getOghmaSkillLimit(game) - build.oghmaSkillIds.length;
-
-  const skillOptions = game.skills
-    .filter((skill) => isAllocatableSkill(game, skill.id))
-    .map((skill) => ({
-      id: skill.id,
-      name: skill.name,
-      isSelected: build.oghmaSkillIds.includes(skill.id),
-      isEnabled: canSelectOghmaSkill(game, build, skill.id),
-      onSelect: () => toggleOghmaSkill(skill.id),
-    }));
-
-  const filteredSkillOptions = useMemo(
-    () =>
-      skillOptions.filter((option) =>
-        matchesPickerSearch(skillSearchQuery, [option.name]),
-      ),
-    [skillOptions, skillSearchQuery],
-  );
 
   return (
     <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
