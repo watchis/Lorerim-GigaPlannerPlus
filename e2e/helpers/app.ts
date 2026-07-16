@@ -60,9 +60,18 @@ export async function readActiveBuildCode(page: Page): Promise<string> {
   return code;
 }
 
+export function playerLevelInput(page: Page): Locator {
+  // "Skill level" also contains "Level" — require an exact accessible name.
+  return page.getByRole("textbox", { name: labels["level-bar"].playerLevel, exact: true });
+}
+
 export async function setPlayerLevel(page: Page, level: number): Promise<void> {
-  const input = page.getByRole("textbox", { name: labels["level-bar"].playerLevel });
+  const input = playerLevelInput(page);
   await input.fill(String(level));
   await input.press("Enter");
   await expect(input).toHaveValue(String(level));
+}
+
+export async function readPlayerLevel(page: Page): Promise<number> {
+  return Number(await playerLevelInput(page).inputValue());
 }

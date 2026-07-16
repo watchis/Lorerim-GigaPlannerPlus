@@ -16,9 +16,19 @@ export type UiLabels = {
     importPlaceholder: string;
     importButton: string;
   };
+  milestones: {
+    title: string;
+    fullBuild: string;
+    manageVariants: string;
+    levelShort: string;
+  };
   "level-bar": {
     playerLevel: string;
     perkPointsRemaining: string;
+    skillPointsRemaining: string;
+    trainingLevelsRemaining: string;
+    ensurePlayerLevel: string;
+    setToMinimumLevel: string;
   };
   panels: {
     "character-setup": {
@@ -26,17 +36,60 @@ export type UiLabels = {
       race: string;
       birthsign: string;
       deity: string;
+      traits: string;
+      majorSkills: string;
+      minorSkills: string;
       noneSelected: string;
       openOptions: string;
       search: string;
+      backToOverview: string;
+      vampireTree: string;
+      destiny: string;
     };
     "character-options": {
       title: string;
       supernaturalSectionTitle: string;
       playthroughSectionTitle: string;
+      vampireOption: string;
+      werewolfOption: string;
+      lichOption: string;
+      supernaturalNone: string;
+      curseActiveBadge: string;
+      vampireStageLabel: string;
+      oghmaInfinium: string;
+      oghmaClaimed: string;
+      oghmaNone: string;
+      oghmaSkills: string;
+      backToOptions: string;
+      clearSelection: string;
+    };
+    attributes: {
+      title: string;
+      health: string;
+      magicka: string;
+      stamina: string;
+      remainingShort: string;
     };
     "skill-trees": {
       title: string;
+      skillLevel: string;
+      perksMode: string;
+      trainingMode: string;
+      trainingModeActive: string;
+      trainingRangesTitle: string;
+      trainingSkillTotal: string;
+      selected: string;
+      available: string;
+      locked: string;
+      resetSkill: string;
+    };
+    "variants-manager": {
+      title: string;
+      back: string;
+      createNew: string;
+      variantsSection: string;
+      variantCount: string;
+      activeBadge: string;
     };
     "build-library": {
       title: string;

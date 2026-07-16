@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   goToNav,
   openApp,
+  playerLevelInput,
   racePickerButton,
   readActiveBuildCode,
   selectRace,
@@ -26,9 +27,7 @@ test.describe("Build import flows", () => {
     await waitForAppReady(page);
     await expect(page).toHaveURL(/\/planner/);
     await expect(racePickerButton(page)).toContainText("Nord");
-    await expect(
-      page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
-    ).toHaveValue("12");
+    await expect(playerLevelInput(page)).toHaveValue("12");
 
     await goToNav(page, labels.nav.builds);
     await expect(
@@ -44,9 +43,7 @@ test.describe("Build import flows", () => {
 
     await openApp(page, `/planner?build=${encodeURIComponent(code)}`);
     await expect(racePickerButton(page)).toContainText("Breton");
-    await expect(
-      page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
-    ).toHaveValue("7");
+    await expect(playerLevelInput(page)).toHaveValue("7");
 
     // Query param should be cleared after successful import.
     await expect(page).toHaveURL(/\/planner\/?$/);

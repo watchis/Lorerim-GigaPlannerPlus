@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   goToNav,
   openApp,
+  playerLevelInput,
   racePickerButton,
   selectRace,
   setPlayerLevel,
@@ -19,9 +20,7 @@ test.describe("Planner", () => {
   test("renders the core planner chrome and panels", async ({ page }) => {
     await expect(page.getByText(labels.panels["character-setup"].title)).toBeVisible();
     await expect(page.getByText(labels.panels["skill-trees"].title).first()).toBeVisible();
-    await expect(
-      page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
-    ).toHaveValue(String(leveling.baseLevel));
+    await expect(playerLevelInput(page)).toHaveValue(String(leveling.baseLevel));
 
     // Level bar renders a hidden measurement clone of the budget row.
     await expect(
@@ -60,9 +59,7 @@ test.describe("Planner", () => {
   }) => {
     const targetLevel = leveling.baseLevel + 4;
     await page.getByRole("button", { name: `Increase ${labels["level-bar"].playerLevel}` }).click();
-    await expect(
-      page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
-    ).toHaveValue(String(leveling.baseLevel + 1));
+    await expect(playerLevelInput(page)).toHaveValue(String(leveling.baseLevel + 1));
     await expect(
       page
         .getByText(String(earnedPerkPoints(leveling.baseLevel + 1)), { exact: true })
@@ -77,9 +74,7 @@ test.describe("Planner", () => {
     ).toBeVisible();
 
     await page.getByRole("button", { name: `Decrease ${labels["level-bar"].playerLevel}` }).click();
-    await expect(
-      page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
-    ).toHaveValue(String(targetLevel - 1));
+    await expect(playerLevelInput(page)).toHaveValue(String(targetLevel - 1));
   });
 
   test("opens Character Options from Character Setup", async ({ page }) => {
@@ -125,9 +120,7 @@ test.describe("Planner", () => {
 
     await page.reload();
     await expect(racePickerButton(page)).toContainText("Nord");
-    await expect(
-      page.getByRole("textbox", { name: labels["level-bar"].playerLevel }),
-    ).toHaveValue("8");
+    await expect(playerLevelInput(page)).toHaveValue("8");
 
     await goToNav(page, labels.nav.builds);
     await expect(page.getByText("Nord").first()).toBeVisible();

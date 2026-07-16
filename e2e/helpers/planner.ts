@@ -1,0 +1,198 @@
+import { expect, type Locator, type Page } from "@playwright/test";
+import { getUiLabels } from "./labels";
+
+const labels = getUiLabels();
+const setup = labels.panels["character-setup"];
+const skillTrees = labels.panels["skill-trees"];
+const characterOptions = labels.panels["character-options"];
+const attributes = labels.panels.attributes;
+const variantsManager = labels.panels["variants-manager"];
+
+export function setupPickerButton(page: Page, pickerLabel: string): Locator {
+  // Multi-select rows append "(N left)"; single-select rows append the selection name with
+  // no guaranteed whitespace, so match on the label prefix only.
+  return page
+    .getByRole("button")
+    .filter({ hasText: new RegExp(`^${escapeRegExp(pickerLabel)}`) })
+    .first();
+}
+
+async function openSetupPicker(page: Page, pickerLabel: string): Promise<void> {
+  const button = setupPickerButton(page, pickerLabel);
+  await button.scrollIntoViewIfNeeded();
+  await button.click();
+}
+
+export async function closeToOverview(page: Page): Promise<void> {
+  const overview = page.getByRole("button", { name: setup.backToOverview, exact: true });
+  if (await overview.isVisible().catch(() => false)) {
+    await overview.click();
+  }
+}
+
+export async function selectSingleSetupOption(
+  page: Page,
+  pickerLabel: string,
+  optionName: string,
+): Promise<void> {
+  await openSetupPicker(page, pickerLabel);
+  await page.getByRole("button", { name: optionName, exact: true }).click();
+  await expect(setupPickerButton(page, pickerLabel)).toContainText(optionName);
+  await closeToOverview(page);
+}
+
+export async function toggleMultiSetupOptions(
+  page: Page,
+  pickerLabel: string,
+  optionNames: string[],
+): Promise<void> {
+  await openSetupPicker(page, pickerLabel);
+  for (const optionName of optionNames) {
+    await page.getByRole("button", { name: optionName, exact: true }).click();
+  }
+  await closeToOverview(page);
+  // Multi-select rows show chips beneath the picker button, not the option names in the button.
+  for (const optionName of optionNames) {
+    await expect(
+      setupPickerButton(page, pickerLabel)
+        .locator("xpath=ancestor::div[contains(@class,'space-y')][1]")
+        .getByRole("button", { name: optionName, exact: true }),
+    ).toBeVisible();
+  }
+}
+
+export async function addAttributeChoice(
+  page: Page,
+  attribute: "Health" | "Magicka" | "Stamina",
+): Promise<void> {
+  await page.getByRole("button", { name: `Add ${attribute} choice` }).click();
+}
+
+export async function openSkillTree(page: Page, skillName: string): Promise<void> {
+  // Skill chips in Character Setup are span[role=button]; sidebar tiles are real <button>s.
+  const tile = page
+    .locator("button")
+    .filter({ has: page.getByText(skillName, { exact: true }) })
+    .filter({ hasText: /View skill level bonuses|\d+/ })
+    .first();
+  await tile.click();
+  await expect(page.getByRole("heading", { name: skillName })).toBeVisible();
+}
+
+export async function takePerk(page: Page, perkName: string): Promise<void> {
+  // Ranked perks share a display name; target the first matching node.
+  const perk = page.getByRole("button", { name: perkName, exact: true }).first();
+  await expect(perk).toBeVisible();
+  await perk.dblclick();
+  await expectPerkSelected(page, perkName);
+}
+
+export async function expectPerkSelected(page: Page, perkName: string): Promise<void> {
+  const perk = page.getByRole("button", { name: perkName, exact: true }).first();
+  await perk.hover();
+  await expect(page.getByText(skillTrees.selected, { exact: true }).first()).toBeVisible();
+  // Move off the node so the next hover starts clean.
+  await page.mouse.move(0, 0);
+}
+
+export async function removePerk(page: Page, perkName: string): Promise<void> {
+  const perk = page.getByRole("button", { name: perkName, exact: true }).first();
+  await perk.click({ button: "right" });
+}
+
+export function skillLevelInput(page: Page): Locator {
+  return page.getByRole("textbox", { name: skillTrees.skillLevel, exact: true });
+}
+
+export async function readSkillLevel(page: Page): Promise<number> {
+  const input = skillLevelInput(page);
+  await expect(input).toBeVisible();
+  return Number(await input.inputValue());
+}
+
+export async function setSkillLevel(page: Page, level: number): Promise<void> {
+  const input = skillLevelInput(page);
+  await input.fill(String(level));
+  await input.press("Enter");
+  await expect(input).toHaveValue(String(level));
+}
+
+export async function visibleBudgetValue(
+  page: Page,
+  label: string,
+): Promise<string> {
+  const row = page
+    .locator("span, div")
+    .filter({ hasText: new RegExp(`${escapeRegExp(label)}:?`) })
+    .filter({ visible: true })
+    .first();
+  await expect(row).toBeVisible();
+  const text = (await row.evaluate((el) => {
+    const root = el.closest("div") ?? el.parentElement;
+    return root?.textContent ?? el.textContent ?? "";
+  })).replace(/\s+/g, " ");
+  const match = text.match(/(-?\d+)/);
+  expect(match).toBeTruthy();
+  return match![1];
+}
+
+export async function openCharacterOptions(page: Page): Promise<void> {
+  await page.getByRole("button", { name: setup.openOptions }).click();
+  await expect(page.getByRole("heading", { name: characterOptions.title })).toBeVisible();
+}
+
+export async function enableVampireCurse(page: Page): Promise<void> {
+  const vampire = page
+    .locator("article")
+    .filter({ has: page.getByRole("heading", { name: characterOptions.vampireOption, exact: true }) });
+  await vampire.getByRole("checkbox").check();
+  await expect(vampire.getByText(characterOptions.curseActiveBadge, { exact: true })).toBeVisible();
+}
+
+export async function claimOghmaInfinium(page: Page, skillNames: string[]): Promise<void> {
+  const oghma = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: characterOptions.oghmaInfinium, exact: true }) })
+    .first();
+  await oghma.getByRole("checkbox", { name: characterOptions.oghmaNone }).check();
+  await expect(oghma.getByText(characterOptions.oghmaClaimed)).toBeVisible();
+
+  await oghma
+    .getByRole("button")
+    .filter({ hasText: new RegExp(`^${escapeRegExp(characterOptions.oghmaSkills)}`) })
+    .click();
+
+  for (const skillName of skillNames) {
+    await page.getByRole("button", { name: skillName, exact: true }).click();
+  }
+
+  await page.getByRole("button", { name: characterOptions.backToOptions, exact: true }).click();
+  for (const skillName of skillNames) {
+    await expect(oghma.getByText(skillName, { exact: true })).toBeVisible();
+  }
+}
+
+export async function createNewVariant(page: Page): Promise<void> {
+  await page.getByRole("combobox").filter({ hasText: /Default|Lv / }).click();
+  await page.getByRole("option", { name: labels.milestones.manageVariants }).click();
+  await expect(page.getByRole("heading", { name: variantsManager.title })).toBeVisible();
+  await page
+    .locator("button")
+    .filter({ has: page.getByText(variantsManager.createNew, { exact: true }) })
+    .click();
+  await expect(page.getByText(/2 variants/i)).toBeVisible();
+  await page.getByRole("button", { name: variantsManager.back, exact: true }).click();
+}
+
+export async function switchVariant(page: Page, optionPattern: RegExp | string): Promise<void> {
+  await page.getByRole("combobox").filter({ hasText: /Default|Lv / }).click();
+  await page.getByRole("option", { name: optionPattern }).click();
+}
+
+export function attributeLabel(attribute: "health" | "magicka" | "stamina"): string {
+  return attributes[attribute];
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

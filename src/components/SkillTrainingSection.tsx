@@ -125,6 +125,10 @@ export function SkillTrainingSection({
                   className={cn(compact ? "h-9 w-9" : "h-7 w-7")}
                   onClick={() => setSkillTrainingRange(skillId, tierIndex, count - 1)}
                   disabled={count <= 0}
+                  aria-label={`Decrease training ${formatLabel(labels.trainingTierRange, {
+                    min: tier.minLevel,
+                    max: tier.maxLevel,
+                  })}`}
                 >
                   <Minus className="h-3.5 w-3.5" />
                 </Button>
@@ -133,6 +137,10 @@ export function SkillTrainingSection({
                   min={0}
                   max={tier.tierCapacity}
                   onCommit={(next) => setSkillTrainingRange(skillId, tierIndex, next)}
+                  aria-label={formatLabel(labels.trainingTierRange, {
+                    min: tier.minLevel,
+                    max: tier.maxLevel,
+                  })}
                   className={compact ? "w-14" : "w-12"}
                 />
                 <Button
@@ -141,6 +149,10 @@ export function SkillTrainingSection({
                   className={cn(compact ? "h-9 w-9" : "h-7 w-7")}
                   onClick={() => setSkillTrainingRange(skillId, tierIndex, count + 1)}
                   disabled={!canIncrease}
+                  aria-label={`Increase training ${formatLabel(labels.trainingTierRange, {
+                    min: tier.minLevel,
+                    max: tier.maxLevel,
+                  })}`}
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </Button>

@@ -17,6 +17,7 @@ npm run test:e2e:ui               # interactive UI mode
 | `landing.spec.ts` | Home content, invalid share-code rejection |
 | `navigation.spec.ts` | Desktop nav, mobile menu, unknown-route redirect |
 | `planner.spec.ts` | Panels, race selection, level bar / perk budget, character options, persistence |
+| `planner-builds.spec.ts` | Full Nord warrior build, deep force-allocate perk chains, perk removal, training mode, Vampire curse tree, Oghma Infinium, variants isolation, skill→level auto-raise, share-code round-trip |
 | `builds.spec.ts` | Create build, library search, import-as-new |
 | `import.spec.ts` | Landing import, `?build=` planner import, home→planner redirect |
 
