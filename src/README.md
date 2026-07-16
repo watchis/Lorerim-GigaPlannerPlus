@@ -57,15 +57,16 @@ App unit tests use [Vitest](https://vitest.dev/) and live next to the code they 
 ```bash
 npm run test:app      # src/ only
 npm run test:import   # tools/import/lib/ (Node test runner)
-npm test              # both
+npm test              # both unit suites
+npm run test:e2e      # Playwright functional tests (builds + preview server)
 npm run test:watch    # Vitest watch mode
 ```
 
 **Shared fixtures:** `src/test/helpers.ts` — `getTestAppData()`, `getTestGameData()`, `createTestBuildState()`.
 
-CI runs `npm test` on every pull request ([`.github/workflows/test.yml`](../.github/workflows/test.yml)).
+**Functional / E2E:** Playwright specs live in [`e2e/scenarios/`](../e2e/scenarios/) and exercise complex production-build flows (desktop + mobile). Prefer unit tests for basic behavior; reserve functional tests for multi-panel / import-export / stacked-layout scenarios. See [`e2e/README.md`](../e2e/README.md). CI: [`.github/workflows/functional-tests.yml`](../.github/workflows/functional-tests.yml). Unit CI: [`.github/workflows/test.yml`](../.github/workflows/test.yml) (`npm test`).
 
-**Policy:** Every new feature, behavior change, or bug fix must include unit tests. See [`.cursor/rules/unit-testing-requirements.mdc`](../.cursor/rules/unit-testing-requirements.mdc) for coverage expectations, fixtures, and PR checklist.
+**Policy:** Every new feature, behavior change, or bug fix must include unit tests. See [`.cursor/rules/unit-testing-requirements.mdc`](../.cursor/rules/unit-testing-requirements.mdc) for coverage expectations, fixtures, and PR checklist. User-facing regressions that span navigation, persistence, or import/export should also get an `e2e/scenarios/` functional test.
 
 ---
 

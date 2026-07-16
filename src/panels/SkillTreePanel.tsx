@@ -442,6 +442,7 @@ export function SkillTreePanel() {
                       max={skillLevelCap}
                       onCommit={(next) => setSkillLevel(activeTree.skillId, next)}
                       size="compact"
+                      aria-label={labels.skillLevel}
                       className={hasSkillLevelProblem ? "text-[var(--color-error)]" : undefined}
                     />
                     <Button
@@ -593,6 +594,7 @@ export function SkillTreePanel() {
                   className="h-7 w-7"
                   onClick={() => setSkillLevel(activeTree.skillId, level - 1)}
                   disabled={level <= Math.max(floor, trainingFloor)}
+                  aria-label={`Decrease ${labels.skillLevel}`}
                 >
                   <Minus className="h-3.5 w-3.5" />
                 </Button>
@@ -601,6 +603,7 @@ export function SkillTreePanel() {
                   min={Math.max(floor, trainingFloor)}
                   max={skillLevelCap}
                   onCommit={(next) => setSkillLevel(activeTree.skillId, next)}
+                  aria-label={labels.skillLevel}
                   className={hasSkillLevelProblem ? "text-[var(--color-error)]" : undefined}
                 />
                 <Button
@@ -609,6 +612,7 @@ export function SkillTreePanel() {
                   className="h-7 w-7"
                   onClick={() => setSkillLevel(activeTree.skillId, level + 1)}
                   disabled={level >= skillLevelCap}
+                  aria-label={`Increase ${labels.skillLevel}`}
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </Button>

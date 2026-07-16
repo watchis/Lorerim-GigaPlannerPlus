@@ -1,0 +1,100 @@
+import { expect, type Locator, type Page } from "@playwright/test";
+import { appUrl } from "./appUrl";
+import { getUiLabels } from "./labels";
+import { goToCharacterSetup } from "./mobile";
+import { closeToOverview } from "./planner";
+
+export { appUrl };
+
+const labels = getUiLabels();
+
+/** Fresh browser storage for each test — mirrors a first-time visitor. */
+export async function openApp(page: Page, path = "/"): Promise<void> {
+  // Hit the origin once so we can clear persisted builds without an init script
+  // that would wipe storage again on later navigations/reloads.
+  await page.goto(appUrl("/"));
+  await page.evaluate(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+  await page.goto(appUrl(path));
+  await waitForAppReady(page);
+}
+
+export async function waitForAppReady(page: Page): Promise<void> {
+  await expect(page.getByText("Loading...")).toHaveCount(0, { timeout: 30_000 });
+  await expect(page.getByText(labels.app.title).first()).toBeVisible({ timeout: 30_000 });
+}
+
+export function desktopNav(page: Page): Locator {
+  return page.locator("header nav").filter({ has: page.getByRole("link", { name: labels.nav.home }) });
+}
+
+export async function goToNav(page: Page, name: string): Promise<void> {
+  const desktopLink = desktopNav(page).getByRole("link", { name, exact: true });
+  if (await desktopLink.isVisible().catch(() => false)) {
+    await desktopLink.click();
+  } else {
+    const openMenu = page.getByRole("button", { name: "Open menu", exact: true });
+    if (await openMenu.isVisible().catch(() => false)) {
+      await openMenu.click();
+    }
+    await page.locator("#mobile-nav").getByRole("link", { name, exact: true }).click();
+  }
+  await waitForAppReady(page);
+}
+
+export function racePickerButton(page: Page): Locator {
+  return page
+    .locator("button")
+    .filter({ has: page.getByText(labels.panels["character-setup"].race, { exact: true }) })
+    .first();
+}
+
+/** Confirm a mobile list→detail picker when the Select CTA is shown. */
+export async function confirmPickerSelection(page: Page, optionName: string): Promise<void> {
+  const selectBtn = page.getByRole("button", { name: `Select ${optionName}`, exact: true });
+  if (await selectBtn.isVisible().catch(() => false)) {
+    await selectBtn.click();
+  }
+}
+
+export async function selectRace(page: Page, raceName: string): Promise<void> {
+  await goToCharacterSetup(page);
+  await racePickerButton(page).click();
+  const option = page.getByRole("button", { name: raceName, exact: true });
+  await expect(option).toBeVisible();
+  await option.click();
+  // Stacked layout uses list → detail → Select; desktop selects on row click.
+  await confirmPickerSelection(page, raceName);
+  await closeToOverview(page);
+  await expect(racePickerButton(page)).toContainText(raceName);
+}
+
+export async function readActiveBuildCode(page: Page): Promise<string> {
+  await goToNav(page, labels.nav.builds);
+  const codeButton = page
+    .locator("button")
+    .filter({ has: page.locator("code") })
+    .filter({ hasText: /^3\./ });
+  await expect(codeButton).toBeVisible();
+  const code = (await codeButton.locator("code").innerText()).trim();
+  expect(code.startsWith("3.")).toBeTruthy();
+  return code;
+}
+
+export function playerLevelInput(page: Page): Locator {
+  // "Skill level" also contains "Level" — require an exact accessible name.
+  return page.getByRole("textbox", { name: labels["level-bar"].playerLevel, exact: true });
+}
+
+export async function setPlayerLevel(page: Page, level: number): Promise<void> {
+  const input = playerLevelInput(page);
+  await input.fill(String(level));
+  await input.press("Enter");
+  await expect(input).toHaveValue(String(level));
+}
+
+export async function readPlayerLevel(page: Page): Promise<number> {
+  return Number(await playerLevelInput(page).inputValue());
+}
