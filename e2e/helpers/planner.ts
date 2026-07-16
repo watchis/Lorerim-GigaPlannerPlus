@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { getUiLabels } from "./labels";
+import { goToCharacterSetup, goToSkillTrees } from "./mobile";
 
 const labels = getUiLabels();
 const setup = labels.panels["character-setup"];
@@ -18,6 +19,7 @@ export function setupPickerButton(page: Page, pickerLabel: string): Locator {
 }
 
 async function openSetupPicker(page: Page, pickerLabel: string): Promise<void> {
+  await goToCharacterSetup(page);
   const button = setupPickerButton(page, pickerLabel);
   await button.scrollIntoViewIfNeeded();
   await button.click();
@@ -30,6 +32,13 @@ export async function closeToOverview(page: Page): Promise<void> {
   }
 }
 
+async function confirmPickerSelection(page: Page, optionName: string): Promise<void> {
+  const selectBtn = page.getByRole("button", { name: `Select ${optionName}`, exact: true });
+  if (await selectBtn.isVisible().catch(() => false)) {
+    await selectBtn.click();
+  }
+}
+
 export async function selectSingleSetupOption(
   page: Page,
   pickerLabel: string,
@@ -37,6 +46,7 @@ export async function selectSingleSetupOption(
 ): Promise<void> {
   await openSetupPicker(page, pickerLabel);
   await page.getByRole("button", { name: optionName, exact: true }).click();
+  await confirmPickerSelection(page, optionName);
   await expect(setupPickerButton(page, pickerLabel)).toContainText(optionName);
   await closeToOverview(page);
 }
@@ -65,10 +75,12 @@ export async function addAttributeChoice(
   page: Page,
   attribute: "Health" | "Magicka" | "Stamina",
 ): Promise<void> {
+  await goToCharacterSetup(page);
   await page.getByRole("button", { name: `Add ${attribute} choice` }).click();
 }
 
 export async function openSkillTree(page: Page, skillName: string): Promise<void> {
+  await goToSkillTrees(page);
   // Skill chips in Character Setup are span[role=button]; sidebar tiles are real <button>s.
   const tile = page
     .locator("button")
@@ -117,26 +129,26 @@ export async function setSkillLevel(page: Page, level: number): Promise<void> {
   await expect(input).toHaveValue(String(level));
 }
 
-export async function visibleBudgetValue(
-  page: Page,
-  label: string,
-): Promise<string> {
+export async function visibleBudgetValue(page: Page, label: string): Promise<string> {
   const row = page
     .locator("span, div")
     .filter({ hasText: new RegExp(`${escapeRegExp(label)}:?`) })
     .filter({ visible: true })
     .first();
   await expect(row).toBeVisible();
-  const text = (await row.evaluate((el) => {
-    const root = el.closest("div") ?? el.parentElement;
-    return root?.textContent ?? el.textContent ?? "";
-  })).replace(/\s+/g, " ");
+  const text = (
+    await row.evaluate((el) => {
+      const root = el.closest("div") ?? el.parentElement;
+      return root?.textContent ?? el.textContent ?? "";
+    })
+  ).replace(/\s+/g, " ");
   const match = text.match(/(-?\d+)/);
   expect(match).toBeTruthy();
   return match![1];
 }
 
 export async function openCharacterOptions(page: Page): Promise<void> {
+  await goToCharacterSetup(page);
   await page.getByRole("button", { name: setup.openOptions }).click();
   await expect(page.getByRole("heading", { name: characterOptions.title })).toBeVisible();
 }
@@ -147,6 +159,37 @@ export async function enableVampireCurse(page: Page): Promise<void> {
     .filter({ has: page.getByRole("heading", { name: characterOptions.vampireOption, exact: true }) });
   await vampire.getByRole("checkbox").check();
   await expect(vampire.getByText(characterOptions.curseActiveBadge, { exact: true })).toBeVisible();
+}
+
+export async function selectVampireHungerStage(
+  page: Page,
+  stageShortLabel: string,
+): Promise<void> {
+  const group = page.getByRole("radiogroup", { name: characterOptions.vampireStageLabel });
+  await group.getByRole("radio", { name: new RegExp(escapeRegExp(stageShortLabel)) }).click();
+  await expect(
+    group.getByRole("radio", { name: new RegExp(escapeRegExp(stageShortLabel)) }),
+  ).toHaveAttribute("aria-checked", "true");
+}
+
+export async function openVampireSkillTree(page: Page): Promise<void> {
+  await goToCharacterSetup(page);
+  const vampireTree = page
+    .locator("button")
+    .filter({ has: page.getByText(setup.vampireTree, { exact: true }) })
+    .first();
+  await expect(vampireTree).toBeVisible();
+  await vampireTree.click();
+  await expect(page.getByRole("heading", { name: setup.vampireTree })).toBeVisible();
+}
+
+export async function setAuNaturelGearPieces(page: Page, pieces: 0 | 1 | 2 | 3 | 4): Promise<void> {
+  const group = page.getByRole("group", { name: characterOptions.auNaturelGear });
+  await group.getByRole("button", { name: String(pieces), exact: true }).click();
+  await expect(group.getByRole("button", { name: String(pieces), exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 }
 
 export async function claimOghmaInfinium(page: Page, skillNames: string[]): Promise<void> {

@@ -29,10 +29,12 @@ export type UiLabels = {
     trainingLevelsRemaining: string;
     ensurePlayerLevel: string;
     setToMinimumLevel: string;
+    easyModeLevelWarning: string;
   };
   panels: {
     "character-setup": {
       title: string;
+      overviewTitle: string;
       race: string;
       birthsign: string;
       deity: string;
@@ -56,12 +58,20 @@ export type UiLabels = {
       supernaturalNone: string;
       curseActiveBadge: string;
       vampireStageLabel: string;
+      vampireStage1Short: string;
+      vampireStage2Short: string;
+      vampireStage3Short: string;
+      vampireStage4Short: string;
       oghmaInfinium: string;
       oghmaClaimed: string;
       oghmaNone: string;
       oghmaSkills: string;
       backToOptions: string;
       clearSelection: string;
+      auNaturelGear: string;
+      auNaturelGearDescription: string;
+      auNaturelPerLevelBonus: string;
+      auNaturelGearPenalty: string;
     };
     attributes: {
       title: string;
@@ -103,8 +113,16 @@ export type UiLabels = {
       importAsNew: string;
       importToActive: string;
       importedAsNew: string;
+      importedToActive: string;
+      importedLibrary: string;
       activeBuildCode: string;
       importedBadge: string;
+      backupTitle: string;
+      chooseBackupFile: string;
+      exportActive: string;
+      exportAll: string;
+      importedVersionWarning: string;
+      playerLevel: string;
     };
   };
   errors: {
@@ -126,6 +144,8 @@ export function getMechanicsLeveling(): {
   baseLevel: number;
   initialPerkPoints: number;
   perkPointsPerLevel: number;
+  standardMaxPlayerLevel: number;
+  maxPlayerLevel: number;
 } {
   const raw = readFileSync(path.join(root, "data/game/mechanics.json"), "utf8");
   const mechanics = JSON.parse(raw) as {
@@ -133,6 +153,8 @@ export function getMechanicsLeveling(): {
       baseLevel: number;
       initialPerkPoints: number;
       perkPointsPerLevel: number;
+      standardMaxPlayerLevel: number;
+      maxPlayerLevel: number;
     };
   };
   return mechanics.leveling;
@@ -141,4 +163,12 @@ export function getMechanicsLeveling(): {
 export function earnedPerkPoints(playerLevel: number): number {
   const { baseLevel, initialPerkPoints, perkPointsPerLevel } = getMechanicsLeveling();
   return initialPerkPoints + (playerLevel - baseLevel) * perkPointsPerLevel;
+}
+
+/** Replace `{key}` placeholders in a label template. */
+export function formatLabel(template: string, values: Record<string, string | number>): string {
+  return Object.entries(values).reduce(
+    (text, [key, value]) => text.replaceAll(`{${key}}`, String(value)),
+    template,
+  );
 }

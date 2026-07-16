@@ -35,7 +35,7 @@ Node **22** is used in CI to match the deploy workflow.
 
 The functional test job installs dependencies, installs Chromium (with browser binary caching), then runs **`npm run test:e2e`**.
 
-That script builds the SPA, serves it with `vite preview`, and runs Playwright specs under [`e2e/`](../e2e/). Coverage focuses on user-facing flows: landing, navigation, planner setup/leveling, My Builds library actions, and share-code / URL import.
+That script builds the SPA, serves it with `vite preview`, and runs Playwright specs under [`e2e/scenarios/`](../e2e/scenarios/). Coverage focuses on **complex** multi-step flows (full builds, vampire / Au Naturel / easy-mode edge cases, legacy share-code and `.gpp` import/export, mobile stacked planner) — not basic smoke covered by unit tests. See [`e2e/README.md`](../e2e/README.md).
 
 On failure (and when the job is cancelled mid-run), the workflow uploads the HTML report and trace artifacts for debugging.
 

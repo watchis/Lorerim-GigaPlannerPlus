@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { appUrl } from "./appUrl";
 import { getUiLabels } from "./labels";
+import { goToCharacterSetup } from "./mobile";
 
 export { appUrl };
 
@@ -29,7 +30,16 @@ export function desktopNav(page: Page): Locator {
 }
 
 export async function goToNav(page: Page, name: string): Promise<void> {
-  await desktopNav(page).getByRole("link", { name, exact: true }).click();
+  const desktopLink = desktopNav(page).getByRole("link", { name, exact: true });
+  if (await desktopLink.isVisible().catch(() => false)) {
+    await desktopLink.click();
+  } else {
+    const openMenu = page.getByRole("button", { name: "Open menu", exact: true });
+    if (await openMenu.isVisible().catch(() => false)) {
+      await openMenu.click();
+    }
+    await page.locator("#mobile-nav").getByRole("link", { name, exact: true }).click();
+  }
   await waitForAppReady(page);
 }
 
@@ -40,11 +50,21 @@ export function racePickerButton(page: Page): Locator {
     .first();
 }
 
+/** Confirm a mobile list→detail picker when the Select CTA is shown. */
+export async function confirmPickerSelection(page: Page, optionName: string): Promise<void> {
+  const selectBtn = page.getByRole("button", { name: `Select ${optionName}`, exact: true });
+  if (await selectBtn.isVisible().catch(() => false)) {
+    await selectBtn.click();
+  }
+}
+
 export async function selectRace(page: Page, raceName: string): Promise<void> {
+  await goToCharacterSetup(page);
   await racePickerButton(page).click();
   const option = page.getByRole("button", { name: raceName, exact: true });
   await expect(option).toBeVisible();
   await option.click();
+  await confirmPickerSelection(page, raceName);
   await expect(racePickerButton(page)).toContainText(raceName);
 }
 

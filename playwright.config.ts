@@ -6,7 +6,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}${ba
 
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: "**/*.spec.ts",
+  testMatch: "**/scenarios/**/*.spec.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -14,7 +14,7 @@ export default defineConfig({
   reporter: process.env.CI
     ? [["github"], ["html", { open: "never" }], ["list"]]
     : [["list"], ["html", { open: "never" }]],
-  timeout: 60_000,
+  timeout: 90_000,
   expect: {
     timeout: 10_000,
   },
@@ -23,7 +23,6 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    ...devices["Desktop Chrome"],
   },
   webServer: {
     command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${port}`,
@@ -33,8 +32,16 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
+      name: "desktop-chromium",
+      testIgnore: "**/scenarios/mobile/**",
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "mobile-chromium",
+      testMatch: "**/scenarios/mobile/**/*.spec.ts",
+      use: {
+        ...devices["Pixel 5"],
+      },
     },
   ],
 });
