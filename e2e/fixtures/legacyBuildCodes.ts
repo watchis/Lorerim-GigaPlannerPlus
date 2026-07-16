@@ -8,6 +8,7 @@ export const LEGACY_V2_USER_BUILD_CODE =
 /** Expectations for {@link LEGACY_V2_USER_BUILD_CODE} after decode. */
 export const LEGACY_V2_USER_BUILD = {
   name: "Build 2",
+  raceName: "Khajiit",
   playerLevel: 50,
   sourceModpackVersion: "5.0.3.6",
   majorSkills: ["One-Handed", "Evasion", "Alchemy"] as const,

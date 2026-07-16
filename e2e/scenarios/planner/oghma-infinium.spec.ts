@@ -1,10 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { openApp } from "../../helpers/app";
-import { earnedPerkPoints, getMechanicsLeveling, getUiLabels } from "../../helpers/labels";
-import { claimOghmaInfinium, openCharacterOptions } from "../../helpers/planner";
+import { earnedPerkPoints, getMechanicsLeveling } from "../../helpers/labels";
+import { claimOghmaInfinium, closeToOverview, openCharacterOptions } from "../../helpers/planner";
 
-const labels = getUiLabels();
-const setup = labels.panels["character-setup"];
 const leveling = getMechanicsLeveling();
 
 test.describe("Oghma Infinium", () => {
@@ -18,7 +16,7 @@ test.describe("Oghma Infinium", () => {
     await openCharacterOptions(page);
     await claimOghmaInfinium(page, ["Block", "One-Handed", "Smithing"]);
 
-    await page.getByRole("button", { name: setup.backToOverview }).click();
+    await closeToOverview(page);
     await expect(
       page
         .getByText(String(earnedPerkPoints(leveling.baseLevel) + 3), { exact: true })

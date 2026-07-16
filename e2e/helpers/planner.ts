@@ -1,6 +1,11 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { getUiLabels } from "./labels";
-import { goToCharacterSetup, goToSkillTrees } from "./mobile";
+import {
+  goToCharacterOverview,
+  goToCharacterSetup,
+  goToSkillTrees,
+  isStackedPlanner,
+} from "./mobile";
 
 const labels = getUiLabels();
 const setup = labels.panels["character-setup"];
@@ -25,7 +30,18 @@ async function openSetupPicker(page: Page, pickerLabel: string): Promise<void> {
   await button.click();
 }
 
+/**
+ * Leave a setup picker / character-options subview and return to Character Setup rows.
+ * Desktop uses the picker header back control; stacked layout clears via the overview tab
+ * (the header back control is hidden below 720px).
+ */
 export async function closeToOverview(page: Page): Promise<void> {
+  if (await isStackedPlanner(page)) {
+    await goToCharacterOverview(page);
+    await goToCharacterSetup(page);
+    return;
+  }
+
   const overview = page.getByRole("button", { name: setup.backToOverview, exact: true });
   if (await overview.isVisible().catch(() => false)) {
     await overview.click();
@@ -47,8 +63,8 @@ export async function selectSingleSetupOption(
   await openSetupPicker(page, pickerLabel);
   await page.getByRole("button", { name: optionName, exact: true }).click();
   await confirmPickerSelection(page, optionName);
-  await expect(setupPickerButton(page, pickerLabel)).toContainText(optionName);
   await closeToOverview(page);
+  await expect(setupPickerButton(page, pickerLabel)).toContainText(optionName);
 }
 
 export async function toggleMultiSetupOptions(
@@ -101,9 +117,19 @@ export async function takePerk(page: Page, perkName: string): Promise<void> {
 
 export async function expectPerkSelected(page: Page, perkName: string): Promise<void> {
   const perk = page.getByRole("button", { name: perkName, exact: true }).first();
+  await expect(perk).toBeVisible();
+  const selectedTip = page.getByText(skillTrees.selected, { exact: true }).first();
+
+  // Desktop: hover opens the perk tooltip.
   await perk.hover();
-  await expect(page.getByText(skillTrees.selected, { exact: true }).first()).toBeVisible();
-  // Move off the node so the next hover starts clean.
+  if (await selectedTip.isVisible().catch(() => false)) {
+    await page.mouse.move(0, 0);
+    return;
+  }
+
+  // Touch / non-hover: a short tap opens the tooltip without deselecting.
+  await perk.tap();
+  await expect(selectedTip).toBeVisible();
   await page.mouse.move(0, 0);
 }
 

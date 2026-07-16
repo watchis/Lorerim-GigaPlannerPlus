@@ -2,6 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import { appUrl } from "./appUrl";
 import { getUiLabels } from "./labels";
 import { goToCharacterSetup } from "./mobile";
+import { closeToOverview } from "./planner";
 
 export { appUrl };
 
@@ -64,7 +65,9 @@ export async function selectRace(page: Page, raceName: string): Promise<void> {
   const option = page.getByRole("button", { name: raceName, exact: true });
   await expect(option).toBeVisible();
   await option.click();
+  // Stacked layout uses list → detail → Select; desktop selects on row click.
   await confirmPickerSelection(page, raceName);
+  await closeToOverview(page);
   await expect(racePickerButton(page)).toContainText(raceName);
 }
 

@@ -10,9 +10,7 @@ import {
   takePerk,
 } from "../../helpers/planner";
 
-const labels = getUiLabels();
-const setup = labels.panels["character-setup"];
-const characterOptions = labels.panels["character-options"];
+const characterOptions = getUiLabels().panels["character-options"];
 
 test.describe("Vampire build", () => {
   test.beforeEach(async ({ page }) => {
@@ -29,7 +27,7 @@ test.describe("Vampire build", () => {
     await openCharacterOptions(page);
     await enableVampireCurse(page);
     await selectVampireHungerStage(page, characterOptions.vampireStage3Short);
-    await page.getByRole("button", { name: setup.backToOverview }).click();
+    await closeToOverview(page);
 
     await expect(page.getByText(/Vampiric curse active|Vampire/i).first()).toBeVisible();
 
