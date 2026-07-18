@@ -864,6 +864,9 @@ export async function buildDeityEligibilityIndex({
     // Skip orphan Fail MESGs whose altar key is no longer a live worship target.
     // Example: Daedra_Ebonarm_Fail after Ebonarm moved to Misc_Ebonarm.
     if (!isActiveWorshipAltarKey(altarKey, worshipAltarKeys, altarKeyToDeityId)) {
+      console.warn(
+        `Skipping orphan worship Fail MESG for inactive altar key "${altarKey}" (${failMessages[0] ?? "no text"})`,
+      );
       continue;
     }
 
@@ -871,6 +874,9 @@ export async function buildDeityEligibilityIndex({
     const primaryAltarKey = primaryAltarByDeity.get(deityId);
     // Only the primary live altar may contribute race/quest fail gates.
     if (primaryAltarKey && altarKey !== primaryAltarKey) {
+      console.warn(
+        `Skipping non-primary worship Fail MESG for altar "${altarKey}" (primary is "${primaryAltarKey}")`,
+      );
       continue;
     }
 
