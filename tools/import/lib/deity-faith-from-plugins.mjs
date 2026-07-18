@@ -17,6 +17,18 @@ export function filterFaithMgefRecords(mgefRecords) {
   );
 }
 
+/**
+ * Wintersun faith MESG after load-order merge. Same EDID rule as MGEF: LoreRim
+ * Synthesis/xEdit output can win the record while `plugin` is no longer a Wintersun name.
+ *
+ * @param {Array<{ edid?: string }>} mesgRecords
+ */
+export function filterFaithMesgRecords(mesgRecords) {
+  return mesgRecords.filter(
+    (record) => record.edid?.startsWith("WSN_") && !/_old/i.test(record.edid),
+  );
+}
+
 export function isVariantFaithMgefEdid(edid) {
   return FAITH_MGEF_VARIANT_PATTERN.test(String(edid ?? ""));
 }

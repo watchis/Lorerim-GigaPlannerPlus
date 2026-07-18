@@ -7,6 +7,9 @@ import {
   parseShrineLocations,
   parseWorshipFailMessage,
   buildCanFollowFromInstall,
+  buildDeityEligibilityIndex,
+  isActiveWorshipAltarKey,
+  primaryAltarKeyByDeityId,
 } from "./deity-eligibility.mjs";
 
 assert.deepEqual(parseWorshipFailMessage(""), { kind: "none", races: [], requirement: "None" });
@@ -240,5 +243,71 @@ const tribunalEntries = parseGuideDeityEligibility(tribunalGuide);
 assert.equal(tribunalEntries.get("almalexia")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 assert.equal(tribunalEntries.get("sotha-sil")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 assert.equal(tribunalEntries.get("vivec")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
+
+// Live Ebonarm altar is Misc_*; orphan Daedra_*_Fail must not race-gate it.
+assert.equal(
+  isActiveWorshipAltarKey("Daedra_Ebonarm", new Set(["Misc_Ebonarm"]), new Map([["Misc_Ebonarm", "ebonarm"]])),
+  false,
+);
+assert.equal(
+  isActiveWorshipAltarKey("Misc_Ebonarm", new Set(["Misc_Ebonarm"]), new Map([["Misc_Ebonarm", "ebonarm"]])),
+  true,
+);
+
+const primaryAltars = primaryAltarKeyByDeityId(
+  new Set(["Misc_Ebonarm"]),
+  new Map([
+    ["Misc_Ebonarm", "ebonarm"],
+    ["Daedra_Ebonarm", "ebonarm"],
+  ]),
+);
+assert.equal(primaryAltars.get("ebonarm"), "Misc_Ebonarm");
+
+const ebonarmEligibility = await buildDeityEligibilityIndex({
+  wintersunPlugins: [],
+  mesgRecords: [
+    {
+      edid: "WSN_WorshipRequest_Message_Misc_Ebonarm",
+      description: "Pray to Ebonarm.\n\nFollower: Enemy of the Daedra.",
+    },
+    // Orphan fail from the pre-rename Daedra_ altar key — must be ignored.
+    {
+      edid: "WSN_WorshipRequest_Message_Daedra_Ebonarm_Fail",
+      description: "Ebonarm only accepts those of Breton or Dark Elven blood.",
+    },
+  ],
+  questRecords: [],
+  spellRecords: [
+    {
+      edid: "WSN_AltarBlessing_Misc_Ebonarm_Spell",
+      name: "Blessing of Ebonarm",
+    },
+    // Spell-only leftover must not become the primary altar over Misc_ worship MESG.
+    {
+      edid: "WSN_AltarBlessing_Daedra_Ebonarm_Spell",
+      name: "Blessing of Ebonarm",
+    },
+  ],
+  useGuideFallback: false,
+});
+assert.equal(ebonarmEligibility.get("ebonarm")?.race, "All");
+assert.equal(ebonarmEligibility.get("ebonarm")?.requirement, "None");
+
+// Active altar fails still apply (Baan Dar).
+const baanDarEligibility = await buildDeityEligibilityIndex({
+  wintersunPlugins: [],
+  mesgRecords: [
+    { edid: "WSN_WorshipRequest_Message_BaanDar", description: "Pray to Baan Dar." },
+    {
+      edid: "WSN_WorshipRequest_Message_BaanDar_Fail",
+      description: "Baan Dar does not accept those who are not of Khajiit or Wood Elven blood.",
+    },
+  ],
+  questRecords: [],
+  spellRecords: [{ edid: "WSN_AltarBlessing_BaanDar_Spell", name: "Blessing of Baan Dar" }],
+  useGuideFallback: false,
+});
+assert.equal(baanDarEligibility.get("baan-dar")?.race, "Khajiit / Bosmer");
+assert.equal(baanDarEligibility.get("baan-dar")?.requirement, "Race restricted");
 
 console.log("deity-eligibility tests passed");

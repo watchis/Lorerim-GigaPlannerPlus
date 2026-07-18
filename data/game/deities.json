@@ -225,9 +225,9 @@
       "follower": "One Handed raises damage blocked, Block raises armor rating and Heavy Armor raises attack damage. 15% at 100 of the corresponding skill level. These bonuses are doubled in an Oblivion Realm.",
       "devotee": "Transfer armor of enemies within 40 feet by up to 200. Doubled against daedra. Bonus to frost and shock resist when wearing Ebony Armor.",
       "tenets": "Slay daedra. Defeat epic foes. Complete miscellaneous quests for the people of Skyrim. Those skilled in Block are most deserving of my favor.",
-      "race": "Breton / Dunmer",
+      "race": "All",
       "starting": "",
-      "requirement": "Race restricted",
+      "requirement": "None",
       "effects": [],
       "shrineLocations": [
         "Wilderness north of the Reach Stormcloak Camp"

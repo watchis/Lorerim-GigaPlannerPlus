@@ -116,7 +116,7 @@ Perk trees are built from the final merged **`AVIF`** perk trees (what the game 
 | All traits from `Traits_AbilityList` (base FormList + FLM additions) | — |
 | Race names, descriptions, ability bonuses (`REQ_Ability_Race_*`), starting skills/attributes from RACE `DATA`, parsed race `effects` in `race-effects.json` | race `speedBonus` / `attributeBonus` when not in `DATA` |
 | Birthsign names, bonuses, groups | — (birthsign `effects` are re-parsed from bonus text each import) |
-| Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races, shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
+| Deity names, shrine/follower/devotee/tenets text, racial starting deities, can-follow races (install MESG/quest; guide fills gaps only), shrine locations (lorerim.com guide) | — (deity `effects` are re-parsed from shrine text each import) |
 | Vampirism stage bonuses (`REQ_Vampire_StageN`, including newly added stages), werewolf human-form bonuses (`REQ_Werewolf_HumanForm`), racial curse abilities | Hand-tuned stage/form names & narrative `description`, stage `bonusDetails`, and hand-tuned `effects` (plugin `bonus` text refreshes); racial bonus **names** (plugin description text refreshes) |
 | Classical Lichdom phylactery (`NecroPhyMsg*`, UndeathFixes) — `perSoul` rates + threshold list | Lich form narrative `description` / `effects` / `bonusDetails`; threshold `effects` & `bonusDetails` (e.g. Tempered Form fire resist) |
 | Prelude Magicka Weave AVIF (`Magicka Weave` / `Lich`) → `perks/lich.json` | Phylactery thresholds cleared when that mode is detected |

@@ -52,6 +52,13 @@ for (const { id, altarKey } of spotChecks) {
 const baanDar = deities.find((entry) => entry.id === "baan-dar");
 assert.ok(baanDar, "missing Baan Dar");
 assert.match(baanDar.shrine, /25/);
+assert.deepEqual(baanDar.shrineLocations, ["Wilderness northeast of the Apprentice Stone"]);
+
+const ebonarm = deities.find((entry) => entry.id === "ebonarm");
+assert.ok(ebonarm, "missing Ebonarm");
+assert.equal(ebonarm.race, "All", "Ebonarm is not race-gated on the live Misc_ altar");
+assert.equal(ebonarm.requirement, "None");
+assert.deepEqual(ebonarm.shrineLocations, ["Wilderness north of the Reach Stormcloak Camp"]);
 
 const nocturnal = deities.find((entry) => entry.id === "nocturnal");
 assert.ok(nocturnal, "missing Nocturnal");

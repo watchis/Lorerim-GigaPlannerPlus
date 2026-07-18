@@ -9,6 +9,7 @@ import { getRecordBufferAsync, mapConcurrent, visitAsync } from "./plugin-io.mjs
 import { normalizeAltarKey } from "./deity-eligibility.mjs";
 import {
   collectBoonMgefFormIds,
+  filterFaithMesgRecords,
   filterFaithMgefRecords,
   isAltarBlessingMgefEdid,
   parseShrineMgefAltarKey,
@@ -627,12 +628,6 @@ export async function collectImportPluginData(plugins, progress = null, options 
 
   const { altarMagnitudes, boonMagnitudes } = collectFaithSpellMagnitudes(orderedPayloads);
 
-  const wintersunPluginNames = new Set(
-    plugins
-      .filter((plugin) => WINTERSUN_FAITH_PLUGIN_PATTERN.test(plugin.pluginName))
-      .map((plugin) => plugin.pluginName),
-  );
-
   scan?.finish(
     `${formatCount(mergedByType.PERK.size)} PERK, ` +
       `${formatCount(avifTrees.size)} AVIF trees, ` +
@@ -648,9 +643,8 @@ export async function collectImportPluginData(plugins, progress = null, options 
     questRecords: [...mergedByType.QUST.values()],
     mgefRecords: [...mergedByType.MGEF.values()],
     wintersunMgefRecords: filterFaithMgefRecords([...mergedByType.MGEF.values()]),
-    wintersunMesgRecords: [...mergedByType.MESG.values()].filter((record) =>
-      wintersunPluginNames.has(record.plugin),
-    ),
+    // EDID-based (not plugin-name): LoreRim output mods may own the winning WSN_ MESG.
+    wintersunMesgRecords: filterFaithMesgRecords([...mergedByType.MESG.values()]),
     altarMagnitudes,
     boonMagnitudes,
     lorerimRaceRecords: [...lorerimRaceByEdid.values()],
