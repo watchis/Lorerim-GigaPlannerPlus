@@ -61,7 +61,7 @@ const DEITY_NAME_TO_ALTAR_KEY = {
   Jyggalag: "Daedra_Jyggalag",
   "Baan Daar": "BaanDar",
   "Baan Dar": "BaanDar",
-  Ebonarm: "Daedra_Ebonarm",
+  Ebonarm: "Misc_Ebonarm",
   "The HoonDing": "HoonDing",
   "The Magne-Ge": "TheMagnaGe",
   "The Magna-Ge": "TheMagnaGe",
@@ -123,7 +123,6 @@ const DAEDRA_NAMES = new Set([
   "Vaermina",
   "Mannimarco",
   "Jyggalag",
-  "Ebonarm",
 ]);
 
 export function inferAltarKeyFromDeityName(deityName) {

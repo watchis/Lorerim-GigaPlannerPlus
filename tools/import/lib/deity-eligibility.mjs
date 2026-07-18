@@ -737,7 +737,21 @@ export async function fetchGuideDeityEligibility() {
   return parseGuideDeityEligibility(markdown);
 }
 
-function mergeEligibility(installEntry, guideEntry) {
+/**
+ * Prefer the official LoreRim guide when it explicitly allows everyone.
+ * Wintersun MESG fail text can lag LoreRim patches (e.g. Ebonarm still race-gated
+ * in plugins while the guide says "everone" / everyone).
+ */
+function isGuideEveryone(canFollow) {
+  return (
+    !canFollow ||
+    canFollow === "All" ||
+    /^everyone$/i.test(canFollow) ||
+    /^everone$/i.test(canFollow)
+  );
+}
+
+export function mergeEligibility(installEntry, guideEntry) {
   const starting = installEntry.starting || guideEntry?.starting || "";
   let race = installEntry.race || "All";
   let requirement = installEntry.requirement || "None";
@@ -746,10 +760,16 @@ function mergeEligibility(installEntry, guideEntry) {
     if (!starting && guideEntry.starting) {
       installEntry.starting = guideEntry.starting;
     }
-    if (isIncompleteCanFollow(race, installEntry.failMessages, guideEntry) && guideEntry.canFollow) {
-      race = /^everyone$/i.test(guideEntry.canFollow) ? "All" : guideEntry.canFollow;
+    if (guideEntry.canFollow && isGuideEveryone(guideEntry.canFollow)) {
+      // Guide "Everyone" / typo "everone" wins over stale install race gates.
+      race = "All";
+      if (requirement === "Race restricted" || requirement === "Human blood") {
+        requirement = "None";
+      }
+    } else if (isIncompleteCanFollow(race, installEntry.failMessages, guideEntry) && guideEntry.canFollow) {
+      race = isGuideEveryone(guideEntry.canFollow) ? "All" : guideEntry.canFollow;
       requirement = "Must have served this deity";
-    } else if (race === "All" && guideEntry.canFollow && guideEntry.canFollow !== "All" && installEntry.failMessages?.length) {
+    } else if (race === "All" && guideEntry.canFollow && !isGuideEveryone(guideEntry.canFollow) && installEntry.failMessages?.length) {
       race = guideEntry.canFollow;
     }
   }

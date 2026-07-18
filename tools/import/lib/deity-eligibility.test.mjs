@@ -7,6 +7,7 @@ import {
   parseShrineLocations,
   parseWorshipFailMessage,
   buildCanFollowFromInstall,
+  mergeEligibility,
 } from "./deity-eligibility.mjs";
 
 assert.deepEqual(parseWorshipFailMessage(""), { kind: "none", races: [], requirement: "None" });
@@ -240,5 +241,62 @@ const tribunalEntries = parseGuideDeityEligibility(tribunalGuide);
 assert.equal(tribunalEntries.get("almalexia")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 assert.equal(tribunalEntries.get("sotha-sil")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 assert.equal(tribunalEntries.get("vivec")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
+
+// Official guide: Ebonarm is everyone (typo "everone"); Wintersun MESG may still race-gate.
+const ebonarmGuideSample = `
+## Baan Dar
+Can follow Baan Dar: Khajit / Bosmer
+Shrine locations:
+- Wilderness northeast of the Apprentice Stone
+## Ebonarm
+Can follow Ebonarm: everone
+Racial starting deity for: none
+Shrine locations:
+- Wilderness north of the Reach Stormcloak Camp
+`;
+const ebonarmGuide = parseGuideDeityEligibility(ebonarmGuideSample);
+assert.equal(ebonarmGuide.get("ebonarm")?.canFollow, "All");
+assert.deepEqual(ebonarmGuide.get("ebonarm")?.shrineLocations, [
+  "Wilderness north of the Reach Stormcloak Camp",
+]);
+assert.deepEqual(ebonarmGuide.get("baan-dar")?.shrineLocations, [
+  "Wilderness northeast of the Apprentice Stone",
+]);
+
+const ebonarmInstall = buildCanFollowFromInstall({
+  deityId: "ebonarm",
+  deityName: "Ebonarm",
+  altarKey: "Misc_Ebonarm",
+  failMessages: ["Ebonarm only accepts those of Breton or Dark Elven blood."],
+  deityMeta: { favoredRaces: ["Breton", "Dunmer"] },
+  startingRaces: [],
+  questByEdid: new Map(),
+});
+assert.equal(ebonarmInstall.race, "Breton / Dunmer");
+assert.equal(ebonarmInstall.requirement, "Race restricted");
+
+const ebonarmMerged = mergeEligibility(
+  {
+    race: ebonarmInstall.race,
+    requirement: ebonarmInstall.requirement,
+    starting: "",
+    failMessages: ["Ebonarm only accepts those of Breton or Dark Elven blood."],
+  },
+  ebonarmGuide.get("ebonarm"),
+);
+assert.equal(ebonarmMerged.race, "All", "guide everyone must override stale Wintersun race gate");
+assert.equal(ebonarmMerged.requirement, "None");
+
+// Restricted guide entries must still win when install is open but has fail text.
+const baanDarMerged = mergeEligibility(
+  {
+    race: "All",
+    requirement: "None",
+    starting: "",
+    failMessages: ["Baan Dar does not accept those who are not of Khajiit or Wood Elven blood."],
+  },
+  ebonarmGuide.get("baan-dar"),
+);
+assert.equal(baanDarMerged.race, "Khajit / Bosmer");
 
 console.log("deity-eligibility tests passed");
