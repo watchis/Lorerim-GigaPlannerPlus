@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   extractFaithEffectsFromPlugins,
+  filterFaithMesgRecords,
   filterFaithMgefRecords,
   indexDeityFaithMgef,
   parseShrineMgefAltarKey,
@@ -191,6 +192,22 @@ const patchedAzuraMgef = filterFaithMgefRecords([
   },
 ]);
 assert.equal(patchedAzuraMgef.length, 1);
+
+// LoreRim output may own the winning WSN_ MESG; filter by EDID, not plugin name.
+const patchedEbonarmMesg = filterFaithMesgRecords([
+  {
+    edid: "WSN_WorshipRequest_Message_Misc_Ebonarm",
+    description: "Pray to Ebonarm.",
+    plugin: "LoreRim - xEdit64 Output.esp",
+  },
+  {
+    edid: "SomeOtherMessage",
+    description: "ignored",
+    plugin: "Wintersun - Faiths of Skyrim.esp",
+  },
+]);
+assert.equal(patchedEbonarmMesg.length, 1);
+assert.equal(patchedEbonarmMesg[0].edid, "WSN_WorshipRequest_Message_Misc_Ebonarm");
 
 const azuraShrine = extractFaithEffectsFromPlugins({
   altarKey: "Daedra_Azura",

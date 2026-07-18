@@ -56,7 +56,7 @@ assert.deepEqual(baanDar.shrineLocations, ["Wilderness northeast of the Apprenti
 
 const ebonarm = deities.find((entry) => entry.id === "ebonarm");
 assert.ok(ebonarm, "missing Ebonarm");
-assert.equal(ebonarm.race, "All", "Ebonarm can be followed by all races per lorerim.com guide");
+assert.equal(ebonarm.race, "All", "Ebonarm is not race-gated on the live Misc_ altar");
 assert.equal(ebonarm.requirement, "None");
 assert.deepEqual(ebonarm.shrineLocations, ["Wilderness north of the Reach Stormcloak Camp"]);
 

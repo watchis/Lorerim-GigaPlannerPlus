@@ -7,7 +7,9 @@ import {
   parseShrineLocations,
   parseWorshipFailMessage,
   buildCanFollowFromInstall,
-  mergeEligibility,
+  buildDeityEligibilityIndex,
+  isActiveWorshipAltarKey,
+  primaryAltarKeyByDeityId,
 } from "./deity-eligibility.mjs";
 
 assert.deepEqual(parseWorshipFailMessage(""), { kind: "none", races: [], requirement: "None" });
@@ -242,61 +244,70 @@ assert.equal(tribunalEntries.get("almalexia")?.canFollow, 'Dunmer / Anyone who h
 assert.equal(tribunalEntries.get("sotha-sil")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 assert.equal(tribunalEntries.get("vivec")?.canFollow, 'Dunmer / Anyone who has completed "Ghosts of the Tribunal"');
 
-// Official guide: Ebonarm is everyone (typo "everone"); Wintersun MESG may still race-gate.
-const ebonarmGuideSample = `
-## Baan Dar
-Can follow Baan Dar: Khajit / Bosmer
-Shrine locations:
-- Wilderness northeast of the Apprentice Stone
-## Ebonarm
-Can follow Ebonarm: everone
-Racial starting deity for: none
-Shrine locations:
-- Wilderness north of the Reach Stormcloak Camp
-`;
-const ebonarmGuide = parseGuideDeityEligibility(ebonarmGuideSample);
-assert.equal(ebonarmGuide.get("ebonarm")?.canFollow, "All");
-assert.deepEqual(ebonarmGuide.get("ebonarm")?.shrineLocations, [
-  "Wilderness north of the Reach Stormcloak Camp",
-]);
-assert.deepEqual(ebonarmGuide.get("baan-dar")?.shrineLocations, [
-  "Wilderness northeast of the Apprentice Stone",
-]);
+// Live Ebonarm altar is Misc_*; orphan Daedra_*_Fail must not race-gate it.
+assert.equal(
+  isActiveWorshipAltarKey("Daedra_Ebonarm", new Set(["Misc_Ebonarm"]), new Map([["Misc_Ebonarm", "ebonarm"]])),
+  false,
+);
+assert.equal(
+  isActiveWorshipAltarKey("Misc_Ebonarm", new Set(["Misc_Ebonarm"]), new Map([["Misc_Ebonarm", "ebonarm"]])),
+  true,
+);
 
-const ebonarmInstall = buildCanFollowFromInstall({
-  deityId: "ebonarm",
-  deityName: "Ebonarm",
-  altarKey: "Misc_Ebonarm",
-  failMessages: ["Ebonarm only accepts those of Breton or Dark Elven blood."],
-  deityMeta: { favoredRaces: ["Breton", "Dunmer"] },
-  startingRaces: [],
-  questByEdid: new Map(),
+const primaryAltars = primaryAltarKeyByDeityId(
+  new Set(["Misc_Ebonarm"]),
+  new Map([
+    ["Misc_Ebonarm", "ebonarm"],
+    ["Daedra_Ebonarm", "ebonarm"],
+  ]),
+);
+assert.equal(primaryAltars.get("ebonarm"), "Misc_Ebonarm");
+
+const ebonarmEligibility = await buildDeityEligibilityIndex({
+  wintersunPlugins: [],
+  mesgRecords: [
+    {
+      edid: "WSN_WorshipRequest_Message_Misc_Ebonarm",
+      description: "Pray to Ebonarm.\n\nFollower: Enemy of the Daedra.",
+    },
+    // Orphan fail from the pre-rename Daedra_ altar key — must be ignored.
+    {
+      edid: "WSN_WorshipRequest_Message_Daedra_Ebonarm_Fail",
+      description: "Ebonarm only accepts those of Breton or Dark Elven blood.",
+    },
+  ],
+  questRecords: [],
+  spellRecords: [
+    {
+      edid: "WSN_AltarBlessing_Misc_Ebonarm_Spell",
+      name: "Blessing of Ebonarm",
+    },
+    // Spell-only leftover must not become the primary altar over Misc_ worship MESG.
+    {
+      edid: "WSN_AltarBlessing_Daedra_Ebonarm_Spell",
+      name: "Blessing of Ebonarm",
+    },
+  ],
+  useGuideFallback: false,
 });
-assert.equal(ebonarmInstall.race, "Breton / Dunmer");
-assert.equal(ebonarmInstall.requirement, "Race restricted");
+assert.equal(ebonarmEligibility.get("ebonarm")?.race, "All");
+assert.equal(ebonarmEligibility.get("ebonarm")?.requirement, "None");
 
-const ebonarmMerged = mergeEligibility(
-  {
-    race: ebonarmInstall.race,
-    requirement: ebonarmInstall.requirement,
-    starting: "",
-    failMessages: ["Ebonarm only accepts those of Breton or Dark Elven blood."],
-  },
-  ebonarmGuide.get("ebonarm"),
-);
-assert.equal(ebonarmMerged.race, "All", "guide everyone must override stale Wintersun race gate");
-assert.equal(ebonarmMerged.requirement, "None");
-
-// Restricted guide entries must still win when install is open but has fail text.
-const baanDarMerged = mergeEligibility(
-  {
-    race: "All",
-    requirement: "None",
-    starting: "",
-    failMessages: ["Baan Dar does not accept those who are not of Khajiit or Wood Elven blood."],
-  },
-  ebonarmGuide.get("baan-dar"),
-);
-assert.equal(baanDarMerged.race, "Khajit / Bosmer");
+// Active altar fails still apply (Baan Dar).
+const baanDarEligibility = await buildDeityEligibilityIndex({
+  wintersunPlugins: [],
+  mesgRecords: [
+    { edid: "WSN_WorshipRequest_Message_BaanDar", description: "Pray to Baan Dar." },
+    {
+      edid: "WSN_WorshipRequest_Message_BaanDar_Fail",
+      description: "Baan Dar does not accept those who are not of Khajiit or Wood Elven blood.",
+    },
+  ],
+  questRecords: [],
+  spellRecords: [{ edid: "WSN_AltarBlessing_BaanDar_Spell", name: "Blessing of Baan Dar" }],
+  useGuideFallback: false,
+});
+assert.equal(baanDarEligibility.get("baan-dar")?.race, "Khajiit / Bosmer");
+assert.equal(baanDarEligibility.get("baan-dar")?.requirement, "Race restricted");
 
 console.log("deity-eligibility tests passed");

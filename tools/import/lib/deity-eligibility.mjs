@@ -737,21 +737,7 @@ export async function fetchGuideDeityEligibility() {
   return parseGuideDeityEligibility(markdown);
 }
 
-/**
- * Prefer the official LoreRim guide when it explicitly allows everyone.
- * Wintersun MESG fail text can lag LoreRim patches (e.g. Ebonarm still race-gated
- * in plugins while the guide says "everone" / everyone).
- */
-function isGuideEveryone(canFollow) {
-  return (
-    !canFollow ||
-    canFollow === "All" ||
-    /^everyone$/i.test(canFollow) ||
-    /^everone$/i.test(canFollow)
-  );
-}
-
-export function mergeEligibility(installEntry, guideEntry) {
+function mergeEligibility(installEntry, guideEntry) {
   const starting = installEntry.starting || guideEntry?.starting || "";
   let race = installEntry.race || "All";
   let requirement = installEntry.requirement || "None";
@@ -760,16 +746,10 @@ export function mergeEligibility(installEntry, guideEntry) {
     if (!starting && guideEntry.starting) {
       installEntry.starting = guideEntry.starting;
     }
-    if (guideEntry.canFollow && isGuideEveryone(guideEntry.canFollow)) {
-      // Guide "Everyone" / typo "everone" wins over stale install race gates.
-      race = "All";
-      if (requirement === "Race restricted" || requirement === "Human blood") {
-        requirement = "None";
-      }
-    } else if (isIncompleteCanFollow(race, installEntry.failMessages, guideEntry) && guideEntry.canFollow) {
-      race = isGuideEveryone(guideEntry.canFollow) ? "All" : guideEntry.canFollow;
+    if (isIncompleteCanFollow(race, installEntry.failMessages, guideEntry) && guideEntry.canFollow) {
+      race = /^everyone$/i.test(guideEntry.canFollow) ? "All" : guideEntry.canFollow;
       requirement = "Must have served this deity";
-    } else if (race === "All" && guideEntry.canFollow && !isGuideEveryone(guideEntry.canFollow) && installEntry.failMessages?.length) {
+    } else if (race === "All" && guideEntry.canFollow && guideEntry.canFollow !== "All" && installEntry.failMessages?.length) {
       race = guideEntry.canFollow;
     }
   }
@@ -779,6 +759,39 @@ export function mergeEligibility(installEntry, guideEntry) {
     race,
     requirement,
   };
+}
+
+/**
+ * True when an altar key is still an active worship target in the install.
+ * Orphan `*_Fail` MESGs from renamed keys (e.g. leftover Daedra_Ebonarm after the
+ * live altar moved to Misc_Ebonarm) must not gate the deity.
+ */
+export function isActiveWorshipAltarKey(altarKey, worshipAltarKeys, altarKeyToDeityId) {
+  const key = normalizeAltarKey(altarKey);
+  if (!key) return false;
+  if (worshipAltarKeys.has(key)) return true;
+  if (altarKeyToDeityId.has(key)) return true;
+  return false;
+}
+
+/**
+ * Pick one live altar key per deity. Prefer keys that still have a non-fail worship
+ * MESG over spell-only leftovers so renamed altars (Misc_Ebonarm vs Daedra_Ebonarm)
+ * do not inherit the old Fail gate.
+ */
+export function primaryAltarKeyByDeityId(worshipAltarKeys, altarKeyToDeityId) {
+  const byDeity = new Map();
+
+  for (const altarKey of worshipAltarKeys) {
+    const deityId = altarKeyToDeityId.get(altarKey) ?? deityIdFromAltarKey(altarKey);
+    if (!byDeity.has(deityId)) byDeity.set(deityId, altarKey);
+  }
+
+  for (const [altarKey, deityId] of altarKeyToDeityId.entries()) {
+    if (!byDeity.has(deityId)) byDeity.set(deityId, altarKey);
+  }
+
+  return byDeity;
 }
 
 export async function buildDeityEligibilityIndex({
@@ -822,6 +835,8 @@ export async function buildDeityEligibilityIndex({
   const startingByDeity = invertStartingByRace(questData.startingByRace);
   const failByAltar = collectFailMessagesByAltarKey(mesgRecords);
   const altarKeyToDeityId = collectAltarKeyToDeityId(spellRecords);
+  const worshipAltarKeys = collectWorshipAltarKeys(mesgRecords);
+  const primaryAltarByDeity = primaryAltarKeyByDeityId(worshipAltarKeys, altarKeyToDeityId);
 
   let guideById = new Map();
   if (useGuideFallback) {
@@ -846,7 +861,19 @@ export async function buildDeityEligibilityIndex({
   }
 
   for (const [altarKey, failMessages] of failByAltar.entries()) {
+    // Skip orphan Fail MESGs whose altar key is no longer a live worship target.
+    // Example: Daedra_Ebonarm_Fail after Ebonarm moved to Misc_Ebonarm.
+    if (!isActiveWorshipAltarKey(altarKey, worshipAltarKeys, altarKeyToDeityId)) {
+      continue;
+    }
+
     const deityId = altarKeyToDeityId.get(altarKey) ?? deityIdFromAltarKey(altarKey);
+    const primaryAltarKey = primaryAltarByDeity.get(deityId);
+    // Only the primary live altar may contribute race/quest fail gates.
+    if (primaryAltarKey && altarKey !== primaryAltarKey) {
+      continue;
+    }
+
     const meta = deityMetaById.get(deityId);
     const startingRaces = startingByDeity.get(deityId) ?? [];
     const install = buildCanFollowFromInstall({
@@ -863,7 +890,7 @@ export async function buildDeityEligibilityIndex({
       starting: formatRaceList(startingRaces),
       race: "All",
       requirement: "None",
-      failMessages,
+      failMessages: [],
     };
 
     byDeityId.set(deityId, {
@@ -878,6 +905,17 @@ export async function buildDeityEligibilityIndex({
     if (byDeityId.has(id)) continue;
     byDeityId.set(id, {
       starting: formatRaceList(startingByDeity.get(id) ?? []),
+      race: "All",
+      requirement: "None",
+      failMessages: [],
+    });
+  }
+
+  // Active worship altars with no Fail MESG (e.g. Misc_Ebonarm) stay explicitly open.
+  for (const deityId of primaryAltarByDeity.keys()) {
+    if (byDeityId.has(deityId)) continue;
+    byDeityId.set(deityId, {
+      starting: formatRaceList(startingByDeity.get(deityId) ?? []),
       race: "All",
       requirement: "None",
       failMessages: [],
